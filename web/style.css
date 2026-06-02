@@ -1,0 +1,129 @@
+/* ============ 基本 ============ */
+:root {
+  --ink: #1a1a1a;
+  --paper: #fff;
+  --line: #222;
+  --accent: #2a6df4;
+  --bg: #f3f4f6;
+  --pane: #fafafa;
+  --muted: #6b7280;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+  font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif; }
+
+/* ============ トップバー ============ */
+.topbar {
+  background: #fff; border-bottom: 1px solid #e5e7eb;
+  padding: 12px 20px; display: flex; align-items: baseline; gap: 16px;
+}
+.topbar h1 { font-size: 18px; margin: 0; }
+.topbar-meta { color: var(--muted); font-size: 13px; }
+
+/* ============ 2ペインレイアウト ============ */
+.layout {
+  display: grid; gap: 16px; padding: 16px;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1400px; margin: 0 auto;
+}
+.form-pane, .preview-pane {
+  background: var(--pane); border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 16px;
+}
+.form-pane h2, .preview-pane h2 { margin: 0 0 12px; font-size: 14px; color: var(--muted); }
+
+/* ============ フォーム ============ */
+fieldset { border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin: 0 0 12px; background: #fff; }
+legend { font-size: 12px; color: var(--muted); padding: 0 6px; }
+label { display: block; margin: 0 0 10px; font-size: 13px; }
+input[type=text], input[type=date], input[type=number], input[type=email], input[type=url],
+select, textarea {
+  width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 4px;
+  font: inherit; font-size: 14px; margin-top: 4px;
+}
+textarea { resize: vertical; }
+.row { display: flex; gap: 12px; }
+.row label { flex: 1; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+button {
+  padding: 8px 14px; border: 1px solid #d1d5db; background: #fff;
+  border-radius: 4px; cursor: pointer; font: inherit; font-size: 13px;
+}
+button:hover { background: #f9fafb; }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+button.primary:hover { filter: brightness(1.05); }
+#status { font-size: 13px; min-height: 1.2em; margin: 8px 0 0; }
+#status.ok { color: #047857; }
+#status.err { color: #b91c1c; }
+.settings { margin-top: 16px; }
+.settings summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.hint { color: var(--muted); font-size: 12px; }
+
+/* ============ プレビュー（発注書本体） ============ */
+.preview-pane { background: #e9eaed; }  /* 紙との対比 */
+.paper {
+  background: var(--paper); width: 100%; max-width: 800px; margin: 0 auto;
+  aspect-ratio: 210 / 297;  /* A4比率 */
+  padding: 28px 32px; color: var(--ink);
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", "MS Mincho", serif;
+  border: 1px solid #d1d5db; box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  display: flex; flex-direction: column;
+}
+.doc-title {
+  text-align: center; font-size: 28px; font-weight: 700;
+  margin: 0 0 16px; letter-spacing: 0.4em;
+}
+.header-box {
+  border: 1.5px solid var(--line); padding: 14px 18px;
+  display: grid; grid-template-columns: 1fr auto; gap: 8px;
+  margin-bottom: 0;
+}
+.recipient { font-size: 16px; align-self: center; }
+.recipient .lg { font-size: 20px; font-weight: 600; }
+.dates { font-size: 13px; line-height: 1.9; text-align: right; }
+.body-box {
+  border: 1.5px solid var(--line); border-top: none;
+  padding: 16px 18px;
+  flex: 1;  /* 残り高さを占める */
+  font-size: 14px;
+}
+.bullet { display: inline-block; width: 1.6em; }
+.product-line { font-size: 17px; margin-bottom: 14px; }
+.spec-line { display: grid; grid-template-columns: 1.6em 1fr auto; align-items: baseline; margin-bottom: 8px; }
+.qty { font-size: 17px; font-weight: 600; white-space: nowrap; }
+.qty #pv-qty { margin-right: 4px; }
+.spec-list { margin-left: 0; }
+.spec-list .spec-item { display: grid; grid-template-columns: 1.6em 1fr; margin-bottom: 6px; }
+.note { margin-top: 14px; white-space: pre-wrap; }
+.note:not(:empty)::before { content: "＊ "; }
+.diagram-area { margin-top: 16px; display: flex; justify-content: center; }
+.diagram-area img { max-width: 80%; max-height: 260px; }
+.footer-box {
+  border: 1.5px solid var(--line); border-top: none;
+  padding: 14px 18px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.sender { font-size: 15px; line-height: 1.8; }
+.sender .staff { margin-top: 8px; }
+.tels { font-size: 14px; line-height: 1.8; text-align: right; }
+
+/* ============ レスポンシブ ============ */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .paper { aspect-ratio: auto; min-height: 800px; }
+}
+
+/* ============ 印刷（PDFとして保存）============ */
+@media print {
+  body { background: #fff; }
+  .topbar, .form-pane { display: none !important; }
+  .layout { display: block; padding: 0; }
+  .preview-pane { border: none; padding: 0; background: #fff; }
+  .preview-pane h2 { display: none; }
+  .paper {
+    box-shadow: none; border: none; margin: 0;
+    width: 210mm; height: 297mm; aspect-ratio: auto;
+    padding: 18mm 22mm;
+  }
+  @page { size: A4 portrait; margin: 0; }
+}

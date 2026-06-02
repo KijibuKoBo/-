@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>発注書作成 — ㈲松永工房 → 株式会社カワサキ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>発注書作成</h1>
+    <div class="topbar-meta">㈲松永工房 → 株式会社カワサキ</div>
+  </header>
+
+  <main class="layout">
+    <!-- 入力フォーム -->
+    <section class="form-pane" aria-label="入力フォーム">
+      <h2>入力</h2>
+
+      <fieldset>
+        <legend>製品テンプレート</legend>
+        <label>
+          テンプレート選択
+          <select id="tpl">
+            <option value="">— 選ばない（手入力） —</option>
+          </select>
+        </label>
+        <button type="button" id="tpl-apply">テンプレートを反映</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>日付</legend>
+        <label>発注日 <input type="date" id="orderDate" required></label>
+        <label>仕上り日 <input type="date" id="dueDate" required></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>本文</legend>
+        <label>製品名（先頭○）<input type="text" id="productName" placeholder="MPダイニングテーブル ラウンドタイプ 1200"></label>
+        <label>サイズ・材質 <input type="text" id="size" placeholder="1210×1210× 9MDF"></label>
+        <div class="row">
+          <label>数量 <input type="number" id="qty" min="1" value="1"></label>
+          <label>単位
+            <select id="unit">
+              <option>枚</option><option>本</option><option>各</option><option>個</option>
+            </select>
+          </label>
+        </div>
+        <label>仕上げ仕様（1行ごとに＊が付きます）
+          <textarea id="spec" rows="4" placeholder="片面オーク柾目45°&#10;裏面捨て貼り"></textarea>
+        </label>
+        <label>備考
+          <textarea id="note" rows="3" placeholder="9MDF 搬入のタイミングを連絡ください。"></textarea>
+        </label>
+        <label>図解画像（任意）
+          <input type="file" id="diagram" accept="image/*">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>送信</legend>
+        <label>送信先メール <input type="email" id="toEmail" placeholder="kawasaki@example.co.jp" required></label>
+        <label>件名（自動生成しますが編集可） <input type="text" id="subject"></label>
+        <div class="actions">
+          <button type="button" id="btn-preview">プレビュー更新</button>
+          <button type="button" id="btn-print">PDFとして保存（印刷）</button>
+          <button type="button" id="btn-send" class="primary">メール送信</button>
+        </div>
+        <p id="status" role="status" aria-live="polite"></p>
+      </fieldset>
+
+      <details class="settings">
+        <summary>⚙ 設定（初回のみ）</summary>
+        <label>Apps Script Webアプリ URL
+          <input type="url" id="endpoint" placeholder="https://script.google.com/macros/s/.../exec">
+        </label>
+        <button type="button" id="btn-save-endpoint">保存</button>
+        <p class="hint">script.google.com にデプロイ後の URL を貼り付け。ブラウザに保存されます（localStorage）。</p>
+      </details>
+    </section>
+
+    <!-- プレビュー（PDFと同じ見た目） -->
+    <section class="preview-pane" aria-label="プレビュー">
+      <h2>プレビュー</h2>
+      <div class="paper" id="paper">
+        <h1 class="doc-title">発　注　書</h1>
+        <div class="header-box">
+          <div class="recipient">
+            <span class="lg" id="pv-recipient">株式会社　カワサキ</span>　御中
+          </div>
+          <div class="dates">
+            <div>発注日　令和 <span id="pv-orderDate">　</span></div>
+            <div>仕上り日　令和 <span id="pv-dueDate">　</span></div>
+          </div>
+        </div>
+        <div class="body-box">
+          <div class="product-line">
+            <span class="bullet">○</span>
+            <span class="product-name" id="pv-productName"></span>
+          </div>
+          <div class="spec-line">
+            <span class="bullet">＊</span>
+            <span class="size" id="pv-size"></span>
+            <span class="qty"><span id="pv-qty"></span><span id="pv-unit"></span></span>
+          </div>
+          <div class="spec-list" id="pv-spec"></div>
+          <div class="note" id="pv-note"></div>
+          <div class="diagram-area" id="pv-diagram"></div>
+        </div>
+        <div class="footer-box">
+          <div class="sender">
+            <div>㈲松永工房</div>
+            <div class="staff">担当者　石原賢</div>
+          </div>
+          <div class="tels">
+            <div>TEL　054－277－0510</div>
+            <div>TEL　080－8742－4443</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

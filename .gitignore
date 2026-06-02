@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs / tmp
+*.log
+tmp/
+dist/
+node_modules/
+
+# Apps Script local clasp credentials
+.clasprc.json
+.clasp.json
+
+# Secrets (Apps Script URL や API キー等)
+config.local.js
+.env
+.env.local
