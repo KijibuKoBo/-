@@ -91,7 +91,8 @@ html, body {
   z-index: 5;
 }
 .hud-item { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-.hud-item.money { color: #ffe08a; }
+.hud-item.money { color: #ffe08a; font-size: 17px; }
+.hud-item.rate { color: #8cf0b4; }
 .hud-ico { font-size: 16px; }
 .hud-item.day { opacity: .85; font-weight: normal; }
 

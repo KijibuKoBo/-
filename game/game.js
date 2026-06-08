@@ -10,10 +10,10 @@
   /* ---------- 拠点（ゾーン）定義 ---------- */
   // x,y はキャンバスに対する割合（0〜1）
   const ZONES = {
-    sea:     { id: "sea",     name: "海（シラス漁）", icon: "🌊", x: 0.50, y: 0.20, land: false },
-    process: { id: "process", name: "加工場",        icon: "♨️", x: 0.20, y: 0.74, land: true  },
-    kitchen: { id: "kitchen", name: "調理場",        icon: "🍳", x: 0.50, y: 0.74, land: true  },
-    shop:    { id: "shop",    name: "販売所",        icon: "🏪", x: 0.80, y: 0.74, land: true  },
+    sea:     { id: "sea",     name: "シラス漁",  stage: "①漁",   icon: "🌊", x: 0.50, y: 0.28, land: false },
+    process: { id: "process", name: "加工場",    stage: "②加工", icon: "♨️", x: 0.20, y: 0.80, land: true  },
+    kitchen: { id: "kitchen", name: "調理場",    stage: "③調理", icon: "🍳", x: 0.50, y: 0.80, land: true  },
+    shop:    { id: "shop",    name: "販売所",    stage: "④販売", icon: "🏪", x: 0.80, y: 0.80, land: true  },
   };
 
   /* ---------- アップグレード定義 ---------- */
@@ -114,6 +114,12 @@
   const ctx = canvas.getContext("2d");
   let W = 0, H = 0, DPR = 1;
 
+  // 背景画像（参考画像から切り出した富士山＋用宗漁港のパノラマ）
+  const bgImg = new Image();
+  let bgReady = false;
+  bgImg.onload = () => { bgReady = true; };
+  bgImg.src = "assets/harbor-bg.png";
+
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     const r = canvas.getBoundingClientRect();
@@ -173,6 +179,9 @@
      ========================================================= */
   let paused = true;     // モーダル中・タイトル中は停止
   let last = 0;
+
+  // 売上/秒（直近1秒の獲得額）
+  let incomeRate = 0, earnTimer = 0, lastTotalEarned = 0;
 
   function loop(t) {
     requestAnimationFrame(loop);
@@ -262,6 +271,14 @@
       if (S.machineFixTimer <= 0) { S.machineBroken = false; toast("加工機が直った！", "good"); }
     }
 
+    // 売上/秒の更新
+    earnTimer += dt;
+    if (earnTimer >= 1) {
+      incomeRate = (S.totalEarned - lastTotalEarned) / earnTimer;
+      lastTotalEarned = S.totalEarned;
+      earnTimer = 0;
+    }
+
     // 日数の経過
     S.dayTimer += dt;
     if (S.dayTimer >= 45) { S.dayTimer = 0; S.day++; toast("☀️ " + S.day + "日目の朝", ""); }
@@ -289,20 +306,31 @@
      ========================================================= */
   function render(t) {
     ctx.clearRect(0, 0, W, H);
-    const seaH = H * 0.46;
 
-    // 空〜海
-    let g = ctx.createLinearGradient(0, 0, 0, seaH);
-    g.addColorStop(0, "#bfe6f5");
-    g.addColorStop(1, "#1a6fa0");
+    // 背景：富士山＋漁港パノラマを上部にフル幅で配置
+    const bandH = bgReady ? W * (bgImg.height / bgImg.width) : H * 0.32;
+    if (bgReady) {
+      ctx.drawImage(bgImg, 0, 0, W, bandH);
+    } else {
+      let sg = ctx.createLinearGradient(0, 0, 0, bandH);
+      sg.addColorStop(0, "#bfe6f5"); sg.addColorStop(1, "#1a6fa0");
+      ctx.fillStyle = sg; ctx.fillRect(0, 0, W, bandH);
+    }
+
+    const dockTop = H * 0.66;
+
+    // 海（漁エリア）：パノラマ下端から桟橋まで
+    let g = ctx.createLinearGradient(0, bandH, 0, dockTop);
+    g.addColorStop(0, "#2b86a8");
+    g.addColorStop(1, "#0f5a78");
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, seaH);
+    ctx.fillRect(0, bandH - 1, W, dockTop - bandH + 1);
 
     // 波
-    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
     ctx.lineWidth = 2;
     for (let row = 0; row < 4; row++) {
-      const yy = seaH * (0.35 + row * 0.16);
+      const yy = bandH + (dockTop - bandH) * (0.18 + row * 0.22);
       ctx.beginPath();
       for (let x = 0; x <= W; x += 12) {
         const y = yy + Math.sin((x * 0.03) + t * 0.002 + row) * 4;
@@ -311,21 +339,30 @@
       ctx.stroke();
     }
 
-    // 陸（砂浜・岸壁）
-    g = ctx.createLinearGradient(0, seaH, 0, H);
-    g.addColorStop(0, "#e9d9a8");
-    g.addColorStop(1, "#d8c48a");
+    // 桟橋（木のデッキ）
+    g = ctx.createLinearGradient(0, dockTop, 0, H);
+    g.addColorStop(0, "#b98a5a");
+    g.addColorStop(1, "#9a6f44");
     ctx.fillStyle = g;
-    ctx.fillRect(0, seaH, W, H - seaH);
+    ctx.fillRect(0, dockTop, W, H - dockTop);
     // 岸壁ライン
-    ctx.fillStyle = "#8a8a8a";
-    ctx.fillRect(0, seaH - 6, W, 10);
+    ctx.fillStyle = "#7a5a3a";
+    ctx.fillRect(0, dockTop - 5, W, 7);
+    // 板の継ぎ目
+    ctx.strokeStyle = "rgba(0,0,0,0.10)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, dockTop); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    // 生産フローの矢印（① → ② → ③ → ④）
+    drawFlowArrows();
 
     // 拠点を描画
     drawSea(t);
-    drawBuilding(ZONES.process, "♨️", buildBarRaw());
-    drawBuilding(ZONES.kitchen, "🍳", buildBarProcessed());
-    drawBuilding(ZONES.shop, "🏪", buildBarDishes());
+    drawBuilding(ZONES.process, buildBarRaw());
+    drawBuilding(ZONES.kitchen, buildBarProcessed());
+    drawBuilding(ZONES.shop, buildBarDishes());
 
     // アクティブ拠点のハイライト
     const zone = currentZone();
@@ -361,23 +398,46 @@
     ctx.globalAlpha = 1;
   }
 
+  // 拠点のレベルと効率%（タイクーン風表示用）
+  function zoneLv(id) {
+    return { sea: S.lv.boat, process: S.lv.machine, kitchen: S.lv.menu, shop: S.lv.port }[id];
+  }
+  function zoneEffPct(id) {
+    switch (id) {
+      case "sea":     return Math.round(((params.catchRate() / S.catchMult) / 2.0 - 1) * 100);
+      case "process": return Math.round((params.processRate() / 1.5 - 1) * 100);
+      case "kitchen": return Math.round((params.cookRate() / 1.0 - 1) * 100);
+      case "shop":    return Math.round(((0.8 + 0.5 * S.lv.port) / 0.8 - 1) * 100);
+    }
+    return 0;
+  }
+
+  function drawFlowArrows() {
+    const sea = zonePx(ZONES.sea), pr = zonePx(ZONES.process),
+          ki = zonePx(ZONES.kitchen), sh = zonePx(ZONES.shop);
+    arrow(sea.x - minDim() * 0.12, sea.y + activationR() * 0.7, pr.x, pr.y - minDim() * 0.16);
+    arrow(pr.x + minDim() * 0.12, pr.y, ki.x - minDim() * 0.12, ki.y);
+    arrow(ki.x + minDim() * 0.12, ki.y, sh.x - minDim() * 0.12, sh.y);
+  }
+
   function drawSea(t) {
     const p = zonePx(ZONES.sea);
     // 漁場の輪
     ctx.beginPath();
     ctx.arc(p.x, p.y, activationR() * 0.85, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.10)";
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
     ctx.fill();
     // ブイ
-    emoji("🛟", p.x + activationR() * 0.5, p.y - activationR() * 0.2, 26);
-    // ラベル + 数量
-    label("シラス漁", p.x, p.y - activationR() * 0.75);
+    emoji("🛟", p.x + activationR() * 0.55, p.y - activationR() * 0.15, 24);
+    // 魚＆数量
     emoji("🐟", p.x, p.y, 30 + (S.lv.boat * 2));
     const txt = Math.floor(S.raw) + " / " + params.boatCap();
     badge(txt, p.x, p.y + activationR() * 0.55);
+    // ステージ見出し＋Lv/効率
+    stageHeader(ZONES.sea, p.x, p.y - activationR() * 0.78);
   }
 
-  function drawBuilding(z, ico, bar) {
+  function drawBuilding(z, bar) {
     const p = zonePx(z);
     const w = Math.max(64, minDim() * 0.2);
     const h = w * 0.7;
@@ -397,15 +457,46 @@
     ctx.fillStyle = "#c0584e";
     ctx.fill();
     // アイコン
-    emoji(ico, p.x, p.y - 2, Math.min(40, w * 0.42));
-    // 名前
-    label(z.name, p.x, p.y - h / 2 - h * 0.34 - 8);
+    emoji(z.icon, p.x, p.y - 2, Math.min(40, w * 0.42));
     // 故障表示
     if (z.id === "process" && S.machineBroken) {
       emoji("🔧", p.x + w * 0.32, p.y - h * 0.32, 22);
     }
+    // ステージ見出し（屋根の上）
+    stageHeader(z, p.x, p.y - h / 2 - h * 0.34 - 10);
     // 在庫バー
     drawBar(p.x - w / 2, p.y + h / 2 + 6, w, 8, bar.ratio, bar.color, bar.text);
+    // Lv ＋ 効率%
+    lvBadge(z.id, p.x, p.y + h / 2 + 30);
+  }
+
+  // ステージ見出し（①漁 など）
+  function stageHeader(z, x, y) {
+    ctx.font = "bold 13px sans-serif";
+    const w = ctx.measureText(z.stage + " " + z.name).width + 16;
+    roundRect(x - w / 2, y - 11, w, 22, 11);
+    ctx.fillStyle = "rgba(20,98,127,0.92)";
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(z.stage + " " + z.name, x, y);
+  }
+
+  // Lv ＋ 効率%（緑バッジ）
+  function lvBadge(id, x, y) {
+    const lv = zoneLv(id);
+    const eff = zoneEffPct(id);
+    const txt = "Lv." + lv + (eff > 0 ? "  +" + eff + "%" : "");
+    ctx.font = "bold 12px sans-serif";
+    const w = ctx.measureText(txt).width + 14;
+    roundRect(x - w / 2, y - 10, w, 20, 10);
+    ctx.fillStyle = eff > 0 ? "rgba(54,179,126,0.95)" : "rgba(120,130,140,0.9)";
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(txt, x, y);
   }
 
   function buildBarRaw() {
@@ -486,6 +577,27 @@
       ctx.fillText(text, x + w / 2, y + h + 2);
     }
   }
+  function arrow(x1, y1, x2, y2) {
+    const ang = Math.atan2(y2 - y1, x2 - x1);
+    const head = 12;
+    ctx.strokeStyle = "rgba(255,140,66,0.9)";
+    ctx.fillStyle = "rgba(255,140,66,0.9)";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2 - Math.cos(ang) * head, y2 - Math.sin(ang) * head);
+    ctx.stroke();
+    // 矢じり
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - head * Math.cos(ang - 0.5), y2 - head * Math.sin(ang - 0.5));
+    ctx.lineTo(x2 - head * Math.cos(ang + 0.5), y2 - head * Math.sin(ang + 0.5));
+    ctx.closePath();
+    ctx.fill();
+    ctx.lineCap = "butt";
+  }
+
   function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -502,6 +614,7 @@
   const el = (id) => document.getElementById(id);
   function updateHUD(zone) {
     el("hud-money").textContent = Math.floor(S.money).toLocaleString();
+    el("hud-rate").textContent = Math.round(incomeRate).toLocaleString();
     el("hud-raw").textContent = Math.floor(S.raw);
     el("hud-processed").textContent = Math.floor(S.processed);
     el("hud-dishes").textContent = Math.floor(S.dishes);
@@ -681,6 +794,8 @@
     el("game-screen").classList.remove("hidden");
     resize();
     playerInit = false;
+    lastTotalEarned = S.totalEarned;
+    incomeRate = 0; earnTimer = 0;
     paused = false;
   }
 
