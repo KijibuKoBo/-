@@ -1,0 +1,248 @@
+:root {
+  --sea: #1a6fa0;
+  --sea-deep: #0a4f6e;
+  --sand: #e9d9a8;
+  --wood: #8a5a3b;
+  --accent: #ff8c42;
+  --good: #36b37e;
+  --bad: #e8554d;
+  --ink: #20323c;
+  --panel: rgba(255, 255, 255, 0.96);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--sea-deep);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.screen { position: fixed; inset: 0; }
+.hidden { display: none !important; }
+
+/* ---------- タイトル ---------- */
+#title-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #7ec8e3 0%, var(--sea) 55%, var(--sea-deep) 100%);
+  padding: 20px;
+}
+.title-card { text-align: center; max-width: 380px; width: 100%; }
+.title-logo { font-size: 72px; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.title-card h1 {
+  color: #fff;
+  font-size: 38px;
+  margin: 6px 0 12px;
+  line-height: 1.2;
+  text-shadow: 0 3px 0 rgba(0,0,0,.18);
+}
+.title-sub { color: #eaf6fb; font-size: 15px; line-height: 1.6; margin-bottom: 26px; }
+.title-credit { color: #cfe9f3; font-size: 12px; margin-top: 22px; }
+
+.big-btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 5px 0 #cf6a26;
+  cursor: pointer;
+  transition: transform .06s;
+}
+.big-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #cf6a26; }
+.text-btn {
+  margin-top: 14px;
+  background: none;
+  border: none;
+  color: #eaf6fb;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- HUD ---------- */
+#game-screen { display: flex; flex-direction: column; background: var(--sea-deep); }
+#hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 8px 10px;
+  background: var(--sea-deep);
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+.hud-item { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.hud-item.money { color: #ffe08a; }
+.hud-ico { font-size: 16px; }
+.hud-item.day { opacity: .85; font-weight: normal; }
+
+/* ---------- キャンバス ---------- */
+#game-canvas { flex: 1; display: block; width: 100%; touch-action: none; }
+
+/* ---------- 作業バナー ---------- */
+#action-banner {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 70px;
+  background: var(--panel);
+  border-radius: 14px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  z-index: 6;
+  text-align: center;
+  max-width: 90%;
+}
+
+/* ---------- 下部バー ---------- */
+#bottom-bar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  background: var(--sea-deep);
+  z-index: 5;
+}
+.bar-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  background: #14627f;
+  border: 2px solid #2b86a8;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.bar-btn:active { background: #0d4c63; }
+
+/* ---------- モーダル ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 20;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 16px 18px 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.4);
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; }
+.modal-head h2 { margin: 4px 0 8px; font-size: 22px; }
+.close-btn {
+  background: #eee; border: none; border-radius: 50%;
+  width: 34px; height: 34px; font-size: 16px; cursor: pointer;
+}
+.modal-money { font-weight: bold; color: var(--accent); margin: 0 0 12px; }
+
+/* ショップ項目 */
+.shop-item {
+  border: 2px solid #eee;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.shop-item .si-ico { font-size: 32px; }
+.shop-item .si-body { flex: 1; }
+.shop-item .si-name { font-weight: bold; font-size: 16px; }
+.shop-item .si-lv { font-size: 12px; color: #777; }
+.shop-item .si-desc { font-size: 12px; color: #555; margin-top: 2px; }
+.buy-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background: var(--good);
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 84px;
+}
+.buy-btn:disabled { background: #bbb; cursor: not-allowed; }
+.buy-btn.maxed { background: var(--accent); }
+
+.help-body p { font-size: 14px; line-height: 1.7; margin: 8px 0; }
+
+/* イベントモーダル */
+.event-box { text-align: center; max-width: 360px; }
+.event-icon { font-size: 56px; margin-bottom: 4px; }
+#event-title { margin: 0 0 8px; font-size: 22px; }
+#event-desc { font-size: 15px; line-height: 1.6; color: #444; margin-bottom: 16px; }
+#event-actions { display: flex; flex-direction: column; gap: 8px; }
+#event-actions button {
+  padding: 13px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #fff;
+  background: var(--accent);
+}
+#event-actions button.secondary { background: #8893a0; }
+
+/* ---------- トースト ---------- */
+#toast-area {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  z-index: 8;
+  width: 92%;
+  pointer-events: none;
+}
+.toast {
+  background: rgba(32,50,60,.92);
+  color: #fff;
+  padding: 9px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  animation: toastIn .25s ease, toastOut .4s ease 2.1s forwards;
+  max-width: 100%;
+  text-align: center;
+}
+.toast.good { background: rgba(54,179,126,.96); }
+.toast.bad { background: rgba(232,85,77,.96); }
+.toast.money { background: rgba(214,158,46,.96); }
+@keyframes toastIn { from{opacity:0; transform:translateY(-12px)} to{opacity:1} }
+@keyframes toastOut { to{opacity:0; transform:translateY(-12px)} }

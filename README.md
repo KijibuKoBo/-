@@ -17,3 +17,10 @@ Gmailから自動送信するWebアプリです。
 - フロントエンド: `web/`（GitHub Pages で公開）
 - バックエンド: `apps-script/`（Google Apps Script に貼り付け）
 - デプロイ手順: [docs/deploy-apps-script.md](./docs/deploy-apps-script.md)
+
+---
+
+## 🎣 おまけ：用宗シラス漁ものがたり（ゲーム）
+
+用宗漁港を舞台にしたシラス漁の経営シミュレーションゲームを `game/` に追加しました。
+ブラウザで `game/index.html` を開くだけで遊べます。詳細は [game/README.md](./game/README.md) を参照。
