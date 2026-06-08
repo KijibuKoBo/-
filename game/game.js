@@ -120,6 +120,28 @@
   bgImg.onload = () => { bgReady = true; };
   bgImg.src = "assets/harbor-bg.png";
 
+  // シラスのイラスト素材（生＝バケツ / 加工＝パック / 料理＝丼）
+  function loadImg(src) {
+    const i = new Image();
+    i._ready = false;
+    i.onload = () => { i._ready = true; };
+    i.src = src;
+    return i;
+  }
+  const IMG = {
+    raw:  loadImg("assets/raw-shirasu.png"),
+    pack: loadImg("assets/pack-shirasu.png"),
+    bowl: loadImg("assets/shirasu-bowl.png"),
+  };
+  // 高さ指定でアスペクト維持してセンター描画。未ロード時は false
+  function drawSprite(im, cx, cy, targetH) {
+    if (!im || !im._ready) return false;
+    const r = im.width / im.height;
+    const h = targetH, w = h * r;
+    ctx.drawImage(im, cx - w / 2, cy - h / 2, w, h);
+    return true;
+  }
+
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     const r = canvas.getBoundingClientRect();
@@ -428,9 +450,11 @@
     ctx.fillStyle = "rgba(255,255,255,0.12)";
     ctx.fill();
     // ブイ
-    emoji("🛟", p.x + activationR() * 0.55, p.y - activationR() * 0.15, 24);
-    // 魚＆数量
-    emoji("🐟", p.x, p.y, 30 + (S.lv.boat * 2));
+    emoji("🛟", p.x + activationR() * 0.7, p.y - activationR() * 0.45, 22);
+    // 生シラス（バケツ）＆数量
+    if (!drawSprite(IMG.raw, p.x, p.y, activationR() * 1.15)) {
+      emoji("🐟", p.x, p.y, 30 + (S.lv.boat * 2));
+    }
     const txt = Math.floor(S.raw) + " / " + params.boatCap();
     badge(txt, p.x, p.y + activationR() * 0.55);
     // ステージ見出し＋Lv/効率
@@ -456,8 +480,13 @@
     ctx.closePath();
     ctx.fillStyle = "#c0584e";
     ctx.fill();
-    // アイコン
-    emoji(z.icon, p.x, p.y - 2, Math.min(40, w * 0.42));
+    // アイコン（加工＝パック / 調理＝丼 のイラスト、無ければ絵文字）
+    const sprite = { process: IMG.pack, kitchen: IMG.bowl }[z.id];
+    if (!drawSprite(sprite, p.x, p.y + 2, h * 0.95)) {
+      emoji(z.icon, p.x, p.y - 2, Math.min(40, w * 0.42));
+    }
+    // 販売所には商品（丼）を添える
+    if (z.id === "shop") drawSprite(IMG.bowl, p.x + w * 0.34, p.y + h * 0.12, h * 0.5);
     // 故障表示
     if (z.id === "process" && S.machineBroken) {
       emoji("🔧", p.x + w * 0.32, p.y - h * 0.32, 22);

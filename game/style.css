@@ -94,6 +94,8 @@ html, body {
 .hud-item.money { color: #ffe08a; font-size: 17px; }
 .hud-item.rate { color: #8cf0b4; }
 .hud-ico { font-size: 16px; }
+.hud-img { height: 22px; width: auto; vertical-align: middle; margin-right: 1px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.4)); }
 .hud-item.day { opacity: .85; font-weight: normal; }
 
 /* ---------- キャンバス ---------- */
