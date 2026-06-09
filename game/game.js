@@ -98,7 +98,7 @@
     raw: loadImg("assets/raw-shirasu.png"), pack: loadImg("assets/pack-shirasu.png"), bowl: loadImg("assets/shirasu-bowl.png"),
     fisher: loadImg("assets/fisher.png"),
     boatSmall: loadImg("assets/boat-small.png"), boatLarge: loadImg("assets/boat-large.png"),
-    bldProcess: loadImg("assets/bld-process.png"), bldCook: loadImg("assets/bld-warehouse.png"), bldSales: loadImg("assets/bld-sales.png"),
+    bldProcess: loadImg("assets/bld-process.png"), bldCook: loadImg("assets/bld-cook.png"), bldSales: loadImg("assets/bld-sales.png"),
     schoolSmall: loadImg("assets/school-small.png"), schoolLarge: loadImg("assets/school-large.png"),
     cust: [loadImg("assets/customer-a.png"), loadImg("assets/customer-b.png"), loadImg("assets/customer-c.png"), loadImg("assets/customer-d.png")],
   };
