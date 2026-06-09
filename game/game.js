@@ -94,9 +94,24 @@
   const bgImg = new Image(); let bgReady = false;
   bgImg.onload = () => { bgReady = true; }; bgImg.src = "assets/harbor-bg.png";
   function loadImg(src) { const i = new Image(); i._ready = false; i.onload = () => { i._ready = true; }; i.src = src; return i; }
-  const IMG = { raw: loadImg("assets/raw-shirasu.png"), pack: loadImg("assets/pack-shirasu.png"), bowl: loadImg("assets/shirasu-bowl.png") };
+  const IMG = {
+    raw: loadImg("assets/raw-shirasu.png"), pack: loadImg("assets/pack-shirasu.png"), bowl: loadImg("assets/shirasu-bowl.png"),
+    fisher: loadImg("assets/fisher.png"),
+    boatSmall: loadImg("assets/boat-small.png"), boatLarge: loadImg("assets/boat-large.png"),
+    bldProcess: loadImg("assets/bld-process.png"), bldCook: loadImg("assets/bld-warehouse.png"), bldSales: loadImg("assets/bld-sales.png"),
+    schoolSmall: loadImg("assets/school-small.png"), schoolLarge: loadImg("assets/school-large.png"),
+    cust: [loadImg("assets/customer-a.png"), loadImg("assets/customer-b.png"), loadImg("assets/customer-c.png"), loadImg("assets/customer-d.png")],
+  };
   const itemImg = (t) => ({ raw: IMG.raw, pack: IMG.pack, bowl: IMG.bowl }[t]);
   function drawSprite(im, cx, cy, th) { if (!im || !im._ready) return false; const r = im.width / im.height, h = th, w = h * r; ctx.drawImage(im, cx - w / 2, cy - h / 2, w, h); return true; }
+  // 左右反転つき描画（dir: 1=右向きそのまま / -1=左右反転）
+  function drawSpriteFlip(im, cx, cy, th, dir) {
+    if (!im || !im._ready) return false;
+    const r = im.width / im.height, h = th, w = h * r;
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(dir < 0 ? -1 : 1, 1);
+    ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore(); return true;
+  }
+  const bldImg = (id) => ({ process: IMG.bldProcess, cook: IMG.bldCook, sales: IMG.bldSales }[id]);
 
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -113,7 +128,7 @@
   const bandH = () => bgReady ? Math.min(WH * 0.16, W * (bgImg.height / bgImg.width)) : WH * 0.1;
 
   /* ---------- キャラ ---------- */
-  const player = { tx: 0.5, ty: 0.52, px: 0, py: 0, carry: 0, carryType: null };
+  const player = { tx: 0.5, ty: 0.52, px: 0, py: 0, carry: 0, carryType: null, facing: 1 };
   let playerInit = false;
   const topLimit = () => (boatUnlocked() ? bandH() + 20 : OPEN_BOTTOM * WH + 18);
 
@@ -181,7 +196,7 @@
     const txp = player.tx * W, typ = player.ty * WH;
     const dx = txp - player.px, dy = typ - player.py, dist = Math.hypot(dx, dy);
     const speed = minDim() * P.playerSpeed();
-    if (dist > 2) { const step = Math.min(dist, speed * dt); player.px += dx / dist * step; player.py += dy / dist * step; }
+    if (dist > 2) { const step = Math.min(dist, speed * dt); player.px += dx / dist * step; player.py += dy / dist * step; if (Math.abs(dx) > 3) player.facing = dx < 0 ? -1 : 1; }
     // 範囲制限（未解放なら大漁場に入れない）
     player.px = Math.max(6, Math.min(W - 6, player.px));
     player.py = Math.max(topLimit(), Math.min(WH - 6, player.py));
@@ -225,7 +240,7 @@
       if (fz.x < 8 || fz.x > W - 8) { fz.a = Math.PI - fz.a; fz.x = Math.max(8, Math.min(W - 8, fz.x)); }
       if (fz.y < bounds[0] || fz.y > bounds[1]) { fz.a = -fz.a; fz.y = Math.max(bounds[0], Math.min(bounds[1], fz.y)); }
       if (Math.random() < 0.01) fz.a += (Math.random() - 0.5);
-      const hitR = fz.big ? 32 : 24;
+      const hitR = fz.big ? minDim() * 0.09 : minDim() * 0.06;
       if (canFish && Math.hypot(player.px - fz.x, player.py - fz.y) < hitR) {
         const gain = fz.big ? 2 : 1;
         player.carryType = ITEM.raw; player.carry = Math.min(P.carryCap(), player.carry + gain);
@@ -361,19 +376,22 @@
     }
   }
   function drawFish(fz) {
-    const sc = fz.big ? 1.8 : 1.0, dir = Math.cos(fz.a) >= 0 ? 1 : -1;
-    ctx.save(); ctx.translate(fz.x, fz.y); ctx.scale(dir * sc, sc);
-    ctx.fillStyle = fz.big ? "#bfe0c8" : "#cfe8f5"; ctx.strokeStyle = fz.big ? "#5fae86" : "#6fb6d6"; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.ellipse(0, 0, 9, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-14, -5); ctx.lineTo(-14, 5); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#20323c"; ctx.beginPath(); ctx.arc(5, -1, 1.3, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
+    const dir = Math.cos(fz.a) >= 0 ? 1 : -1;
+    const im = fz.big ? IMG.schoolLarge : IMG.schoolSmall;
+    const th = fz.big ? minDim() * 0.14 : minDim() * 0.085;
+    if (!drawSpriteFlip(im, fz.x, fz.y, th, dir)) {
+      const sc = fz.big ? 1.8 : 1.0;
+      ctx.save(); ctx.translate(fz.x, fz.y); ctx.scale(dir * sc, sc);
+      ctx.fillStyle = fz.big ? "#bfe0c8" : "#cfe8f5"; ctx.strokeStyle = fz.big ? "#5fae86" : "#6fb6d6"; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.ellipse(0, 0, 9, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-14, -5); ctx.lineTo(-14, 5); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
   }
   function drawBoat() {
     const x = W * 0.5, y = (OPEN_BOTTOM + SHORE) / 2 * WH;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.font = (minDim() * 0.11) + "px sans-serif";
-    ctx.fillText(S.lv.boat >= BOAT_UNLOCK_LV ? "🚢" : "🛥️", x, y);
+    const im = boatUnlocked() ? IMG.boatLarge : IMG.boatSmall;
+    if (!drawSprite(im, x, y, minDim() * 0.3)) { ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = (minDim() * 0.11) + "px sans-serif"; ctx.fillText(boatUnlocked() ? "🚢" : "🛥️", x, y); }
   }
   function drawArrows() {
     const pr = zonePx(ZONES.process), ck = zonePx(ZONES.cook), sa = zonePx(ZONES.sales);
@@ -382,9 +400,13 @@
   }
   function drawStation(z) {
     const p = zonePx(z), w = Math.max(70, minDim() * 0.27), h = w * 0.62;
-    roundRect(p.x - w / 2, p.y - h / 2, w, h, 10); ctx.fillStyle = "#fff7e8"; ctx.fill();
-    ctx.strokeStyle = "#b58a55"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(p.x - w / 2 - 6, p.y - h / 2); ctx.lineTo(p.x, p.y - h / 2 - h * 0.32); ctx.lineTo(p.x + w / 2 + 6, p.y - h / 2); ctx.closePath(); ctx.fillStyle = "#c0584e"; ctx.fill();
+    // 建物（実イラスト。無ければ簡易ハウス）
+    const bld = bldImg(z.id);
+    if (!drawSprite(bld, p.x, p.y - h * 0.05, minDim() * 0.38)) {
+      roundRect(p.x - w / 2, p.y - h / 2, w, h, 10); ctx.fillStyle = "#fff7e8"; ctx.fill();
+      ctx.strokeStyle = "#b58a55"; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x - w / 2 - 6, p.y - h / 2); ctx.lineTo(p.x, p.y - h / 2 - h * 0.32); ctx.lineTo(p.x + w / 2 + 6, p.y - h / 2); ctx.closePath(); ctx.fillStyle = "#c0584e"; ctx.fill();
+    }
     const sk = S.stock[z.id];
     if (z.id === "sales") drawStack(itemImg(ITEM.bowl), p.x, p.y + h * 0.12, h * 0.5, sk.in, p.x - w * 0.34);
     else { drawStack(itemImg(z.output), p.x, p.y + h * 0.12, h * 0.5, sk.out, p.x - w * 0.36); if (sk.in > 0.5) badge("原料 " + Math.floor(sk.in), p.x + w * 0.18, p.y - h * 0.28, "rgba(32,50,60,0.7)", 11); }
@@ -401,25 +423,33 @@
   function drawCustomers(t) {
     const sa = zonePx(ZONES.sales);
     const baseX = sa.x, baseY = sa.y + stationR() * 1.25, gap = Math.max(24, minDim() * 0.07), cols = 3;
+    const ch = Math.max(22, minDim() * 0.085);
     for (let i = 0; i < customers.length; i++) {
       const col = i % cols, row = Math.floor(i / cols);
-      const x = baseX + (col - (cols - 1) / 2) * gap, y = baseY + row * gap * 0.85 + Math.sin(t * 0.004 + i) * 1.5;
-      ctx.fillStyle = ["#e8923a", "#5aa9d6", "#8ec06b", "#d683a8", "#b58cd6"][i % 5];
-      roundRect(x - 8, y - 2, 16, 18, 6); ctx.fill();
-      ctx.beginPath(); ctx.arc(x, y - 8, 7, 0, Math.PI * 2); ctx.fillStyle = "#ffe0bd"; ctx.fill();
+      const x = baseX + (col - (cols - 1) / 2) * gap, y = baseY + row * gap * 0.95 + Math.sin(t * 0.004 + i) * 1.5;
+      const im = IMG.cust[i % IMG.cust.length];
+      if (!drawSprite(im, x, y, ch)) {
+        ctx.fillStyle = ["#e8923a", "#5aa9d6", "#8ec06b", "#d683a8", "#b58cd6"][i % 5];
+        roundRect(x - 8, y - 2, 16, 18, 6); ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y - 8, 7, 0, Math.PI * 2); ctx.fillStyle = "#ffe0bd"; ctx.fill();
+      }
     }
   }
   function drawPlayer(t) {
-    const bob = Math.sin(t * 0.006) * 3, x = player.px, y = player.py + bob;
-    ctx.beginPath(); ctx.ellipse(player.px, player.py + 16, 15, 6, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fill();
-    ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.fillStyle = "#ff8c42"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke();
-    emoji("🎣", x, y, 20);
+    const bob = Math.sin(t * 0.006) * 2, x = player.px, y = player.py + bob;
+    const ph = Math.max(40, minDim() * 0.12); // キャラの高さ
+    // 影
+    ctx.beginPath(); ctx.ellipse(x, player.py + ph * 0.42, ph * 0.32, ph * 0.12, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.fill();
+    // 漁師（向きで左右反転）。画像が無ければ丸でフォールバック
+    if (!drawSpriteFlip(IMG.fisher, x, y, ph, player.facing)) {
+      ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.fillStyle = "#ff8c42"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke(); emoji("🎣", x, y, 20);
+    }
     // 手持ちが頭の上に積み上がる
     const cnt = Math.floor(player.carry);
     if (cnt > 0 && player.carryType) {
-      const im = itemImg(player.carryType), ih = 16, vis = Math.min(cnt, 8);
-      for (let i = 0; i < vis; i++) drawSprite(im, x + Math.sin(i * 1.7) * 3, y - 24 - i * (ih * 0.46), ih);
-      badge("×" + cnt, x + 20, y - 26, "rgba(32,50,60,0.9)", 11);
+      const im = itemImg(player.carryType), ih = ph * 0.34, vis = Math.min(cnt, 8), top = y - ph * 0.55;
+      for (let i = 0; i < vis; i++) drawSprite(im, x + Math.sin(i * 1.7) * 3, top - i * (ih * 0.42), ih);
+      badge("×" + cnt, x + ph * 0.42, top - ih * 0.3, "rgba(32,50,60,0.9)", 11);
     }
   }
   function drawScrollHint() {
