@@ -128,7 +128,7 @@
   const bandH = () => bgReady ? Math.min(WH * 0.16, W * (bgImg.height / bgImg.width)) : WH * 0.1;
 
   /* ---------- キャラ ---------- */
-  const player = { tx: 0.5, ty: 0.52, px: 0, py: 0, carry: 0, carryType: null, facing: 1 };
+  const player = { tx: 0.5, ty: 0.52, px: 0, py: 0, carry: 0, carryType: null, facing: 1, spd: 0, walk: 0, moving: false };
   let playerInit = false;
   const topLimit = () => (boatUnlocked() ? bandH() + 20 : OPEN_BOTTOM * WH + 18);
 
@@ -148,12 +148,15 @@
     while (fishOpen.length > oN) fishOpen.pop();
   }
 
-  /* ---------- 客 ---------- */
-  let customers = [];
-  function syncCustomers() {
-    const n = P.customerCount();
-    while (customers.length < n) customers.push({ t: 0.4 + Math.random() * 1.6 });
-    while (customers.length > n) customers.pop();
+  /* ---------- 客（行列・支払い・受取アニメ） ---------- */
+  let customers = [];      // {kind,state,x,y,facing,payT}
+  let flyingBowls = [];    // 店→客へ飛ぶ丼 {x0,y0,x1,y1,t}
+  let custSpawnT = 0;
+  const custH = () => Math.max(22, minDim() * 0.09);
+  // 行列の位置（slot0=カウンター前、以降は右へ並ぶ）
+  function slotPos(i) {
+    const sp = zonePx(ZONES.sales), gap = Math.max(26, minDim() * 0.085);
+    return { x: sp.x + stationR() * 0.15 + i * gap, y: sp.y + stationR() * 1.15 + i * gap * 0.12 };
   }
 
   /* ---------- 入力 ---------- */
@@ -174,6 +177,8 @@
   /* ---------- パーティクル（ワールド座標） ---------- */
   const particles = [];
   function pop(x, y, text, color) { particles.push({ x, y, text, color, life: 1, vy: -30 }); }
+  // 水面のきらめき（固定パターン）
+  const SPARKLES = Array.from({ length: 70 }, () => ({ fx: Math.random(), fy: Math.random(), ph: Math.random() * 6.28, sp: 1 + Math.random() * 2 }));
 
   /* =========================================================
      ループ
@@ -190,19 +195,29 @@
 
   function update(dt) {
     WH = worldH();
-    if (!playerInit) { player.px = player.tx * W; player.py = player.ty * WH; playerInit = true; syncFish(); }
+    if (!playerInit) { player.px = player.tx * W; player.py = player.ty * WH; playerInit = true; syncFish(); cameraY = Math.max(0, Math.min(WH - H, player.py - H * 0.5)); }
 
     // 移動
     const txp = player.tx * W, typ = player.ty * WH;
     const dx = txp - player.px, dy = typ - player.py, dist = Math.hypot(dx, dy);
-    const speed = minDim() * P.playerSpeed();
-    if (dist > 2) { const step = Math.min(dist, speed * dt); player.px += dx / dist * step; player.py += dy / dist * step; if (Math.abs(dx) > 3) player.facing = dx < 0 ? -1 : 1; }
+    const maxSpeed = minDim() * P.playerSpeed();
+    // 目標速度：目的地に近づくほど減速。現在速度をなめらかに追従（加減速）
+    const desired = dist > 2 ? Math.min(maxSpeed, dist * 4.5) : 0;
+    player.spd += (desired - player.spd) * Math.min(1, dt * 9);
+    if (dist > 0.5 && player.spd > 1) {
+      const step = Math.min(dist, player.spd * dt);
+      player.px += dx / dist * step; player.py += dy / dist * step;
+      if (Math.abs(dx) > 1.2) player.facing = dx < 0 ? -1 : 1;
+    }
+    player.moving = player.spd > maxSpeed * 0.1;
+    player.walk += dt * (player.moving ? 7 + 5 * (player.spd / maxSpeed) : 0);
     // 範囲制限（未解放なら大漁場に入れない）
     player.px = Math.max(6, Math.min(W - 6, player.px));
     player.py = Math.max(topLimit(), Math.min(WH - 6, player.py));
 
-    // カメラ（キャラ追従）
-    cameraY = Math.max(0, Math.min(WH - H, player.py - H * 0.5));
+    // カメラ（キャラ追従／なめらかに）
+    const camTarget = Math.max(0, Math.min(WH - H, player.py - H * 0.5));
+    cameraY += (camTarget - cameraY) * Math.min(1, dt * 6);
 
     // 漁
     if (fishNear.length !== P.nearFish() || fishOpen.length !== P.openFish()) syncFish();
@@ -216,7 +231,6 @@
     if (st) handleStation(st, dt);
 
     produce(dt);
-    sell(dt);
 
     if (S.fishMultTimer > 0) { S.fishMultTimer -= dt; if (S.fishMultTimer <= 0) S.fishMult = 1; }
     if (S.demandBonusTimer > 0) { S.demandBonusTimer -= dt; if (S.demandBonusTimer <= 0) S.demandBonus = 0; }
@@ -229,7 +243,7 @@
 
     for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.y += p.vy * dt; p.life -= dt * 1.1; if (p.life <= 0) particles.splice(i, 1); }
 
-    syncCustomers();
+    updateCustomers(dt);
     updateHUD(st);
     saveThrottle(dt);
   }
@@ -269,19 +283,45 @@
     const ck = S.stock.cook;
     const b = Math.min(P.cookRate() * dt, ck.in, P.cookCap() - ck.out); if (b > 0) { ck.in -= b; ck.out += b; }
   }
-  function sell(dt) {
-    const sa = S.stock.sales, interval = P.buyInterval();
+  function updateCustomers(dt) {
+    const sp = zonePx(ZONES.sales), ch = custH();
+    const want = Math.min(7, P.customerCount());
+    const active = customers.filter((c) => c.state !== "leaving").length;
+    // スポーン（右からやってくる）
+    custSpawnT -= dt;
+    if (active < want && custSpawnT <= 0) {
+      customers.push({ kind: Math.floor(Math.random() * 4), state: "incoming", x: W + 40, y: slotPos(0).y, facing: -1, payT: 0 });
+      custSpawnT = 0.5 + Math.random() * 0.7;
+    }
+    const payDur = Math.max(0.18, 0.5 - 0.05 * S.lv.sales);
+    let idx = 0;
     for (const c of customers) {
-      c.t -= dt;
-      if (c.t <= 0) {
-        if (sa.in >= 1) {
-          sa.in -= 1; const gain = P.bowlPrice(); S.money += gain; S.totalEarned += gain;
-          S.reputation = Math.min(100, S.reputation + 0.2);
-          const p = zonePx(ZONES.sales); pop(p.x + stationR() * 0.5, p.y - 6, "+" + gain, "#ffd24a");
-          c.t = interval * (0.7 + Math.random() * 0.6);
-        } else c.t = 0.4;
+      if (c.state === "leaving") {
+        c.x += (-60 - c.x) * Math.min(1, dt * 3); c.y += (sp.y + stationR() * 1.7 - c.y) * Math.min(1, dt * 3); c.facing = -1; continue;
+      }
+      const slot = slotPos(idx); idx++;
+      const ddx = slot.x - c.x, ddy = slot.y - c.y;
+      c.x += ddx * Math.min(1, dt * 4); c.y += ddy * Math.min(1, dt * 4);
+      if (Math.abs(ddx) > 1) c.facing = ddx < 0 ? -1 : 1;
+      const atSlot = Math.hypot(ddx, ddy) < 6;
+      if (idx === 1) { // 先頭＝カウンター
+        if (c.state === "incoming" && atSlot) c.state = "waiting";
+        if (c.state === "waiting" && S.stock.sales.in >= 1) { c.state = "paying"; c.payT = payDur; pop(c.x, c.y - ch * 0.7, "🪙", "#ffe08a"); }
+        else if (c.state === "paying") {
+          c.payT -= dt;
+          if (c.payT <= 0) {
+            S.stock.sales.in -= 1; const gain = P.bowlPrice(); S.money += gain; S.totalEarned += gain;
+            S.reputation = Math.min(100, S.reputation + 0.2);
+            flyingBowls.push({ x0: sp.x, y0: sp.y + stationR() * 0.5, x1: c.x, y1: c.y - ch * 0.3, t: 0 });
+            pop(sp.x + stationR() * 0.6, sp.y - 4, "+" + gain + "円", "#ffd24a");
+            c.state = "leaving";
+          }
+        }
       }
     }
+    customers = customers.filter((c) => !(c.state === "leaving" && c.x < -50));
+    for (const b of flyingBowls) b.t += dt * 2.2;
+    flyingBowls = flyingBowls.filter((b) => b.t < 1);
   }
   let saveAcc = 0;
   function saveThrottle(dt) { saveAcc += dt; if (saveAcc > 3) { saveAcc = 0; save(); } }
@@ -292,7 +332,7 @@
   function render(t) {
     ctx.clearRect(0, 0, W, H);
     WH = worldH();
-    cameraY = Math.max(0, Math.min(WH - H, player.py - H * 0.5));
+    cameraY = Math.max(0, Math.min(WH - H, cameraY));
 
     ctx.save();
     ctx.translate(0, -cameraY);
@@ -301,19 +341,22 @@
 
     // 大漁場（上）背景：濃い外洋ブルー
     let g = ctx.createLinearGradient(0, 0, 0, openB);
-    g.addColorStop(0, "#0d4f74"); g.addColorStop(1, "#0a3f5e");
+    g.addColorStop(0, "#0c4a6e"); g.addColorStop(0.5, "#0a4566"); g.addColorStop(1, "#073650");
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, openB);
     // 上部に富士山パノラマ（遠景）
     if (bgReady) ctx.drawImage(bgImg, 0, 0, W, bh);
 
-    // 通常の海（中）
+    // 通常の海（中）：深さでグラデ
     g = ctx.createLinearGradient(0, openB, 0, shore);
-    g.addColorStop(0, "#2b86a8"); g.addColorStop(1, "#11607f");
+    g.addColorStop(0, "#3a98b8"); g.addColorStop(0.5, "#1e7596"); g.addColorStop(1, "#0e5a78");
     ctx.fillStyle = g; ctx.fillRect(0, openB, W, shore - openB);
 
-    // 波
-    ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 2;
-    drawWaves(bh + 10, openB, t); drawWaves(openB, shore, t);
+    // 水面：多層の波＋きらめき
+    drawWater(bh + 6, openB, t, true);   // 大漁場
+    drawWater(openB, shore, t, false);   // 通常の海
+    // 岸の波打ち際（白い泡）
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    for (let x = 0; x <= W; x += 8) { const y = shore - 6 + Math.sin(x * 0.08 + t * 0.004) * 3; ctx.fillRect(x, y, 7, 3); }
 
     // 陸（下）
     g = ctx.createLinearGradient(0, shore, 0, WH);
@@ -339,7 +382,7 @@
     for (const fz of fishNear) drawFish(fz);
 
     // 船
-    drawBoat();
+    drawBoat(t);
 
     // 矢印（②→③→④）
     drawArrows();
@@ -367,13 +410,27 @@
     drawScrollHint();
   }
 
-  function drawWaves(y0, y1, t) {
-    for (let r = 0; r < 3; r++) {
-      const yy = y0 + (y1 - y0) * (0.25 + r * 0.3);
+  function drawWater(y0, y1, t, big) {
+    const span = y1 - y0;
+    // うねる波の筋（多層）
+    const layers = 5;
+    for (let r = 0; r < layers; r++) {
+      const yy = y0 + span * (0.12 + r * (0.76 / (layers - 1)));
+      const amp = 2 + r * 0.8, ph = r * 1.3, freq = 0.022 + r * 0.004;
       ctx.beginPath();
-      for (let x = 0; x <= W; x += 12) { const y = yy + Math.sin(x * 0.03 + t * 0.002 + r) * 3; x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
-      ctx.stroke();
+      for (let x = 0; x <= W; x += 10) { const y = yy + Math.sin(x * freq + t * 0.0018 + ph) * amp; x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+      ctx.strokeStyle = "rgba(255,255,255," + (0.05 + 0.05 * (1 - r / layers)) + ")";
+      ctx.lineWidth = 2; ctx.stroke();
     }
+    // きらめき（ちらちら光る点）
+    for (const s of SPARKLES) {
+      const x = s.fx * W, y = y0 + s.fy * span;
+      const a = Math.max(0, Math.sin(t * 0.003 * s.sp + s.ph));
+      if (a <= 0.05) continue;
+      ctx.globalAlpha = a * 0.55; ctx.fillStyle = "#eaffff";
+      const sz = big ? 2.2 : 1.6; ctx.fillRect(x, y, sz, sz);
+    }
+    ctx.globalAlpha = 1;
   }
   function drawFish(fz) {
     const dir = Math.cos(fz.a) >= 0 ? 1 : -1;
@@ -388,10 +445,20 @@
       ctx.restore();
     }
   }
-  function drawBoat() {
-    const x = W * 0.5, y = (OPEN_BOTTOM + SHORE) / 2 * WH;
+  function drawBoat(t) {
     const im = boatUnlocked() ? IMG.boatLarge : IMG.boatSmall;
-    if (!drawSprite(im, x, y, minDim() * 0.3)) { ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = (minDim() * 0.11) + "px sans-serif"; ctx.fillText(boatUnlocked() ? "🚢" : "🛥️", x, y); }
+    const baseY = (OPEN_BOTTOM + SHORE) / 2 * WH;
+    // ゆっくり左右にドリフト＋上下に揺れ＋ローリング
+    const drift = Math.sin(t * 0.00035), x = W * 0.5 + drift * (W * 0.16);
+    const y = baseY + Math.sin(t * 0.0016) * (minDim() * 0.012);
+    const rock = Math.sin(t * 0.0013) * 0.05;
+    const dir = Math.cos(t * 0.00035) >= 0 ? 1 : -1; // 進行方向に船首
+    const th = minDim() * 0.3;
+    if (im && im._ready) {
+      const r = im.width / im.height, w = th * r;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rock); ctx.scale(dir, 1);
+      ctx.drawImage(im, -w / 2, -th / 2, w, th); ctx.restore();
+    } else { ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.font = (minDim() * 0.11) + "px sans-serif"; ctx.fillText(boatUnlocked() ? "🚢" : "🛥️", x, y); }
   }
   function drawArrows() {
     const pr = zonePx(ZONES.process), ck = zonePx(ZONES.cook), sa = zonePx(ZONES.sales);
@@ -408,12 +475,19 @@
       ctx.beginPath(); ctx.moveTo(p.x - w / 2 - 6, p.y - h / 2); ctx.lineTo(p.x, p.y - h / 2 - h * 0.32); ctx.lineTo(p.x + w / 2 + 6, p.y - h / 2); ctx.closePath(); ctx.fillStyle = "#c0584e"; ctx.fill();
     }
     const sk = S.stock[z.id];
-    if (z.id === "sales") drawStack(itemImg(ITEM.bowl), p.x, p.y + h * 0.12, h * 0.5, sk.in, p.x - w * 0.34);
+    if (z.id === "sales") drawShopfront(p, h, sk.in);
     else { drawStack(itemImg(z.output), p.x, p.y + h * 0.12, h * 0.5, sk.out, p.x - w * 0.36); if (sk.in > 0.5) badge("原料 " + Math.floor(sk.in), p.x + w * 0.18, p.y - h * 0.28, "rgba(32,50,60,0.7)", 11); }
     if (z.id === "process" && S.machineBroken) emoji("🔧", p.x + w * 0.34, p.y - h * 0.3, 22);
     stageHeader(z, p.x, p.y - h / 2 - h * 0.32 - 10);
     const lv = { process: S.lv.process, cook: S.lv.cook, sales: S.lv.sales }[z.id];
     lvBadge(p.x, p.y + h / 2 + 14, "Lv." + lv);
+  }
+  // 販売所の店頭に丼を一列に陳列
+  function drawShopfront(p, h, count) {
+    const n = Math.floor(count), disp = Math.min(7, n);
+    const bw = minDim() * 0.052, cy = p.y + h * 0.34, total = disp > 0 ? (disp - 1) * bw : 0;
+    for (let i = 0; i < disp; i++) drawSprite(IMG.bowl, p.x - total / 2 + i * bw, cy, bw * 1.5);
+    if (n > 0) badge("丼 " + n, p.x, p.y + h * 0.62, "rgba(192,88,78,0.92)", 12);
   }
   function drawStack(im, cx, cy, itemH, count, baseX) {
     const n = Math.floor(count), shown = Math.min(8, n);
@@ -421,27 +495,43 @@
     if (n > 0) badge("×" + n, cx + minDim() * 0.11, cy, "rgba(32,50,60,0.85)", 13);
   }
   function drawCustomers(t) {
-    const sa = zonePx(ZONES.sales);
-    const baseX = sa.x, baseY = sa.y + stationR() * 1.25, gap = Math.max(24, minDim() * 0.07), cols = 3;
-    const ch = Math.max(22, minDim() * 0.085);
-    for (let i = 0; i < customers.length; i++) {
-      const col = i % cols, row = Math.floor(i / cols);
-      const x = baseX + (col - (cols - 1) / 2) * gap, y = baseY + row * gap * 0.95 + Math.sin(t * 0.004 + i) * 1.5;
-      const im = IMG.cust[i % IMG.cust.length];
-      if (!drawSprite(im, x, y, ch)) {
-        ctx.fillStyle = ["#e8923a", "#5aa9d6", "#8ec06b", "#d683a8", "#b58cd6"][i % 5];
-        roundRect(x - 8, y - 2, 16, 18, 6); ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y - 8, 7, 0, Math.PI * 2); ctx.fillStyle = "#ffe0bd"; ctx.fill();
+    const ch = custH();
+    // 影の上下バウンドで歩いてる感
+    for (const c of customers) {
+      const moving = c.state === "incoming" || c.state === "leaving";
+      const bob = moving ? Math.abs(Math.sin(t * 0.012 + c.x)) * ch * 0.05 : Math.sin(t * 0.004 + c.x) * 1.2;
+      const y = c.y - bob;
+      ctx.beginPath(); ctx.ellipse(c.x, c.y + ch * 0.45, ch * 0.22, ch * 0.08, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.18)"; ctx.fill();
+      const im = IMG.cust[c.kind % IMG.cust.length];
+      if (!drawSpriteFlip(im, c.x, y, ch, c.facing)) {
+        ctx.fillStyle = ["#e8923a", "#5aa9d6", "#8ec06b", "#d683a8"][c.kind % 4];
+        roundRect(c.x - 8, y - 2, 16, 18, 6); ctx.fill(); ctx.beginPath(); ctx.arc(c.x, y - 8, 7, 0, Math.PI * 2); ctx.fillStyle = "#ffe0bd"; ctx.fill();
       }
+      if (c.state === "paying") emoji("💰", c.x + ch * 0.4, y - ch * 0.5, ch * 0.4);
+    }
+    // 店→客へ飛ぶ丼（受け取り）
+    for (const b of flyingBowls) {
+      const e = b.t, x = b.x0 + (b.x1 - b.x0) * e, y = b.y0 + (b.y1 - b.y0) * e - Math.sin(e * Math.PI) * (minDim() * 0.08);
+      drawSprite(IMG.bowl, x, y, ch * 0.5);
     }
   }
   function drawPlayer(t) {
-    const bob = Math.sin(t * 0.006) * 2, x = player.px, y = player.py + bob;
     const ph = Math.max(40, minDim() * 0.12); // キャラの高さ
-    // 影
-    ctx.beginPath(); ctx.ellipse(x, player.py + ph * 0.42, ph * 0.32, ph * 0.12, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.fill();
-    // 漁師（向きで左右反転）。画像が無ければ丸でフォールバック
-    if (!drawSpriteFlip(IMG.fisher, x, y, ph, player.facing)) {
+    const x = player.px;
+    // 歩行アニメ：歩くと上下バウンド＋左右に小さく傾く（ワドル）。静止時はゆっくり呼吸
+    const bob = player.moving ? Math.abs(Math.sin(player.walk)) * ph * 0.07 : Math.sin(t * 0.005) * ph * 0.015;
+    const tilt = player.moving ? Math.sin(player.walk) * 0.07 : 0;
+    const squash = player.moving ? 1 + Math.cos(player.walk * 2) * 0.04 : 1;
+    const y = player.py - bob;
+    // 影（歩くと少し縮む）
+    const shc = player.moving ? 0.85 - Math.abs(Math.sin(player.walk)) * 0.15 : 1;
+    ctx.beginPath(); ctx.ellipse(x, player.py + ph * 0.42, ph * 0.3 * shc, ph * 0.11 * shc, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.fill();
+    // 漁師（向きで反転＋傾き＋伸縮）
+    if (IMG.fisher && IMG.fisher._ready) {
+      const r = IMG.fisher.width / IMG.fisher.height, w = ph * r;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.scale((player.facing < 0 ? -1 : 1), squash);
+      ctx.drawImage(IMG.fisher, -w / 2, -ph / 2, w, ph); ctx.restore();
+    } else {
       ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.fillStyle = "#ff8c42"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke(); emoji("🎣", x, y, 20);
     }
     // 手持ちが頭の上に積み上がる
