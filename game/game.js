@@ -97,6 +97,9 @@
   const IMG = {
     raw: loadImg("assets/raw-shirasu.png"), pack: loadImg("assets/pack-shirasu.png"), bowl: loadImg("assets/shirasu-bowl.png"),
     fisher: loadImg("assets/fisher.png"),
+    walkSide: [loadImg("assets/walk-side-0.png"), loadImg("assets/walk-side-1.png"), loadImg("assets/walk-side-2.png"), loadImg("assets/walk-side-3.png")],
+    walkFront: [loadImg("assets/walk-front-0.png"), loadImg("assets/walk-front-1.png"), loadImg("assets/walk-front-2.png"), loadImg("assets/walk-front-3.png")],
+    walkBack: [loadImg("assets/walk-back-0.png"), loadImg("assets/walk-back-1.png"), loadImg("assets/walk-back-2.png"), loadImg("assets/walk-back-3.png")],
     boatSmall: loadImg("assets/boat-small.png"), boatLarge: loadImg("assets/boat-large.png"),
     bldProcess: loadImg("assets/bld-process.png"), bldCook: loadImg("assets/bld-cook.png"), bldSales: loadImg("assets/bld-sales.png"),
     schoolSmall: loadImg("assets/school-small.png"), schoolLarge: loadImg("assets/school-large.png"),
@@ -128,7 +131,7 @@
   const bandH = () => bgReady ? Math.min(WH * 0.16, W * (bgImg.height / bgImg.width)) : WH * 0.1;
 
   /* ---------- キャラ ---------- */
-  const player = { tx: 0.5, ty: 0.52, px: 0, py: 0, carry: 0, carryType: null, facing: 1, spd: 0, walk: 0, moving: false };
+  const player = { tx: 0.5, ty: 0.52, px: 0, py: 0, carry: 0, carryType: null, facing: 1, spd: 0, walk: 0, moving: false, mvx: 0, mvy: 1, animT: 0 };
   let playerInit = false;
   const topLimit = () => (boatUnlocked() ? bandH() + 20 : OPEN_BOTTOM * WH + 18);
 
@@ -207,10 +210,12 @@
     if (dist > 0.5 && player.spd > 1) {
       const step = Math.min(dist, player.spd * dt);
       player.px += dx / dist * step; player.py += dy / dist * step;
+      player.mvx = dx / dist; player.mvy = dy / dist;
       if (Math.abs(dx) > 1.2) player.facing = dx < 0 ? -1 : 1;
     }
     player.moving = player.spd > maxSpeed * 0.1;
     player.walk += dt * (player.moving ? 7 + 5 * (player.spd / maxSpeed) : 0);
+    if (player.moving) player.animT += dt; else player.animT = 0;
     // 範囲制限（未解放なら大漁場に入れない）
     player.px = Math.max(6, Math.min(W - 6, player.px));
     player.py = Math.max(topLimit(), Math.min(WH - 6, player.py));
@@ -516,23 +521,24 @@
     }
   }
   function drawPlayer(t) {
-    const ph = Math.max(40, minDim() * 0.12); // キャラの高さ
+    const ph = Math.max(44, minDim() * 0.13); // キャラの高さ
     const x = player.px;
-    // 歩行アニメ：歩くと上下バウンド＋左右に小さく傾く（ワドル）。静止時はゆっくり呼吸
-    const bob = player.moving ? Math.abs(Math.sin(player.walk)) * ph * 0.07 : Math.sin(t * 0.005) * ph * 0.015;
-    const tilt = player.moving ? Math.sin(player.walk) * 0.07 : 0;
-    const squash = player.moving ? 1 + Math.cos(player.walk * 2) * 0.04 : 1;
+    const bob = player.moving ? Math.abs(Math.sin(player.walk)) * ph * 0.04 : Math.sin(t * 0.005) * ph * 0.012;
     const y = player.py - bob;
-    // 影（歩くと少し縮む）
-    const shc = player.moving ? 0.85 - Math.abs(Math.sin(player.walk)) * 0.15 : 1;
-    ctx.beginPath(); ctx.ellipse(x, player.py + ph * 0.42, ph * 0.3 * shc, ph * 0.11 * shc, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.fill();
-    // 漁師（向きで反転＋傾き＋伸縮）
-    if (IMG.fisher && IMG.fisher._ready) {
-      const r = IMG.fisher.width / IMG.fisher.height, w = ph * r;
-      ctx.save(); ctx.translate(x, y); ctx.rotate(tilt); ctx.scale((player.facing < 0 ? -1 : 1), squash);
-      ctx.drawImage(IMG.fisher, -w / 2, -ph / 2, w, ph); ctx.restore();
-    } else {
-      ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.fillStyle = "#ff8c42"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke(); emoji("🎣", x, y, 20);
+    // 影
+    ctx.beginPath(); ctx.ellipse(x, player.py + ph * 0.45, ph * 0.28, ph * 0.1, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(0,0,0,0.22)"; ctx.fill();
+    // 方向別の歩行コマを選ぶ（縦移動=前/後、横移動=左右反転）
+    let frames = IMG.walkFront, flip = false;
+    if (player.moving) {
+      if (Math.abs(player.mvy) >= Math.abs(player.mvx)) frames = player.mvy < 0 ? IMG.walkBack : IMG.walkFront;
+      else { frames = IMG.walkSide; flip = player.mvx > 0; }
+    } else { flip = player.facing > 0 && false; }
+    const fi = player.moving ? Math.floor(player.animT * 8) % 4 : 0;
+    const fr = frames && frames[fi];
+    if (!drawSpriteFlip(fr, x, y, ph, flip ? -1 : 1)) {
+      if (!drawSpriteFlip(IMG.fisher, x, y, ph, player.facing)) {
+        ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.fillStyle = "#ff8c42"; ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.stroke(); emoji("🎣", x, y, 20);
+      }
     }
     // 手持ちが頭の上に積み上がる
     const cnt = Math.floor(player.carry);
