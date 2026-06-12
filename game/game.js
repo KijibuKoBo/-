@@ -680,4 +680,5 @@
 
   resize();
   requestAnimationFrame(loop);
+  window.__gameBooted = true;
 })();

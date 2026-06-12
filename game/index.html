@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0a4f6e" />
   <title>用宗シラス漁ものがたり</title>
+  <!-- 起動診断：エラーやスクリプト未実行を画面に表示する -->
+  <script>
+  (function(){
+    function banner(msg,color){
+      var d=document.getElementById('boot-diag');
+      if(!d){ d=document.createElement('div'); d.id='boot-diag';
+        d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99999;background:'+(color||'#b00020')+';color:#fff;font:12px/1.5 sans-serif;padding:10px;white-space:pre-wrap;';
+        (document.body||document.documentElement).appendChild(d);
+      }
+      d.textContent=msg;
+    }
+    window.__bootBanner=banner;
+    window.addEventListener('error',function(e){
+      banner('⚠ エラー: '+(e.message||e.error||'')+'\n('+String(e.filename||'').slice(-30)+' 行'+e.lineno+')');
+    });
+    window.addEventListener('load',function(){
+      setTimeout(function(){
+        if(!window.__gameBooted) banner('⚠ スクリプトが起動しませんでした（読み込み/実行に失敗の可能性）。この文字が出たら教えてください。','#a66000');
+      },2500);
+    });
+  })();
+  </script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
