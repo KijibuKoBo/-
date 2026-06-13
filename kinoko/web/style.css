@@ -365,3 +365,82 @@ body.book-mode .card__entry-extra { display: block; margin-top: 12px; font-size:
   .card { display: grid; grid-template-columns: 200px 1fr; border: 1px solid #ccc; margin: 0 0 16px; page-break-inside: avoid; }
   .card__entry-extra { display: block; }
 }
+
+/* =========================================================
+   管理ページ（admin.html）
+   ========================================================= */
+body.admin-page { background: var(--paper); }
+.admin { max-width: 920px; margin: 0 auto; padding: 110px clamp(18px, 5vw, 40px) 80px; }
+.admin .section-head { margin-bottom: 26px; }
+
+.adm-gear {
+  font-family: var(--serif); font-size: 0.86rem; padding: 8px 16px;
+  border: 1px solid var(--moss); background: transparent; color: var(--moss);
+  border-radius: 999px; cursor: pointer;
+}
+
+.adm-panel {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: clamp(20px, 4vw, 32px); margin-bottom: 24px; box-shadow: var(--shadow);
+}
+.adm-h2 { font-family: var(--serif); font-size: 1.15rem; color: var(--moss); margin: 0 0 14px; }
+.adm-note { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.8; margin: 0 0 18px; }
+.adm-note a { color: var(--gold); text-decoration: underline; }
+
+.adm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 20px; }
+.adm-field { display: flex; flex-direction: column; gap: 6px; }
+.adm-field > span { font-family: var(--serif); font-size: 0.84rem; color: var(--moss); font-weight: 600; }
+.adm-field.adm-wide { grid-column: 1 / -1; }
+.adm-req > span::after { content: " *"; color: var(--rust); }
+.adm-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+.adm-input {
+  font-family: var(--sans); font-size: 0.95rem; color: var(--ink);
+  padding: 11px 13px; border: 1px solid var(--line); border-radius: 8px; background: #fff; width: 100%;
+}
+.adm-input:focus { outline: 2px solid var(--leaf); outline-offset: 1px; }
+textarea.adm-input { resize: vertical; line-height: 1.7; }
+
+.adm-editbar { display: flex; gap: 16px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.adm-field--inline { flex: 1 1 280px; }
+
+.adm-photo { margin-top: 22px; display: grid; grid-template-columns: 1fr 200px; gap: 20px; align-items: end; }
+.adm-photo-preview { width: 200px; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.adm-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.adm-photo-preview .ph { width: 100%; height: 100%; border-radius: 0; }
+
+.adm-actions { display: flex; gap: 14px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.adm-actions--main { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
+
+.btn-primary {
+  font-family: var(--serif); letter-spacing: 0.08em; font-size: 0.96rem;
+  padding: 14px 34px; border: none; border-radius: 999px; background: var(--moss); color: var(--paper);
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-primary:hover { background: var(--forest-2); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-publish { background: var(--gold); color: #2a210e; font-weight: 700; }
+.btn-publish:hover { background: #c9a84e; }
+.btn-sm { padding: 9px 18px; font-size: 0.84rem; }
+
+.adm-progress { margin-top: 16px; font-size: 0.9rem; color: var(--moss); text-align: right; }
+.adm-status { font-size: 0.86rem; margin: 12px 0 0; min-height: 1.2em; }
+.adm-status--big { font-size: 0.98rem; text-align: center; padding: 10px; }
+.adm-status.is-ok { color: var(--edible); }
+.adm-status.is-err { color: var(--poison); }
+
+/* PINロック */
+.lock { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: var(--forest); padding: 24px; }
+.lock__card { background: var(--card); border-radius: 16px; padding: 40px 34px; text-align: center; max-width: 360px; width: 100%; box-shadow: var(--shadow); }
+.lock__title { font-family: var(--serif); font-size: 1.5rem; margin: 0 0 8px; }
+.lock__desc { color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 20px; }
+.lock__card .adm-input { margin-bottom: 16px; text-align: center; }
+.lock__card .btn-primary { width: 100%; }
+.lock__err { color: var(--poison); font-size: 0.85rem; margin: 12px 0 0; }
+
+@media (max-width: 640px) {
+  .adm-grid { grid-template-columns: 1fr; }
+  .adm-row3 { grid-template-columns: 1fr; }
+  .adm-photo { grid-template-columns: 1fr; }
+  .adm-photo-preview { width: 100%; max-width: 240px; }
+}

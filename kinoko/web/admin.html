@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>記録の追加・編集 ｜ 管理ページ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="admin-page">
+
+  <!-- ===== PINロック（任意） ===== -->
+  <div class="lock" id="lock" hidden>
+    <div class="lock__card">
+      <h1 class="lock__title">🍄 管理ページ</h1>
+      <p class="lock__desc">合言葉を入力してください</p>
+      <input type="password" id="pinInput" class="adm-input" placeholder="合言葉" autocomplete="off" />
+      <button class="btn-primary" id="pinBtn" type="button">開く</button>
+      <p class="lock__err" id="pinErr" hidden>合言葉が違います</p>
+    </div>
+  </div>
+
+  <header class="topbar topbar--solid">
+    <a class="topbar__brand" href="index.html">
+      <span class="topbar__brand-sub">石原巖の</span>
+      <span class="topbar__brand-main">キノコ採集記録</span>
+    </a>
+    <button class="adm-gear" id="gearBtn" type="button" aria-label="設定">⚙ 設定</button>
+  </header>
+
+  <main class="admin" id="adminMain" hidden>
+    <div class="section-head section-head--center">
+      <span class="section-head__en">EDITOR</span>
+      <h1 class="section-head__ja">記録の追加・編集</h1>
+      <p class="section-head__desc">入力して「公開」を押すと、HPに反映されます（数分で表示）。</p>
+    </div>
+
+    <!-- ===== 設定パネル ===== -->
+    <section class="adm-panel" id="settingsPanel" hidden>
+      <h2 class="adm-h2">⚙ 公開先の設定</h2>
+      <p class="adm-note">
+        GitHubトークンは、この端末のブラウザだけに保存されます。<br />
+        <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">Fine-grained トークン</a>
+        を発行し、対象リポジトリの <b>Contents（読み書き）</b> 権限を付けてください。
+      </p>
+      <label class="adm-field"><span>GitHub トークン</span>
+        <input type="password" id="cfgToken" class="adm-input" placeholder="github_pat_..." autocomplete="off" />
+      </label>
+      <div class="adm-row3">
+        <label class="adm-field"><span>オーナー</span><input type="text" id="cfgOwner" class="adm-input" /></label>
+        <label class="adm-field"><span>リポジトリ</span><input type="text" id="cfgRepo" class="adm-input" /></label>
+        <label class="adm-field"><span>ブランチ</span><input type="text" id="cfgBranch" class="adm-input" /></label>
+      </div>
+      <label class="adm-field"><span>合言葉（任意・この端末のロック用）</span>
+        <input type="text" id="cfgPin" class="adm-input" placeholder="空欄ならロックなし" autocomplete="off" />
+      </label>
+      <div class="adm-actions">
+        <button class="btn-outline" id="testBtn" type="button">接続テスト</button>
+        <button class="btn-primary" id="saveCfgBtn" type="button">設定を保存</button>
+      </div>
+      <p class="adm-status" id="cfgStatus"></p>
+    </section>
+
+    <!-- ===== 入力フォーム ===== -->
+    <section class="adm-panel">
+      <div class="adm-editbar">
+        <label class="adm-field adm-field--inline"><span>編集する記録</span>
+          <select id="editSelect" class="adm-input">
+            <option value="">＋ 新しいキノコを追加</option>
+          </select>
+        </label>
+        <button class="btn-outline btn-sm" id="resetBtn" type="button">入力をクリア</button>
+      </div>
+
+      <div class="adm-grid">
+        <label class="adm-field adm-req"><span>和名</span><input type="text" id="f_wamei" class="adm-input" placeholder="ナメコ" /></label>
+        <label class="adm-field"><span>よみがな</span><input type="text" id="f_kana" class="adm-input" placeholder="なめこ" /></label>
+        <label class="adm-field"><span>学名</span><input type="text" id="f_gakumei" class="adm-input" placeholder="Pholiota microspora" /></label>
+        <label class="adm-field"><span>科</span><input type="text" id="f_family" class="adm-input" placeholder="モエギタケ科" /></label>
+        <label class="adm-field adm-req"><span>食毒</span>
+          <select id="f_edibility" class="adm-input">
+            <option value="食用">食用</option>
+            <option value="毒">毒</option>
+            <option value="食不適">食不適</option>
+          </select>
+        </label>
+        <label class="adm-field adm-req"><span>採集日</span><input type="date" id="f_date" class="adm-input" /></label>
+        <label class="adm-field"><span>採集地</span><input type="text" id="f_area" class="adm-input" placeholder="東山 ブナ帯" /></label>
+        <label class="adm-field"><span>標高（m）</span><input type="number" id="f_elevation" class="adm-input" placeholder="540" /></label>
+        <label class="adm-field"><span>季節</span><input type="text" id="f_season" class="adm-input" placeholder="秋 / 晩秋 / 冬" /></label>
+        <label class="adm-field"><span>天候・気温</span><input type="text" id="f_weather" class="adm-input" placeholder="雨上がり・12℃" /></label>
+        <label class="adm-field adm-wide"><span>発生環境</span><input type="text" id="f_habitat" class="adm-input" placeholder="ブナの倒木・立ち枯れ" /></label>
+        <label class="adm-field"><span>共生・宿主</span><input type="text" id="f_host" class="adm-input" placeholder="ブナ" /></label>
+        <label class="adm-field"><span>採集量</span><input type="text" id="f_quantity" class="adm-input" placeholder="ザル一杯" /></label>
+        <label class="adm-field"><span>別名（カンマ区切り）</span><input type="text" id="f_aka" class="adm-input" placeholder="ナメラッコ, 〇〇" /></label>
+        <label class="adm-field"><span>似たキノコ（カンマ区切り）</span><input type="text" id="f_lookalikes" class="adm-input" placeholder="ツキヨタケ" /></label>
+        <label class="adm-field"><span>おすすめ度（0〜5）</span><input type="number" id="f_rating" class="adm-input" min="0" max="5" placeholder="5" /></label>
+        <label class="adm-field adm-wide"><span>味・食べ方</span><input type="text" id="f_taste" class="adm-input" placeholder="味噌汁・なめこおろし" /></label>
+        <label class="adm-field adm-wide"><span>覚え書き</span><textarea id="f_notes" class="adm-input" rows="2"></textarea></label>
+        <label class="adm-field adm-wide"><span>注意（似た毒キノコなど）</span><textarea id="f_caution" class="adm-input" rows="2"></textarea></label>
+      </div>
+
+      <div class="adm-photo">
+        <label class="adm-field"><span>写真（スマホのカメラ可）</span>
+          <input type="file" id="f_photo" class="adm-input" accept="image/*" capture="environment" />
+        </label>
+        <div class="adm-photo-preview" id="photoPreview">
+          <div class="ph" data-label="写真未選択"></div>
+        </div>
+      </div>
+
+      <div class="adm-actions adm-actions--main">
+        <button class="btn-outline" id="previewBtn" type="button">プレビュー</button>
+        <button class="btn-primary btn-publish" id="publishBtn" type="button">🍄 公開する</button>
+      </div>
+      <div class="adm-progress" id="progress" hidden></div>
+      <p class="adm-status adm-status--big" id="publishStatus"></p>
+    </section>
+  </main>
+
+  <!-- プレビュー用モーダル（閲覧画面と同じ見た目） -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <article class="modal__card" role="dialog" aria-modal="true">
+      <button class="modal__close" data-close aria-label="閉じる">×</button>
+      <div class="modal__body" id="modalBody"></div>
+    </article>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

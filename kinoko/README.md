@@ -29,11 +29,17 @@
 - 📖 **詳細表示**：採集日／場所／標高／発生環境／共生樹／味・食べ方／覚え書き／似た毒きのこへの注意
 - 📚 **図鑑モード**：1種1ページのレイアウトに切替（→ そのまま印刷・PDF化＝書籍化の下地）
 
+**管理ページ `admin.html`（記録の追加・編集）**
+- 📝 フォームに入力 → 📷 スマホでその場撮影 → 🍄 **「公開」ボタン**でHPに反映
+- GitHub に直接保存するので、サーバー不要・数分で反映・写真もデータも全部リポジトリに残る
+- 使い方は [`docs/admin-guide.md`](docs/admin-guide.md)（最初に1回だけ GitHub トークンの登録が必要）
+
 データは [`web/data/records.json`](web/data/records.json)（きのこ）と
 [`web/data/columns.json`](web/data/columns.json)（コラム）に入っています。
 いまはサンプル（ナメコ・マイタケ・ムキタケ 等）なので、
 **石原巖さんの実際のノート・写真に差し替え**ていきます。
-写真は [`web/data/photos/`](web/data/photos/) に置くと自動で反映されます。
+写真は [`web/data/photos/`](web/data/photos/) に置くと自動で反映されます
+（管理ページから追加すれば自動でここに入ります）。
 
 ## 🚀 ローカルで見る
 
@@ -68,8 +74,10 @@ kinoko/
 └── web/                   … フロントエンド（GitHub Pages 公開対象）
     ├── index.html         … トップページ（ヒーロー/ABOUT/GALLERY/COLUMN）
     ├── zukan.html         … 図鑑ページ（全記録・検索・絞り込み・図鑑モード）
+    ├── admin.html         … 管理ページ（記録の追加・編集→GitHubへ公開）
     ├── style.css
     ├── app.js
+    ├── admin.js
     └── data/
         ├── records.json   … きのこ採集記録（ここを育てていく）
         ├── columns.json   … コラム
