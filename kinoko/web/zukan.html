@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>キノコ図鑑 ｜ 石原巖のキノコ採集記録</title>
+  <meta name="description" content="石原巖が長岡の山で採集したキノコの全記録。検索・食毒での絞り込み・図鑑モードに対応。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="zukan-page">
+
+  <!-- ===== トップバー ===== -->
+  <header class="topbar topbar--solid">
+    <a class="topbar__brand" href="index.html">
+      <span class="topbar__brand-sub">石原巖の</span>
+      <span class="topbar__brand-main">キノコ採集記録</span>
+    </a>
+    <a class="topbar__back" href="index.html">← ホームへ</a>
+  </header>
+
+  <main class="zukan">
+    <div class="section-head section-head--center">
+      <span class="section-head__en">ZUKAN</span>
+      <h1 class="section-head__ja">キノコの全記録</h1>
+      <p class="section-head__desc">長岡の山で出会ったキノコたち。検索や食毒で絞り込み、図鑑モードで一覧できます。</p>
+    </div>
+
+    <section class="stats" id="stats" aria-label="記録の概要"></section>
+
+    <nav class="controls" aria-label="絞り込み">
+      <div class="controls__row">
+        <div class="search">
+          <input type="search" id="search" placeholder="和名・学名・場所・環境で検索…" aria-label="検索" />
+        </div>
+        <div class="controls__right">
+          <label class="sort">
+            並び順
+            <select id="sort" aria-label="並び順">
+              <option value="date-desc">採集日が新しい順</option>
+              <option value="date-asc">採集日が古い順</option>
+              <option value="name">和名（五十音）</option>
+              <option value="rating">おすすめ度</option>
+            </select>
+          </label>
+          <button class="mode-toggle" id="modeToggle" type="button" aria-pressed="false">図鑑モード</button>
+        </div>
+      </div>
+      <div class="chips" id="edibilityFilter" role="group" aria-label="食毒で絞り込み"></div>
+    </nav>
+
+    <div class="gallery-grid gallery-grid--all" id="gallery" aria-live="polite"></div>
+    <p class="empty" id="empty" hidden>該当する記録がありません。</p>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__mark">
+      <span class="footer__mark-glyph">𓂃 🍄 𓂃</span>
+      <p class="footer__brand"><span>石原巖の</span>キノコ採集記録</p>
+      <p class="footer__tagline">長岡の森が育む、小さな命の記録。</p>
+    </div>
+    <nav class="footer__nav" aria-label="フッターナビ">
+      <a href="index.html#about">ABOUT</a>
+      <a href="index.html#gallery">GALLERY</a>
+      <a href="index.html#column">COLUMN</a>
+      <a href="index.html">HOME</a>
+    </nav>
+    <p class="footer__copy">© <span id="year"></span> 石原 巖 ｜ 長岡キノコ採集記録</p>
+  </footer>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <article class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal__close" data-close aria-label="閉じる">×</button>
+      <div class="modal__body" id="modalBody"></div>
+    </article>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
