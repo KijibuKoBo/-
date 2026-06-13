@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>長岡きのこ採集記 ｜ 石原 巖</title>
+  <meta name="description" content="新潟県長岡市の山を約20年歩いて記録した、きのこ採集の図鑑アーカイブ。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===== ヒーロー ===== -->
+  <header class="hero">
+    <div class="hero__inner">
+      <p class="hero__eyebrow">新潟県 長岡市 ｜ 山のきのこ採集アーカイブ</p>
+      <h1 class="hero__title">長岡きのこ採集記</h1>
+      <p class="hero__author">石原 巖 ｜ ISHIHARA Iwao</p>
+      <p class="hero__lead">
+        雪国・長岡の山を約20年歩いて出会った、きのこたちの記録。<br />
+        採集日・場所・環境・食毒・覚え書きを一枚の図鑑として残します。
+      </p>
+    </div>
+    <div class="hero__scroll" aria-hidden="true">▼</div>
+  </header>
+
+  <!-- ===== 統計 ===== -->
+  <section class="stats" id="stats" aria-label="記録の概要"></section>
+
+  <!-- ===== コントロール ===== -->
+  <nav class="controls" aria-label="絞り込み">
+    <div class="controls__row">
+      <div class="search">
+        <input type="search" id="search" placeholder="和名・学名・場所・環境で検索…" aria-label="検索" />
+      </div>
+      <div class="controls__right">
+        <label class="sort">
+          並び順
+          <select id="sort" aria-label="並び順">
+            <option value="date-desc">採集日が新しい順</option>
+            <option value="date-asc">採集日が古い順</option>
+            <option value="name">和名（五十音）</option>
+            <option value="rating">おすすめ度</option>
+          </select>
+        </label>
+        <button class="mode-toggle" id="modeToggle" type="button" aria-pressed="false">図鑑モード</button>
+      </div>
+    </div>
+    <div class="chips" id="edibilityFilter" role="group" aria-label="食毒で絞り込み"></div>
+  </nav>
+
+  <!-- ===== ギャラリー ===== -->
+  <main class="gallery" id="gallery" aria-live="polite"></main>
+  <p class="empty" id="empty" hidden>該当する記録がありません。</p>
+
+  <!-- ===== 詳細モーダル ===== -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <article class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal__close" data-close aria-label="閉じる">×</button>
+      <div class="modal__body" id="modalBody"></div>
+    </article>
+  </div>
+
+  <!-- ===== フッター ===== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <p class="footer__brand">長岡きのこ採集記</p>
+      <p class="footer__note">
+        記録・写真：石原 巖 ｜ 採集場所の一部は保全のため非公開としています。<br />
+        食毒の判断は最終的にご自身の責任で。少しでも不安なきのこは食べないでください。
+      </p>
+      <p class="footer__roadmap">アプリ → ホームページ公開 → 書籍化 へ続くアーカイブ計画</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

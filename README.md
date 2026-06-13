@@ -17,3 +17,8 @@ Gmailから自動送信するWebアプリです。
 - フロントエンド: `web/`（GitHub Pages で公開）
 - バックエンド: `apps-script/`（Google Apps Script に貼り付け）
 - デプロイ手順: [docs/deploy-apps-script.md](./docs/deploy-apps-script.md)
+
+## 関連プロジェクト
+
+- 🍄 [長岡きのこ採集記](./kinoko/) … 石原 巖のきのこ採集記録を図鑑アプリ化し、
+  ホームページ公開・書籍化までつなぐプロジェクト
