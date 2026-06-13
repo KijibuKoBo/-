@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>石原巖のキノコ採集記録 ｜ 長岡の森が育む、小さな命の記録。</title>
+  <meta name="description" content="新潟県長岡市の山を約20年歩いて記録した、石原巖のキノコ採集アーカイブ。長岡の森が育む、小さな命の記録。" />
+  <meta property="og:title" content="石原巖のキノコ採集記録" />
+  <meta property="og:description" content="長岡の森が育む、小さな命の記録。" />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="home">
+
+  <!-- ===== 左サイドレール（PC） ===== -->
+  <aside class="rail">
+    <a class="rail__brand" href="#top">
+      <span class="rail__brand-sub">石原巖の</span>
+      <span class="rail__brand-main">キノコ採集記録</span>
+    </a>
+    <nav class="rail__nav" aria-label="メインナビ">
+      <a href="#about">ABOUT</a>
+      <a href="#gallery">GALLERY</a>
+      <a href="#column">COLUMN</a>
+      <a href="zukan.html">ZUKAN</a>
+    </nav>
+    <div class="rail__since">since 2006</div>
+  </aside>
+
+  <!-- ===== トップバー（スマホ） ===== -->
+  <header class="topbar">
+    <a class="topbar__brand" href="#top">
+      <span class="topbar__brand-sub">石原巖の</span>
+      <span class="topbar__brand-main">キノコ採集記録</span>
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="メニュー" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- ===== ドロワー（スマホ） ===== -->
+  <nav class="drawer" id="drawer" aria-label="メニュー">
+    <a href="#about">ABOUT</a>
+    <a href="#gallery">GALLERY</a>
+    <a href="#column">COLUMN</a>
+    <a href="zukan.html">ZUKAN ― 図鑑</a>
+  </nav>
+
+  <main id="top">
+
+    <!-- ===== ヒーロー ===== -->
+    <section class="hero" id="hero">
+      <div class="hero__overlay"></div>
+      <div class="hero__inner">
+        <p class="hero__vlabel">長岡 ｜ 山のキノコ採集アーカイブ</p>
+        <h1 class="hero__title">長岡の森が育む、<br />小さな命の記録。</h1>
+        <p class="hero__lead">
+          新潟県・長岡市の山を、約20年。<br />
+          石原巖が歩いて出会ったキノコたちの、<br />
+          採れた日・場所・環境・覚え書きを一枚ずつ。<br />
+          雪国の森が育てた、小さな命の図鑑です。
+        </p>
+        <a class="hero__cta" href="#gallery">記録を見る <span>→</span></a>
+      </div>
+      <div class="hero__scroll" aria-hidden="true">SCROLL</div>
+    </section>
+
+    <!-- ===== ABOUT ===== -->
+    <section class="about" id="about">
+      <div class="section-head">
+        <span class="section-head__en">ABOUT</span>
+        <h2 class="section-head__ja">石原 巖 について</h2>
+      </div>
+      <div class="about__grid">
+        <div class="about__text">
+          <p>
+            新潟県長岡市に生まれ、雪深いこの土地の山を二十年近く歩き続けてきました。
+            春の雪解けから晩秋の初雪前まで、季節ごとに姿を変える森のキノコを訪ね、
+            採れた日と場所、天気、生えていた木、味や食べ方を一つひとつ書き留めています。
+          </p>
+          <p>
+            キノコは同じ木に毎年のように顔を出すもの。
+            足が覚えた「シロ」を巡り、似た毒キノコを見分けながら、
+            山の恵みと危うさの両方を記録してきました。
+            このサイトは、その二十年分の覚え書きをまとめたものです。
+          </p>
+          <dl class="about__facts">
+            <div><dt>採集地</dt><dd>新潟県 長岡市 周辺の山</dd></div>
+            <div><dt>記録期間</dt><dd>約20年（since 2006）</dd></div>
+            <div><dt>記録数</dt><dd id="aboutCount">―</dd></div>
+          </dl>
+        </div>
+        <figure class="about__photo">
+          <div class="ph ph--portrait" data-photo="data/photos/about-photo.jpg" data-label="石原 巖"></div>
+          <figcaption>森に分け入り、キノコを探す石原 巖</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===== GALLERY ===== -->
+    <section class="gallery-sec" id="gallery">
+      <div class="section-head">
+        <span class="section-head__en">GALLERY</span>
+        <h2 class="section-head__ja">キノコの記録</h2>
+        <p class="section-head__desc">
+          採集した日付や場所、生えていた環境とともに記録しています。<br />
+          気になるキノコをタップすると、詳しい記録をご覧いただけます。
+        </p>
+      </div>
+      <div class="gallery-grid" id="galleryPreview"></div>
+      <div class="section-more">
+        <a class="btn-outline" href="zukan.html">すべての記録を見る <span>→</span></a>
+      </div>
+    </section>
+
+    <!-- ===== COLUMN ===== -->
+    <section class="column-sec" id="column">
+      <div class="section-head">
+        <span class="section-head__en">COLUMN</span>
+        <h2 class="section-head__ja">コラム</h2>
+        <p class="section-head__desc">
+          キノコ歩き二十年の覚え書き。採集のコツ、季節の楽しみ、毒キノコの見分け方など。
+        </p>
+      </div>
+      <div class="column-grid" id="columnGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="footer">
+    <div class="footer__mark">
+      <span class="footer__mark-glyph">𓂃 🍄 𓂃</span>
+      <p class="footer__brand"><span>石原巖の</span>キノコ採集記録</p>
+      <p class="footer__tagline">長岡の森が育む、小さな命の記録。</p>
+    </div>
+    <nav class="footer__nav" aria-label="フッターナビ">
+      <a href="#about">ABOUT</a>
+      <a href="#gallery">GALLERY</a>
+      <a href="#column">COLUMN</a>
+      <a href="zukan.html">ZUKAN</a>
+    </nav>
+    <p class="footer__note">
+      採集場所の一部は保全のため非公開としています。<br />
+      食毒の最終判断はご自身の責任で。少しでも不安なキノコは食べないでください。
+    </p>
+    <p class="footer__copy">© <span id="year"></span> 石原 巖 ｜ 長岡キノコ採集記録</p>
+  </footer>
+
+  <!-- ===== 詳細モーダル ===== -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <article class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal__close" data-close aria-label="閉じる">×</button>
+      <div class="modal__body" id="modalBody"></div>
+    </article>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
