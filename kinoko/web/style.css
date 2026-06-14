@@ -195,6 +195,12 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.1em; color: rgba(255,255,255,0.6);
 }
 .ph--portrait { aspect-ratio: 4 / 5; }
+.ph--landscape { aspect-ratio: 3 / 2; }
+
+/* ====== SPECIES SHOWCASE ====== */
+.species-showcase { margin-left: var(--rail); }
+.species-showcase__fig { margin: 0; line-height: 0; }
+.species-showcase__fig img { width: 100%; height: auto; display: block; max-height: 80vh; object-fit: cover; }
 
 /* ====== GALLERY / カード共通 ====== */
 .gallery-sec { margin-left: var(--rail); padding: clamp(64px, 9vw, 120px) clamp(28px, 7vw, 110px); background: var(--paper-2); }
