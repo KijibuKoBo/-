@@ -30,7 +30,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 5,
-      "photo": "/kinoko/web/data/photos/nameko.jpg"
+      "photo": "data/photos/nameko.jpg"
     },
     {
       "id": "k002",
@@ -55,7 +55,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 5,
-      "photo": "/kinoko/web/data/photos/akayamadori.jpg"
+      "photo": "data/photos/akayamadori.jpg"
     },
     {
       "id": "k003",
@@ -82,7 +82,7 @@
         "ツキヨタケ"
       ],
       "rating": 4,
-      "photo": "/kinoko/web/data/photos/hanakoutake.jpg"
+      "photo": "data/photos/hanakoutake.jpg"
     },
     {
       "id": "k004",
@@ -109,7 +109,7 @@
         "シイタケ"
       ],
       "rating": 0,
-      "photo": "/kinoko/web/data/photos/kiirotake.jpg"
+      "photo": "data/photos/kiirotake.jpg"
     },
     {
       "id": "k005",
@@ -135,7 +135,7 @@
       "caution": "よく茹でこぼす。体質により当たることがある。",
       "lookalikes": [],
       "rating": 4,
-      "photo": "/kinoko/web/data/photos/kishimeji.jpg"
+      "photo": "data/photos/kishimeji.jpg"
     },
     {
       "id": "k006",
@@ -161,7 +161,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 4,
-      "photo": "/kinoko/web/data/photos/tamago.jpg"
+      "photo": "data/photos/tamago.jpg"
     },
     {
       "id": "k007",
@@ -186,7 +186,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 3,
-      "photo": "/kinoko/web/data/photos/murasakishimeji.jpg"
+      "photo": "data/photos/murasakishimeji.jpg"
     },
     {
       "id": "k008",
@@ -212,7 +212,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 3,
-      "photo": "/kinoko/web/data/photos/turigikitake.jpg"
+      "photo": "data/photos/turigikitake.jpg"
     },
     {
       "id": "k009",
@@ -240,7 +240,7 @@
         "クサウラベニタケ"
       ],
       "rating": 3,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-0.jpg"
+      "photo": "data/photos/kinoko-extra-0.jpg"
     },
     {
       "id": "k010",
@@ -268,7 +268,7 @@
         "ホンシメジ"
       ],
       "rating": 0,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-1.jpg"
+      "photo": "data/photos/kinoko-extra-1.jpg"
     },
     {
       "id": "k011",
@@ -293,7 +293,7 @@
         "ニガクリタケ"
       ],
       "rating": 3,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-2.jpg"
+      "photo": "data/photos/kinoko-extra-2.jpg"
     },
     {
       "id": "k012",
@@ -320,7 +320,7 @@
         "クサウラベニタケ"
       ],
       "rating": 5,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-5.jpg"
+      "photo": "data/photos/kinoko-extra-5.jpg"
     },
     {
       "id": "k013",
@@ -346,7 +346,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 4,
-      "photo": "/kinoko/web/data/photos/kinoko-yellow.jpg"
+      "photo": "data/photos/kinoko-yellow.jpg"
     },
     {
       "id": "k014",
@@ -373,7 +373,7 @@
         "ツキヨタケ"
       ],
       "rating": 4,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-3.jpg"
+      "photo": "data/photos/kinoko-extra-3.jpg"
     },
     {
       "id": "k015",
@@ -398,7 +398,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 5,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-6.jpg"
+      "photo": "data/photos/kinoko-extra-6.jpg"
     },
     {
       "id": "k016",
@@ -421,7 +421,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 0,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-4.jpg"
+      "photo": "data/photos/kinoko-extra-4.jpg"
     },
     {
       "id": "k017",
@@ -444,7 +444,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 0,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-5.jpg"
+      "photo": "data/photos/kinoko-extra-5.jpg"
     },
     {
       "id": "k018",
@@ -467,7 +467,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 0,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-6.jpg"
+      "photo": "data/photos/kinoko-extra-6.jpg"
     },
     {
       "id": "k019",
@@ -490,7 +490,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 0,
-      "photo": "/kinoko/web/data/photos/kinoko-extra-7.jpg"
+      "photo": "data/photos/kinoko-extra-7.jpg"
     }
   ]
 }
