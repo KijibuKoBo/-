@@ -240,7 +240,7 @@
         "クサウラベニタケ"
       ],
       "rating": 3,
-      "photo": ""
+      "photo": "data/photos/kinoko-extra-0.jpg"
     },
     {
       "id": "k010",
@@ -268,7 +268,7 @@
         "ホンシメジ"
       ],
       "rating": 0,
-      "photo": ""
+      "photo": "data/photos/kinoko-extra-1.jpg"
     },
     {
       "id": "k011",
@@ -293,7 +293,7 @@
         "ニガクリタケ"
       ],
       "rating": 3,
-      "photo": ""
+      "photo": "data/photos/kinoko-extra-2.jpg"
     },
     {
       "id": "k012",
@@ -373,7 +373,7 @@
         "ツキヨタケ"
       ],
       "rating": 4,
-      "photo": ""
+      "photo": "data/photos/kinoko-extra-3.jpg"
     },
     {
       "id": "k015",
