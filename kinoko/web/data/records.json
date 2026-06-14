@@ -13,7 +13,9 @@
       "kana": "なめこ",
       "gakumei": "Pholiota microspora",
       "family": "モエギタケ科",
-      "aka": ["ナメラッコ"],
+      "aka": [
+        "ナメラッコ"
+      ],
       "edibility": "食用",
       "date": "2024-10-28",
       "area": "東山 ブナ帯",
@@ -28,7 +30,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 5,
-      "photo": "data/photos/kinoko-01.jpg"
+      "photo": "data/photos/nameko.jpg"
     },
     {
       "id": "k002",
@@ -36,7 +38,9 @@
       "kana": "まいたけ",
       "gakumei": "Grifola frondosa",
       "family": "トンビマイタケ科",
-      "aka": ["舞茸"],
+      "aka": [
+        "舞茸"
+      ],
       "edibility": "食用",
       "date": "2023-09-30",
       "area": "栃尾方面 ミズナラ林",
@@ -51,7 +55,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 5,
-      "photo": "data/photos/kinoko-orange.jpg"
+      "photo": "data/photos/akayamadori.jpg"
     },
     {
       "id": "k003",
@@ -59,7 +63,9 @@
       "kana": "むきたけ",
       "gakumei": "Sarcomyxa edulis",
       "family": "ガマノホタケ科",
-      "aka": ["ムキ"],
+      "aka": [
+        "ムキ"
+      ],
       "edibility": "食用",
       "date": "2022-11-05",
       "area": "東山 ブナ帯",
@@ -72,9 +78,11 @@
       "taste": "鍋・煮物。皮を剥いて食べる。ゼラチン質で美味。",
       "notes": "晩秋、他のキノコが終わった頃に出る。",
       "caution": "猛毒ツキヨタケと同じ倒木に混生することがある。必ず縦に裂いて黒いシミ（ツキヨタケの特徴）が無いか確認する。",
-      "lookalikes": ["ツキヨタケ"],
+      "lookalikes": [
+        "ツキヨタケ"
+      ],
       "rating": 4,
-      "photo": "data/photos/kinoko-02.jpg"
+      "photo": "data/photos/hanakoutake.jpg"
     },
     {
       "id": "k004",
@@ -95,9 +103,13 @@
       "taste": "—",
       "notes": "新潟県で食中毒件数が最も多い猛毒キノコ。ムキタケ・ヒラタケ・シイタケと間違えやすい。記録と注意喚起のため掲載。",
       "caution": "縦に裂くと柄の付け根に黒紫色のシミがある。暗所でヒダが淡く光る。絶対に食べない。",
-      "lookalikes": ["ムキタケ", "ヒラタケ", "シイタケ"],
+      "lookalikes": [
+        "ムキタケ",
+        "ヒラタケ",
+        "シイタケ"
+      ],
       "rating": 0,
-      "photo": ""
+      "photo": "data/photos/kiirotake.jpg"
     },
     {
       "id": "k005",
@@ -105,7 +117,10 @@
       "kana": "ならたけ",
       "gakumei": "Armillaria mellea",
       "family": "タマバリタケ科",
-      "aka": ["ボリボリ", "アマンダレ"],
+      "aka": [
+        "ボリボリ",
+        "アマンダレ"
+      ],
       "edibility": "食用",
       "date": "2021-10-10",
       "area": "山古志 雑木林",
@@ -120,7 +135,7 @@
       "caution": "よく茹でこぼす。体質により当たることがある。",
       "lookalikes": [],
       "rating": 4,
-      "photo": ""
+      "photo": "data/photos/kishimeji.jpg"
     },
     {
       "id": "k006",
@@ -128,7 +143,10 @@
       "kana": "はないぐち",
       "gakumei": "Suillus grevillei",
       "family": "ヌメリイグチ科",
-      "aka": ["ジコボウ", "リコボウ"],
+      "aka": [
+        "ジコボウ",
+        "リコボウ"
+      ],
       "edibility": "食用",
       "date": "2020-09-23",
       "area": "蓬平 カラマツ植林地",
@@ -143,7 +161,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 4,
-      "photo": ""
+      "photo": "data/photos/tamago.jpg"
     },
     {
       "id": "k007",
@@ -151,7 +169,9 @@
       "kana": "あみたけ",
       "gakumei": "Suillus bovinus",
       "family": "ヌメリイグチ科",
-      "aka": ["イグチ"],
+      "aka": [
+        "イグチ"
+      ],
       "edibility": "食用",
       "date": "2019-10-06",
       "area": "悠久山 アカマツ林",
@@ -166,7 +186,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 3,
-      "photo": ""
+      "photo": "data/photos/murasakishimeji.jpg"
     },
     {
       "id": "k008",
@@ -174,7 +194,10 @@
       "kana": "さくらしめじ",
       "gakumei": "Hygrophorus russula",
       "family": "ヌメリガサ科",
-      "aka": ["アカンボ", "ドヒョウモタシ"],
+      "aka": [
+        "アカンボ",
+        "ドヒョウモタシ"
+      ],
       "edibility": "食用",
       "date": "2018-10-02",
       "area": "東山 コナラ林",
@@ -189,7 +212,7 @@
       "caution": "",
       "lookalikes": [],
       "rating": 3,
-      "photo": ""
+      "photo": "data/photos/turigikitake.jpg"
     },
     {
       "id": "k009",
@@ -197,7 +220,10 @@
       "kana": "うらべにほていしめじ",
       "gakumei": "Entoloma sarcopum",
       "family": "イッポンシメジ科",
-      "aka": ["イッポンシメジ", "ニセクサウラ"],
+      "aka": [
+        "イッポンシメジ",
+        "ニセクサウラ"
+      ],
       "edibility": "食用",
       "date": "2017-10-08",
       "area": "栃尾方面 雑木林",
@@ -210,7 +236,9 @@
       "taste": "苦味があるが出汁が良い。炒め物・鍋。",
       "notes": "傘の表面に絞り模様、柄が太くしっかり。慣れた人向け。",
       "caution": "猛毒クサウラベニタケと酷似。柄の中身（中実/中空）・苦味・絞り模様で判別。自信が無ければ採らない。",
-      "lookalikes": ["クサウラベニタケ"],
+      "lookalikes": [
+        "クサウラベニタケ"
+      ],
       "rating": 3,
       "photo": ""
     },
@@ -220,7 +248,9 @@
       "kana": "くさうらべにたけ",
       "gakumei": "Entoloma rhodopolium",
       "family": "イッポンシメジ科",
-      "aka": ["メイジンナカセ"],
+      "aka": [
+        "メイジンナカセ"
+      ],
       "edibility": "毒",
       "date": "2017-10-08",
       "area": "栃尾方面 雑木林",
@@ -233,7 +263,10 @@
       "taste": "—",
       "notes": "名人泣かせ。ウラベニホテイシメジ・ホンシメジに似て中毒が多い。比較記録として掲載。",
       "caution": "傘が薄くもろい、柄が中空で細い、絞り模様が無い。胃腸型の中毒を起こす。",
-      "lookalikes": ["ウラベニホテイシメジ", "ホンシメジ"],
+      "lookalikes": [
+        "ウラベニホテイシメジ",
+        "ホンシメジ"
+      ],
       "rating": 0,
       "photo": ""
     },
@@ -256,7 +289,9 @@
       "taste": "煮物・炒め物。淡白でクセが無い。",
       "notes": "栗色の傘が株立ち。よく茹でこぼして食べる。",
       "caution": "猛毒ニガクリタケと酷似。ニガクリタケは噛むと強い苦味。少量でも危険。必ず生で少量噛んで苦味を確認（飲み込まない）。",
-      "lookalikes": ["ニガクリタケ"],
+      "lookalikes": [
+        "ニガクリタケ"
+      ],
       "rating": 3,
       "photo": ""
     },
@@ -266,7 +301,9 @@
       "kana": "ほんしめじ",
       "gakumei": "Lyophyllum shimeji",
       "family": "シメジ科",
-      "aka": ["ダイコクシメジ"],
+      "aka": [
+        "ダイコクシメジ"
+      ],
       "edibility": "食用",
       "date": "2015-10-12",
       "area": "悠久山 アカマツ・コナラ林",
@@ -279,7 +316,9 @@
       "taste": "香り松茸、味しめじの本命。炊き込み・すまし汁。",
       "notes": "菌根菌で人工栽培が難しい貴重種。柄の根元が太く膨らむ。",
       "caution": "クサウラベニタケと混同に注意。",
-      "lookalikes": ["クサウラベニタケ"],
+      "lookalikes": [
+        "クサウラベニタケ"
+      ],
       "rating": 5,
       "photo": "data/photos/kinoko-white.jpg"
     },
@@ -289,7 +328,10 @@
       "kana": "こうたけ",
       "gakumei": "Sarcodon aspratus",
       "family": "マツバハリタケ科",
-      "aka": ["シシタケ", "香茸"],
+      "aka": [
+        "シシタケ",
+        "香茸"
+      ],
       "edibility": "食用",
       "date": "2014-09-28",
       "area": "栃尾方面 ミズナラ林",
@@ -312,7 +354,9 @@
       "kana": "ひらたけ",
       "gakumei": "Pleurotus ostreatus",
       "family": "ヒラタケ科",
-      "aka": ["カンタケ"],
+      "aka": [
+        "カンタケ"
+      ],
       "edibility": "食用",
       "date": "2013-12-08",
       "area": "東山 河畔林",
@@ -325,7 +369,9 @@
       "taste": "鍋・炒め物。寒い時期の貴重なキノコ。",
       "notes": "寒い時期に出るので寒茸（カンタケ）とも。",
       "caution": "猛毒ツキヨタケに注意（発生時期・木が重なる場合あり）。",
-      "lookalikes": ["ツキヨタケ"],
+      "lookalikes": [
+        "ツキヨタケ"
+      ],
       "rating": 4,
       "photo": ""
     },
@@ -335,7 +381,9 @@
       "kana": "まつたけ",
       "gakumei": "Tricholoma matsutake",
       "family": "キシメジ科",
-      "aka": ["松茸"],
+      "aka": [
+        "松茸"
+      ],
       "edibility": "食用",
       "date": "2008-10-04",
       "area": "（非公開）アカマツ林",
