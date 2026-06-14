@@ -20,7 +20,7 @@
   --edible: #5a7d4a;
   --poison: #b03a2e;
   --unfit: #9a8f73;
-  --hero-photo: url("/kinoko/web/data/photos/hero-new.jpg");
+  --hero-photo: url("data/photos/hero-new.jpg");
 
   --rail: 96px;
   --maxw: 1180px;
