@@ -63,6 +63,10 @@ function renderHome() {
     hydratePhotos(grid);
     bindCardClicks(grid);
   }
+
+  // ABOUT などHTMLに直接置かれた写真も読み込む
+  const about = $(".about");
+  if (about) hydratePhotos(about);
 }
 
 async function loadColumns() {
