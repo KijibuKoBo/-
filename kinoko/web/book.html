@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>長岡きのこ採集記 ｜ 書籍プレビュー（印刷・PDF出力）</title>
+  <meta name="description" content="石原巖のキノコ採集記録を、そのまま製本できる本のレイアウトで出力します。印刷ダイアログから「PDFで保存」を選ぶと書籍用の原稿になります。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --forest:#1f3a2e; --forest-deep:#16271f; --gold:#a8854a; --gold-soft:#c9a86a;
+      --cream:#f4efe4; --paper:#fbf8f1; --ink:#2b2a25; --sub:#6f6a5c; --line:#ddd5c4;
+      --food:#2f6b3a; --pois:#b03a2e; --unfit:#9a8f73; --unknown:#7a7a7a;
+      --serif:"Shippori Mincho", serif;
+      --sans:"Noto Sans JP", sans-serif;
+      --latin:"Cormorant Garamond", serif;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    body{
+      font-family:var(--serif);
+      color:var(--ink);
+      background:#b9b6ad;
+      line-height:1.9;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ===== 操作バー（画面のみ） ===== */
+    .toolbar{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; gap:14px;
+      padding:12px 18px;
+      background:var(--forest-deep); color:#f1ede2;
+      font-family:var(--sans); font-size:0.9rem;
+      box-shadow:0 2px 14px rgba(0,0,0,.28);
+    }
+    .toolbar a.tb__home{ color:var(--gold-soft); text-decoration:none; font-weight:500; }
+    .toolbar a.tb__home:hover{ color:#fff; }
+    .toolbar .tb__title{ flex:1; letter-spacing:.14em; color:#cfc8b6; }
+    .toolbar button{
+      font-family:var(--sans); font-weight:600; cursor:pointer;
+      border:1px solid var(--gold); background:var(--gold); color:#1c1c18;
+      padding:9px 18px; border-radius:999px; font-size:0.92rem;
+      transition:.2s;
+    }
+    .toolbar button:hover{ background:#c9a86a; border-color:#c9a86a; }
+    .tip{
+      font-family:var(--sans); font-size:0.82rem; line-height:1.7;
+      color:#3c3a33; background:#e9e3d4; border-bottom:1px solid #cfc7b3;
+      margin:0; padding:10px 18px; text-align:center;
+    }
+    .tip b{ color:var(--forest); }
+
+    /* ===== 本体（画面：擬似ページ） ===== */
+    .book{ max-width:860px; margin:0 auto; padding:26px 16px 60px; }
+    .sheet{
+      background:var(--paper);
+      margin:0 auto 24px;
+      padding:48px 52px;
+      box-shadow:0 10px 30px rgba(0,0,0,.22);
+      border-radius:2px;
+    }
+
+    /* 表紙 */
+    .cover{
+      position:relative; overflow:hidden; color:#f4efe4;
+      padding:0; min-height:560px;
+      display:flex; flex-direction:column; justify-content:flex-end;
+      background:var(--forest-deep);
+    }
+    .cover__img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.55; }
+    .cover__veil{ position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(22,39,31,.35) 0%, rgba(22,39,31,.55) 55%, rgba(22,39,31,.92) 100%); }
+    .cover__inner{ position:relative; padding:54px 50px 50px; }
+    .cover__label{ font-family:var(--latin); letter-spacing:.4em; font-size:1rem; color:var(--gold-soft); margin:0 0 18px; }
+    .cover__title{ font-size:3rem; line-height:1.25; margin:0; font-weight:800; letter-spacing:.04em; }
+    .cover__sub{ font-size:1.15rem; color:#e7e1d2; margin:18px 0 30px; font-weight:500; }
+    .cover__author{ font-size:1.25rem; letter-spacing:.18em; margin:0; }
+    .cover__author small{ display:block; font-family:var(--latin); letter-spacing:.3em; color:var(--gold-soft); font-size:.85rem; margin-top:8px; }
+
+    /* 共通：章見出し */
+    .chap{ text-align:center; margin:0 0 36px; }
+    .chap__en{ display:block; font-family:var(--latin); letter-spacing:.42em; color:var(--gold); font-size:1rem; }
+    .chap__ja{ font-size:1.7rem; margin:8px 0 0; font-weight:700; letter-spacing:.06em; }
+    .chap::after{ content:""; display:block; width:42px; height:2px; background:var(--gold); margin:18px auto 0; }
+
+    .lead{ font-size:1.02rem; line-height:2.05; }
+    .lead p{ margin:0 0 1.3em; text-indent:1em; }
+
+    /* 目次 */
+    .toc__list{ list-style:none; margin:0; padding:0; max-width:560px; margin-inline:auto; }
+    .toc__list li{ display:flex; align-items:baseline; gap:10px; padding:9px 0; border-bottom:1px dotted var(--line); }
+    .toc__list .t-name{ font-weight:500; }
+    .toc__list .t-dot{ flex:1; border-bottom:1px dotted #c9c0ac; transform:translateY(-4px); }
+    .toc__list .t-ref{ font-family:var(--sans); font-size:.82rem; color:var(--sub); white-space:nowrap; }
+    .toc__sub{ padding-left:22px !important; }
+    .toc__sub .t-name{ font-weight:400; color:#4a463c; }
+
+    /* 食毒グループ見出し */
+    .group__head{ display:flex; align-items:center; gap:14px; margin:0 0 28px; padding-bottom:14px; border-bottom:2px solid var(--forest); }
+    .group__badge{ font-family:var(--sans); font-weight:700; color:#fff; padding:4px 14px; border-radius:4px; font-size:.95rem; }
+    .group__title{ font-size:1.4rem; margin:0; }
+    .group__count{ margin-left:auto; font-family:var(--sans); font-size:.82rem; color:var(--sub); }
+
+    /* 採集記録エントリー */
+    .entry{ margin:0 0 40px; padding:0 0 36px; border-bottom:1px solid var(--line); }
+    .entry:last-child{ border-bottom:none; }
+    .entry__head{ display:flex; align-items:flex-start; gap:14px; margin:0 0 16px; }
+    .entry__no{ font-family:var(--latin); font-size:1.5rem; color:var(--gold); line-height:1; padding-top:6px; min-width:64px; }
+    .entry__names{ flex:1; }
+    .entry__wamei{ font-size:1.65rem; font-weight:700; margin:0; line-height:1.3; }
+    .entry__kana{ font-size:.9rem; color:var(--sub); margin-left:8px; font-weight:400; }
+    .entry__gakumei{ font-family:var(--latin); font-style:italic; font-size:1.05rem; color:#5a564a; margin:2px 0 0; }
+    .entry__meta-top{ font-family:var(--sans); font-size:.8rem; color:var(--sub); margin:6px 0 0; }
+    .entry__badge{ font-family:var(--sans); font-weight:700; color:#fff; padding:3px 12px; border-radius:4px; font-size:.85rem; white-space:nowrap; align-self:flex-start; margin-top:4px; }
+
+    .entry__photo{ margin:0 0 18px; }
+    .entry__photo img{ width:100%; max-height:360px; object-fit:cover; border-radius:4px; display:block; background:#e8e2d4; }
+    .entry__photo figcaption{ font-family:var(--sans); font-size:.76rem; color:var(--sub); margin-top:6px; }
+
+    .facts{ display:grid; grid-template-columns:repeat(2,1fr); gap:4px 28px; margin:0 0 16px; }
+    .facts div{ display:flex; gap:10px; padding:6px 0; border-bottom:1px dotted var(--line); font-size:.92rem; }
+    .facts dt{ font-family:var(--sans); font-weight:600; color:var(--forest); min-width:74px; margin:0; }
+    .facts dd{ margin:0; flex:1; }
+
+    .block{ margin:0 0 12px; }
+    .block__h{ font-family:var(--sans); font-size:.82rem; font-weight:700; color:var(--forest); letter-spacing:.08em; margin:0 0 4px; }
+    .block p{ margin:0; font-size:.96rem; }
+    .caution{ background:#fbeeea; border-left:4px solid var(--pois); padding:12px 16px; border-radius:0 4px 4px 0; }
+    .caution .block__h{ color:var(--pois); }
+    .lookalikes{ margin-top:8px; font-family:var(--sans); font-size:.82rem; color:#7a3a30; }
+    .lookalikes span{ display:inline-block; background:#f3d9d2; padding:2px 10px; border-radius:999px; margin:2px 4px 0 0; }
+    .rating{ color:var(--gold); letter-spacing:.18em; font-size:1.05rem; }
+
+    /* コラム */
+    .column{ margin:0 0 38px; padding:0 0 30px; border-bottom:1px solid var(--line); }
+    .column:last-child{ border-bottom:none; }
+    .column__tag{ font-family:var(--sans); font-size:.78rem; color:var(--gold); letter-spacing:.1em; }
+    .column__title{ font-size:1.5rem; margin:6px 0 14px; font-weight:700; }
+    .column__img{ width:100%; max-height:240px; object-fit:cover; border-radius:4px; margin:0 0 16px; display:block; background:#e8e2d4; }
+    .column__body p{ margin:0 0 1.1em; text-indent:1em; font-size:.98rem; line-height:2; }
+
+    /* 索引 */
+    .index__cols{ columns:2; column-gap:42px; }
+    .index__row{ break-inside:avoid; margin:0 0 14px; }
+    .index__rowhead{ font-family:var(--sans); font-weight:700; color:var(--gold); border-bottom:1px solid var(--line); padding-bottom:3px; margin:0 0 6px; }
+    .index__item{ display:flex; align-items:baseline; gap:8px; font-size:.9rem; padding:2px 0; }
+    .index__item .ix-dot{ flex:1; border-bottom:1px dotted #cfc6b1; transform:translateY(-4px); }
+    .index__item .ix-no{ font-family:var(--latin); color:var(--sub); white-space:nowrap; }
+    .index--latin .index__item{ font-family:var(--latin); font-style:italic; }
+
+    /* 奥付 */
+    .colophon{ text-align:center; }
+    .colophon__box{ display:inline-block; text-align:left; border:1px solid var(--line); padding:26px 34px; margin-top:10px; }
+    .colophon__box dl{ margin:0; }
+    .colophon__box dt{ font-family:var(--sans); font-size:.74rem; color:var(--sub); margin-top:12px; }
+    .colophon__box dt:first-child{ margin-top:0; }
+    .colophon__box dd{ margin:2px 0 0; font-size:1rem; }
+    .colophon__copy{ margin-top:28px; font-family:var(--sans); font-size:.8rem; color:var(--sub); }
+
+    .loading{ text-align:center; padding:80px 20px; color:#5a564a; font-family:var(--sans); }
+
+    @media (max-width:680px){
+      .sheet{ padding:30px 22px; }
+      .cover__title{ font-size:2.1rem; }
+      .cover__inner{ padding:36px 26px 30px; }
+      .facts{ grid-template-columns:1fr; }
+      .index__cols{ columns:1; }
+      .entry__head{ flex-wrap:wrap; }
+      .entry__no{ min-width:auto; padding-top:0; }
+    }
+
+    /* ===== 印刷（A4・製本用） ===== */
+    @media print{
+      @page{ size:A4; margin:18mm 16mm; }
+      html,body{ background:#fff; }
+      .toolbar,.tip{ display:none !important; }
+      .book{ max-width:none; margin:0; padding:0; }
+      .sheet{ box-shadow:none; margin:0; padding:0; border-radius:0; background:#fff; }
+      .cover{ min-height:247mm; }
+      .cover,.preface,.toc,.columns-sec,.index,.colophon{ break-after:page; }
+      .group{ break-before:page; }
+      .columns-sec{ break-before:page; }
+      .index{ break-before:page; }
+      .colophon{ break-before:page; break-after:auto; }
+      .entry,.column,.index__row{ break-inside:avoid; }
+      .entry__photo img{ max-height:95mm; }
+      .column__img{ max-height:70mm; }
+      /* 色つき要素を印刷でも再現 */
+      .group__badge,.entry__badge,.cover,.caution,.lookalikes span,.rating,.chap__en,.cover__veil,.cover__img{
+        -webkit-print-color-adjust:exact; print-color-adjust:exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 操作バー（画面のみ） -->
+  <div class="toolbar">
+    <a class="tb__home" href="index.html">← ホームへ</a>
+    <span class="tb__title">書籍プレビュー</span>
+    <button type="button" onclick="window.print()">🖨 印刷 / PDFで保存</button>
+  </div>
+  <p class="tip">
+    このページは「本のレイアウト」です。右上の <b>印刷 / PDFで保存</b> を押し、
+    印刷ダイアログで <b>用紙：A4</b>・<b>余白：標準</b>（写真の色を濃く出したい場合は <b>背景のグラフィック：オン</b>）を選ぶと、そのまま製本用のPDFになります。
+  </p>
+
+  <div class="book" id="book">
+    <div class="loading">本のデータを読み込んでいます…</div>
+  </div>
+
+  <script>
+    const EDIBILITY = {
+      "食用":   { color:"var(--food)",    order:1 },
+      "毒":     { color:"var(--pois)",    order:2 },
+      "食不適": { color:"var(--unfit)",   order:3 },
+      "不詳":   { color:"var(--unknown)", order:4 },
+    };
+    const TODAY = "2026年6月24日";
+
+    init();
+
+    async function init(){
+      let recData, colData;
+      try{
+        const [r, c] = await Promise.all([
+          fetch("data/records.json", { cache:"no-store" }).then(x=>x.json()),
+          fetch("data/columns.json", { cache:"no-store" }).then(x=>x.json()).catch(()=>({columns:[]})),
+        ]);
+        recData = r; colData = c || { columns:[] };
+      }catch(err){
+        document.getElementById("book").innerHTML =
+          '<div class="loading">データを読み込めませんでした。<br>ローカルで開く場合は簡易サーバー（python3 -m http.server）経由でご覧ください。</div>';
+        return;
+      }
+
+      const meta = recData.meta || {};
+      const records = recData.records || [];
+      const columns = (colData.columns) || [];
+
+      // 食毒グループに分け、各グループ内は五十音順。表示順に通し番号を振る。
+      const groups = buildGroups(records);
+      let n = 0;
+      groups.forEach(g => g.items.forEach(rec => { rec._no = (++n); }));
+
+      const html = [
+        cover(meta, records),
+        preface(meta),
+        toc(groups, columns),
+        groups.map(groupSection).join(""),
+        columnsSection(columns),
+        indexSection(records),
+        colophon(meta, records),
+      ].join("");
+
+      document.getElementById("book").innerHTML = html;
+    }
+
+    function buildGroups(records){
+      const map = new Map();
+      records.forEach(r=>{
+        const k = r.edibility || "不詳";
+        if(!map.has(k)) map.set(k, []);
+        map.get(k).push(r);
+      });
+      const groups = [...map.entries()].map(([key, items])=>{
+        items.sort((a,b)=> (a.kana||a.wamei||"").localeCompare(b.kana||b.wamei||"", "ja"));
+        return { key, items, order:(EDIBILITY[key]?.order ?? 99) };
+      });
+      groups.sort((a,b)=> a.order - b.order);
+      return groups;
+    }
+
+    /* ---------- 各セクション ---------- */
+    function cover(meta, records){
+      const title = meta.title || "長岡きのこ採集記";
+      const author = meta.author || "石原 巖";
+      return `
+      <section class="sheet cover">
+        <img class="cover__img" src="data/photos/hero-new.jpg" alt="" />
+        <div class="cover__veil"></div>
+        <div class="cover__inner">
+          <p class="cover__label">NAGAOKA MUSHROOM FIELD NOTES</p>
+          <h1 class="cover__title">${esc(title)}</h1>
+          <p class="cover__sub">長岡の森が育む、小さな命の記録。</p>
+          <p class="cover__author">${esc(author)}<small>ISHIHARA IWAO</small></p>
+        </div>
+      </section>`;
+    }
+
+    function preface(meta){
+      return `
+      <section class="sheet preface">
+        <div class="chap"><span class="chap__en">PREFACE</span><h2 class="chap__ja">はじめに</h2></div>
+        <div class="lead">
+          <p>新潟県西頸城郡名立町（現・上越市名立区）の生まれ。雪深い越後の山と海に育ち、長岡市に移り住んでからは周辺の山を二十年近く歩き続けてきました。春の雪解けから晩秋の初雪前まで、季節ごとに姿を変える森のキノコを訪ね、採れた日と場所、天気、生えていた木、味や食べ方を一つひとつ書き留めています。</p>
+          <p>キノコは同じ木に毎年のように顔を出すもの。足が覚えた「シロ」を巡り、似た毒キノコを見分けながら、山の恵みと危うさの両方を記録してきました。本書は、その二十年分の覚え書きをまとめたものです。</p>
+          <p>食毒の最終判断は、必ずご自身の責任で。少しでも不安なキノコは、口にしないでください。「採らない勇気」こそ、二十年続けてきた一番の秘訣です。</p>
+        </div>
+      </section>`;
+    }
+
+    function toc(groups, columns){
+      const groupRows = groups.map(g=>{
+        const first = g.items[0]?._no, last = g.items[g.items.length-1]?._no;
+        const range = first ? (first===last ? `No.${pad(first)}` : `No.${pad(first)}–${pad(last)}`) : "";
+        return `<li class="toc__sub"><span class="t-name">${esc(g.key)}のキノコ</span><span class="t-dot"></span><span class="t-ref">${range}</span></li>`;
+      }).join("");
+      const colRow = columns.length
+        ? `<li><span class="t-name">コラム</span><span class="t-dot"></span><span class="t-ref">${columns.length}篇</span></li>` : "";
+      return `
+      <section class="sheet toc">
+        <div class="chap"><span class="chap__en">CONTENTS</span><h2 class="chap__ja">目次</h2></div>
+        <ul class="toc__list">
+          <li><span class="t-name">はじめに</span><span class="t-dot"></span><span class="t-ref">PREFACE</span></li>
+          <li><span class="t-name">採集記録</span><span class="t-dot"></span><span class="t-ref">RECORDS</span></li>
+          ${groupRows}
+          ${colRow}
+          <li><span class="t-name">索引（和名・学名）</span><span class="t-dot"></span><span class="t-ref">INDEX</span></li>
+          <li><span class="t-name">奥付</span><span class="t-dot"></span><span class="t-ref">COLOPHON</span></li>
+        </ul>
+      </section>`;
+    }
+
+    function groupSection(g){
+      const color = EDIBILITY[g.key]?.color || "var(--unknown)";
+      const entries = g.items.map(entry).join("");
+      return `
+      <section class="sheet group">
+        <div class="group__head">
+          <span class="group__badge" style="background:${color}">${esc(g.key)}</span>
+          <h2 class="group__title">${esc(g.key)}のキノコ</h2>
+          <span class="group__count">${g.items.length}種</span>
+        </div>
+        ${entries}
+      </section>`;
+    }
+
+    function entry(r){
+      const color = EDIBILITY[r.edibility]?.color || "var(--unknown)";
+      const facts = factsList([
+        ["採集日", fmtDate(r.date)],
+        ["科", r.family],
+        ["採集地", r.area],
+        ["標高", r.elevation ? `${r.elevation} m` : ""],
+        ["発生環境", r.habitat],
+        ["共生・宿主", r.host],
+        ["季節", r.season],
+        ["天候", r.weather],
+        ["採集量", r.quantity],
+        ["別名", (r.aka||[]).join("・")],
+      ]);
+      const photo = r.photo
+        ? `<figure class="entry__photo"><img src="${esc(r.photo)}" alt="${esc(r.wamei)}" loading="lazy" /><figcaption>${esc(r.wamei)}（${esc(r.area||"")}）</figcaption></figure>`
+        : "";
+      const taste = r.taste && r.taste !== "—"
+        ? `<div class="block"><p class="block__h">味・食べ方</p><p>${esc(r.taste)}</p></div>` : "";
+      const notes = r.notes
+        ? `<div class="block"><p class="block__h">覚え書き</p><p>${esc(r.notes)}</p></div>` : "";
+      let caution = "";
+      if(r.caution || (r.lookalikes && r.lookalikes.length)){
+        const look = (r.lookalikes && r.lookalikes.length)
+          ? `<div class="lookalikes">似たキノコ：${r.lookalikes.map(l=>`<span>${esc(l)}</span>`).join("")}</div>` : "";
+        caution = `<div class="block caution"><p class="block__h">⚠ 注意・似たキノコ</p>${r.caution?`<p>${esc(r.caution)}</p>`:""}${look}</div>`;
+      }
+      const rating = r.rating
+        ? `<div class="block"><span class="rating">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</span></div>` : "";
+
+      return `
+      <article class="entry">
+        <div class="entry__head">
+          <span class="entry__no">No.${pad(r._no)}</span>
+          <div class="entry__names">
+            <h3 class="entry__wamei">${esc(r.wamei)}<span class="entry__kana">${esc(r.kana||"")}</span></h3>
+            <p class="entry__gakumei">${esc(r.gakumei||"")}</p>
+          </div>
+          <span class="entry__badge" style="background:${color}">${esc(r.edibility||"不詳")}</span>
+        </div>
+        ${photo}
+        <dl class="facts">${facts}</dl>
+        ${taste}
+        ${notes}
+        ${caution}
+        ${rating}
+      </article>`;
+    }
+
+    function columnsSection(columns){
+      if(!columns.length) return "";
+      const items = columns.map(c=>{
+        const body = (c.body||"").split("\n").filter(Boolean).map(p=>`<p>${esc(p)}</p>`).join("");
+        const img = c.image ? `<img class="column__img" src="${esc(c.image)}" alt="" loading="lazy" />` : "";
+        return `
+        <article class="column">
+          <span class="column__tag">${esc(c.tag||"コラム")}</span>
+          <h3 class="column__title">${esc(c.title)}</h3>
+          ${img}
+          <div class="column__body">${body}</div>
+        </article>`;
+      }).join("");
+      return `
+      <section class="sheet columns-sec">
+        <div class="chap"><span class="chap__en">COLUMN</span><h2 class="chap__ja">コラム</h2></div>
+        ${items}
+      </section>`;
+    }
+
+    function indexSection(records){
+      // 和名索引（五十音順）
+      const byKana = [...records].sort((a,b)=> (a.kana||"").localeCompare(b.kana||"", "ja"));
+      const rows = new Map();
+      byKana.forEach(r=>{
+        const row = gojuon(r.kana || r.wamei);
+        if(!rows.has(row)) rows.set(row, []);
+        rows.get(row).push(r);
+      });
+      const order = ["ア","カ","サ","タ","ナ","ハ","マ","ヤ","ラ","ワ","他"];
+      const wameiHtml = order.filter(o=>rows.has(o)).map(o=>{
+        const items = rows.get(o).map(r=>
+          `<div class="index__item"><span>${esc(r.wamei)}</span><span class="ix-dot"></span><span class="ix-no">No.${pad(r._no)}</span></div>`
+        ).join("");
+        return `<div class="index__row"><p class="index__rowhead">${o}</p>${items}</div>`;
+      }).join("");
+
+      // 学名索引（アルファベット順）
+      const byLatin = records.filter(r=>r.gakumei && r.gakumei!=="sp.")
+        .sort((a,b)=> a.gakumei.localeCompare(b.gakumei));
+      const latinHtml = byLatin.map(r=>
+        `<div class="index__item"><span>${esc(r.gakumei)}</span><span class="ix-dot"></span><span class="ix-no">No.${pad(r._no)}</span></div>`
+      ).join("");
+
+      return `
+      <section class="sheet index">
+        <div class="chap"><span class="chap__en">INDEX</span><h2 class="chap__ja">索引</h2></div>
+        <h3 class="group__title" style="font-size:1.2rem;margin:0 0 16px">和名（五十音順）</h3>
+        <div class="index__cols">${wameiHtml}</div>
+        ${latinHtml ? `
+        <h3 class="group__title" style="font-size:1.2rem;margin:34px 0 16px">学名（アルファベット順）</h3>
+        <div class="index__cols index--latin">${latinHtml}</div>` : ""}
+      </section>`;
+    }
+
+    function colophon(meta, records){
+      const title = meta.title || "長岡きのこ採集記";
+      const author = meta.author || "石原 巖";
+      const area = meta.areaLabel || "新潟県 長岡市 周辺の山";
+      return `
+      <section class="sheet colophon">
+        <div class="chap"><span class="chap__en">COLOPHON</span><h2 class="chap__ja">奥付</h2></div>
+        <div class="colophon__box">
+          <dl>
+            <dt>書名</dt><dd>${esc(title)}</dd>
+            <dt>著者</dt><dd>${esc(author)}</dd>
+            <dt>採集地</dt><dd>${esc(area)}</dd>
+            <dt>記録期間</dt><dd>約20年（since 2006）</dd>
+            <dt>収録記録数</dt><dd>${records.length}種</dd>
+            <dt>発行日</dt><dd>${TODAY}</dd>
+          </dl>
+        </div>
+        <p class="colophon__copy">
+          本書は Web サイト「石原巖のキノコ採集記録」より自動生成した書籍用原稿です。<br>
+          © ${esc(author)} ｜ 長岡キノコ採集記録　無断転載を禁じます。
+        </p>
+      </section>`;
+    }
+
+    /* ---------- ユーティリティ ---------- */
+    function factsList(pairs){
+      return pairs.filter(([,v])=> v && v!=="—").map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+    }
+    function pad(n){ return String(n).padStart(3,"0"); }
+    function fmtDate(iso){
+      if(!iso) return "";
+      const d = new Date(iso);
+      if(isNaN(d)) return iso;
+      return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+    }
+    function gojuon(kana){
+      const c = (kana||"").trim().charAt(0);
+      const rows = [
+        ["ア","あぁアァいぃイィうぅウゥえぇエェおぉオォ"],
+        ["カ","かカがガきキぎギくクぐグけケげゲこコごゴ"],
+        ["サ","さサざザしシじジすスずズせセぜゼそソぞゾ"],
+        ["タ","たタだダちチぢヂつッっツヅづデてテでとトどド"],
+        ["ナ","なナにニぬヌねネのノ"],
+        ["ハ","はハばバぱパひヒびビぴピふフぶブぷプへヘべベぺペほホぼボぽポ"],
+        ["マ","まマみミむムめメもモ"],
+        ["ヤ","やヤゆユよヨ"],
+        ["ラ","らラりリるルれレろロ"],
+        ["ワ","わワをヲんン"],
+      ];
+      for(const [row,chars] of rows){ if(chars.indexOf(c) !== -1) return row; }
+      return "他";
+    }
+    function esc(s){
+      return String(s==null?"":s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+  </script>
+</body>
+</html>
