@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ハリネズミのヘンリーさん｜小さな骨董と、世界でいちばん優しい鑑定家</title>
+<meta name="description" content="ハリネズミのヘンリーさんが、陽の差す工房で小さな骨董を鑑定する4コマ絵本。第一話「プティカウチ」――ドールサイズのカウチに宿る、縮まないエレガンスの物語。" />
+<meta property="og:title" content="ハリネズミのヘンリーさん ｜ 骨董鑑定帖" />
+<meta property="og:description" content="小さな骨董と、世界でいちばん優しい鑑定家の物語。第一話「プティカウチ」。" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="./assets/henry-couch-4koma.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#ece0c3; --paper-2:#f6efda; --paper-3:#f9f3e2; --paper-edge:#e0d0a8;
+  --ink:#372819; --ink-soft:#6f5c40; --ink-faint:#94815f;
+  --gold:#a9802f; --gold-bright:#c8a558; --gold-deep:#7d5d20;
+  --vermilion:#a6361f; --vermilion-deep:#7f2716; --olive:#586140;
+  --line:#cbb585; --line-soft:#ddccab;
+  --mincho:"Shippori Mincho", serif;
+  --latin:"Cormorant Garamond", serif;
+  --sans:"Noto Sans JP", sans-serif;
+  --shadow:0 18px 50px -18px rgba(60,40,18,.55);
+}
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:var(--mincho);
+  color:var(--ink);
+  line-height:1.95;
+  background-color:#e6d9ba;
+  background-image:
+    radial-gradient(1200px 700px at 50% -8%, rgba(255,250,235,.7), transparent 60%),
+    radial-gradient(900px 900px at 100% 100%, rgba(120,90,40,.10), transparent 55%),
+    radial-gradient(900px 900px at 0% 90%, rgba(120,90,40,.08), transparent 55%);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* ===== 紙のきめ（ノイズ） ===== */
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:.5; mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+img{ display:block; max-width:100%; }
+a{ color:inherit; }
+
+/* ===== 共通レイアウト ===== */
+.wrap{ position:relative; z-index:1; }
+.container{ width:min(1080px, 92vw); margin-inline:auto; }
+.kicker{
+  font-family:var(--latin); font-size:.92rem; letter-spacing:.42em;
+  text-transform:uppercase; color:var(--gold-deep); font-weight:600;
+  margin:0 0 .2em; padding-left:.42em;
+}
+.jp-label{
+  font-family:var(--mincho); letter-spacing:.5em; font-weight:600;
+  color:var(--ink-soft); font-size:.84rem;
+}
+/* 金の飾り罫 */
+.rule{ display:flex; align-items:center; gap:14px; color:var(--gold); }
+.rule::before,.rule::after{ content:""; height:1px; flex:1;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+.rule .dia{ width:9px; height:9px; transform:rotate(45deg);
+  border:1px solid var(--gold); background:var(--gold-bright); }
+.rule.short::before,.rule.short::after{ max-width:62px; }
+
+/* ===== 上部の細い帯 ===== */
+.topbar{
+  position:relative; z-index:3;
+  display:flex; align-items:center; justify-content:space-between;
+  width:min(1080px,92vw); margin-inline:auto;
+  padding:18px 4px 0; font-size:.8rem;
+}
+.topbar .brand{ font-family:var(--latin); letter-spacing:.3em; font-weight:600;
+  text-transform:uppercase; color:var(--ink-soft); }
+.topbar nav{ display:flex; gap:22px; font-family:var(--mincho); letter-spacing:.18em;
+  color:var(--ink-soft); }
+.topbar nav a{ text-decoration:none; padding-bottom:3px; border-bottom:1px solid transparent;
+  transition:.25s; }
+.topbar nav a:hover{ color:var(--vermilion); border-color:var(--gold); }
+@media(max-width:680px){ .topbar nav{ display:none; } }
+
+/* ===== ヒーロー ===== */
+.hero{ position:relative; z-index:1; padding:46px 0 30px; }
+.hero-frame{
+  position:relative;
+  width:min(1080px,92vw); margin:14px auto 0;
+  padding:54px clamp(20px,5vw,70px) 46px;
+  background:
+    linear-gradient(180deg, rgba(255,252,243,.65), rgba(246,238,219,.5));
+  border:1px solid var(--line);
+  box-shadow:inset 0 0 0 6px rgba(255,252,243,.45), inset 0 0 0 7px var(--line-soft), var(--shadow);
+  text-align:center;
+}
+/* コーナーの飾り */
+.hero-frame::before,.hero-frame::after{
+  content:""; position:absolute; width:34px; height:34px; border:1px solid var(--gold);
+}
+.hero-frame::before{ top:14px; left:14px; border-right:0; border-bottom:0; }
+.hero-frame::after{ bottom:14px; right:14px; border-left:0; border-top:0; }
+.hero .crest{
+  width:74px; height:74px; margin:0 auto 22px; border-radius:50%;
+  display:grid; place-items:center;
+  border:1px solid var(--gold); background:radial-gradient(circle at 50% 38%,#fbf4e2,#ead7ad);
+  box-shadow:0 6px 18px -8px rgba(80,55,20,.6), inset 0 0 0 4px rgba(255,253,246,.6);
+  font-family:var(--latin); font-size:2.1rem; font-weight:600; color:var(--vermilion);
+  letter-spacing:.02em;
+}
+.hero .super{ font-family:var(--latin); letter-spacing:.5em; text-transform:uppercase;
+  font-size:.86rem; color:var(--gold-deep); font-weight:600; margin-bottom:18px; }
+.hero h1{
+  font-family:var(--mincho); font-weight:800; color:var(--ink);
+  font-size:clamp(2.3rem,7vw,4.3rem); line-height:1.28; letter-spacing:.06em;
+  margin:.1em 0 .35em; text-shadow:0 1px 0 rgba(255,255,255,.4);
+}
+.hero h1 .small{ display:block; font-size:.42em; letter-spacing:.32em;
+  color:var(--ink-soft); font-weight:600; margin-top:.55em; }
+.hero .tagline{ font-family:var(--mincho); font-size:clamp(1rem,2.4vw,1.22rem);
+  color:var(--ink-soft); letter-spacing:.1em; margin:.4em auto 1.4em; max-width:30em; }
+.hero .latin-tag{ font-family:var(--latin); font-style:italic; font-size:1.15rem;
+  color:var(--gold-deep); letter-spacing:.05em; margin-top:.8em; }
+.hero .couch-accent{ width:min(360px,70%); margin:26px auto 4px;
+  filter:drop-shadow(0 14px 18px rgba(80,50,20,.28)); }
+
+/* ===== プロローグ ===== */
+.prologue{ padding:70px 0 30px; text-align:center; }
+.prologue .lead{
+  font-size:clamp(1.05rem,2.6vw,1.3rem); line-height:2.4; letter-spacing:.08em;
+  color:var(--ink); max-width:30em; margin:26px auto 0; font-weight:500;
+}
+.prologue .lead em{ font-style:normal; color:var(--vermilion-deep);
+  border-bottom:2px solid var(--gold-bright); padding-bottom:1px; }
+.prologue .sub{ color:var(--ink-soft); font-size:1rem; max-width:30em;
+  margin:22px auto 0; letter-spacing:.06em; }
+
+/* ===== エピソード見出し ===== */
+.episode-head{ text-align:center; padding:64px 0 12px; }
+.episode-head .no{ font-family:var(--latin); font-style:italic; font-size:1.15rem;
+  letter-spacing:.2em; color:var(--gold-deep); }
+.episode-head h2{ font-family:var(--mincho); font-weight:800;
+  font-size:clamp(1.9rem,5vw,3rem); letter-spacing:.16em; margin:.18em 0 .1em; color:var(--ink); }
+.episode-head .en{ font-family:var(--latin); letter-spacing:.4em; text-transform:uppercase;
+  font-size:.82rem; color:var(--ink-faint); }
+
+/* ===== プレート（4コマ） ===== */
+.plates{ padding:30px 0 10px; }
+.plate{
+  display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(24px,4vw,58px);
+  align-items:center; margin:0 auto; padding:38px 0;
+}
+.plate + .plate{ border-top:1px solid var(--line-soft); }
+.plate:nth-child(even) .plate-art{ order:2; }
+.plate-art{ position:relative; }
+.plate-art .frame{
+  position:relative; padding:12px; background:var(--paper-3);
+  border:1px solid var(--line);
+  box-shadow:inset 0 0 0 5px #fff8e9, 0 16px 38px -16px rgba(70,45,18,.6);
+}
+.plate-art .frame img{ width:100%; border:1px solid var(--paper-edge); }
+.plate-no{
+  position:absolute; top:-22px; left:-22px; z-index:2;
+  width:64px; height:64px; border-radius:50%;
+  display:grid; place-items:center;
+  background:radial-gradient(circle at 50% 35%, var(--vermilion), var(--vermilion-deep));
+  color:#fbe7cf; font-family:var(--latin); font-size:1.9rem; font-weight:600;
+  box-shadow:0 8px 20px -6px rgba(120,30,15,.7), inset 0 0 0 3px rgba(255,240,210,.35);
+  border:1px solid var(--gold-bright);
+}
+@media(max-width:680px){ .plate-no{ top:-16px; left:-16px; width:52px; height:52px; font-size:1.5rem; } }
+.plate-text{ padding:6px 4px; }
+.plate-text .pk{ font-family:var(--latin); letter-spacing:.34em; text-transform:uppercase;
+  font-size:.74rem; color:var(--gold-deep); font-weight:600; margin-bottom:10px; }
+.plate-text .narr{ font-size:1.08rem; line-height:2.25; letter-spacing:.05em; color:var(--ink); margin:0; }
+.plate-text .narr::first-letter{
+  font-family:var(--latin); float:left; font-size:3.1rem; line-height:.82;
+  padding:6px 12px 2px 0; color:var(--vermilion); font-weight:600;
+}
+.plate-text .quote{
+  position:relative; margin:22px 0 0; padding:14px 0 4px 22px;
+  border-left:2px solid var(--gold-bright);
+  font-size:1.16rem; line-height:2.1; color:var(--vermilion-deep);
+  font-weight:600; letter-spacing:.04em;
+}
+.plate-text .quote::before{ content:"“"; position:absolute; left:-2px; top:-14px;
+  font-family:var(--latin); font-size:2.4rem; color:var(--gold-bright); }
+@media(max-width:760px){
+  .plate{ grid-template-columns:1fr; gap:26px; }
+  .plate:nth-child(even) .plate-art{ order:0; }
+}
+
+/* ===== 細部 ===== */
+.details{ padding:70px 0 20px; text-align:center; }
+.details .head h3{ font-family:var(--mincho); font-weight:700; letter-spacing:.2em;
+  font-size:clamp(1.5rem,4vw,2.1rem); margin:.3em 0 .1em; }
+.details .head .en{ font-family:var(--latin); letter-spacing:.4em; text-transform:uppercase;
+  font-size:.78rem; color:var(--ink-faint); }
+.detail-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(24px,5vw,70px);
+  max-width:760px; margin:42px auto 0; }
+.detail-card{ text-align:center; }
+.detail-card .lens{
+  width:min(220px,62vw); aspect-ratio:1/1; margin:0 auto 20px; border-radius:50%;
+  overflow:hidden; position:relative;
+  border:1px solid var(--gold);
+  box-shadow:0 18px 36px -14px rgba(70,45,18,.6), inset 0 0 0 7px #fbf4e3, inset 0 0 0 8px var(--line);
+}
+.detail-card .lens img{ position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; object-position:center; transform:scale(1.08); }
+.detail-card h4{ font-family:var(--mincho); font-weight:700; letter-spacing:.16em;
+  font-size:1.25rem; margin:0 0 .3em; color:var(--ink); }
+.detail-card .en{ font-family:var(--latin); font-style:italic; letter-spacing:.1em;
+  color:var(--gold-deep); font-size:.95rem; margin-bottom:.6em; }
+.detail-card p{ color:var(--ink-soft); font-size:.98rem; line-height:1.95;
+  max-width:22em; margin:.4em auto 0; letter-spacing:.04em; }
+@media(max-width:600px){ .detail-grid{ grid-template-columns:1fr; gap:48px; } }
+
+/* ===== 蒐集品カード ===== */
+.collection{ padding:80px 0 40px; }
+.coll-card{
+  position:relative; width:min(960px,92vw); margin-inline:auto;
+  display:grid; grid-template-columns:1.1fr 1fr; gap:clamp(24px,4vw,54px); align-items:center;
+  padding:clamp(30px,5vw,56px);
+  background:linear-gradient(180deg,#f8f1de,#efe3c5);
+  border:1px solid var(--line);
+  box-shadow:inset 0 0 0 7px rgba(255,252,243,.5), inset 0 0 0 8px var(--line-soft), var(--shadow);
+}
+.coll-card::before{ content:"COLLECTION №.001"; position:absolute; top:18px; right:24px;
+  font-family:var(--latin); letter-spacing:.3em; font-size:.72rem; color:var(--ink-faint); }
+.coll-visual{ text-align:center; }
+.coll-visual img{ width:min(380px,90%); margin:0 auto;
+  filter:drop-shadow(0 18px 22px rgba(80,50,20,.3)); }
+.coll-info .pk{ font-family:var(--latin); letter-spacing:.34em; text-transform:uppercase;
+  font-size:.74rem; color:var(--gold-deep); font-weight:600; }
+.coll-info h3{ font-family:var(--mincho); font-weight:800; font-size:clamp(1.8rem,4vw,2.5rem);
+  letter-spacing:.12em; margin:.15em 0 .05em; }
+.coll-info .en{ font-family:var(--latin); font-style:italic; color:var(--gold-deep);
+  letter-spacing:.08em; font-size:1.05rem; margin-bottom:1em; }
+.coll-info p{ color:var(--ink); font-size:1rem; line-height:2.05; letter-spacing:.04em; margin:.6em 0 0; }
+.spec{ list-style:none; margin:22px 0 0; padding:18px 0 0; border-top:1px solid var(--line-soft); }
+.spec li{ display:flex; gap:14px; font-size:.92rem; padding:5px 0; color:var(--ink-soft); }
+.spec li .k{ font-family:var(--latin); letter-spacing:.16em; text-transform:uppercase;
+  color:var(--gold-deep); min-width:110px; font-size:.78rem; padding-top:.25em; }
+.spec li .v{ color:var(--ink); }
+@media(max-width:760px){ .coll-card{ grid-template-columns:1fr; }
+  .coll-card::before{ position:static; display:block; text-align:right; margin-bottom:8px; } }
+
+/* ===== クロージング ===== */
+.closing{ text-align:center; padding:84px 0 30px; }
+.closing .tsuzuku{ font-family:var(--mincho); font-weight:700; letter-spacing:.5em;
+  font-size:1.5rem; color:var(--vermilion-deep); }
+.closing p{ color:var(--ink-soft); max-width:26em; margin:22px auto 0; letter-spacing:.06em; }
+.closing .bouquet{ width:120px; margin:34px auto 0; opacity:.95;
+  filter:drop-shadow(0 10px 14px rgba(80,50,20,.22)); }
+
+/* ===== フッター ===== */
+footer{ position:relative; z-index:1; margin-top:50px;
+  background:linear-gradient(180deg, transparent, rgba(60,42,20,.07)); }
+.foot-inner{ width:min(1080px,92vw); margin-inline:auto; padding:40px 0 56px;
+  border-top:1px solid var(--line); text-align:center; }
+.foot-inner .mark{ font-family:var(--latin); font-size:1.4rem; letter-spacing:.1em;
+  color:var(--vermilion); font-weight:600; }
+.foot-inner .jp{ font-family:var(--mincho); letter-spacing:.34em; color:var(--ink-soft);
+  font-size:.92rem; margin-top:.3em; }
+.foot-inner .copy{ font-family:var(--latin); letter-spacing:.18em; color:var(--ink-faint);
+  font-size:.78rem; margin-top:20px; }
+
+/* ===== スクロール演出 ===== */
+.reveal{ opacity:0; transform:translateY(26px); transition:opacity .9s ease, transform .9s ease; }
+.reveal.in{ opacity:1; transform:none; }
+@media(prefers-reduced-motion:reduce){ .reveal{ opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <span class="brand">Henry the Hedgehog</span>
+    <nav>
+      <a href="#prologue">序</a>
+      <a href="#story">第一話</a>
+      <a href="#details">細部</a>
+      <a href="#collection">蒐集品</a>
+    </nav>
+  </div>
+
+  <!-- ===== ヒーロー ===== -->
+  <header class="hero">
+    <div class="hero-frame reveal">
+      <div class="crest">H</div>
+      <p class="super">A Tiny Antique Tale</p>
+      <h1>ハリネズミの<br>ヘンリーさん
+        <span class="small">骨董 鑑定 帖</span>
+      </h1>
+      <p class="tagline">小さな骨董と、世界でいちばん優しい鑑定家の物語。</p>
+      <div class="rule short"><span class="dia"></span></div>
+      <p class="latin-tag">— Elegance, however small, is never diminished. —</p>
+      <img class="couch-accent" src="./assets/couch.png" alt="朱色に金の更紗模様をまとったドールサイズのプティカウチ" loading="lazy" />
+    </div>
+  </header>
+
+  <!-- ===== プロローグ ===== -->
+  <section class="prologue container" id="prologue">
+    <div class="rule short reveal"><span class="dia"></span></div>
+    <p class="kicker reveal" style="text-align:center;padding:0;margin-top:18px;">Prologue</p>
+    <p class="lead reveal">
+      朝の光が差し込む工房に、<br>
+      ひとりの鑑定家がいます。<br>
+      名前は <em>ヘンリー</em>。<br>
+      小さな骨董の声に、耳をすませる<br>ハリネズミです。
+    </p>
+    <p class="sub reveal">
+      手のひらにのるほどの椅子、ドールのための小さな家具。
+      ヘンリーさんは虫眼鏡を片手に、その一品に宿る職人の手仕事と、
+      縮まないエレガンスを、今日もそっと見つけ出します。
+    </p>
+  </section>
+
+  <!-- ===== エピソード見出し ===== -->
+  <div class="episode-head container reveal" id="story">
+    <p class="no">Episode One</p>
+    <h2>プティカウチ</h2>
+    <p class="en">Petite Couch · La Petite Causeuse</p>
+    <div class="rule short" style="margin-top:18px;"><span class="dia"></span></div>
+  </div>
+
+  <!-- ===== 4コマ プレート ===== -->
+  <section class="plates container">
+
+    <article class="plate reveal">
+      <div class="plate-art">
+        <span class="plate-no">1</span>
+        <div class="frame">
+          <img src="./assets/panel-1.png" alt="朝の光が差し込む工房で、ヘンリーさんがプティカウチに見惚れている場面" loading="lazy" />
+        </div>
+      </div>
+      <div class="plate-text">
+        <p class="pk">Awakening · 朝の出会い</p>
+        <p class="narr">朝の光が差し込む工房で、ヘンリーさんは目を覚ましました。漆塗りのフレームに、燃えるような朱色と金の更紗模様。優美に波打つ背もたれのプティカウチに、すっかり惚れたらしい。</p>
+        <p class="quote">これはまた……ずいぶんと華やかなご婦人だ</p>
+      </div>
+    </article>
+
+    <article class="plate reveal">
+      <div class="plate-art">
+        <span class="plate-no">2</span>
+        <div class="frame">
+          <img src="./assets/panel-2.png" alt="ヘンリーさんが虫眼鏡で背もたれの曲線と猫脚の彫刻をたどる場面" loading="lazy" />
+        </div>
+      </div>
+      <div class="plate-text">
+        <p class="pk">Inspection · 細密の検分</p>
+        <p class="narr">ヘンリーさんは虫眼鏡で背もたれの曲線をたどります。黒い木肌に彫られた小さな花、限界まで削り出された猫脚。</p>
+        <p class="quote">カンティーニュのシンボルといえばカウチ。それをドールサイズに写したとなると、恐れ入る</p>
+      </div>
+    </article>
+
+    <article class="plate reveal">
+      <div class="plate-art">
+        <span class="plate-no">3</span>
+        <div class="frame">
+          <img src="./assets/panel-3.png" alt="ヘンリーさんが張り地に触れ、金の唐草模様がきらりと光る場面" loading="lazy" />
+        </div>
+      </div>
+      <div class="plate-text">
+        <p class="pk">The Fabric · 張り地の煌めき</p>
+        <p class="narr">そっと張り地に触れると、金の唐草がきらりと光りました。黒と朱と金、静と動が、ひとつの椅子に同居している――</p>
+        <p class="quote">これは見る者の心を掴んで離さないね</p>
+      </div>
+    </article>
+
+    <article class="plate reveal">
+      <div class="plate-art">
+        <span class="plate-no">4</span>
+        <div class="frame">
+          <img src="./assets/panel-4.png" alt="ヘンリーさんが満足げにうなずき、帽子のつばに手をやる場面" loading="lazy" />
+        </div>
+      </div>
+      <div class="plate-text">
+        <p class="pk">The Verdict · 鑑定の結び</p>
+        <p class="narr">ヘンリーさんは満足げにうなずいて、帽子のつばに手をやりました。大きさは三分の一でも、宿るエレガンスは縮まない。</p>
+        <p class="quote">小さな主役の、堂々たる舞台だ</p>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- ===== 細部 ===== -->
+  <section class="details container" id="details">
+    <div class="head reveal">
+      <div class="rule short"><span class="dia"></span></div>
+      <h3>細部に宿るもの</h3>
+      <p class="en">In the Details</p>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-card reveal">
+        <div class="lens"><img src="./assets/detail-carving.png" alt="黒い木肌に彫られた小さな花と、削り出された猫脚の彫刻" loading="lazy" /></div>
+        <h4>彫刻の花と猫脚</h4>
+        <p class="en">Carved Bloom</p>
+        <p>黒い木肌に咲く、米粒ほどの花。限界まで削り出された猫脚の曲線は、原寸の品とまったく同じ手数で仕上げられています。</p>
+      </div>
+      <div class="detail-card reveal">
+        <div class="lens"><img src="./assets/detail-fabric.png" alt="朱色の生地に金糸で織られた更紗・唐草模様の張り地" loading="lazy" /></div>
+        <h4>金の更紗模様</h4>
+        <p class="en">Golden Arabesque</p>
+        <p>燃えるような朱の生地に、金糸の唐草が踊ります。光の角度でひそやかに煌めく、見る者の心を掴んで離さない一面です。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 蒐集品カード ===== -->
+  <section class="collection" id="collection">
+    <div class="coll-card reveal">
+      <div class="coll-visual">
+        <img src="./assets/couch.png" alt="ドールサイズのプティカウチの全体像。朱色に金の更紗、黒漆のフレームと猫脚" loading="lazy" />
+      </div>
+      <div class="coll-info">
+        <p class="pk">Henry's Collection</p>
+        <h3>プティカウチ</h3>
+        <p class="en">The Petite Couch</p>
+        <p>優美に波打つフレーム、朱色に金の更紗模様。猫脚のやわらかな曲線、彫刻の花、小さな引き出しまで――どこをとっても、職人の手仕事が息づいています。小さくても、カンティーニュの誇りはそのままに。大切なドールのための、特別な場所。</p>
+        <ul class="spec">
+          <li><span class="k">Maker</span><span class="v">カンティーニュ工房</span></li>
+          <li><span class="k">Scale</span><span class="v">原寸の三分の一（ドールサイズ）</span></li>
+          <li><span class="k">Material</span><span class="v">黒漆のフレーム ／ 金更紗の張り地</span></li>
+          <li><span class="k">Verdict</span><span class="v">小さな主役の、堂々たる舞台</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== クロージング ===== -->
+  <section class="closing container">
+    <div class="rule short reveal"><span class="dia"></span></div>
+    <p class="tsuzuku reveal">つ づ く</p>
+    <p class="reveal">ヘンリーさんの工房には、まだ声をかけてほしい小さな骨董が、いくつも眠っています。次はどんな一品が、朝の光に照らされるのでしょう。</p>
+    <img class="bouquet reveal" src="./assets/bouquet.png" alt="工房に飾られた小さな花束" loading="lazy" />
+  </section>
+
+  <!-- ===== フッター ===== -->
+  <footer>
+    <div class="foot-inner">
+      <p class="mark">Henry</p>
+      <p class="jp">ハリネズミのヘンリーさん 骨董鑑定帖</p>
+      <p class="copy">第一話「プティカウチ」 · A Tiny Antique Tale</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  // スクロールで静かに浮かび上がる演出
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{ threshold:.14 });
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
