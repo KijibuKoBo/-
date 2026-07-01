@@ -6,10 +6,13 @@
 <title>松永工房クラフトストーリー 〜小さな家具と、届かなかった手紙〜</title>
 <style>
 /* ==========================================================
-   松永工房クラフトストーリー 第3章
-   「押す作業」から「職人として判断するゲーム」へ
+   松永工房クラフトストーリー 第4章
+   「松永工房の世界を体験するゲーム」へ
+   - 実在家具（プティカウチ・密談椅子・ジュエリーチェスト）
+   - 時間と納期（品質を取るか、期日を取るか）
+   - 設備投資（お金の使い道）
+   - 手紙のきれはしを集めるメインストーリー
    絵本風 × 木の温かみ × ちょっと高級感
-   基調色: クリーム / ブラウン / 淡いグリーン / 木目
    ========================================================== */
 :root{
   --cream:      #faf3e3;   /* 背景クリーム */
@@ -22,6 +25,7 @@
   --green:      #9dbb8f;   /* 淡いグリーン */
   --green-deep: #7a9c6e;
   --gold:       #c9a24b;   /* 高級感アクセント */
+  --red:        #b8563e;   /* 納期超過などの注意色 */
   --paper:      #fffdf5;   /* カード紙色 */
   --shadow:     0 4px 12px rgba(107,74,47,.18);
 }
@@ -68,12 +72,12 @@ header h1 .sub{
   color:#7d5a3c; margin-top:2px; letter-spacing:.02em;
 }
 .status{
-  display:flex; justify-content:center; gap:8px; margin-top:8px; flex-wrap:wrap;
+  display:flex; justify-content:center; gap:6px; margin-top:8px; flex-wrap:wrap;
 }
 .status .chip{
   background:var(--paper); border:2px solid var(--brown-soft);
-  border-radius:999px; padding:3px 11px;
-  font-size:.78rem; font-weight:bold; box-shadow:0 2px 3px rgba(107,74,47,.15);
+  border-radius:999px; padding:3px 10px;
+  font-size:.74rem; font-weight:bold; box-shadow:0 2px 3px rgba(107,74,47,.15);
 }
 .lvbar{
   margin:7px auto 0; width:78%; height:8px; border-radius:999px;
@@ -147,16 +151,17 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   padding:14px 16px 14px;
   position:relative; overflow:hidden;
 }
-.card .art{ width:128px; height:128px; margin:0 auto; display:block;
+.card .art{ width:120px; height:120px; margin:0 auto; display:block;
   filter:drop-shadow(0 4px 4px rgba(107,74,47,.22)); }
 .card .art svg{ width:100%; height:100%; display:block; }
-.card h2{ text-align:center; font-size:1.12rem; margin-top:2px; letter-spacing:.04em; }
-.card .desc{ font-size:.78rem; color:var(--brown-mid); text-align:center; margin-top:5px; line-height:1.6; }
-.card .meta{ display:flex; justify-content:center; gap:10px; margin-top:8px; font-size:.74rem; }
+.card h2{ text-align:center; font-size:1.1rem; margin-top:2px; letter-spacing:.04em; }
+.card .desc{ font-size:.76rem; color:var(--brown-mid); text-align:center; margin-top:4px; line-height:1.6; }
+.card .meta{ display:flex; justify-content:center; gap:8px; margin-top:8px; font-size:.72rem; flex-wrap:wrap; }
 .card .meta span{
-  background:var(--cream-deep); border-radius:999px; padding:2px 10px;
+  background:var(--cream-deep); border-radius:999px; padding:2px 9px;
   border:1px solid var(--wood-dark);
 }
+.card .meta .late{ color:var(--red); border-color:var(--red); font-weight:bold; }
 
 /* 進捗バー */
 .progress{
@@ -233,7 +238,7 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .select-item .thumb svg{ width:100%; height:100%; }
 .select-item .icon{ font-size:2rem; width:52px; text-align:center; }
 .select-item .name{ font-weight:bold; font-size:.92rem; }
-.select-item .info{ font-size:.7rem; color:var(--brown-mid); margin-top:2px; line-height:1.5; }
+.select-item .info{ font-size:.68rem; color:var(--brown-mid); margin-top:2px; line-height:1.5; }
 .select-item.locked{
   opacity:.55; filter:grayscale(.6); cursor:default;
   border-style:dashed; box-shadow:none;
@@ -274,11 +279,11 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
   box-shadow:0 3px 0 var(--brown-soft);
   transition:transform .1s;
-  min-height:84px;                          /* 親指で押しやすい大きさに */
+  min-height:88px;                          /* 親指で押しやすい大きさに */
 }
 .choice-btn .c-icon{ display:block; font-size:1.6rem; line-height:1.2; }
 .choice-btn .c-label{ display:block; font-size:.92rem; margin-top:3px; }
-.choice-btn .c-note{ display:block; font-size:.62rem; font-weight:normal; color:var(--brown-mid); margin-top:2px; }
+.choice-btn .c-note{ display:block; font-size:.6rem; font-weight:normal; color:var(--brown-mid); margin-top:2px; line-height:1.4; }
 .choice-btn:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-soft); }
 .choice-btn:disabled{ opacity:.55; box-shadow:none; cursor:default; }  /* 作業中 */
 .choice-teinei{ border-color:var(--green-deep); box-shadow:0 3px 0 var(--green-deep);
@@ -288,20 +293,20 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 /* 納品ボタン */
 .deliver-btn{
   display:block; width:100%; margin-top:4px;
-  font-family:inherit; font-size:1rem; font-weight:bold; color:#fff;
+  font-family:inherit; font-size:.96rem; font-weight:bold; color:#fff;
   padding:14px; border-radius:18px; border:none; cursor:pointer;
   background:linear-gradient(180deg,var(--green),var(--green-deep));
   box-shadow:0 4px 0 #5f7d55, var(--shadow);
-  letter-spacing:.06em;
+  letter-spacing:.04em;
   animation:pulse 1.4s infinite;
 }
 .deliver-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #5f7d55; }
 
-/* ---------- 固定フッター（図鑑・物語・工房） ---------- */
+/* ---------- 固定フッター（図鑑・物語・設備・工房） ---------- */
 footer{
   position:sticky; bottom:0; z-index:30;   /* スマホで常に押せる位置に固定 */
-  display:flex; gap:8px;
-  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  display:flex; gap:6px;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   background:
     repeating-linear-gradient(90deg,
       rgba(107,74,47,.08) 0 3px, transparent 3px 34px),
@@ -311,9 +316,9 @@ footer{
   box-shadow:0 -4px 12px rgba(107,74,47,.2);
 }
 .foot-btn{
-  flex:1; font-family:inherit; font-size:.85rem; font-weight:bold; color:var(--brown);
+  flex:1; font-family:inherit; font-size:.76rem; font-weight:bold; color:var(--brown);
   min-height:52px;                          /* 指で押しやすい高さ */
-  padding:8px 4px; border-radius:16px; cursor:pointer;
+  padding:8px 2px; border-radius:14px; cursor:pointer;
   border:2.5px solid var(--brown-mid);
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
   box-shadow:0 3px 0 var(--brown-mid);
@@ -388,8 +393,41 @@ footer{
 .story-item h4{ font-size:.88rem; margin-bottom:6px; }
 .story-item p{ font-size:.8rem; line-height:1.9; text-align:justify; }
 .story-item.locked{ opacity:.6; }
-.story-item.locked p{ letter-spacing:.2em; }
 .story-item.final{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,75,.25); }
+/* 手紙のきれはし（メインストーリー） */
+.letter-item{
+  border:2px solid #d9c48f; border-radius:4px 14px 4px 14px;
+  padding:10px 13px; margin-bottom:10px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 22px, rgba(176,138,99,.12) 22px 23px),
+    linear-gradient(180deg,#fdf8e9,#f7eed3);           /* 便箋風の罫線 */
+  font-size:.78rem; line-height:1.95; text-align:justify;
+}
+.letter-item h4{ font-size:.8rem; margin-bottom:4px; color:#8a6a2f; }
+.letter-item.locked{ opacity:.55; filter:grayscale(.4); }
+
+/* 設備（お金の使い道） */
+.gear-item{
+  display:flex; gap:12px; align-items:center;
+  border:2px solid var(--wood-light); border-radius:14px;
+  padding:10px 12px; margin-bottom:10px; background:#fffdf7;
+}
+.gear-item .g-icon{ font-size:1.9rem; width:44px; text-align:center; }
+.gear-item .g-name{ font-weight:bold; font-size:.88rem; }
+.gear-item .g-desc{ font-size:.7rem; color:var(--brown-mid); margin-top:2px; line-height:1.6; }
+.gear-item .g-body{ flex:1; }
+.gear-buy{
+  font-family:inherit; font-weight:bold; font-size:.74rem; color:#fff;
+  padding:9px 12px; border-radius:12px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,var(--green),var(--green-deep));
+  box-shadow:0 3px 0 #5f7d55; white-space:nowrap;
+}
+.gear-buy:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 #5f7d55; }
+.gear-buy:disabled{ background:var(--cream-deep); color:var(--brown-soft); box-shadow:none; cursor:default; }
+.gear-owned{
+  font-size:.74rem; font-weight:bold; color:var(--green-deep);
+  border:2px solid var(--green-deep); border-radius:999px; padding:6px 10px; white-space:nowrap;
+}
 
 /* 工房紹介ページ */
 .about-hero{ text-align:center; margin-bottom:12px; }
@@ -413,6 +451,7 @@ footer{
   font-size:.84rem; line-height:2; margin:10px 0; text-align:justify;
   padding:12px; background:#fdf6e6; border-radius:12px;
   border:1.5px dashed var(--gold);
+  white-space:pre-line;                   /* 物語＋手紙のきれはしを段落表示 */
 }
 .pop-badge{ font-size:2.2rem; display:block; animation:pulse 1.2s infinite; }
 </style>
@@ -426,8 +465,10 @@ footer{
   </h1>
   <div class="status">
     <span class="chip">💰 <span id="st-money">0</span>円</span>
-    <span class="chip">✨ 経験値 <span id="st-exp">0</span></span>
-    <span class="chip">🏠 工房Lv.<span id="st-level">1</span></span>
+    <span class="chip">✨ <span id="st-exp">0</span></span>
+    <span class="chip">🏠 Lv.<span id="st-level">1</span></span>
+    <span class="chip">📅 <span id="st-day">1</span>日目</span>
+    <span class="chip">⏱ 残り<span id="st-hours">8</span>h</span>
   </div>
   <div class="lvbar"><i id="lv-fill"></i></div>
   <div class="lvbar-label" id="lv-label"></div>
@@ -448,11 +489,12 @@ footer{
 <!-- ========== 工程エリア：工程チップ＋3択ボタン／納品ボタン ========== -->
 <div id="steps-area"><!-- JSで描画 --></div>
 
-<!-- ========== 固定フッター：図鑑・物語・工房 ========== -->
+<!-- ========== 固定フッター：図鑑・物語・設備・工房 ========== -->
 <footer>
   <button class="foot-btn" id="btn-dex">📖<br>図鑑</button>
-  <button class="foot-btn" id="btn-story">📜<br>物語</button>
-  <button class="foot-btn" id="btn-about">🏠<br>工房紹介</button>
+  <button class="foot-btn" id="btn-story">💌<br>物語</button>
+  <button class="foot-btn" id="btn-gear">🛠<br>設備</button>
+  <button class="foot-btn" id="btn-about">🏠<br>工房</button>
 </footer>
 
 <!-- ========== モーダル：図鑑 ========== -->
@@ -467,13 +509,25 @@ footer{
   </div>
 </div>
 
-<!-- ========== モーダル：物語 ========== -->
+<!-- ========== モーダル：物語（手紙＋家具の物語） ========== -->
 <div class="modal-back" id="story-modal">
   <div class="modal">
     <button class="x-close" data-close="story-modal" aria-label="とじる">✕</button>
-    <h3>📜 工房の物語</h3>
+    <h3>💌 届かなかった手紙</h3>
+    <div id="letter-list"></div>
+    <div class="dex-section-title">📜 家具の物語</div>
     <div id="story-list"></div>
     <button class="close" data-close="story-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：設備投資 ========== -->
+<div class="modal-back" id="gear-modal">
+  <div class="modal">
+    <button class="x-close" data-close="gear-modal" aria-label="とじる">✕</button>
+    <h3>🛠 工房の設備</h3>
+    <div id="gear-list"></div>
+    <button class="close" data-close="gear-modal">とじる</button>
   </div>
 </div>
 
@@ -536,6 +590,23 @@ const SVG_ART = {
     <ellipse cx="48" cy="40" rx="9" ry="3.5" fill="#f2cf9d" opacity=".8"/> <!-- つや -->
   </svg>`,
 
+  /* プティカウチ */
+  couch: `<svg viewBox="0 0 120 120" role="img" aria-label="プティカウチ">
+    <ellipse cx="60" cy="106" rx="46" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
+    <rect x="22" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>      <!-- 脚 -->
+    <rect x="90" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>
+    <path d="M18 44 Q18 30 32 30 L88 30 Q102 30 102 44 L102 78 L18 78 Z" fill="#b5c9a4"/> <!-- 背もたれ -->
+    <path d="M24 40 Q60 32 96 40" stroke="#9dbb8f" stroke-width="2.4" fill="none" opacity=".8"/> <!-- 布の流れ -->
+    <rect x="12" y="52" width="18" height="36" rx="9" fill="#a3b98f"/>    <!-- 左ひじ掛け -->
+    <rect x="90" y="52" width="18" height="36" rx="9" fill="#a3b98f"/>    <!-- 右ひじ掛け -->
+    <rect x="26" y="62" width="34" height="20" rx="8" fill="#cfe0bd"/>    <!-- クッション左 -->
+    <rect x="60" y="62" width="34" height="20" rx="8" fill="#c4d8b0"/>    <!-- クッション右 -->
+    <rect x="18" y="80" width="84" height="16" rx="7" fill="#8a5a30"/>    <!-- 木の台座 -->
+    <path d="M24 88 Q60 84 96 88" stroke="#a9713f" stroke-width="1.8" fill="none"/> <!-- 木目 -->
+    <circle cx="43" cy="72" r="2" fill="#a3b98f"/><circle cx="77" cy="72" r="2" fill="#9cb489"/> <!-- ボタン -->
+    <path d="M20 36 L26 34" stroke="#e6efdb" stroke-width="2.4" stroke-linecap="round" opacity=".9"/> <!-- つや -->
+  </svg>`,
+
   /* プティチェスト */
   chest: `<svg viewBox="0 0 120 120" role="img" aria-label="プティチェスト">
     <ellipse cx="60" cy="108" rx="42" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
@@ -551,6 +622,24 @@ const SVG_ART = {
     <path d="M37 46 Q60 43 83 46" stroke="#c98d54" stroke-width="1.4" fill="none"/>   <!-- 木目 -->
     <path d="M37 75 Q60 72 83 75" stroke="#c98d54" stroke-width="1.4" fill="none"/>
     <path d="M28 36 L34 36" stroke="#f2cf9d" stroke-width="2.4" stroke-linecap="round" opacity=".8"/> <!-- つや -->
+  </svg>`,
+
+  /* 密談椅子（背の高いウィングチェア） */
+  mitsudan: `<svg viewBox="0 0 120 120" role="img" aria-label="密談椅子">
+    <ellipse cx="60" cy="108" rx="40" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
+    <rect x="30" y="96" width="8" height="11" rx="3" fill="#6e4526"/>     <!-- 脚 -->
+    <rect x="82" y="96" width="8" height="11" rx="3" fill="#6e4526"/>
+    <path d="M32 14 Q60 4 88 14 L92 74 L28 74 Z" fill="#8a4a3a"/>         <!-- 高い背もたれ -->
+    <path d="M32 14 Q26 16 26 26 L28 74 L36 74 L34 16 Z" fill="#7a3f31"/> <!-- 左ウィング -->
+    <path d="M88 14 Q94 16 94 26 L92 74 L84 74 L86 16 Z" fill="#7a3f31"/> <!-- 右ウィング -->
+    <path d="M40 22 Q60 14 80 22" stroke="#a05c48" stroke-width="2.4" fill="none" opacity=".9"/> <!-- 布の陰影 -->
+    <path d="M38 36 Q60 30 82 36" stroke="#a05c48" stroke-width="2" fill="none" opacity=".7"/>
+    <rect x="30" y="70" width="60" height="16" rx="8" fill="#a05c48"/>    <!-- 座面クッション -->
+    <rect x="26" y="84" width="68" height="12" rx="5" fill="#6e4526"/>    <!-- 木の台座 -->
+    <path d="M32 90 Q60 87 88 90" stroke="#8a5a30" stroke-width="1.6" fill="none"/> <!-- 木目 -->
+    <circle cx="60" cy="48" r="2.2" fill="#c98d76"/>                      <!-- ボタン飾り -->
+    <circle cx="48" cy="56" r="2" fill="#b87a63"/><circle cx="72" cy="56" r="2" fill="#b87a63"/>
+    <path d="M38 18 L44 15" stroke="#c98d76" stroke-width="2.2" stroke-linecap="round" opacity=".8"/> <!-- つや -->
   </svg>`,
 
   /* 三面鏡ドレッサー */
@@ -573,6 +662,27 @@ const SVG_ART = {
     <rect x="26" y="104" width="8" height="7" rx="3" fill="#8a5a30"/>     <!-- 脚 -->
     <rect x="86" y="104" width="8" height="7" rx="3" fill="#8a5a30"/>
     <path d="M46 12 Q50 10 54 12" stroke="#c9a24b" stroke-width="1.6" fill="none"/> <!-- 彫刻飾り -->
+  </svg>`,
+
+  /* ジュエリーチェスト */
+  jewelry: `<svg viewBox="0 0 120 120" role="img" aria-label="ジュエリーチェスト">
+    <ellipse cx="60" cy="110" rx="38" ry="5.5" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
+    <rect x="33" y="100" width="8" height="9" rx="3" fill="#6e4526"/>     <!-- 脚 -->
+    <rect x="79" y="100" width="8" height="9" rx="3" fill="#6e4526"/>
+    <rect x="30" y="26" width="60" height="76" rx="6" fill="#9a6435" stroke="#6e4526" stroke-width="3"/> <!-- 細身の本体 -->
+    <path d="M28 18 Q60 8 92 18 L92 28 L28 28 Z" fill="#6e4526"/>         <!-- ふっくら天板 -->
+    <path d="M34 22 Q60 15 86 22" stroke="#8a5a30" stroke-width="1.6" fill="none"/> <!-- 天板の木目 -->
+    <rect x="37" y="34" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/> <!-- 小抽斗×4 -->
+    <rect x="37" y="50" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
+    <rect x="37" y="66" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
+    <rect x="37" y="82" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
+    <circle cx="60" cy="40.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/> <!-- 金の取っ手 -->
+    <circle cx="60" cy="56.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
+    <circle cx="60" cy="72.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
+    <circle cx="60" cy="88.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
+    <path d="M96 30 l2.2 4.6 4.8.6-3.6 3.4.9 4.9-4.3-2.4-4.3 2.4.9-4.9-3.6-3.4 4.8-.6 Z" fill="#e8c04b"/> <!-- きらめき -->
+    <circle cx="24" cy="52" r="2.4" fill="#e8c04b" opacity=".8"/>
+    <path d="M34 30 L40 30" stroke="#dfae72" stroke-width="2.2" stroke-linecap="round" opacity=".8"/> <!-- つや -->
   </svg>`
 };
 
@@ -580,8 +690,10 @@ const SVG_ART = {
    ゲームデータ
    ----------------------------------------------------------
    家具を追加するときは FURNITURE 配列にオブジェクトを
-   1つ足すだけでOK（図鑑・物語・解放判定・品質はすべて自動）。
+   1つ足すだけでOK（図鑑・物語・手紙・解放判定はすべて自動）。
    art は SVG_ART のキー名（なければ icon の絵文字で表示）。
+   deadline: 納期（時間）。工程の合計時間がこれを超えると納期おくれ。
+   letter:   その家具ではじめて見つかる「手紙のきれはし」。
    ========================================================== */
 const FURNITURE = [
   {
@@ -590,8 +702,9 @@ const FURNITURE = [
     icon: "🪑",
     art: "stool",
     description: "工房の定番。まあるい座面がかわいい、木のぬくもりを感じる椅子。",
-    price: 1200,          // 基本価格（品質で変動）
+    price: 1200,          // 基本価格（品質・納期で変動）
     exp: 10,              // 納品でもらえる経験値
+    deadline: 10,         // 納期（時間）
     unlockLevel: 1,       // この工房レベルで解放
     unlocked: true,       // 初期解放フラグ
     steps: [
@@ -600,7 +713,29 @@ const FURNITURE = [
       { label: "塗装する",   icon: "🖌️", msg: "オイルを薄く伸ばすと、木目がふわっと浮かびあがった。" },
       { label: "検品する",   icon: "🔍", msg: "がたつきなし、ささくれなし。うん、いい椅子だ。" }
     ],
-    story: "はじめて作った小さな椅子は、工房の窓辺に置かれた。朝の光を受けて、木目が少しだけ誇らしげに見えた。"
+    story: "はじめて作った小さな椅子は、工房の窓辺に置かれた。朝の光を受けて、木目が少しだけ誇らしげに見えた。",
+    letter: "工房の古い道具箱の底で、破れた便箋のきれはしを見つけた。「……ヘンリー様。この手紙を書くのは、これで三度目です。何度書いても、途中でペンが止まってしまうのです……」——続きは、どこかの家具の中？"
+  },
+  {
+    id: "couch",
+    name: "プティカウチ",
+    icon: "🛋️",
+    art: "couch",
+    description: "小さなカウチ。ふたりには少しせまくて、ひとりと一匹にはちょうどいい。",
+    price: 2800,
+    exp: 20,
+    deadline: 12,
+    unlockLevel: 2,
+    unlocked: false,
+    steps: [
+      { label: "木材を選ぶ",       icon: "🪵", msg: "しなやかで丈夫なブナ材。カウチの骨組みにぴったりだ。" },
+      { label: "フレームを組む",   icon: "🔨", msg: "ほぞを組んで、ゆすってもきしまない骨組みができた。" },
+      { label: "クッションを張る", icon: "🪡", msg: "淡いグリーンの布を、しわなくぴんと張った。" },
+      { label: "塗装する",         icon: "🖌️", msg: "木部にオイルをなじませ、布との境目を美しく整えた。" },
+      { label: "検品する",         icon: "🔍", msg: "座ってみる。……立ちたくなくなる。これは良いカウチだ。" }
+    ],
+    story: "小さなカウチは、ふたりで座るには少しせまい。だからこそ、猫と、本と、ひとりの午後にちょうどよかった。",
+    letter: "カウチの張り地の下から、二枚目のきれはし。「あなたが初めてこの工房に来た日を覚えています。あなたは小さな椅子を、まるで生きもののように撫でました。ああ、この人だ、と思ったのです……」"
   },
   {
     id: "chest",
@@ -610,6 +745,7 @@ const FURNITURE = [
     description: "アンティーク風の小さなチェスト。引き出しには、だいじなものをひとつだけ。",
     price: 3500,
     exp: 25,
+    deadline: 12,
     unlockLevel: 2,
     unlocked: false,
     steps: [
@@ -619,7 +755,29 @@ const FURNITURE = [
       { label: "塗装する",       icon: "🖌️", msg: "飴色の塗料を重ねて、時を経たような深い色に。" },
       { label: "検品する",       icon: "🔍", msg: "引き出しの奥まで、ていねいに拭きあげた。" }
     ],
-    story: "小さな引き出しの奥には、誰かの大切なものがしまわれる。指輪か、手紙か、それとも言えなかった一言か。"
+    story: "小さな引き出しの奥には、誰かの大切なものがしまわれる。指輪か、手紙か、それとも言えなかった一言か。",
+    letter: "引き出しの奥に、三枚目のきれはしが貼りついていた。「わたしはもう、長くはないのでしょう。悔いはありません。ただ、心残りは、たったひとつだけ……」"
+  },
+  {
+    id: "mitsudan",
+    name: "密談椅子",
+    icon: "🪑",
+    art: "mitsudan",
+    description: "背の高いウィングチェア。ひそひそ話と、内緒の約束がよく似合う。",
+    price: 5000,
+    exp: 35,
+    deadline: 12,
+    unlockLevel: 3,
+    unlocked: false,
+    steps: [
+      { label: "木材を選ぶ",     icon: "🪵", msg: "どっしりしたウォールナット。長話を支える椅子には、これだ。" },
+      { label: "背もたれを彫る", icon: "🗡️", msg: "声を包みこむような、高い背もたれを彫り出した。" },
+      { label: "座面を張る",     icon: "🪡", msg: "深い臙脂の布を張る。座った人の秘密ごと、受けとめる色だ。" },
+      { label: "塗装する",       icon: "🖌️", msg: "つや消しの仕上げ。ひかえめな椅子ほど、話がはずむ。" },
+      { label: "検品する",       icon: "🔍", msg: "座って耳をすます。……この椅子は、聞き上手だ。" }
+    ],
+    story: "背の高い椅子は、ひそひそ話がよく似合う。ここで交わされた約束は、なぜかちゃんと守られるのだという。",
+    letter: "座面の裏から、四枚目のきれはし。「あなたに伝えそびれた、大切な言葉があるのです。面と向かうと、どうしても言えませんでした。だからわたしは、この椅子の作り方をあなたに教えたのです……」"
   },
   {
     id: "dresser",
@@ -629,6 +787,7 @@ const FURNITURE = [
     description: "工房の技を集めた特別な一台。三枚の鏡が、いろんな自分を映してくれる。",
     price: 8000,
     exp: 60,
+    deadline: 15,
     unlockLevel: 3,
     unlocked: false,
     steps: [
@@ -639,41 +798,66 @@ const FURNITURE = [
       { label: "塗装する",   icon: "🖌️", msg: "仕上げのワックスで、上品なつやをまとわせた。" },
       { label: "検品する",   icon: "🔍", msg: "鏡の中の自分と目が合った。ちょっと職人の顔になってきたかも。" }
     ],
-    story: "ヘンリーさんは鏡をのぞきこんだ。そこには、今の自分だけでなく、家具に込められた職人の時間まで映っているようだった。"
+    story: "ヘンリーさんは鏡をのぞきこんだ。そこには、今の自分だけでなく、家具に込められた職人の時間まで映っているようだった。",
+    letter: "鏡の裏板から、五枚目のきれはし。「覚えていますか。雨の日の工房で、ふたりで直した三面鏡を。あなたは鏡の中のわたしに向かって、不器用に笑いましたね。あの日のことを、わたしは何度も思い出します……」"
+  },
+  {
+    id: "jewelry",
+    name: "ジュエリーチェスト",
+    icon: "💍",
+    art: "jewelry",
+    description: "小さな抽斗がならぶ宝物の家。いちばん小さな抽斗に、いちばん大きな思い出を。",
+    price: 12000,
+    exp: 80,
+    deadline: 15,
+    unlockLevel: 4,
+    unlocked: false,
+    steps: [
+      { label: "木材を選ぶ",       icon: "🪵", msg: "きめの細かいチェリー材。宝物を守る木は、静かで強い。" },
+      { label: "小さな抽斗を作る", icon: "📦", msg: "指先ほどの抽斗を、ひとつ、またひとつ。息を止めて組む。" },
+      { label: "内張りを張る",     icon: "🪡", msg: "深紅のベルベットを敷く。指輪の帰る場所ができた。" },
+      { label: "金具を付ける",     icon: "🔩", msg: "小さな金の取っ手たち。ならぶと星座のようだ。" },
+      { label: "塗装する",         icon: "🖌️", msg: "何度も塗り重ねて、鏡のようなつやに仕上げた。" },
+      { label: "検品する",         icon: "🔍", msg: "全部の抽斗を開けて、閉めた。カタリ、と良い音がした。" }
+    ],
+    story: "いちばん小さな抽斗には、いちばん大きな思い出が入る。ジュエリーチェストとは、そういう家具なのだ。",
+    letter: "鍵付きのいちばん小さな抽斗に、最後のきれはしが入っていた。「——ありがとう。わたしの家具たちを、どうか頼みます。そしてどうか、あなたの毎日が……」……手紙のきれはしが、すべてそろった。"
   }
 ];
 
-/* 最終章：すべての家具の物語を集めると解放される（連載・ヘンリーの物語） */
+/* 最終章：すべての手紙のきれはしを集めると解放される（連載・ヘンリーの物語） */
 const FINAL_STORY = {
   id: "final",
   title: "最終章　届かなかった手紙",
-  text: "ある日、プティチェストの引き出しの奥から、古い手紙が見つかった。宛名はヘンリーさん。差出人は、遠い昔にこの工房で働いていた職人だった。「あなたの毎日が、この家具のように長く、あたたかくありますように」。届かなかった手紙は、何十年もの時を経て、小さな家具と一緒にちゃんと届いたのだ。ヘンリーさんは三面鏡の前でその手紙を読み、少しだけ泣いて、たくさん笑った。——松永工房の家具には、物語が宿る。きみが作ったあの椅子にも、きっと。"
+  text: "六枚のきれはしを、作業台の上でそっとつなぎ合わせた。それは、遠い昔この工房で働いていた老職人から、若き日のヘンリーさんへの手紙だった。「あなたに伝えそびれた言葉は、けっきょく全部、家具に込めてしまいました。あなたの毎日が、この家具たちのように長く、あたたかくありますように」。出されることのなかった手紙は、何十年もの時を経て、小さな家具たちと一緒に、ちゃんと届いたのだ。ヘンリーさんは三面鏡の前でその手紙を読み、少しだけ泣いて、たくさん笑った。——松永工房の家具には、物語が宿る。きみが作ったあの椅子にも、きっと。"
 };
 
 /* ----------------------------------------------------------
    品質システム（100点満点）
-   素材の品質 BASE_QUALITY からスタートし、工程ごとの
-   「ていねい／ふつう／急ぐ」の判断で上下する。
-   - ていねい: +12（じっくり。作業時間も長い）
-   - ふつう  : +6 （安定）
-   - 急ぐ    : +1〜+10のランダム。ときどき手がすべって品質低下
+   素材の品質（BASE_QUALITY＋設備ボーナス）からスタートし、
+   工程ごとの「ていねい／ふつう／急ぐ」の判断で上下する。
+   - ていねい: +12・3時間（じっくり）
+   - ふつう  : +6 ・2時間（安定）
+   - 急ぐ    : +1〜+10ランダム・1時間。ときどき手がすべって品質低下
+   時間を使いすぎると納期おくれ → 品質を取るか、期日を取るか。
    ---------------------------------------------------------- */
-const BASE_QUALITY = 50;   // 素材そのものの品質。ここに職人の腕が上乗せされる
+const BASE_QUALITY = 50;   // 素材そのものの品質。設備と腕前が上乗せされる
+const HOURS_PER_DAY = 8;   // 1日の作業時間
 
 const CHOICES = [
-  { id: "teinei", label: "ていねい", icon: "🌸", note: "品質+12 じっくり", cls: "choice-teinei",
-    time: 750,                                  // 作業の「所要時間感」(ms)
+  { id: "teinei", label: "ていねい", icon: "🌸", note: "品質+12<br>⏱3時間", cls: "choice-teinei",
+    time: 750, hours: 3,
     pts: () => 12,
     working: "じっくり、じっくり…",
     henry: ["うむ、木目とじっくり向き合っておるな。", "急がば回れ。それが職人の速さじゃよ。",
             "その手つき、もう見習いではないのう。", "道具を大事に使う者は、良い仕事をするもんじゃ。"] },
-  { id: "futsuu", label: "ふつう",   icon: "🙂", note: "品質+6 安定", cls: "",
-    time: 380,
+  { id: "futsuu", label: "ふつう",   icon: "🙂", note: "品質+6<br>⏱2時間", cls: "",
+    time: 380, hours: 2,
     pts: () => 6,
     working: "こつこつ、こつこつ…",
     henry: ["よいペースじゃな。", "こつこつが一番じゃよ。", "安定した仕事も、立派な腕前じゃ。"] },
-  { id: "isogu",  label: "急ぐ",     icon: "💨", note: "品質+1〜10 運まかせ", cls: "",
-    time: 140,
+  { id: "isogu",  label: "急ぐ",     icon: "💨", note: "品質+1〜10<br>⏱1時間", cls: "",
+    time: 140, hours: 1,
     pts: () => {
       /* 2割でミスして品質低下、それ以外は +1〜+10 のランダム */
       if (Math.random() < 0.2) return -(1 + Math.floor(Math.random() * 8));
@@ -692,6 +876,27 @@ const RANKS = {
   C: { min: 0,  mult: 0.75, label: "ちょっと急ぎすぎたかも…" }
 };
 const RANK_ORDER = ["C", "B", "A", "S"];   // 図鑑の「最高品質」比較用
+
+/* 納期ボーナス／ペナルティ（納品価格にかかる倍率） */
+const ONTIME_MULT = 1.1;   // 期日内 +10%
+const LATE_MULT   = 0.8;   // 納期おくれ -20%
+
+/* ----------------------------------------------------------
+   設備投資（お金の使い道）
+   買うと工房がずっと強くなる。effectQ: 素材品質ボーナス、
+   effectPrice: 納品価格の倍率ボーナス。
+   ---------------------------------------------------------- */
+const GEAR = [
+  { id: "workbench", name: "がっしりした作業台", icon: "🪚", price: 5000,
+    effectQ: 5, effectPrice: 1,
+    desc: "樫の一枚板の作業台。手元が安定して、素材の品質+5。" },
+  { id: "booth", name: "塗装ブース", icon: "🎨", price: 10000,
+    effectQ: 10, effectPrice: 1,
+    desc: "ほこりの入らない塗装部屋。仕上がりが見違えて、素材の品質+10。" },
+  { id: "studio", name: "撮影スペース", icon: "📷", price: 15000,
+    effectQ: 0, effectPrice: 1.2,
+    desc: "自然光のきれいな撮影コーナー。SNS映えして、納品価格+20%。" }
+];
 
 /* 納品時のヘンリーさんのひとこと（ランク別） */
 const HENRY_DELIVER = {
@@ -713,36 +918,10 @@ const TRIVIA = [
   "木は切られたあとも、湿気を吸ったり吐いたりして生きておる。じゃから職人は、木が動くことを見越して作るんじゃ。",
   "塗装は一度に厚く塗らず、薄く塗って乾かして、また塗る。急がないことが、いちばんの近道じゃ。",
   "三面鏡の蝶番の角度にはこだわりがあっての。左右の鏡が、ちょうど横顔を映す角度に止まるんじゃよ。",
-  "良い椅子は、座る前から分かる。四本の脚が床にぴたりと吸いつくように立っておるでな。"
+  "良い椅子は、座る前から分かる。四本の脚が床にぴたりと吸いつくように立っておるでな。",
+  "ウィングチェアの「耳」はの、暖炉の時代にすきま風から頭を守った名残じゃ。今は、内緒話を守っておる。",
+  "ベルベットの内張りは、宝石を守るだけでなく、抽斗を開けた人の心もふわりと受けとめるんじゃよ。"
 ];
-
-/* 納品時のSNS反応：品質ランクで変わる */
-const SNS_BY_RANK = {
-  S: [
-    "📱 大バズり！「これぞ職人技…木目が芸術です」",
-    "📺 テレビ局から取材の申し込みが来ました！",
-    "📱 海外のコレクターから問い合わせが殺到！",
-    "🏆 「今年いちばんの家具」とSNSで絶賛されました！"
-  ],
-  A: [
-    "📱 SNSで話題になりました！「木のぬくもりがすごい…」",
-    "📱 SNSで話題になりました！「ドールハウスに置きたい！」",
-    "📮 お客さまから、ていねいなお礼の手紙が届きました。",
-    "📻 地元のラジオで工房が紹介されました！"
-  ],
-  B: [
-    "📱 じわじわ拡散中…「なんだかほっとする家具」",
-    "🚚 配達員さんが「いい香りの荷物ですね」と笑いました。",
-    "🐈 工房の猫が完成品の上で丸くなりました（納品前にどいてもらいました）。",
-    "📱 「#松永工房」のタグ付き投稿がすこし増えました。"
-  ],
-  C: [
-    "📱 「味がある…のかな？」という声もちらほら。",
-    "🤔 お客さまが少し首をかしげました。…でも笑って受け取ってくれました。",
-    "📱 「つぎはもっとすごいのを見たい！」と励まされました。",
-    "🍵 ヘンリーさんがお茶をいれてくれました。「次があるさ」"
-  ]
-};
 
 /* 工房レベル：exp の累計がしきい値を超えるとレベルアップ
    LEVELS[i] = レベル i+1 になるのに必要な累計経験値 */
@@ -754,7 +933,7 @@ const KNOWLEDGE = [
   {
     icon: "🎀",
     title: "Petit.Continue（プティ・コンティニュー）",
-    text: "松永工房のドール家具シリーズ。「小さな物語は、つづいていく」という願いをこめた名前です。手のひらサイズでも、木材選びから塗装まで、本物の家具とおなじ手仕事。ドールたちの暮らしにも、ほんものの木の温かみを。"
+    text: "松永工房のドール家具シリーズ。「小さな物語は、つづいていく」という願いをこめた名前です。手のひらサイズでも、木材選びから塗装まで、本物の家具とおなじ手仕事。プティカウチもプティチェストも、この物語の住人たちです。"
   },
   {
     icon: "🕰️",
@@ -798,13 +977,17 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 3,                 // セーブデータのバージョン（旧データ移行の目印）
+  ver: 4,                 // セーブデータのバージョン（旧データ移行の目印）
   money: 0,
   exp: 0,                 // 累計経験値（レベルはここから算出）
   level: 1,
+  day: 1,                 // 何日目か
+  hoursLeft: HOURS_PER_DAY, // きょうの残り作業時間
   currentId: null,        // 制作中の家具id（null=家具えらび画面）
   stepIndex: 0,           // 現在の工程番号
   quality: 0,             // 制作中の品質スコア（0〜100点）
+  craftUsed: 0,           // 制作中の家具に使った時間（納期判定用）
+  gear: [],               // 買った設備のidリスト
   completed: {},          // { 家具id: {count, best, bestScore} } 図鑑用
   stories: []             // 解放済み物語の家具id（"final"含む）
 };
@@ -814,7 +997,7 @@ function save() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* プライベートモード等では保存できないが続行可能 */ }
 }
 function load() {
-  let savedVer = 3;   // セーブが無ければ移行は不要
+  let savedVer = 4;   // セーブが無ければ移行は不要
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
@@ -833,19 +1016,28 @@ function load() {
   });
   if (typeof state.quality !== "number") state.quality = state.stepIndex;
 
-  /* 第2章: 品質が工程ポイント制（1工程0〜2点）→ 100点制へ換算
+  /* 第1・2章: 品質が工程ポイント制（1工程0〜2点）→ 100点制へ換算
      旧1ポイント ≒ 新6点（ふつう相当）として引き継ぐ */
-  if (savedVer !== 3) {
+  if (savedVer === undefined) {
     if (state.currentId) {
       state.quality = Math.max(0, Math.min(100, BASE_QUALITY + state.quality * 6));
     } else {
       state.quality = 0;
     }
-    /* 図鑑に最高品質スコア欄を追加（旧データは記録なし= null） */
+  }
+
+  /* 第3章まで共通: 図鑑スコア欄・時間・設備を補完（第4章形式へ） */
+  if (savedVer !== 4) {
     Object.values(state.completed).forEach(rec => {
       if (rec && typeof rec === "object" && rec.bestScore === undefined) rec.bestScore = null;
     });
-    state.ver = 3;
+    if (typeof state.day !== "number") state.day = 1;
+    if (typeof state.hoursLeft !== "number") state.hoursLeft = HOURS_PER_DAY;
+    if (!Array.isArray(state.gear)) state.gear = [];
+    /* 旧セーブに使用時間の記録は無いので、制作途中なら
+       「ふつう」相当（1工程2時間）の時間を使ったとみなす */
+    state.craftUsed = state.currentId ? state.stepIndex * 2 : 0;
+    state.ver = 4;
   }
 }
 
@@ -866,6 +1058,15 @@ function calcLevel(exp) {
 }
 function refreshUnlocks() {
   FURNITURE.forEach(f => { f.unlocked = state.level >= f.unlockLevel; });
+}
+
+/* 設備の効果 */
+const hasGear = (id) => state.gear.includes(id);
+function gearQualityBonus() {
+  return GEAR.filter(g => hasGear(g.id)).reduce((sum, g) => sum + g.effectQ, 0);
+}
+function gearPriceMult() {
+  return GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * g.effectPrice, 1);
 }
 
 /* 品質スコア（0〜100点）→ ランク（S/A/B/C） */
@@ -910,6 +1111,34 @@ function maybeShowTrivia() {
 }
 function hideTrivia() { $("#trivia").hidden = true; }
 
+/* 納品時のSNS反応：品質ランクで変わる */
+const SNS_BY_RANK = {
+  S: [
+    "📱 大バズり！「これぞ職人技…木目が芸術です」",
+    "📺 テレビ局から取材の申し込みが来ました！",
+    "📱 海外のコレクターから問い合わせが殺到！",
+    "🏆 「今年いちばんの家具」とSNSで絶賛されました！"
+  ],
+  A: [
+    "📱 SNSで話題になりました！「木のぬくもりがすごい…」",
+    "📱 SNSで話題になりました！「ドールハウスに置きたい！」",
+    "📮 お客さまから、ていねいなお礼の手紙が届きました。",
+    "📻 地元のラジオで工房が紹介されました！"
+  ],
+  B: [
+    "📱 じわじわ拡散中…「なんだかほっとする家具」",
+    "🚚 配達員さんが「いい香りの荷物ですね」と笑いました。",
+    "🐈 工房の猫が完成品の上で丸くなりました（納品前にどいてもらいました）。",
+    "📱 「#松永工房」のタグ付き投稿がすこし増えました。"
+  ],
+  C: [
+    "📱 「味がある…のかな？」という声もちらほら。",
+    "🤔 お客さまが少し首をかしげました。…でも笑って受け取ってくれました。",
+    "📱 「つぎはもっとすごいのを見たい！」と励まされました。",
+    "🍵 ヘンリーさんがお茶をいれてくれました。「次があるさ」"
+  ]
+};
+
 /* ==========================================================
    描画
    ========================================================== */
@@ -917,6 +1146,8 @@ function renderStatus() {
   $("#st-money").textContent = state.money.toLocaleString();
   $("#st-exp").textContent = state.exp;
   $("#st-level").textContent = state.level;
+  $("#st-day").textContent = state.day;
+  $("#st-hours").textContent = state.hoursLeft;
 
   /* 次のレベルまでの進捗バー */
   const cur = LEVELS[state.level - 1];
@@ -940,7 +1171,7 @@ function renderSelect() {
       return `<button class="select-item" data-id="${f.id}">
         ${artOf(f, "thumb")}
         <span><span class="name">${f.name}</span>
-        <div class="info">💰${f.price.toLocaleString()}円〜 ／ ✨${f.exp}　工程 ${f.steps.length}つ</div></span>
+        <div class="info">💰${f.price.toLocaleString()}円〜 ／ ✨${f.exp} ／ 工程 ${f.steps.length}つ ／ ⏳納期 ${f.deadline}時間</div></span>
       </button>`;
     }
     return `<div class="select-item locked">
@@ -958,11 +1189,12 @@ function renderSelect() {
     btn.addEventListener("click", () => {
       state.currentId = btn.dataset.id;
       state.stepIndex = 0;
-      state.quality = BASE_QUALITY;   // 素材の品質からスタート
+      state.quality = BASE_QUALITY + gearQualityBonus();   // 素材の品質＋設備の力
+      state.craftUsed = 0;
       save();
       hideTrivia();
       const f = furnitureById(state.currentId);
-      showMessage(`「${f.name}」の依頼じゃ。工程ごとの判断が、できばえを決めるのじゃぞ。`);
+      showMessage(`「${f.name}」の依頼じゃ。納期は${f.deadline}時間。品質を取るか、期日を取るか…職人の腕の見せどころじゃよ。`);
       render();
     });
   });
@@ -978,12 +1210,18 @@ function renderCraft() {
   const qPct = Math.max(0, Math.min(100, score));   // 品質ゲージ＝スコアそのまま
   const rank = calcRank(score);
 
+  /* 納期表示（残り時間 or 超過） */
+  const remain = f.deadline - state.craftUsed;
+  const deadlineChip = remain >= 0
+    ? `<span>⏳ 納期まで あと${remain}時間</span>`
+    : `<span class="late">⏰ 納期超過 ${-remain}時間</span>`;
+
   $("#card-area").innerHTML = `
     <div class="card${done ? " done" : ""}" id="craft-card">
       ${artOf(f, "art")}
       <h2>${f.name}${done ? " ✨" : ""}</h2>
       <p class="desc">${f.description}</p>
-      <div class="meta"><span>💰 ${f.price.toLocaleString()}円〜</span><span>✨ 経験値 ${f.exp}</span></div>
+      <div class="meta"><span>💰 ${f.price.toLocaleString()}円〜</span><span>✨ ${f.exp}</span>${deadlineChip}</div>
       <div class="progress"><i style="width:${pct}%"></i></div>
       <div class="progress-label">${done ? "🎉 完成！" : `工程 ${state.stepIndex} / ${total}`}</div>
       <div class="quality-row">
@@ -1002,10 +1240,11 @@ function renderCraft() {
   }).join("") + `</div>`;
 
   if (done) {
-    /* 完成 → 品質ランクに応じた価格で納品 */
-    const price = finalPrice(f, rank);
+    /* 完成 → 品質ランク・納期・設備に応じた価格で納品 */
+    const onTime = state.craftUsed <= f.deadline;
+    const price = finalPrice(f, rank, onTime);
     $("#steps-area").innerHTML = chips +
-      `<button class="deliver-btn" id="btn-deliver">🚚 納品する（品質${rank}・＋${price.toLocaleString()}円）</button>`;
+      `<button class="deliver-btn" id="btn-deliver">🚚 納品する（品質${rank}・${onTime ? "期日内✨" : "納期おくれ"}・＋${price.toLocaleString()}円）</button>`;
     $("#btn-deliver").addEventListener("click", deliver);
   } else {
     /* 現在の工程を「ていねい／ふつう／急ぐ」から選んで進める */
@@ -1025,8 +1264,11 @@ function renderCraft() {
   }
 
   /* 工程ボタン・納品ボタンが固定フッターに隠れないよう、
-     制作中は操作エリアが見える位置まで自動スクロール */
-  requestAnimationFrame(() => window.scrollTo(0, document.documentElement.scrollHeight));
+     制作中は操作エリアが見える位置まで自動スクロール。
+     吹き出しの文章やまめ知識で高さが変わるため、少し後にもう一度 */
+  const toBottom = () => { if (state.currentId) window.scrollTo(0, document.documentElement.scrollHeight); };
+  requestAnimationFrame(toBottom);
+  setTimeout(toBottom, 450);
 }
 
 function render() {
@@ -1038,9 +1280,10 @@ function render() {
 /* ==========================================================
    ゲーム進行
    ========================================================== */
-/* 品質ランクに応じた納品価格（10円単位に丸める） */
-function finalPrice(f, rank) {
-  return Math.round(f.price * RANKS[rank].mult / 10) * 10;
+/* 納品価格：基本価格 × 品質ランク × 納期 × 設備（10円単位に丸める） */
+function finalPrice(f, rank, onTime) {
+  const mult = RANKS[rank].mult * (onTime ? ONTIME_MULT : LATE_MULT) * gearPriceMult();
+  return Math.round(f.price * mult / 10) * 10;
 }
 
 /* 工程をひとつ進める（choiceId: 仕事ぶりの選択）
@@ -1059,6 +1302,16 @@ function doStep(choiceId) {
     const delta = choice.pts();
     state.quality = Math.max(0, Math.min(100, state.quality + delta));
     state.stepIndex++;
+
+    /* 時間が経つ。1日8時間を使いきると日付が変わる */
+    state.craftUsed += choice.hours;
+    state.hoursLeft -= choice.hours;
+    let dayChanged = false;
+    while (state.hoursLeft <= 0) {
+      state.hoursLeft += HOURS_PER_DAY;
+      state.day++;
+      dayChanged = true;
+    }
     save();
 
     /* ヘンリーさんのひとこと＋工程メッセージ */
@@ -1066,7 +1319,9 @@ function doStep(choiceId) {
       ? "ありゃ、手がすべったかの…！"
       : pick(choice.henry);
     const sign = delta >= 0 ? `+${delta}` : `${delta}`;
-    showMessage(`${step.icon} ${step.msg}　${comment}（品質${sign}）`);
+    let msg = `${step.icon} ${step.msg}　${comment}（品質${sign}・${choice.hours}時間）`;
+    if (dayChanged) msg += `　🌙 日が暮れた。${state.day}日目の朝じゃ。`;
+    showMessage(msg);
     maybeShowTrivia();
 
     render();
@@ -1074,17 +1329,19 @@ function doStep(choiceId) {
       /* 完成演出（カードが光る＋紙吹雪） */
       confetti();
       const rank = calcRank(state.quality);
-      showMessage(`🎉 「${f.name}」完成じゃ！ 品質${Math.round(state.quality)}点、${RANKS[rank].label}　さあ、納品しよう。`);
+      const onTime = state.craftUsed <= f.deadline;
+      showMessage(`🎉 「${f.name}」完成じゃ！ 品質${Math.round(state.quality)}点、${RANKS[rank].label}${onTime ? "　しかも期日内じゃ！" : "　納期は…まあ、次がんばろうかの。"}`);
     }
   }, choice.time);
 }
 
-/* 納品：品質で報酬・SNS反応が変わる。図鑑登録・物語解放・レベルアップ */
+/* 納品：品質と納期で報酬・SNS反応が変わる。図鑑登録・物語解放・レベルアップ */
 function deliver() {
   const f = furnitureById(state.currentId);
   const score = Math.round(state.quality);
   const rank = calcRank(score);
-  const price = finalPrice(f, rank);
+  const onTime = state.craftUsed <= f.deadline;
+  const price = finalPrice(f, rank, onTime);
   const rec = state.completed[f.id];
   const firstTime = !rec;
 
@@ -1109,11 +1366,12 @@ function deliver() {
   state.currentId = null;
   state.stepIndex = 0;
   state.quality = 0;
+  state.craftUsed = 0;
   hideTrivia();
 
   /* 納品メッセージ（ヘンリーさんのひとこと＋ランク別SNS反応） */
   const sns = pick(SNS_BY_RANK[rank]);
-  let msg = `🚚 品質${rank}（${score}点）で納品！ ＋${price.toLocaleString()}円　${HENRY_DELIVER[rank]}　${sns}`;
+  let msg = `🚚 品質${rank}（${score}点）・${onTime ? "期日内✨" : "納期おくれ…"}で納品！ ＋${price.toLocaleString()}円　${HENRY_DELIVER[rank]}　${sns}`;
   if (leveledUp) {
     msg += `　🏠 工房レベルが ${state.level} に上がったぞ！`;
     const unlockedNow = FURNITURE.filter(x => x.unlockLevel === state.level);
@@ -1122,12 +1380,12 @@ function deliver() {
   }
   showMessage(msg);
 
-  /* 初完成 → 物語解放ポップアップ */
+  /* 初完成 → 物語＋手紙のきれはしを解放 */
   if (firstTime) {
     state.stories.push(f.id);
-    openStoryPop(`「${f.name}」の物語`, f.story);
+    openStoryPop(`「${f.name}」の物語`, `${f.story}\n\n💌 ${f.letter}`);
   }
-  /* 全家具の物語がそろったら最終章を解放 */
+  /* 手紙のきれはしがすべてそろったら最終章を解放 */
   if (!state.stories.includes("final") &&
       FURNITURE.every(x => state.stories.includes(x.id))) {
     state.stories.push("final");
@@ -1139,12 +1397,12 @@ function deliver() {
 }
 
 /* ==========================================================
-   モーダル（図鑑・物語・工房紹介）
+   モーダル（図鑑・物語・設備・工房紹介）
    ========================================================== */
 function openModal(id) { $("#" + id).classList.add("open"); }
 function closeModal(id) { $("#" + id).classList.remove("open"); }
 
-/* 図鑑：品質ランク・最高品質・制作回数を表示 */
+/* 図鑑：品質ランク・最高品質スコア・制作回数を表示 */
 function renderDex() {
   $("#dex-list").innerHTML = FURNITURE.map(f => {
     const rec = state.completed[f.id];
@@ -1170,9 +1428,37 @@ function renderDex() {
     `<div class="knowledge"><h4>${k.icon} ${k.title}</h4><p>${k.text}</p></div>`).join("");
 }
 
-/* 物語（解放済みだけ読める。最終章は特別枠） */
+/* 物語モーダル：手紙のきれはし（メインストーリー）＋家具の物語 */
 function renderStories() {
-  let html = FURNITURE.map(f => {
+  /* --- 手紙のきれはし --- */
+  const found = FURNITURE.filter(f => state.stories.includes(f.id)).length;
+  let letters = `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
+    あつめたきれはし　${found} / ${FURNITURE.length}</p>`;
+  letters += FURNITURE.map((f, i) => {
+    if (state.stories.includes(f.id)) {
+      return `<div class="letter-item">
+        <h4>💌 きれはし その${i + 1}</h4>${f.letter}
+      </div>`;
+    }
+    const hint = f.unlocked ? `「${f.name}」` : "まだ見ぬ家具";
+    return `<div class="letter-item locked">
+      <h4>🔒 きれはし その${i + 1}</h4>${hint}をはじめて完成させると、見つかるかもしれない……
+    </div>`;
+  }).join("");
+
+  if (state.stories.includes("final")) {
+    letters += `<div class="story-item final">
+      <h4>💌 ${FINAL_STORY.title}</h4><p>${FINAL_STORY.text}</p>
+    </div>`;
+  } else {
+    letters += `<div class="story-item locked final">
+      <h4>🔒 ${FINAL_STORY.title}</h4><p>きれはしを${FURNITURE.length}枚すべて集めると、手紙の全文が読めるらしい……。</p>
+    </div>`;
+  }
+  $("#letter-list").innerHTML = letters;
+
+  /* --- 家具の物語 --- */
+  $("#story-list").innerHTML = FURNITURE.map(f => {
     if (state.stories.includes(f.id)) {
       return `<div class="story-item">
         <h4>${f.icon} 「${f.name}」の物語</h4><p>${f.story}</p>
@@ -1182,17 +1468,40 @@ function renderStories() {
       <h4>🔒 まだ読めない物語</h4><p>この家具をはじめて完成させると読めるようになる。</p>
     </div>`;
   }).join("");
+}
 
-  if (state.stories.includes("final")) {
-    html += `<div class="story-item final">
-      <h4>💌 ${FINAL_STORY.title}</h4><p>${FINAL_STORY.text}</p>
-    </div>`;
-  } else {
-    html += `<div class="story-item locked final">
-      <h4>🔒 ${FINAL_STORY.title}</h4><p>すべての家具の物語を集めると、最後の物語が読めるらしい……。</p>
-    </div>`;
-  }
-  $("#story-list").innerHTML = html;
+/* 設備投資：お金の使い道。買うと工房がずっと強くなる */
+function renderGear() {
+  $("#gear-list").innerHTML =
+    `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
+      いまの所持金　💰 ${state.money.toLocaleString()}円</p>` +
+    GEAR.map(g => {
+      const owned = hasGear(g.id);
+      const btn = owned
+        ? `<span class="gear-owned">✓ 導入済み</span>`
+        : `<button class="gear-buy" data-gear="${g.id}" ${state.money < g.price ? "disabled" : ""}>
+            💰${g.price.toLocaleString()}円で買う</button>`;
+      return `<div class="gear-item">
+        <span class="g-icon">${g.icon}</span>
+        <span class="g-body"><div class="g-name">${g.name}</div>
+        <div class="g-desc">${g.desc}</div></span>
+        ${btn}
+      </div>`;
+    }).join("");
+
+  /* 購入処理 */
+  document.querySelectorAll(".gear-buy[data-gear]").forEach(b =>
+    b.addEventListener("click", () => {
+      const g = GEAR.find(x => x.id === b.dataset.gear);
+      if (!g || hasGear(g.id) || state.money < g.price) return;
+      state.money -= g.price;
+      state.gear.push(g.id);
+      save();
+      confetti();
+      showMessage(`🛠 「${g.name}」を工房に迎えた！ ${g.desc}　良い道具は良い仕事を作るんじゃよ。`);
+      renderGear();       // モーダルを買った状態に更新
+      renderStatus();     // 所持金表示を更新
+    }));
 }
 
 /* 松永工房紹介ページ */
@@ -1227,6 +1536,7 @@ function init() {
   /* フッターのボタン */
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
   $("#btn-story").addEventListener("click", () => { renderStories(); openModal("story-modal"); });
+  $("#btn-gear").addEventListener("click", () => { renderGear(); openModal("gear-modal"); });
   $("#btn-about").addEventListener("click", () => { renderAbout(); openModal("about-modal"); });
 
   /* モーダルの閉じるボタン（下の「とじる」＋右上の✕）・背景タップ */
@@ -1250,7 +1560,7 @@ function init() {
   } else if (state.exp > 0) {
     showMessage("おかえり。今日も一緒に、いい家具を作ろうじゃないか。");
   } else {
-    showMessage("ようこそ、松永工房へ。わしはヘンリー。この工房の家具に惚れこんでのう、勝手に案内役をしておる。");
+    showMessage("ようこそ、松永工房へ。わしはヘンリー。この工房の家具に惚れこんでのう、勝手に案内役をしておる。……そういえば最近、家具の中から古い手紙のきれはしが見つかるんじゃよ。");
   }
 }
 
