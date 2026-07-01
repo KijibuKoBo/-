@@ -6,7 +6,8 @@
 <title>松永工房クラフトストーリー 〜小さな家具と、届かなかった手紙〜</title>
 <style>
 /* ==========================================================
-   松永工房クラフトストーリー 第2章
+   松永工房クラフトストーリー 第3章
+   「押す作業」から「職人として判断するゲーム」へ
    絵本風 × 木の温かみ × ちょっと高級感
    基調色: クリーム / ブラウン / 淡いグリーン / 木目
    ========================================================== */
@@ -122,6 +123,17 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .henry-name{
   display:block; font-size:.6rem; color:var(--brown-soft); font-weight:bold; margin-bottom:1px;
 }
+
+/* 工房まめ知識（工程のあいまにランダムで顔を出す読みもの） */
+.trivia{
+  background:linear-gradient(180deg,#fdf6e6,#f7ecd2);
+  border:2px dashed var(--gold); border-radius:12px;
+  padding:8px 12px; font-size:.72rem; line-height:1.8;
+  color:var(--brown-mid); text-align:justify;
+}
+.trivia b{ color:var(--brown); }
+.trivia.pop{ animation:triviaIn .4s ease; }
+@keyframes triviaIn{ from{ transform:translateY(-6px); opacity:0; } to{ transform:none; opacity:1; } }
 
 /* ----- 家具カード（木のカード風） ----- */
 .card{
@@ -257,17 +269,18 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .choices{ display:flex; gap:8px; }
 .choice-btn{
   flex:1; font-family:inherit; font-weight:bold; color:var(--brown);
-  padding:10px 4px 8px; border-radius:16px; cursor:pointer;
+  padding:12px 4px 10px; border-radius:18px; cursor:pointer;
   border:2.5px solid var(--brown-soft);
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
   box-shadow:0 3px 0 var(--brown-soft);
   transition:transform .1s;
-  min-height:64px;
+  min-height:84px;                          /* 親指で押しやすい大きさに */
 }
-.choice-btn .c-icon{ display:block; font-size:1.3rem; line-height:1.2; }
-.choice-btn .c-label{ display:block; font-size:.82rem; margin-top:2px; }
-.choice-btn .c-note{ display:block; font-size:.6rem; font-weight:normal; color:var(--brown-mid); margin-top:1px; }
-.choice-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-soft); }
+.choice-btn .c-icon{ display:block; font-size:1.6rem; line-height:1.2; }
+.choice-btn .c-label{ display:block; font-size:.92rem; margin-top:3px; }
+.choice-btn .c-note{ display:block; font-size:.62rem; font-weight:normal; color:var(--brown-mid); margin-top:2px; }
+.choice-btn:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-soft); }
+.choice-btn:disabled{ opacity:.55; box-shadow:none; cursor:default; }  /* 作業中 */
 .choice-teinei{ border-color:var(--green-deep); box-shadow:0 3px 0 var(--green-deep);
   background:linear-gradient(180deg,#f2f7ee,#dcead4); }
 .choice-teinei:active{ box-shadow:0 1px 0 var(--green-deep); }
@@ -330,6 +343,14 @@ footer{
   display:block; margin:14px auto 0; font-family:inherit; font-weight:bold;
   padding:9px 34px; border-radius:999px; cursor:pointer;
   border:2px solid var(--brown-mid); background:var(--cream-deep); color:var(--brown);
+}
+/* 右上の✕（スクロールしても付いてくる） */
+.modal .x-close{
+  position:sticky; top:0; float:right; z-index:2;
+  width:40px; height:40px; border-radius:50%;
+  border:2px solid var(--brown-mid); background:var(--cream-deep); color:var(--brown);
+  font-family:inherit; font-size:1rem; font-weight:bold; cursor:pointer;
+  box-shadow:0 2px 4px rgba(107,74,47,.25); margin-left:8px;
 }
 
 /* 図鑑エントリ */
@@ -419,6 +440,8 @@ footer{
     <div id="henry-avatar"><!-- JSでSVGを描画 --></div>
     <div id="message"><span class="henry-name">ヘンリーさん</span><span id="message-text"></span></div>
   </div>
+  <!-- 工房まめ知識（工程のあいまにランダム表示） -->
+  <div id="trivia" class="trivia" hidden></div>
   <div id="card-area"><!-- JSで描画 --></div>
 </main>
 
@@ -435,6 +458,7 @@ footer{
 <!-- ========== モーダル：図鑑 ========== -->
 <div class="modal-back" id="dex-modal">
   <div class="modal">
+    <button class="x-close" data-close="dex-modal" aria-label="とじる">✕</button>
     <h3>📖 家具図鑑</h3>
     <div id="dex-list"></div>
     <div class="dex-section-title">🌰 工房まめ知識</div>
@@ -446,6 +470,7 @@ footer{
 <!-- ========== モーダル：物語 ========== -->
 <div class="modal-back" id="story-modal">
   <div class="modal">
+    <button class="x-close" data-close="story-modal" aria-label="とじる">✕</button>
     <h3>📜 工房の物語</h3>
     <div id="story-list"></div>
     <button class="close" data-close="story-modal">とじる</button>
@@ -455,6 +480,7 @@ footer{
 <!-- ========== モーダル：松永工房紹介 ========== -->
 <div class="modal-back" id="about-modal">
   <div class="modal">
+    <button class="x-close" data-close="about-modal" aria-label="とじる">✕</button>
     <h3>🏠 有限会社 松永工房</h3>
     <div id="about-body"></div>
     <div class="reset-link" id="btn-reset">セーブデータを消して、はじめからやり直す</div>
@@ -466,6 +492,7 @@ footer{
 <div class="modal-back" id="story-pop">
   <div class="modal">
     <span class="pop-badge">📜✨</span>
+    <button class="x-close" data-close="story-pop" aria-label="とじる">✕</button>
     <h3 id="pop-title"></h3>
     <p class="story-text" id="pop-text"></p>
     <button class="close" data-close="story-pop">そっと本を閉じる</button>
@@ -624,30 +651,70 @@ const FINAL_STORY = {
 };
 
 /* ----------------------------------------------------------
-   品質システム
-   工程ごとに「ていねい／ふつう／急ぐ」を選ぶと品質ポイントが変わる。
-   ていねいは まれに「会心の出来」でボーナス。
+   品質システム（100点満点）
+   素材の品質 BASE_QUALITY からスタートし、工程ごとの
+   「ていねい／ふつう／急ぐ」の判断で上下する。
+   - ていねい: +12（じっくり。作業時間も長い）
+   - ふつう  : +6 （安定）
+   - 急ぐ    : +1〜+10のランダム。ときどき手がすべって品質低下
    ---------------------------------------------------------- */
+const BASE_QUALITY = 50;   // 素材そのものの品質。ここに職人の腕が上乗せされる
+
 const CHOICES = [
-  { id: "teinei", label: "ていねい", icon: "🌸", note: "品質ぐんぐん", cls: "choice-teinei",
-    pts: 2, critChance: 0.2, critPts: 3,
-    henry: ["うむ、ていねいな仕事じゃ。", "木も喜んでおるようじゃな。", "その手つき、様になってきたのう。"] },
-  { id: "futsuu", label: "ふつう",   icon: "🙂", note: "手堅く進める", cls: "",
-    pts: 1, critChance: 0, critPts: 1,
-    henry: ["よいペースじゃな。", "こつこつが一番じゃよ。", "うん、悪くないぞ。"] },
-  { id: "isogu",  label: "急ぐ",     icon: "💨", note: "はやいが雑…", cls: "",
-    pts: 0, critChance: 0, critPts: 0,
-    henry: ["おっと、少し急ぎすぎかの？", "はやさも腕のうち…じゃが、ほどほどにな。", "木くずが舞っておるぞ〜。"] }
+  { id: "teinei", label: "ていねい", icon: "🌸", note: "品質+12 じっくり", cls: "choice-teinei",
+    time: 750,                                  // 作業の「所要時間感」(ms)
+    pts: () => 12,
+    working: "じっくり、じっくり…",
+    henry: ["うむ、木目とじっくり向き合っておるな。", "急がば回れ。それが職人の速さじゃよ。",
+            "その手つき、もう見習いではないのう。", "道具を大事に使う者は、良い仕事をするもんじゃ。"] },
+  { id: "futsuu", label: "ふつう",   icon: "🙂", note: "品質+6 安定", cls: "",
+    time: 380,
+    pts: () => 6,
+    working: "こつこつ、こつこつ…",
+    henry: ["よいペースじゃな。", "こつこつが一番じゃよ。", "安定した仕事も、立派な腕前じゃ。"] },
+  { id: "isogu",  label: "急ぐ",     icon: "💨", note: "品質+1〜10 運まかせ", cls: "",
+    time: 140,
+    pts: () => {
+      /* 2割でミスして品質低下、それ以外は +1〜+10 のランダム */
+      if (Math.random() < 0.2) return -(1 + Math.floor(Math.random() * 8));
+      return 1 + Math.floor(Math.random() * 10);
+    },
+    working: "ささっと！",
+    henry: ["おっと、木くずが舞っておるぞ〜。", "はやさも腕のうち…じゃが、ほどほどにな。",
+            "むむ、その勢い、若いのう。"] }
 ];
 
-/* 品質ランク：品質ポイント ÷ 最大値（工程数×2）の割合で決まる */
+/* 品質ランク：品質スコア（0〜100点）で決まる */
 const RANKS = {
-  S: { min: 0.90, mult: 1.5,  label: "最高級のできばえ！" },
-  A: { min: 0.65, mult: 1.2,  label: "とても良いできばえ" },
-  B: { min: 0.40, mult: 1.0,  label: "ふつうのできばえ" },
-  C: { min: 0,    mult: 0.75, label: "ちょっと急ぎすぎたかも…" }
+  S: { min: 90, mult: 1.5,  label: "最高級のできばえ！" },
+  A: { min: 75, mult: 1.2,  label: "とても良いできばえ" },
+  B: { min: 60, mult: 1.0,  label: "ふつうのできばえ" },
+  C: { min: 0,  mult: 0.75, label: "ちょっと急ぎすぎたかも…" }
 };
 const RANK_ORDER = ["C", "B", "A", "S"];   // 図鑑の「最高品質」比較用
+
+/* 納品時のヘンリーさんのひとこと（ランク別） */
+const HENRY_DELIVER = {
+  S: "ほほう…！わしの目に狂いはなかった。これは宝物になるぞ。",
+  A: "うんうん、胸を張ってよい仕事じゃ。",
+  B: "よし、きちんと使える良い品じゃ。次はもう一手間かけてみるかの。",
+  C: "まあ、こういう日もあるさ。木はまた待っていてくれるでな。"
+};
+
+/* 工程のあいまにランダム表示される「工房まめ知識」
+   （手仕事の魅力を、さりげなく伝える読みもの） */
+const TRIVIA = [
+  "木には「顔」があっての。板の木目を読んで向きを決めるだけで、家具の表情がまるで変わるんじゃ。",
+  "オイル仕上げの家具は、木が呼吸しておる。年月とともに色が深まって、使う人の歴史が染みこんでいくのじゃよ。",
+  "真鍮の金具は、さわるほどに鈍く光る。アンティークの取っ手の色は、何十年ぶんの手のぬくもりの色なんじゃ。",
+  "研磨はの、番手の粗いやすりから細かいやすりへ、順番に。近道をすると、塗装のときに全部ばれてしまうんじゃ。",
+  "アンティーク家具の小さな傷は、消さずに残すこともある。傷も物語のうち、というわけじゃな。",
+  "ドールサイズの家具でも、ほんものと同じ木、同じ技で作るんじゃと。小さな引き出しも、ちゃんと開くんじゃぞ。",
+  "木は切られたあとも、湿気を吸ったり吐いたりして生きておる。じゃから職人は、木が動くことを見越して作るんじゃ。",
+  "塗装は一度に厚く塗らず、薄く塗って乾かして、また塗る。急がないことが、いちばんの近道じゃ。",
+  "三面鏡の蝶番の角度にはこだわりがあっての。左右の鏡が、ちょうど横顔を映す角度に止まるんじゃよ。",
+  "良い椅子は、座る前から分かる。四本の脚が床にぴたりと吸いつくように立っておるでな。"
+];
 
 /* 納品時のSNS反応：品質ランクで変わる */
 const SNS_BY_RANK = {
@@ -731,13 +798,14 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
+  ver: 3,                 // セーブデータのバージョン（旧データ移行の目印）
   money: 0,
   exp: 0,                 // 累計経験値（レベルはここから算出）
   level: 1,
   currentId: null,        // 制作中の家具id（null=家具えらび画面）
   stepIndex: 0,           // 現在の工程番号
-  quality: 0,             // 制作中の品質ポイント
-  completed: {},          // { 家具id: {count, best} } 図鑑用
+  quality: 0,             // 制作中の品質スコア（0〜100点）
+  completed: {},          // { 家具id: {count, best, bestScore} } 図鑑用
   stories: []             // 解放済み物語の家具id（"final"含む）
 };
 
@@ -746,20 +814,39 @@ function save() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* プライベートモード等では保存できないが続行可能 */ }
 }
 function load() {
+  let savedVer = 3;   // セーブが無ければ移行は不要
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) state = Object.assign(state, JSON.parse(raw));
+    if (raw) {
+      const data = JSON.parse(raw);
+      savedVer = data.ver;   // 旧セーブ（第1・2章）には ver が無い → undefined
+      state = Object.assign(state, data);
+    }
   } catch (e) { /* 壊れたデータは無視して新規開始 */ }
 
-  /* --- 第1章セーブデータからの移行（壊さずに引き継ぐ） --- */
-  /* completed が数値だった旧形式 → {count, best} 形式へ */
+  /* --- 旧セーブデータからの移行（壊さずに引き継ぐ） --- */
+  /* 第1章: completed が数値だった旧形式 → {count, best} 形式へ */
   Object.keys(state.completed).forEach(id => {
     if (typeof state.completed[id] === "number") {
       state.completed[id] = { count: state.completed[id], best: null };
     }
   });
-  /* 制作途中のセーブに品質が無い場合 → 「ふつう」相当で補完 */
   if (typeof state.quality !== "number") state.quality = state.stepIndex;
+
+  /* 第2章: 品質が工程ポイント制（1工程0〜2点）→ 100点制へ換算
+     旧1ポイント ≒ 新6点（ふつう相当）として引き継ぐ */
+  if (savedVer !== 3) {
+    if (state.currentId) {
+      state.quality = Math.max(0, Math.min(100, BASE_QUALITY + state.quality * 6));
+    } else {
+      state.quality = 0;
+    }
+    /* 図鑑に最高品質スコア欄を追加（旧データは記録なし= null） */
+    Object.values(state.completed).forEach(rec => {
+      if (rec && typeof rec === "object" && rec.bestScore === undefined) rec.bestScore = null;
+    });
+    state.ver = 3;
+  }
 }
 
 /* ==========================================================
@@ -781,12 +868,9 @@ function refreshUnlocks() {
   FURNITURE.forEach(f => { f.unlocked = state.level >= f.unlockLevel; });
 }
 
-/* 品質ポイント → ランク（S/A/B/C） */
-function calcRank(points, stepCount) {
-  const pct = Math.min(1, points / (stepCount * 2));
-  for (const r of RANK_ORDER.slice().reverse()) {
-    if (pct >= RANKS[r].min) return r;
-  }
+/* 品質スコア（0〜100点）→ ランク（S/A/B/C） */
+function calcRank(score) {
+  for (const r of ["S", "A", "B"]) if (score >= RANKS[r].min) return r;
   return "C";
 }
 const rankBadge = (r) => `<span class="rank-badge rank-${r}">${r}</span>`;
@@ -812,6 +896,19 @@ function confetti() {
   }
 }
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+/* 工房まめ知識：工程のあと4割の確率でひょっこり表示 */
+function maybeShowTrivia() {
+  const box = $("#trivia");
+  if (Math.random() < 0.4) {
+    box.hidden = false;
+    box.innerHTML = `🌰 <b>工房まめ知識</b>　${pick(TRIVIA)}`;
+    box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
+  } else {
+    box.hidden = true;
+  }
+}
+function hideTrivia() { $("#trivia").hidden = true; }
 
 /* ==========================================================
    描画
@@ -861,10 +958,11 @@ function renderSelect() {
     btn.addEventListener("click", () => {
       state.currentId = btn.dataset.id;
       state.stepIndex = 0;
-      state.quality = 0;
+      state.quality = BASE_QUALITY;   // 素材の品質からスタート
       save();
+      hideTrivia();
       const f = furnitureById(state.currentId);
-      showMessage(`「${f.name}」の依頼じゃ。工程ごとに、どんな仕事ぶりでいくか選ぶのじゃぞ。`);
+      showMessage(`「${f.name}」の依頼じゃ。工程ごとの判断が、できばえを決めるのじゃぞ。`);
       render();
     });
   });
@@ -876,9 +974,9 @@ function renderCraft() {
   const total = f.steps.length;
   const done = state.stepIndex >= total;
   const pct = Math.round((state.stepIndex / total) * 100);
-  const maxQ = total * 2;
-  const qPct = Math.min(100, Math.round((state.quality / maxQ) * 100));
-  const rank = calcRank(state.quality, total);
+  const score = Math.round(state.quality);
+  const qPct = Math.max(0, Math.min(100, score));   // 品質ゲージ＝スコアそのまま
+  const rank = calcRank(score);
 
   $("#card-area").innerHTML = `
     <div class="card${done ? " done" : ""}" id="craft-card">
@@ -891,7 +989,8 @@ function renderCraft() {
       <div class="quality-row">
         <span>品質</span>
         <div class="quality-bar"><i style="width:${qPct}%"></i></div>
-        ${done ? rankBadge(rank) : `<span>${state.quality} / ${maxQ}</span>`}
+        <span>${score}点</span>
+        ${rankBadge(rank)}
       </div>
     </div>`;
 
@@ -924,6 +1023,10 @@ function renderCraft() {
     document.querySelectorAll(".choice-btn").forEach(b =>
       b.addEventListener("click", () => doStep(b.dataset.choice)));
   }
+
+  /* 工程ボタン・納品ボタンが固定フッターに隠れないよう、
+     制作中は操作エリアが見える位置まで自動スクロール */
+  requestAnimationFrame(() => window.scrollTo(0, document.documentElement.scrollHeight));
 }
 
 function render() {
@@ -940,39 +1043,47 @@ function finalPrice(f, rank) {
   return Math.round(f.price * RANKS[rank].mult / 10) * 10;
 }
 
-/* 工程をひとつ進める（choiceId: 仕事ぶりの選択） */
+/* 工程をひとつ進める（choiceId: 仕事ぶりの選択）
+   ボタンをいったん止めて「作業の所要時間」を感じさせてから結果を出す */
 function doStep(choiceId) {
   const f = furnitureById(state.currentId);
   const step = f.steps[state.stepIndex];
   const choice = CHOICES.find(c => c.id === choiceId) || CHOICES[1];
 
-  /* 品質ポイント加算（「ていねい」は まれに会心の出来） */
-  let pts = choice.pts;
-  let crit = false;
-  if (choice.critChance && Math.random() < choice.critChance) {
-    pts = choice.critPts; crit = true;
-  }
-  state.quality += pts;
-  state.stepIndex++;
-  save();
+  /* 作業中…（連打防止＋時間の演出） */
+  document.querySelectorAll(".choice-btn").forEach(b => b.disabled = true);
+  showMessage(`${step.icon} ${step.label}中… ${choice.working}`);
 
-  /* ヘンリーさんのひとこと＋工程メッセージ */
-  const comment = crit ? "✨会心の出来じゃ！" : pick(choice.henry);
-  showMessage(`${step.icon} ${step.msg}　${comment}（品質+${pts}）`);
+  setTimeout(() => {
+    /* 品質スコアの増減（急ぐはランダム。ときどきミスで低下） */
+    const delta = choice.pts();
+    state.quality = Math.max(0, Math.min(100, state.quality + delta));
+    state.stepIndex++;
+    save();
 
-  render();
-  if (state.stepIndex >= f.steps.length) {
-    /* 完成演出（カードが光る＋紙吹雪） */
-    confetti();
-    const rank = calcRank(state.quality, f.steps.length);
-    showMessage(`🎉 「${f.name}」完成じゃ！ ${RANKS[rank].label}　さあ、納品しよう。`);
-  }
+    /* ヘンリーさんのひとこと＋工程メッセージ */
+    const comment = delta < 0
+      ? "ありゃ、手がすべったかの…！"
+      : pick(choice.henry);
+    const sign = delta >= 0 ? `+${delta}` : `${delta}`;
+    showMessage(`${step.icon} ${step.msg}　${comment}（品質${sign}）`);
+    maybeShowTrivia();
+
+    render();
+    if (state.stepIndex >= f.steps.length) {
+      /* 完成演出（カードが光る＋紙吹雪） */
+      confetti();
+      const rank = calcRank(state.quality);
+      showMessage(`🎉 「${f.name}」完成じゃ！ 品質${Math.round(state.quality)}点、${RANKS[rank].label}　さあ、納品しよう。`);
+    }
+  }, choice.time);
 }
 
 /* 納品：品質で報酬・SNS反応が変わる。図鑑登録・物語解放・レベルアップ */
 function deliver() {
   const f = furnitureById(state.currentId);
-  const rank = calcRank(state.quality, f.steps.length);
+  const score = Math.round(state.quality);
+  const rank = calcRank(score);
   const price = finalPrice(f, rank);
   const rec = state.completed[f.id];
   const firstTime = !rec;
@@ -980,12 +1091,13 @@ function deliver() {
   state.money += price;
   state.exp += f.exp;
 
-  /* 図鑑記録：制作回数と最高品質を更新 */
+  /* 図鑑記録：制作回数・最高品質ランク・最高品質スコアを更新 */
   if (rec) {
     rec.count++;
     if (rec.best === null || RANK_ORDER.indexOf(rank) > RANK_ORDER.indexOf(rec.best)) rec.best = rank;
+    if (rec.bestScore == null || score > rec.bestScore) rec.bestScore = score;
   } else {
-    state.completed[f.id] = { count: 1, best: rank };
+    state.completed[f.id] = { count: 1, best: rank, bestScore: score };
   }
 
   /* レベルアップ判定 */
@@ -997,10 +1109,11 @@ function deliver() {
   state.currentId = null;
   state.stepIndex = 0;
   state.quality = 0;
+  hideTrivia();
 
-  /* 納品メッセージ（品質ランクに応じたSNS反応をランダムで） */
+  /* 納品メッセージ（ヘンリーさんのひとこと＋ランク別SNS反応） */
   const sns = pick(SNS_BY_RANK[rank]);
-  let msg = `🚚 品質${rank}で納品！ ＋${price.toLocaleString()}円　${sns}`;
+  let msg = `🚚 品質${rank}（${score}点）で納品！ ＋${price.toLocaleString()}円　${HENRY_DELIVER[rank]}　${sns}`;
   if (leveledUp) {
     msg += `　🏠 工房レベルが ${state.level} に上がったぞ！`;
     const unlockedNow = FURNITURE.filter(x => x.unlockLevel === state.level);
@@ -1037,7 +1150,7 @@ function renderDex() {
     const rec = state.completed[f.id];
     if (rec && rec.count > 0) {
       const best = rec.best
-        ? `最高品質 ${rankBadge(rec.best)}`
+        ? `最高品質 ${rankBadge(rec.best)}${rec.bestScore != null ? ` <b>${rec.bestScore}点</b>` : ""}`
         : `最高品質 <span class="rank-badge rank-B">—</span>`;   // 旧セーブは記録なし
       return `<div class="dex-item">
         ${artOf(f, "thumb")}
@@ -1116,8 +1229,8 @@ function init() {
   $("#btn-story").addEventListener("click", () => { renderStories(); openModal("story-modal"); });
   $("#btn-about").addEventListener("click", () => { renderAbout(); openModal("about-modal"); });
 
-  /* モーダルの閉じるボタン・背景タップ */
-  document.querySelectorAll(".close").forEach(b =>
+  /* モーダルの閉じるボタン（下の「とじる」＋右上の✕）・背景タップ */
+  document.querySelectorAll("[data-close]").forEach(b =>
     b.addEventListener("click", () => closeModal(b.dataset.close)));
   document.querySelectorAll(".modal-back").forEach(m =>
     m.addEventListener("click", (e) => { if (e.target === m) m.classList.remove("open"); }));
