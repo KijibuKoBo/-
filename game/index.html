@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>松永工房クラフトストーリー 〜小さな家具と、届かなかった手紙〜</title>
+<style>
+/* ==========================================================
+   松永工房クラフトストーリー
+   絵本風 × 木の温かみ のデザイン
+   基調色: クリーム / ブラウン / 淡いグリーン / 木目
+   ========================================================== */
+:root{
+  --cream:      #faf3e3;   /* 背景クリーム */
+  --cream-deep: #f3e7cd;
+  --brown:      #6b4a2f;   /* 濃いブラウン（文字） */
+  --brown-mid:  #8a6446;
+  --brown-soft: #b08a63;
+  --wood-light: #e8cfa5;   /* 木目・明 */
+  --wood-dark:  #caa06d;   /* 木目・暗 */
+  --green:      #9dbb8f;   /* 淡いグリーン */
+  --green-deep: #7a9c6e;
+  --gold:       #c9a24b;   /* 高級感アクセント */
+  --paper:      #fffdf5;   /* カード紙色 */
+  --shadow:     0 4px 12px rgba(107,74,47,.18);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html,body{ height:100%; }
+
+body{
+  font-family:"Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic UI","Meiryo",sans-serif;
+  color:var(--brown);
+  /* 工房の壁（クリーム）＋うっすら木目の横縞 */
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(176,138,99,.05) 0px,  rgba(176,138,99,.05) 2px,
+      transparent 2px,           transparent 26px),
+    radial-gradient(circle at 50% -10%, #fff8e8 0%, var(--cream) 60%, var(--cream-deep) 100%);
+  max-width:480px;               /* スマホ縦画面想定。PCでは中央寄せ */
+  margin:0 auto;
+  min-height:100dvh;
+  display:flex; flex-direction:column;
+  user-select:none;
+}
+
+/* ---------- ヘッダー（タイトル・ステータス） ---------- */
+header{
+  padding:12px 14px 10px;
+  text-align:center;
+  /* 木の看板風 */
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(107,74,47,.08) 0 3px, transparent 3px 34px),
+    linear-gradient(180deg, var(--wood-light), var(--wood-dark));
+  border-bottom:4px solid var(--brown-mid);
+  border-radius:0 0 18px 18px;
+  box-shadow:var(--shadow);
+}
+header h1{
+  font-size:1.02rem; letter-spacing:.06em; color:var(--brown);
+  text-shadow:0 1px 0 rgba(255,255,255,.5);
+}
+header h1 .sub{
+  display:block; font-size:.68rem; font-weight:normal;
+  color:#7d5a3c; margin-top:2px; letter-spacing:.02em;
+}
+.status{
+  display:flex; justify-content:center; gap:8px; margin-top:8px; flex-wrap:wrap;
+}
+.status .chip{
+  background:var(--paper); border:2px solid var(--brown-soft);
+  border-radius:999px; padding:3px 11px;
+  font-size:.78rem; font-weight:bold; box-shadow:0 2px 3px rgba(107,74,47,.15);
+}
+.lvbar{
+  margin:7px auto 0; width:78%; height:8px; border-radius:999px;
+  background:rgba(255,253,245,.7); border:1.5px solid var(--brown-soft); overflow:hidden;
+}
+.lvbar>i{
+  display:block; height:100%; width:0%;
+  background:linear-gradient(90deg,var(--green),var(--green-deep));
+  transition:width .5s ease; border-radius:999px;
+}
+.lvbar-label{ font-size:.62rem; color:#7d5a3c; margin-top:2px; }
+
+/* ---------- メイン ---------- */
+main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12px; }
+
+/* 職人のひとことメッセージ（吹き出し） */
+#message{
+  min-height:2.4em;
+  background:var(--paper); border:2px dashed var(--brown-soft);
+  border-radius:14px; padding:8px 12px;
+  font-size:.82rem; line-height:1.5; text-align:center;
+  transition:opacity .3s;
+}
+
+/* ----- 家具カード（木のカード風） ----- */
+.card{
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(107,74,47,.05) 0 2px, transparent 2px 40px),
+    linear-gradient(160deg, #fff9ec, var(--paper));
+  border:3px solid var(--wood-dark);
+  border-radius:20px;
+  box-shadow:var(--shadow), inset 0 0 0 4px rgba(232,207,165,.35);
+  padding:16px 16px 14px;
+  position:relative; overflow:hidden;
+}
+.card .icon{ font-size:3.4rem; text-align:center; display:block; line-height:1.2;
+  filter:drop-shadow(0 3px 3px rgba(107,74,47,.25)); }
+.card h2{ text-align:center; font-size:1.12rem; margin-top:4px; letter-spacing:.04em; }
+.card .desc{ font-size:.78rem; color:var(--brown-mid); text-align:center; margin-top:5px; line-height:1.6; }
+.card .meta{ display:flex; justify-content:center; gap:10px; margin-top:8px; font-size:.74rem; }
+.card .meta span{
+  background:var(--cream-deep); border-radius:999px; padding:2px 10px;
+  border:1px solid var(--wood-dark);
+}
+
+/* 進捗バー */
+.progress{
+  margin-top:12px; height:14px; border-radius:999px;
+  background:var(--cream-deep); border:2px solid var(--brown-soft); overflow:hidden;
+}
+.progress>i{
+  display:block; height:100%; width:0%;
+  background:linear-gradient(90deg,var(--gold),#e0bf74);
+  transition:width .35s ease; border-radius:999px;
+}
+.progress-label{ text-align:center; font-size:.72rem; margin-top:4px; color:var(--brown-mid); }
+
+/* 完成アニメーション */
+.card.done{ animation:cardPop .6s ease; border-color:var(--gold); }
+@keyframes cardPop{
+  0%{ transform:scale(1); }
+  35%{ transform:scale(1.06) rotate(-1.5deg); }
+  70%{ transform:scale(.98) rotate(1deg); }
+  100%{ transform:scale(1); }
+}
+/* きらきら紙吹雪（絵文字を降らせる） */
+.confetti{
+  position:fixed; top:-40px; font-size:1.4rem; pointer-events:none; z-index:99;
+  animation:fall 1.7s linear forwards;
+}
+@keyframes fall{
+  to{ transform:translateY(105vh) rotate(360deg); opacity:.2; }
+}
+
+/* ----- 家具えらび（未制作時） ----- */
+.select-title{ text-align:center; font-size:.86rem; color:var(--brown-mid); }
+.select-list{ display:flex; flex-direction:column; gap:10px; }
+.select-item{
+  display:flex; align-items:center; gap:12px;
+  background:var(--paper); border:2.5px solid var(--wood-dark);
+  border-radius:16px; padding:10px 14px; cursor:pointer;
+  box-shadow:0 3px 6px rgba(107,74,47,.15);
+  transition:transform .12s;
+  text-align:left; width:100%; font-family:inherit; color:inherit;
+}
+.select-item:active{ transform:scale(.97); }
+.select-item .icon{ font-size:2rem; }
+.select-item .name{ font-weight:bold; font-size:.92rem; }
+.select-item .info{ font-size:.7rem; color:var(--brown-mid); margin-top:2px; line-height:1.5; }
+.select-item.locked{
+  opacity:.55; filter:grayscale(.6); cursor:default;
+  border-style:dashed; box-shadow:none;
+}
+
+/* ---------- 下部：工程ボタン ---------- */
+#steps-area{ padding:4px 14px 6px; }
+.steps{
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+}
+.step-btn{
+  font-family:inherit; font-size:.8rem; font-weight:bold; color:var(--brown);
+  padding:10px 14px; border-radius:999px;
+  border:2.5px solid var(--brown-soft);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+  box-shadow:0 3px 0 var(--brown-soft);
+  cursor:pointer; transition:transform .1s;
+}
+.step-btn:disabled{ opacity:.45; box-shadow:none; cursor:default; }
+.step-btn.current{
+  background:linear-gradient(180deg,#eef5e8,var(--green));
+  border-color:var(--green-deep); box-shadow:0 3px 0 var(--green-deep);
+  animation:pulse 1.4s infinite;
+}
+.step-btn.done-step{
+  background:var(--wood-light); border-color:var(--wood-dark);
+  box-shadow:none; opacity:.8;
+}
+.step-btn:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 var(--green-deep); }
+@keyframes pulse{
+  0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); }
+}
+
+/* 納品ボタン */
+.deliver-btn{
+  display:block; width:100%; margin-top:4px;
+  font-family:inherit; font-size:1rem; font-weight:bold; color:#fff;
+  padding:14px; border-radius:18px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,var(--green),var(--green-deep));
+  box-shadow:0 4px 0 #5f7d55, var(--shadow);
+  letter-spacing:.1em;
+  animation:pulse 1.4s infinite;
+}
+.deliver-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #5f7d55; }
+
+/* ---------- フッター（図鑑・物語） ---------- */
+footer{
+  display:flex; gap:10px; padding:8px 14px calc(12px + env(safe-area-inset-bottom));
+}
+.foot-btn{
+  flex:1; font-family:inherit; font-size:.86rem; font-weight:bold; color:var(--brown);
+  padding:12px 6px; border-radius:16px; cursor:pointer;
+  border:2.5px solid var(--brown-mid);
+  background:
+    repeating-linear-gradient(90deg, rgba(107,74,47,.07) 0 3px, transparent 3px 30px),
+    linear-gradient(180deg,var(--wood-light),var(--wood-dark));
+  box-shadow:0 3px 0 var(--brown-mid);
+}
+.foot-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-mid); }
+
+/* ---------- モーダル共通 ---------- */
+.modal-back{
+  position:fixed; inset:0; background:rgba(80,55,35,.55);
+  display:none; align-items:center; justify-content:center; z-index:50;
+  padding:20px;
+}
+.modal-back.open{ display:flex; }
+.modal{
+  width:100%; max-width:420px; max-height:80dvh; overflow-y:auto;
+  background:var(--paper); border:3px solid var(--wood-dark);
+  border-radius:20px; padding:18px 16px;
+  box-shadow:0 10px 30px rgba(60,40,20,.4);
+  animation:modalIn .25s ease;
+}
+@keyframes modalIn{ from{ transform:translateY(24px); opacity:0; } to{ transform:none; opacity:1; } }
+.modal h3{
+  text-align:center; font-size:1.05rem; letter-spacing:.12em;
+  border-bottom:2px dashed var(--brown-soft); padding-bottom:8px; margin-bottom:12px;
+}
+.modal .close{
+  display:block; margin:14px auto 0; font-family:inherit; font-weight:bold;
+  padding:9px 34px; border-radius:999px; cursor:pointer;
+  border:2px solid var(--brown-mid); background:var(--cream-deep); color:var(--brown);
+}
+
+/* 図鑑エントリ */
+.dex-item{
+  display:flex; gap:12px; align-items:center;
+  border:2px solid var(--wood-light); border-radius:14px;
+  padding:10px 12px; margin-bottom:10px; background:#fffdf7;
+}
+.dex-item .icon{ font-size:2rem; }
+.dex-item .name{ font-weight:bold; font-size:.9rem; }
+.dex-item .count{ font-size:.72rem; color:var(--brown-mid); margin-top:2px; }
+.dex-item.unknown{ opacity:.5; filter:grayscale(1); }
+
+/* 物語エントリ（絵本ページ風） */
+.story-item{
+  border:2px solid var(--wood-light); border-radius:14px;
+  padding:12px 14px; margin-bottom:12px;
+  background:linear-gradient(180deg,#fffef9,#fdf6e6);
+}
+.story-item h4{ font-size:.88rem; margin-bottom:6px; }
+.story-item p{ font-size:.8rem; line-height:1.9; text-align:justify; }
+.story-item.locked{ opacity:.6; }
+.story-item.locked p{ letter-spacing:.2em; }
+.story-item.final{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,75,.25); }
+
+/* 物語解放ポップアップ */
+#story-pop .modal{ text-align:center; }
+#story-pop .story-text{
+  font-size:.84rem; line-height:2; margin:10px 0; text-align:justify;
+  padding:12px; background:#fdf6e6; border-radius:12px;
+  border:1.5px dashed var(--gold);
+}
+.pop-badge{ font-size:2.2rem; display:block; animation:pulse 1.2s infinite; }
+
+/* リセット（さりげなく） */
+.reset-link{
+  text-align:center; font-size:.64rem; color:var(--brown-soft);
+  padding-bottom:6px; text-decoration:underline; cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== ヘッダー：タイトルとステータス ========== -->
+<header>
+  <h1>🪑 松永工房クラフトストーリー
+    <span class="sub">〜小さな家具と、届かなかった手紙〜</span>
+  </h1>
+  <div class="status">
+    <span class="chip">💰 <span id="st-money">0</span>円</span>
+    <span class="chip">✨ 経験値 <span id="st-exp">0</span></span>
+    <span class="chip">🏠 工房Lv.<span id="st-level">1</span></span>
+  </div>
+  <div class="lvbar"><i id="lv-fill"></i></div>
+  <div class="lvbar-label" id="lv-label"></div>
+</header>
+
+<!-- ========== メイン：メッセージ＋家具カード ========== -->
+<main>
+  <div id="message">ようこそ、松永工房へ。きみは今日から見習い職人だよ。</div>
+  <div id="card-area"><!-- JSで描画 --></div>
+</main>
+
+<!-- ========== 下部：工程ボタン／納品ボタン ========== -->
+<div id="steps-area"><!-- JSで描画 --></div>
+
+<!-- ========== フッター：図鑑・物語 ========== -->
+<footer>
+  <button class="foot-btn" id="btn-dex">📖 図鑑</button>
+  <button class="foot-btn" id="btn-story">📜 物語</button>
+</footer>
+<div class="reset-link" id="btn-reset">はじめからやり直す</div>
+
+<!-- ========== モーダル：図鑑 ========== -->
+<div class="modal-back" id="dex-modal">
+  <div class="modal">
+    <h3>📖 家具図鑑</h3>
+    <div id="dex-list"></div>
+    <button class="close" data-close="dex-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：物語 ========== -->
+<div class="modal-back" id="story-modal">
+  <div class="modal">
+    <h3>📜 工房の物語</h3>
+    <div id="story-list"></div>
+    <button class="close" data-close="story-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：物語解放ポップアップ ========== -->
+<div class="modal-back" id="story-pop">
+  <div class="modal">
+    <span class="pop-badge">📜✨</span>
+    <h3 id="pop-title"></h3>
+    <p class="story-text" id="pop-text"></p>
+    <button class="close" data-close="story-pop">そっと本を閉じる</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   ゲームデータ
+   ----------------------------------------------------------
+   家具を追加するときは FURNITURE 配列にオブジェクトを
+   1つ足すだけでOK（図鑑・物語・解放判定はすべて自動）。
+   steps の各要素は { label: 工程名, icon: 絵文字, msg: 工程メッセージ }
+   ========================================================== */
+const FURNITURE = [
+  {
+    id: "stool",
+    name: "小さなスツール",
+    icon: "🪑",
+    description: "工房の定番。まあるい座面がかわいい、木のぬくもりを感じる椅子。",
+    price: 1200,          // 納品でもらえるお金
+    exp: 10,              // 納品でもらえる経験値
+    unlockLevel: 1,       // この工房レベルで解放
+    unlocked: true,       // 初期解放フラグ
+    steps: [
+      { label: "木材を選ぶ", icon: "🪵", msg: "節の少ない、やさしい木目の板を選んだ。" },
+      { label: "研磨する",   icon: "🧽", msg: "紙やすりでていねいに。手ざわりがつるつるになってきた。" },
+      { label: "塗装する",   icon: "🖌️", msg: "オイルを薄く伸ばすと、木目がふわっと浮かびあがった。" },
+      { label: "検品する",   icon: "🔍", msg: "がたつきなし、ささくれなし。うん、いい椅子だ。" }
+    ],
+    story: "はじめて作った小さな椅子は、工房の窓辺に置かれた。朝の光を受けて、木目が少しだけ誇らしげに見えた。"
+  },
+  {
+    id: "chest",
+    name: "プティチェスト",
+    icon: "🗄️",
+    description: "アンティーク風の小さなチェスト。引き出しには、だいじなものをひとつだけ。",
+    price: 3500,
+    exp: 25,
+    unlockLevel: 2,
+    unlocked: false,
+    steps: [
+      { label: "木材を選ぶ",     icon: "🪵", msg: "少し古びた色味の板。アンティークにはこれが合う。" },
+      { label: "引き出しを作る", icon: "📦", msg: "すーっと滑らかに開く引き出し。何度も開け閉めして確かめた。" },
+      { label: "金具を付ける",   icon: "🔩", msg: "真鍮の取っ手を付けると、ぐっとアンティークらしくなった。" },
+      { label: "塗装する",       icon: "🖌️", msg: "飴色の塗料を重ねて、時を経たような深い色に。" },
+      { label: "検品する",       icon: "🔍", msg: "引き出しの奥まで、ていねいに拭きあげた。" }
+    ],
+    story: "小さな引き出しの奥には、誰かの大切なものがしまわれる。指輪か、手紙か、それとも言えなかった一言か。"
+  },
+  {
+    id: "dresser",
+    name: "三面鏡ドレッサー",
+    icon: "🪞",
+    description: "工房の技を集めた特別な一台。三枚の鏡が、いろんな自分を映してくれる。",
+    price: 8000,
+    exp: 60,
+    unlockLevel: 3,
+    unlocked: false,
+    steps: [
+      { label: "木材を選ぶ", icon: "🪵", msg: "最高のホワイトオーク。特別な家具には特別な木を。" },
+      { label: "鏡枠を作る", icon: "🖼️", msg: "三枚の鏡の枠を、寸分たがわず組み上げた。" },
+      { label: "彫刻する",   icon: "🗡️", msg: "彫刻刀の先から、小さな花模様が咲いていく。" },
+      { label: "鏡を付ける", icon: "🪞", msg: "鏡をそっとはめこむ。工房の天井が三つ映った。" },
+      { label: "塗装する",   icon: "🖌️", msg: "仕上げのワックスで、上品なつやをまとわせた。" },
+      { label: "検品する",   icon: "🔍", msg: "鏡の中の自分と目が合った。ちょっと職人の顔になってきたかも。" }
+    ],
+    story: "ヘンリーさんは鏡をのぞきこんだ。そこには、今の自分だけでなく、家具に込められた職人の時間まで映っているようだった。"
+  }
+];
+
+/* 最終章：すべての家具の物語を集めると解放される（連載・ヘンリーの物語） */
+const FINAL_STORY = {
+  id: "final",
+  title: "最終章　届かなかった手紙",
+  text: "ある日、プティチェストの引き出しの奥から、古い手紙が見つかった。宛名はヘンリーさん。差出人は、遠い昔にこの工房で働いていた職人だった。「あなたの毎日が、この家具のように長く、あたたかくありますように」。届かなかった手紙は、何十年もの時を経て、小さな家具と一緒にちゃんと届いたのだ。ヘンリーさんは三面鏡の前でその手紙を読み、少しだけ泣いて、たくさん笑った。——松永工房の家具には、物語が宿る。きみが作ったあの椅子にも、きっと。"
+};
+
+/* 工房レベル：exp の累計がしきい値を超えるとレベルアップ
+   LEVELS[i] = レベル i+1 になるのに必要な累計経験値 */
+const LEVELS = [0, 30, 100, 250, 500, 1000];
+const LEVEL_TITLES = ["見習い職人", "若手職人", "一人前の職人", "熟練の職人", "工房の匠", "伝説の職人"];
+
+/* 納品時にランダム表示されるメッセージ */
+const SNS_MESSAGES = [
+  "📱 SNSで話題になりました！「木のぬくもりがすごい…」",
+  "📱 SNSで話題になりました！「ドールハウスに置きたい！」",
+  "📮 お客さまからお礼の手紙が届きました。",
+  "🚚 配達員さんが「いい香りの荷物ですね」と笑いました。",
+  "📱 海外のアンティークファンにシェアされました！",
+  "🐈 工房の猫が完成品の上で丸くなりました（納品前にどいてもらいました）。",
+  "📻 地元のラジオで工房が紹介されました！",
+  "📱 「#松永工房」のタグ付き投稿が増えています！"
+];
+
+const SAVE_KEY = "matsunaga-craft-story-v1";
+
+/* ==========================================================
+   ゲーム状態
+   ========================================================== */
+let state = {
+  money: 0,
+  exp: 0,                 // 累計経験値（レベルはここから算出）
+  level: 1,
+  currentId: null,        // 制作中の家具id（null=家具えらび画面）
+  stepIndex: 0,           // 現在の工程番号
+  completed: {},          // { 家具id: 完成回数 } 図鑑用
+  stories: []             // 解放済み物語の家具id（"final"含む）
+};
+
+/* ---------- セーブ／ロード（ローカルストレージ） ---------- */
+function save() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* プライベートモード等では保存できないが続行可能 */ }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) state = Object.assign(state, JSON.parse(raw));
+  } catch (e) { /* 壊れたデータは無視して新規開始 */ }
+}
+
+/* ==========================================================
+   ヘルパー
+   ========================================================== */
+const $ = (sel) => document.querySelector(sel);
+const furnitureById = (id) => FURNITURE.find(f => f.id === id);
+
+/* 現在レベルの算出と、家具の解放フラグ更新 */
+function calcLevel(exp) {
+  let lv = 1;
+  for (let i = 0; i < LEVELS.length; i++) if (exp >= LEVELS[i]) lv = i + 1;
+  return lv;
+}
+function refreshUnlocks() {
+  FURNITURE.forEach(f => { f.unlocked = state.level >= f.unlockLevel; });
+}
+
+/* メッセージ表示（ふわっと切り替え） */
+function showMessage(text) {
+  const el = $("#message");
+  el.style.opacity = 0;
+  setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 180);
+}
+
+/* きらきら紙吹雪 */
+function confetti() {
+  const emojis = ["✨", "🌸", "🪵", "⭐", "🍃", "💛"];
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement("span");
+    s.className = "confetti";
+    s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    s.style.left = (5 + Math.random() * 90) + "vw";
+    s.style.animationDelay = (Math.random() * 0.5) + "s";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 2400);
+  }
+}
+
+/* ==========================================================
+   描画
+   ========================================================== */
+function renderStatus() {
+  $("#st-money").textContent = state.money.toLocaleString();
+  $("#st-exp").textContent = state.exp;
+  $("#st-level").textContent = state.level;
+
+  /* 次のレベルまでの進捗バー */
+  const cur = LEVELS[state.level - 1];
+  const next = LEVELS[state.level];   // 最大レベルなら undefined
+  const fill = $("#lv-fill");
+  const label = $("#lv-label");
+  const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+  if (next === undefined) {
+    fill.style.width = "100%";
+    label.textContent = `${title}（最高レベル！）`;
+  } else {
+    fill.style.width = Math.min(100, ((state.exp - cur) / (next - cur)) * 100) + "%";
+    label.textContent = `${title}　次のレベルまで あと${next - state.exp}`;
+  }
+}
+
+/* 家具えらび画面 */
+function renderSelect() {
+  const list = FURNITURE.map(f => {
+    if (f.unlocked) {
+      return `<button class="select-item" data-id="${f.id}">
+        <span class="icon">${f.icon}</span>
+        <span><span class="name">${f.name}</span>
+        <div class="info">💰${f.price.toLocaleString()}円 ／ ✨${f.exp}　工程 ${f.steps.length}つ</div></span>
+      </button>`;
+    }
+    return `<div class="select-item locked">
+      <span class="icon">🔒</span>
+      <span><span class="name">？？？</span>
+      <div class="info">工房レベル ${f.unlockLevel} で解放されます</div></span>
+    </div>`;
+  }).join("");
+  $("#card-area").innerHTML = `<div class="select-title">🔨 今日はどの家具を作る？</div>
+    <div class="select-list">${list}</div>`;
+  $("#steps-area").innerHTML = "";
+
+  /* 家具を選んで制作開始 */
+  document.querySelectorAll(".select-item[data-id]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.currentId = btn.dataset.id;
+      state.stepIndex = 0;
+      save();
+      const f = furnitureById(state.currentId);
+      showMessage(`「${f.name}」の依頼を受けた。心をこめて作ろう。`);
+      render();
+    });
+  });
+}
+
+/* 制作画面（家具カード＋工程ボタン） */
+function renderCraft() {
+  const f = furnitureById(state.currentId);
+  const total = f.steps.length;
+  const done = state.stepIndex >= total;
+  const pct = Math.round((state.stepIndex / total) * 100);
+
+  $("#card-area").innerHTML = `
+    <div class="card${done ? " done" : ""}" id="craft-card">
+      <span class="icon">${done ? f.icon + "✨" : f.icon}</span>
+      <h2>${f.name}</h2>
+      <p class="desc">${f.description}</p>
+      <div class="meta"><span>💰 ${f.price.toLocaleString()}円</span><span>✨ 経験値 ${f.exp}</span></div>
+      <div class="progress"><i style="width:${pct}%"></i></div>
+      <div class="progress-label">${done ? "🎉 完成！" : `工程 ${state.stepIndex} / ${total}`}</div>
+    </div>`;
+
+  if (done) {
+    /* 完成 → 納品ボタン */
+    $("#steps-area").innerHTML =
+      `<button class="deliver-btn" id="btn-deliver">🚚 納品する（＋${f.price.toLocaleString()}円）</button>`;
+    $("#btn-deliver").addEventListener("click", deliver);
+  } else {
+    /* 工程ボタン：現在の工程だけ押せる */
+    $("#steps-area").innerHTML = `<div class="steps">` + f.steps.map((s, i) => {
+      const cls = i < state.stepIndex ? "done-step" : (i === state.stepIndex ? "current" : "");
+      const dis = i === state.stepIndex ? "" : "disabled";
+      const mark = i < state.stepIndex ? "✅ " : `${s.icon} `;
+      return `<button class="step-btn ${cls}" data-i="${i}" ${dis}>${mark}${s.label}</button>`;
+    }).join("") + `</div>`;
+    $(`.step-btn.current`).addEventListener("click", doStep);
+  }
+}
+
+function render() {
+  refreshUnlocks();
+  renderStatus();
+  if (state.currentId) renderCraft(); else renderSelect();
+}
+
+/* ==========================================================
+   ゲーム進行
+   ========================================================== */
+/* 工程をひとつ進める */
+function doStep() {
+  const f = furnitureById(state.currentId);
+  const step = f.steps[state.stepIndex];
+  showMessage(`${step.icon} ${step.msg}`);
+  state.stepIndex++;
+  save();
+  render();
+  if (state.stepIndex >= f.steps.length) {
+    /* 完成演出 */
+    confetti();
+    showMessage(`🎉 「${f.name}」が完成した！ 納品しよう。`);
+  }
+}
+
+/* 納品：報酬・図鑑登録・物語解放・レベルアップ判定 */
+function deliver() {
+  const f = furnitureById(state.currentId);
+  const firstTime = !state.completed[f.id];
+
+  state.money += f.price;
+  state.exp += f.exp;
+  state.completed[f.id] = (state.completed[f.id] || 0) + 1;
+
+  /* レベルアップ判定 */
+  const newLevel = calcLevel(state.exp);
+  const leveledUp = newLevel > state.level;
+  state.level = newLevel;
+
+  /* 制作終了 → 家具えらびへ */
+  state.currentId = null;
+  state.stepIndex = 0;
+
+  /* 納品メッセージ（SNS等をランダムで） */
+  const sns = SNS_MESSAGES[Math.floor(Math.random() * SNS_MESSAGES.length)];
+  let msg = `🚚 納品完了！ ＋${f.price.toLocaleString()}円　${sns}`;
+  if (leveledUp) {
+    msg += `　🏠 工房レベルが ${state.level} に上がった！`;
+    const unlockedNow = FURNITURE.filter(x => x.unlockLevel === state.level);
+    if (unlockedNow.length) msg += ` 「${unlockedNow.map(x => x.name).join("・")}」が作れるようになった！`;
+    confetti();
+  }
+  showMessage(msg);
+
+  /* 初完成 → 物語解放ポップアップ */
+  if (firstTime) {
+    state.stories.push(f.id);
+    openStoryPop(`「${f.name}」の物語`, f.story);
+  }
+  /* 全家具の物語がそろったら最終章を解放 */
+  if (!state.stories.includes("final") &&
+      FURNITURE.every(x => state.stories.includes(x.id))) {
+    state.stories.push("final");
+    setTimeout(() => openStoryPop(FINAL_STORY.title, FINAL_STORY.text), firstTime ? 600 : 0);
+  }
+
+  save();
+  render();
+}
+
+/* ==========================================================
+   モーダル（図鑑・物語）
+   ========================================================== */
+function openModal(id) { $("#" + id).classList.add("open"); }
+function closeModal(id) { $("#" + id).classList.remove("open"); }
+
+/* 図鑑 */
+function renderDex() {
+  $("#dex-list").innerHTML = FURNITURE.map(f => {
+    const n = state.completed[f.id] || 0;
+    if (n > 0) {
+      return `<div class="dex-item">
+        <span class="icon">${f.icon}</span>
+        <span><div class="name">${f.name}</div>
+        <div class="count">これまでに ${n} 台つくった</div></span>
+      </div>`;
+    }
+    return `<div class="dex-item unknown">
+      <span class="icon">❓</span>
+      <span><div class="name">？？？</div>
+      <div class="count">まだ作ったことがない</div></span>
+    </div>`;
+  }).join("");
+}
+
+/* 物語（解放済みだけ読める。最終章は特別枠） */
+function renderStories() {
+  let html = FURNITURE.map(f => {
+    if (state.stories.includes(f.id)) {
+      return `<div class="story-item">
+        <h4>${f.icon} 「${f.name}」の物語</h4><p>${f.story}</p>
+      </div>`;
+    }
+    return `<div class="story-item locked">
+      <h4>🔒 まだ読めない物語</h4><p>この家具をはじめて完成させると読めるようになる。</p>
+    </div>`;
+  }).join("");
+
+  if (state.stories.includes("final")) {
+    html += `<div class="story-item final">
+      <h4>💌 ${FINAL_STORY.title}</h4><p>${FINAL_STORY.text}</p>
+    </div>`;
+  } else {
+    html += `<div class="story-item locked final">
+      <h4>🔒 ${FINAL_STORY.title}</h4><p>すべての家具の物語を集めると、最後の物語が読めるらしい……。</p>
+    </div>`;
+  }
+  $("#story-list").innerHTML = html;
+}
+
+/* 物語解放ポップアップ */
+function openStoryPop(title, text) {
+  $("#pop-title").textContent = title;
+  $("#pop-text").textContent = text;
+  openModal("story-pop");
+}
+
+/* ==========================================================
+   初期化
+   ========================================================== */
+function init() {
+  load();
+  /* 途中セーブとの整合（レベルは常にexpから再計算） */
+  state.level = calcLevel(state.exp);
+
+  /* フッターのボタン */
+  $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
+  $("#btn-story").addEventListener("click", () => { renderStories(); openModal("story-modal"); });
+
+  /* モーダルの閉じるボタン・背景タップ */
+  document.querySelectorAll(".close").forEach(b =>
+    b.addEventListener("click", () => closeModal(b.dataset.close)));
+  document.querySelectorAll(".modal-back").forEach(m =>
+    m.addEventListener("click", (e) => { if (e.target === m) m.classList.remove("open"); }));
+
+  /* リセット */
+  $("#btn-reset").addEventListener("click", () => {
+    if (confirm("セーブデータを消して、はじめからやり直しますか？")) {
+      localStorage.removeItem(SAVE_KEY);
+      location.reload();
+    }
+  });
+
+  render();
+  if (state.currentId) {
+    const f = furnitureById(state.currentId);
+    showMessage(`おかえりなさい。「${f.name}」の続きを作ろう。`);
+  } else if (state.exp > 0) {
+    showMessage("おかえりなさい。今日も一緒に、いい家具を作ろう。");
+  }
+}
+
+init();
+</script>
+</body>
+</html>
