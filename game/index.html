@@ -6,12 +6,12 @@
 <title>松永工房クラフトストーリー 〜小さな家具と、届かなかった手紙〜</title>
 <style>
 /* ==========================================================
-   松永工房クラフトストーリー 第4章
-   「松永工房の世界を体験するゲーム」へ
-   - 実在家具（プティカウチ・密談椅子・ジュエリーチェスト）
-   - 時間と納期（品質を取るか、期日を取るか）
-   - 設備投資（お金の使い道）
-   - 手紙のきれはしを集めるメインストーリー
+   松永工房クラフトストーリー 第5章
+   『家具コレクション × 工房発展 × 物語』
+   - ゲームの主役は家具図鑑（コンプリートが最終目的）
+   - 設計図 → 材料仕入れ → 制作(設計/素材/仕上げ) → 図鑑登録
+     → 展示 → 来館者 → 収益 → 新設計図…のループ
+   - 隠しレシピ発見／展示セットボーナス／工房発展
    絵本風 × 木の温かみ × ちょっと高級感
    ========================================================== */
 :root{
@@ -37,24 +37,21 @@ html,body{ height:100%; }
 body{
   font-family:"Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic UI","Meiryo",sans-serif;
   color:var(--brown);
-  /* 工房の壁（クリーム）＋うっすら木目の横縞 */
   background:
     repeating-linear-gradient(0deg,
       rgba(176,138,99,.05) 0px,  rgba(176,138,99,.05) 2px,
       transparent 2px,           transparent 26px),
     radial-gradient(circle at 50% -10%, #fff8e8 0%, var(--cream) 60%, var(--cream-deep) 100%);
-  max-width:480px;               /* スマホ縦画面想定。PCでは中央寄せ */
+  max-width:480px;
   margin:0 auto;
   min-height:100dvh;
   display:flex; flex-direction:column;
   user-select:none;
 }
 
-/* ---------- ヘッダー（タイトル・ステータス） ---------- */
+/* ---------- ヘッダー ---------- */
 header{
-  padding:12px 14px 10px;
-  text-align:center;
-  /* 木の看板風 */
+  padding:12px 14px 10px; text-align:center;
   background:
     repeating-linear-gradient(90deg,
       rgba(107,74,47,.08) 0 3px, transparent 3px 34px),
@@ -71,13 +68,11 @@ header h1 .sub{
   display:block; font-size:.68rem; font-weight:normal;
   color:#7d5a3c; margin-top:2px; letter-spacing:.02em;
 }
-.status{
-  display:flex; justify-content:center; gap:6px; margin-top:8px; flex-wrap:wrap;
-}
+.status{ display:flex; justify-content:center; gap:6px; margin-top:8px; flex-wrap:wrap; }
 .status .chip{
   background:var(--paper); border:2px solid var(--brown-soft);
   border-radius:999px; padding:3px 10px;
-  font-size:.74rem; font-weight:bold; box-shadow:0 2px 3px rgba(107,74,47,.15);
+  font-size:.72rem; font-weight:bold; box-shadow:0 2px 3px rgba(107,74,47,.15);
 }
 .lvbar{
   margin:7px auto 0; width:78%; height:8px; border-radius:999px;
@@ -94,21 +89,15 @@ header h1 .sub{
 main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12px; }
 
 /* ----- ヘンリーさん（案内役・常時表示） ----- */
-#henry-area{
-  display:flex; align-items:flex-start; gap:10px;
-}
+#henry-area{ display:flex; align-items:flex-start; gap:10px; }
 #henry-avatar{
   flex:0 0 62px; width:62px; height:62px;
   background:var(--paper); border:2.5px solid var(--brown-soft); border-radius:50%;
-  box-shadow:0 2px 5px rgba(107,74,47,.2);
-  overflow:hidden;
+  box-shadow:0 2px 5px rgba(107,74,47,.2); overflow:hidden;
   animation:henrySway 4s ease-in-out infinite;
 }
 #henry-avatar svg{ width:100%; height:100%; display:block; }
-@keyframes henrySway{
-  0%,100%{ transform:rotate(-2deg); } 50%{ transform:rotate(2deg); }
-}
-/* ヘンリーさんの吹き出し */
+@keyframes henrySway{ 0%,100%{ transform:rotate(-2deg); } 50%{ transform:rotate(2deg); } }
 #message{
   flex:1; min-height:3.2em; position:relative;
   background:var(--paper); border:2px solid var(--brown-soft);
@@ -116,7 +105,7 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   font-size:.8rem; line-height:1.6;
   transition:opacity .3s;
 }
-#message::before{                       /* 吹き出しのしっぽ */
+#message::before{
   content:""; position:absolute; left:-9px; top:20px;
   border:8px solid transparent; border-right-color:var(--brown-soft);
 }
@@ -124,11 +113,9 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   content:""; position:absolute; left:-6px; top:22px;
   border:6px solid transparent; border-right-color:var(--paper);
 }
-.henry-name{
-  display:block; font-size:.6rem; color:var(--brown-soft); font-weight:bold; margin-bottom:1px;
-}
+.henry-name{ display:block; font-size:.6rem; color:var(--brown-soft); font-weight:bold; margin-bottom:1px; }
 
-/* 工房まめ知識（工程のあいまにランダムで顔を出す読みもの） */
+/* 工房まめ知識 */
 .trivia{
   background:linear-gradient(180deg,#fdf6e6,#f7ecd2);
   border:2px dashed var(--gold); border-radius:12px;
@@ -139,7 +126,7 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .trivia.pop{ animation:triviaIn .4s ease; }
 @keyframes triviaIn{ from{ transform:translateY(-6px); opacity:0; } to{ transform:none; opacity:1; } }
 
-/* ----- 家具カード（木のカード風） ----- */
+/* ----- 家具カード ----- */
 .card{
   background:
     repeating-linear-gradient(90deg,
@@ -151,19 +138,19 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   padding:14px 16px 14px;
   position:relative; overflow:hidden;
 }
-.card .art{ width:120px; height:120px; margin:0 auto; display:block;
+.card .art{ width:116px; height:116px; margin:0 auto; display:block;
   filter:drop-shadow(0 4px 4px rgba(107,74,47,.22)); }
 .card .art svg{ width:100%; height:100%; display:block; }
-.card h2{ text-align:center; font-size:1.1rem; margin-top:2px; letter-spacing:.04em; }
-.card .desc{ font-size:.76rem; color:var(--brown-mid); text-align:center; margin-top:4px; line-height:1.6; }
-.card .meta{ display:flex; justify-content:center; gap:8px; margin-top:8px; font-size:.72rem; flex-wrap:wrap; }
+.card h2{ text-align:center; font-size:1.06rem; margin-top:2px; letter-spacing:.04em; }
+.card .desc{ font-size:.75rem; color:var(--brown-mid); text-align:center; margin-top:4px; line-height:1.6; }
+.card .meta{ display:flex; justify-content:center; gap:6px; margin-top:8px; font-size:.7rem; flex-wrap:wrap; }
 .card .meta span{
   background:var(--cream-deep); border-radius:999px; padding:2px 9px;
   border:1px solid var(--wood-dark);
 }
 .card .meta .late{ color:var(--red); border-color:var(--red); font-weight:bold; }
 
-/* 進捗バー */
+/* 進捗バー・品質ゲージ */
 .progress{
   margin-top:10px; height:14px; border-radius:999px;
   background:var(--cream-deep); border:2px solid var(--brown-soft); overflow:hidden;
@@ -174,11 +161,7 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   transition:width .35s ease; border-radius:999px;
 }
 .progress-label{ text-align:center; font-size:.72rem; margin-top:4px; color:var(--brown-mid); }
-
-/* 品質ゲージ */
-.quality-row{
-  display:flex; align-items:center; gap:8px; margin-top:8px; font-size:.72rem;
-}
+.quality-row{ display:flex; align-items:center; gap:8px; margin-top:8px; font-size:.72rem; }
 .quality-bar{
   flex:1; height:10px; border-radius:999px;
   background:var(--cream-deep); border:1.5px solid var(--brown-soft); overflow:hidden;
@@ -198,31 +181,26 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .rank-B{ color:var(--brown-mid); background:var(--cream-deep); }
 .rank-C{ color:#9a8a78; background:#f2eee6; }
 
-/* 完成アニメーション：ぽよん＋金色に光る */
+/* 完成アニメーション */
 .card.done{
   animation:cardPop .6s ease, cardGlow 1.6s ease-in-out .3s 3;
   border-color:var(--gold);
 }
 @keyframes cardPop{
-  0%{ transform:scale(1); }
-  35%{ transform:scale(1.06) rotate(-1.5deg); }
-  70%{ transform:scale(.98) rotate(1deg); }
-  100%{ transform:scale(1); }
+  0%{ transform:scale(1); } 35%{ transform:scale(1.06) rotate(-1.5deg); }
+  70%{ transform:scale(.98) rotate(1deg); } 100%{ transform:scale(1); }
 }
 @keyframes cardGlow{
   0%,100%{ box-shadow:var(--shadow), 0 0 0 rgba(201,162,75,0); }
   50%{ box-shadow:var(--shadow), 0 0 28px 6px rgba(201,162,75,.65); }
 }
-/* きらきら紙吹雪（絵文字を降らせる） */
 .confetti{
   position:fixed; top:-40px; font-size:1.4rem; pointer-events:none; z-index:99;
   animation:fall 1.7s linear forwards;
 }
-@keyframes fall{
-  to{ transform:translateY(105vh) rotate(360deg); opacity:.2; }
-}
+@keyframes fall{ to{ transform:translateY(105vh) rotate(360deg); opacity:.2; } }
 
-/* ----- 家具えらび（未制作時） ----- */
+/* ----- 設計図えらび ----- */
 .select-title{ text-align:center; font-size:.86rem; color:var(--brown-mid); }
 .select-list{ display:flex; flex-direction:column; gap:10px; }
 .select-item{
@@ -236,41 +214,67 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .select-item:active{ transform:scale(.97); }
 .select-item .thumb{ width:52px; height:52px; flex:0 0 52px; }
 .select-item .thumb svg{ width:100%; height:100%; }
+.select-item .thumb img{ width:100%; height:100%; object-fit:contain; border-radius:10px; }
 .select-item .icon{ font-size:2rem; width:52px; text-align:center; }
-.select-item .name{ font-weight:bold; font-size:.92rem; }
-.select-item .info{ font-size:.68rem; color:var(--brown-mid); margin-top:2px; line-height:1.5; }
+.select-item .name{ font-weight:bold; font-size:.9rem; }
+.select-item .info{ font-size:.66rem; color:var(--brown-mid); margin-top:2px; line-height:1.5; }
 .select-item.locked{
   opacity:.55; filter:grayscale(.6); cursor:default;
   border-style:dashed; box-shadow:none;
 }
+.mat-chip{
+  display:inline-block; font-size:.64rem; border-radius:999px; padding:1px 7px;
+  border:1px solid var(--wood-dark); background:var(--cream-deep); margin:1px 1px 0 0;
+}
+.mat-chip.ng{ color:var(--red); border-color:var(--red); background:#f8ece8; }
+
+/* ----- 制作の設計えらび（設計・素材・仕上げ） ----- */
+.prep-group{ margin-top:10px; }
+.prep-group .g-title{ font-size:.76rem; font-weight:bold; margin-bottom:6px; text-align:center; }
+.opt-row{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+.opt-chip{
+  font-family:inherit; font-size:.74rem; font-weight:bold; color:var(--brown);
+  padding:9px 12px; border-radius:14px; cursor:pointer;
+  border:2px solid var(--brown-soft);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+  min-height:44px;
+}
+.opt-chip .o-note{ display:block; font-size:.58rem; font-weight:normal; color:var(--brown-mid); }
+.opt-chip.selected{
+  background:linear-gradient(180deg,#eef5e8,var(--green));
+  border-color:var(--green-deep); box-shadow:0 0 0 2px rgba(122,156,110,.3);
+}
+.opt-chip:disabled{ opacity:.45; cursor:default; }
+.start-btn{
+  display:block; width:100%; margin-top:12px;
+  font-family:inherit; font-size:.96rem; font-weight:bold; color:#fff;
+  padding:14px; border-radius:18px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,var(--green),var(--green-deep));
+  box-shadow:0 4px 0 #5f7d55, var(--shadow);
+}
+.start-btn:disabled{ background:var(--cream-deep); color:var(--brown-soft); box-shadow:none; }
+.cancel-link{
+  text-align:center; font-size:.7rem; color:var(--brown-soft);
+  margin-top:8px; text-decoration:underline; cursor:pointer;
+}
 
 /* ---------- 工程エリア ---------- */
 #steps-area{ padding:4px 14px 10px; }
-/* 工程チップ（進捗の見える化。押すのは下の3択ボタン） */
-.steps{
-  display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:10px;
-}
+.steps{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:10px; }
 .step-chip{
   font-size:.7rem; font-weight:bold; color:var(--brown);
   padding:5px 10px; border-radius:999px;
   border:2px solid var(--brown-soft);
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
 }
-.step-chip.done-step{
-  background:var(--wood-light); border-color:var(--wood-dark); opacity:.75;
-}
+.step-chip.done-step{ background:var(--wood-light); border-color:var(--wood-dark); opacity:.75; }
 .step-chip.current{
   background:linear-gradient(180deg,#eef5e8,var(--green));
   border-color:var(--green-deep);
   animation:pulse 1.4s infinite;
 }
-@keyframes pulse{
-  0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); }
-}
-/* 工程の3択（ていねい・ふつう・急ぐ） */
-.choice-title{
-  text-align:center; font-size:.8rem; font-weight:bold; margin-bottom:8px;
-}
+@keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
+.choice-title{ text-align:center; font-size:.8rem; font-weight:bold; margin-bottom:8px; }
 .choices{ display:flex; gap:8px; }
 .choice-btn{
   flex:1; font-family:inherit; font-weight:bold; color:var(--brown);
@@ -279,34 +283,41 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
   box-shadow:0 3px 0 var(--brown-soft);
   transition:transform .1s;
-  min-height:88px;                          /* 親指で押しやすい大きさに */
+  min-height:88px;
 }
 .choice-btn .c-icon{ display:block; font-size:1.6rem; line-height:1.2; }
 .choice-btn .c-label{ display:block; font-size:.92rem; margin-top:3px; }
 .choice-btn .c-note{ display:block; font-size:.6rem; font-weight:normal; color:var(--brown-mid); margin-top:2px; line-height:1.4; }
 .choice-btn:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-soft); }
-.choice-btn:disabled{ opacity:.55; box-shadow:none; cursor:default; }  /* 作業中 */
+.choice-btn:disabled{ opacity:.55; box-shadow:none; cursor:default; }
 .choice-teinei{ border-color:var(--green-deep); box-shadow:0 3px 0 var(--green-deep);
   background:linear-gradient(180deg,#f2f7ee,#dcead4); }
 .choice-teinei:active{ box-shadow:0 1px 0 var(--green-deep); }
 
-/* 納品ボタン */
-.deliver-btn{
-  display:block; width:100%; margin-top:4px;
-  font-family:inherit; font-size:.96rem; font-weight:bold; color:#fff;
-  padding:14px; border-radius:18px; border:none; cursor:pointer;
-  background:linear-gradient(180deg,var(--green),var(--green-deep));
-  box-shadow:0 4px 0 #5f7d55, var(--shadow);
-  letter-spacing:.04em;
-  animation:pulse 1.4s infinite;
+/* 完成後の2択（納品／展示） */
+.finish-row{ display:flex; gap:8px; margin-top:4px; }
+.deliver-btn, .exhibit-btn{
+  flex:1; font-family:inherit; font-size:.84rem; font-weight:bold; color:#fff;
+  padding:13px 6px; border-radius:18px; border:none; cursor:pointer;
+  letter-spacing:.02em; line-height:1.4;
 }
+.deliver-btn{
+  background:linear-gradient(180deg,var(--green),var(--green-deep));
+  box-shadow:0 4px 0 #5f7d55; animation:pulse 1.4s infinite;
+}
+.exhibit-btn{
+  background:linear-gradient(180deg,#d8b45e,var(--gold));
+  box-shadow:0 4px 0 #a97c14;
+}
+.exhibit-btn:disabled{ background:var(--cream-deep); color:var(--brown-soft); box-shadow:none; animation:none; }
 .deliver-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #5f7d55; }
+.exhibit-btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 1px 0 #a97c14; }
 
-/* ---------- 固定フッター（図鑑・物語・設備・工房） ---------- */
+/* ---------- 固定フッター ---------- */
 footer{
-  position:sticky; bottom:0; z-index:30;   /* スマホで常に押せる位置に固定 */
-  display:flex; gap:6px;
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  position:sticky; bottom:0; z-index:30;
+  display:flex; gap:5px;
+  padding:10px 10px calc(10px + env(safe-area-inset-bottom));
   background:
     repeating-linear-gradient(90deg,
       rgba(107,74,47,.08) 0 3px, transparent 3px 34px),
@@ -316,9 +327,9 @@ footer{
   box-shadow:0 -4px 12px rgba(107,74,47,.2);
 }
 .foot-btn{
-  flex:1; font-family:inherit; font-size:.76rem; font-weight:bold; color:var(--brown);
-  min-height:52px;                          /* 指で押しやすい高さ */
-  padding:8px 2px; border-radius:14px; cursor:pointer;
+  flex:1; font-family:inherit; font-size:.7rem; font-weight:bold; color:var(--brown);
+  min-height:52px;
+  padding:8px 1px; border-radius:14px; cursor:pointer;
   border:2.5px solid var(--brown-mid);
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
   box-shadow:0 3px 0 var(--brown-mid);
@@ -333,7 +344,7 @@ footer{
 }
 .modal-back.open{ display:flex; }
 .modal{
-  width:100%; max-width:420px; max-height:80dvh; overflow-y:auto;
+  width:100%; max-width:420px; max-height:82dvh; overflow-y:auto;
   background:var(--paper); border:3px solid var(--wood-dark);
   border-radius:20px; padding:18px 16px;
   box-shadow:0 10px 30px rgba(60,40,20,.4);
@@ -349,7 +360,6 @@ footer{
   padding:9px 34px; border-radius:999px; cursor:pointer;
   border:2px solid var(--brown-mid); background:var(--cream-deep); color:var(--brown);
 }
-/* 右上の✕（スクロールしても付いてくる） */
 .modal .x-close{
   position:sticky; top:0; float:right; z-index:2;
   width:40px; height:40px; border-radius:50%;
@@ -357,25 +367,40 @@ footer{
   font-family:inherit; font-size:1rem; font-weight:bold; cursor:pointer;
   box-shadow:0 2px 4px rgba(107,74,47,.25); margin-left:8px;
 }
-
-/* 図鑑エントリ */
-.dex-item{
-  display:flex; gap:12px; align-items:center;
-  border:2px solid var(--wood-light); border-radius:14px;
-  padding:8px 12px; margin-bottom:10px; background:#fffdf7;
-}
-.dex-item .thumb{ width:48px; height:48px; flex:0 0 48px; }
-.dex-item .thumb svg{ width:100%; height:100%; }
-.dex-item .icon{ font-size:1.8rem; width:48px; text-align:center; }
-.dex-item .name{ font-weight:bold; font-size:.9rem; }
-.dex-item .count{ font-size:.7rem; color:var(--brown-mid); margin-top:3px; line-height:1.6; }
-.dex-item.unknown{ opacity:.5; filter:grayscale(1); }
-/* 図鑑・工房まめ知識 */
 .dex-section-title{
   text-align:center; font-size:.82rem; font-weight:bold; letter-spacing:.1em;
   margin:16px 0 10px; color:var(--brown-mid);
   border-bottom:2px dashed var(--wood-light); padding-bottom:5px;
 }
+
+/* ---------- 図鑑（ゲームの主役） ---------- */
+.dex-complete{
+  text-align:center; margin-bottom:12px;
+  background:linear-gradient(180deg,#fdf6e6,#f7ecd2);
+  border:2px solid var(--gold); border-radius:14px; padding:10px;
+}
+.dex-complete .big{ font-size:1.3rem; font-weight:bold; color:#a97c14; }
+.dex-complete .small{ font-size:.68rem; color:var(--brown-mid); margin-top:2px; }
+.dex-item{
+  border:2px solid var(--wood-light); border-radius:14px;
+  padding:8px 12px; margin-bottom:10px; background:#fffdf7;
+}
+.dex-item .d-head{ display:flex; gap:12px; align-items:center; }
+.dex-item .thumb{ width:52px; height:52px; flex:0 0 52px; }
+.dex-item .thumb svg{ width:100%; height:100%; }
+.dex-item .thumb img{ width:100%; height:100%; object-fit:contain; border-radius:10px; }
+.dex-item .icon{ font-size:1.8rem; width:52px; text-align:center; }
+.dex-item .name{ font-weight:bold; font-size:.9rem; }
+.dex-item .count{ font-size:.68rem; color:var(--brown-mid); margin-top:3px; line-height:1.7; }
+.dex-item .d-desc{ font-size:.72rem; color:var(--brown-mid); margin-top:6px; line-height:1.7; text-align:justify; }
+.dex-item .d-story{
+  margin-top:6px; font-size:.74rem; line-height:1.85; text-align:justify;
+  background:linear-gradient(180deg,#fffef9,#fdf6e6);
+  border:1.5px dashed var(--wood-dark); border-radius:10px; padding:8px 10px;
+}
+.dex-item.unknown{ opacity:.6; }
+.dex-item.unknown .d-head{ filter:grayscale(1); }
+.dex-item.secret{ border-color:var(--gold); }
 .knowledge{
   border:2px solid var(--wood-light); border-radius:14px;
   padding:10px 13px; margin-bottom:10px;
@@ -384,7 +409,17 @@ footer{
 .knowledge h4{ font-size:.82rem; margin-bottom:4px; }
 .knowledge p{ font-size:.74rem; line-height:1.8; text-align:justify; color:var(--brown-mid); }
 
-/* 物語エントリ（絵本ページ風） */
+/* 手紙のきれはし */
+.letter-item{
+  border:2px solid #d9c48f; border-radius:4px 14px 4px 14px;
+  padding:10px 13px; margin-bottom:10px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 22px, rgba(176,138,99,.12) 22px 23px),
+    linear-gradient(180deg,#fdf8e9,#f7eed3);
+  font-size:.76rem; line-height:1.95; text-align:justify;
+}
+.letter-item h4{ font-size:.78rem; margin-bottom:4px; color:#8a6a2f; }
+.letter-item.locked{ opacity:.55; filter:grayscale(.4); }
 .story-item{
   border:2px solid var(--wood-light); border-radius:14px;
   padding:12px 14px; margin-bottom:12px;
@@ -394,42 +429,81 @@ footer{
 .story-item p{ font-size:.8rem; line-height:1.9; text-align:justify; }
 .story-item.locked{ opacity:.6; }
 .story-item.final{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,75,.25); }
-/* 手紙のきれはし（メインストーリー） */
-.letter-item{
-  border:2px solid #d9c48f; border-radius:4px 14px 4px 14px;
-  padding:10px 13px; margin-bottom:10px;
-  background:
-    repeating-linear-gradient(0deg, transparent 0 22px, rgba(176,138,99,.12) 22px 23px),
-    linear-gradient(180deg,#fdf8e9,#f7eed3);           /* 便箋風の罫線 */
-  font-size:.78rem; line-height:1.95; text-align:justify;
-}
-.letter-item h4{ font-size:.8rem; margin-bottom:4px; color:#8a6a2f; }
-.letter-item.locked{ opacity:.55; filter:grayscale(.4); }
 
-/* 設備（お金の使い道） */
+/* ---------- 仕入れ（材料） ---------- */
+.mat-item{
+  display:flex; gap:12px; align-items:center;
+  border:2px solid var(--wood-light); border-radius:14px;
+  padding:9px 12px; margin-bottom:9px; background:#fffdf7;
+}
+.mat-item .m-icon{ font-size:1.7rem; width:40px; text-align:center; }
+.mat-item .m-body{ flex:1; }
+.mat-item .m-name{ font-weight:bold; font-size:.86rem; }
+.mat-item .m-desc{ font-size:.66rem; color:var(--brown-mid); margin-top:1px; line-height:1.5; }
+.mat-item .m-own{ font-size:.72rem; font-weight:bold; color:var(--green-deep); white-space:nowrap; }
+.mat-buy{
+  font-family:inherit; font-weight:bold; font-size:.72rem; color:#fff;
+  padding:9px 10px; border-radius:12px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,var(--green),var(--green-deep));
+  box-shadow:0 3px 0 #5f7d55; white-space:nowrap;
+}
+.mat-buy:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 #5f7d55; }
+.mat-buy:disabled{ background:var(--cream-deep); color:var(--brown-soft); box-shadow:none; cursor:default; }
+
+/* ---------- ショールーム（展示） ---------- */
+.show-head{
+  text-align:center; margin-bottom:10px;
+  background:linear-gradient(180deg,#fdf6e6,#f7ecd2);
+  border:2px solid var(--gold); border-radius:14px; padding:9px;
+  font-size:.72rem; color:var(--brown-mid); line-height:1.8;
+}
+.show-head b{ color:#a97c14; font-size:.9rem; }
+.show-item{
+  display:flex; gap:10px; align-items:center;
+  border:2px solid var(--wood-light); border-radius:14px;
+  padding:8px 12px; margin-bottom:9px; background:#fffdf7;
+}
+.show-item .thumb{ width:46px; height:46px; flex:0 0 46px; }
+.show-item .thumb svg{ width:100%; height:100%; }
+.show-item .s-body{ flex:1; }
+.show-item .s-name{ font-weight:bold; font-size:.82rem; }
+.show-item .s-info{ font-size:.66rem; color:var(--brown-mid); margin-top:2px; line-height:1.6; }
+.sell-btn{
+  font-family:inherit; font-weight:bold; font-size:.7rem; color:var(--brown);
+  padding:8px 10px; border-radius:12px; cursor:pointer;
+  border:2px solid var(--brown-mid); background:var(--cream-deep); white-space:nowrap;
+}
+.bonus-chip{
+  display:inline-block; font-size:.66rem; font-weight:bold; color:#a97c14;
+  border:1.5px solid var(--gold); background:#fdf3d5;
+  border-radius:999px; padding:2px 9px; margin:2px 1px;
+}
+.bonus-chip.off{ color:var(--brown-soft); border-color:var(--brown-soft); background:var(--cream-deep); opacity:.7; }
+
+/* ---------- 設備 ---------- */
 .gear-item{
   display:flex; gap:12px; align-items:center;
   border:2px solid var(--wood-light); border-radius:14px;
   padding:10px 12px; margin-bottom:10px; background:#fffdf7;
 }
 .gear-item .g-icon{ font-size:1.9rem; width:44px; text-align:center; }
-.gear-item .g-name{ font-weight:bold; font-size:.88rem; }
-.gear-item .g-desc{ font-size:.7rem; color:var(--brown-mid); margin-top:2px; line-height:1.6; }
+.gear-item .g-name{ font-weight:bold; font-size:.86rem; }
+.gear-item .g-desc{ font-size:.68rem; color:var(--brown-mid); margin-top:2px; line-height:1.6; }
 .gear-item .g-body{ flex:1; }
 .gear-buy{
-  font-family:inherit; font-weight:bold; font-size:.74rem; color:#fff;
-  padding:9px 12px; border-radius:12px; border:none; cursor:pointer;
+  font-family:inherit; font-weight:bold; font-size:.72rem; color:#fff;
+  padding:9px 11px; border-radius:12px; border:none; cursor:pointer;
   background:linear-gradient(180deg,var(--green),var(--green-deep));
   box-shadow:0 3px 0 #5f7d55; white-space:nowrap;
 }
 .gear-buy:active:not(:disabled){ transform:translateY(2px); box-shadow:0 1px 0 #5f7d55; }
 .gear-buy:disabled{ background:var(--cream-deep); color:var(--brown-soft); box-shadow:none; cursor:default; }
 .gear-owned{
-  font-size:.74rem; font-weight:bold; color:var(--green-deep);
-  border:2px solid var(--green-deep); border-radius:999px; padding:6px 10px; white-space:nowrap;
+  font-size:.72rem; font-weight:bold; color:var(--green-deep);
+  border:2px solid var(--green-deep); border-radius:999px; padding:6px 9px; white-space:nowrap;
 }
 
-/* 工房紹介ページ */
+/* ---------- 工房紹介 ---------- */
 .about-hero{ text-align:center; margin-bottom:12px; }
 .about-hero .art{ width:110px; height:110px; margin:0 auto; }
 .about-hero .art svg{ width:100%; height:100%; }
@@ -451,73 +525,81 @@ footer{
   font-size:.84rem; line-height:2; margin:10px 0; text-align:justify;
   padding:12px; background:#fdf6e6; border-radius:12px;
   border:1.5px dashed var(--gold);
-  white-space:pre-line;                   /* 物語＋手紙のきれはしを段落表示 */
+  white-space:pre-line;
 }
 .pop-badge{ font-size:2.2rem; display:block; animation:pulse 1.2s infinite; }
 </style>
 </head>
 <body>
 
-<!-- ========== ヘッダー：タイトルとステータス ========== -->
+<!-- ========== ヘッダー ========== -->
 <header>
   <h1>🪑 松永工房クラフトストーリー
     <span class="sub">〜小さな家具と、届かなかった手紙〜</span>
   </h1>
   <div class="status">
     <span class="chip">💰 <span id="st-money">0</span>円</span>
-    <span class="chip">✨ <span id="st-exp">0</span></span>
     <span class="chip">🏠 Lv.<span id="st-level">1</span></span>
     <span class="chip">📅 <span id="st-day">1</span>日目</span>
-    <span class="chip">⏱ 残り<span id="st-hours">8</span>h</span>
+    <span class="chip">⏱ <span id="st-hours">8</span>h</span>
+    <span class="chip">👥 のべ<span id="st-visitors">0</span>人</span>
   </div>
   <div class="lvbar"><i id="lv-fill"></i></div>
   <div class="lvbar-label" id="lv-label"></div>
 </header>
 
-<!-- ========== メイン：ヘンリーさん＋家具カード ========== -->
+<!-- ========== メイン ========== -->
 <main>
-  <!-- 案内役ヘンリーさん（常時表示） -->
   <div id="henry-area">
-    <div id="henry-avatar"><!-- JSでSVGを描画 --></div>
+    <div id="henry-avatar"></div>
     <div id="message"><span class="henry-name">ヘンリーさん</span><span id="message-text"></span></div>
   </div>
-  <!-- 工房まめ知識（工程のあいまにランダム表示） -->
   <div id="trivia" class="trivia" hidden></div>
-  <div id="card-area"><!-- JSで描画 --></div>
+  <div id="card-area"></div>
 </main>
 
-<!-- ========== 工程エリア：工程チップ＋3択ボタン／納品ボタン ========== -->
-<div id="steps-area"><!-- JSで描画 --></div>
+<!-- ========== 工程エリア ========== -->
+<div id="steps-area"></div>
 
-<!-- ========== 固定フッター：図鑑・物語・設備・工房 ========== -->
+<!-- ========== 固定フッター ========== -->
 <footer>
   <button class="foot-btn" id="btn-dex">📖<br>図鑑</button>
-  <button class="foot-btn" id="btn-story">💌<br>物語</button>
+  <button class="foot-btn" id="btn-show">🖼<br>展示室</button>
+  <button class="foot-btn" id="btn-market">🧺<br>仕入れ</button>
   <button class="foot-btn" id="btn-gear">🛠<br>設備</button>
   <button class="foot-btn" id="btn-about">🏠<br>工房</button>
 </footer>
 
-<!-- ========== モーダル：図鑑 ========== -->
+<!-- ========== モーダル：図鑑（主役。物語・手紙もここに） ========== -->
 <div class="modal-back" id="dex-modal">
   <div class="modal">
     <button class="x-close" data-close="dex-modal" aria-label="とじる">✕</button>
     <h3>📖 家具図鑑</h3>
+    <div id="dex-complete"></div>
     <div id="dex-list"></div>
-    <div class="dex-section-title">🌰 工房まめ知識</div>
-    <div id="knowledge-list"></div>
+    <div class="dex-section-title">💌 届かなかった手紙</div>
+    <div id="letter-list"></div>
     <button class="close" data-close="dex-modal">とじる</button>
   </div>
 </div>
 
-<!-- ========== モーダル：物語（手紙＋家具の物語） ========== -->
-<div class="modal-back" id="story-modal">
+<!-- ========== モーダル：ショールーム（展示） ========== -->
+<div class="modal-back" id="show-modal">
   <div class="modal">
-    <button class="x-close" data-close="story-modal" aria-label="とじる">✕</button>
-    <h3>💌 届かなかった手紙</h3>
-    <div id="letter-list"></div>
-    <div class="dex-section-title">📜 家具の物語</div>
-    <div id="story-list"></div>
-    <button class="close" data-close="story-modal">とじる</button>
+    <button class="x-close" data-close="show-modal" aria-label="とじる">✕</button>
+    <h3>🖼 ショールーム</h3>
+    <div id="show-body"></div>
+    <button class="close" data-close="show-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：仕入れ（材料） ========== -->
+<div class="modal-back" id="market-modal">
+  <div class="modal">
+    <button class="x-close" data-close="market-modal" aria-label="とじる">✕</button>
+    <h3>🧺 材料の仕入れ</h3>
+    <div id="market-body"></div>
+    <button class="close" data-close="market-modal">とじる</button>
   </div>
 </div>
 
@@ -537,6 +619,8 @@ footer{
     <button class="x-close" data-close="about-modal" aria-label="とじる">✕</button>
     <h3>🏠 有限会社 松永工房</h3>
     <div id="about-body"></div>
+    <div class="dex-section-title">🌰 工房まめ知識</div>
+    <div id="knowledge-list"></div>
     <div class="reset-link" id="btn-reset">セーブデータを消して、はじめからやり直す</div>
     <button class="close" data-close="about-modal">とじる</button>
   </div>
@@ -545,7 +629,7 @@ footer{
 <!-- ========== モーダル：物語解放ポップアップ ========== -->
 <div class="modal-back" id="story-pop">
   <div class="modal">
-    <span class="pop-badge">📜✨</span>
+    <span class="pop-badge" id="pop-badge">📜✨</span>
     <button class="x-close" data-close="story-pop" aria-label="とじる">✕</button>
     <h3 id="pop-title"></h3>
     <p class="story-text" id="pop-text"></p>
@@ -556,242 +640,294 @@ footer{
 <script>
 /* ==========================================================
    SVGイラスト（絵本風・画像素材なし）
-   家具を追加するときは同じ雰囲気で svg を1つ描くだけ。
+   隠し家具はベース家具のSVGに CSS フィルターをかけて表現。
    ========================================================== */
 const SVG_ART = {
-  /* 案内役：ヘンリーさん（緑のベレー帽の老紳士） */
   henry: `<svg viewBox="0 0 100 100" role="img" aria-label="ヘンリーさん">
-    <circle cx="50" cy="54" r="34" fill="#f6ddba"/>                      <!-- 顔 -->
-    <path d="M18 50 Q22 82 50 88 Q78 82 82 50 L82 66 Q78 94 50 96 Q22 94 18 66 Z" fill="#f1f1ec"/> <!-- あごひげ -->
-    <ellipse cx="50" cy="70" rx="16" ry="10" fill="#e9e9e2"/>            <!-- 口ひげ -->
-    <path d="M40 70 Q50 76 60 70" stroke="#8a6446" stroke-width="2.4" fill="none" stroke-linecap="round"/> <!-- にっこり -->
-    <circle cx="37" cy="50" r="8.5" fill="none" stroke="#6b4a2f" stroke-width="2.6"/> <!-- 丸めがね -->
+    <circle cx="50" cy="54" r="34" fill="#f6ddba"/>
+    <path d="M18 50 Q22 82 50 88 Q78 82 82 50 L82 66 Q78 94 50 96 Q22 94 18 66 Z" fill="#f1f1ec"/>
+    <ellipse cx="50" cy="70" rx="16" ry="10" fill="#e9e9e2"/>
+    <path d="M40 70 Q50 76 60 70" stroke="#8a6446" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <circle cx="37" cy="50" r="8.5" fill="none" stroke="#6b4a2f" stroke-width="2.6"/>
     <circle cx="63" cy="50" r="8.5" fill="none" stroke="#6b4a2f" stroke-width="2.6"/>
     <path d="M45.5 50 L54.5 50" stroke="#6b4a2f" stroke-width="2.6"/>
     <circle cx="37" cy="50" r="2.4" fill="#6b4a2f"/><circle cx="63" cy="50" r="2.4" fill="#6b4a2f"/>
-    <path d="M14 44 Q16 20 50 16 Q84 20 86 44 Q70 34 50 34 Q30 34 14 44 Z" fill="#7a9c6e"/> <!-- ベレー帽 -->
+    <path d="M14 44 Q16 20 50 16 Q84 20 86 44 Q70 34 50 34 Q30 34 14 44 Z" fill="#7a9c6e"/>
     <circle cx="50" cy="14" r="4" fill="#5f7d55"/>
-    <path d="M20 46 Q35 40 50 40 Q65 40 80 46" stroke="#e9e9e2" stroke-width="5" fill="none" stroke-linecap="round"/> <!-- 白髪 -->
-    <ellipse cx="30" cy="60" rx="4.5" ry="3" fill="#f0b9a0" opacity=".55"/> <!-- ほっぺ -->
+    <path d="M20 46 Q35 40 50 40 Q65 40 80 46" stroke="#e9e9e2" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="30" cy="60" rx="4.5" ry="3" fill="#f0b9a0" opacity=".55"/>
     <ellipse cx="70" cy="60" rx="4.5" ry="3" fill="#f0b9a0" opacity=".55"/>
   </svg>`,
 
-  /* 小さなスツール */
   stool: `<svg viewBox="0 0 120 120" role="img" aria-label="小さなスツール">
-    <ellipse cx="60" cy="104" rx="38" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
-    <rect x="34" y="52" width="9" height="50" rx="4" fill="#a9713f" transform="rotate(7 38 52)"/>  <!-- 左脚 -->
-    <rect x="77" y="52" width="9" height="50" rx="4" fill="#a9713f" transform="rotate(-7 82 52)"/> <!-- 右脚 -->
-    <rect x="55.5" y="55" width="9" height="47" rx="4" fill="#8a5a30"/>   <!-- 中央脚 -->
-    <path d="M42 80 Q60 74 78 80" stroke="#8a5a30" stroke-width="5" fill="none" stroke-linecap="round"/> <!-- 貫 -->
-    <ellipse cx="60" cy="50" rx="36" ry="14" fill="#b07c4a"/>             <!-- 座面（厚み） -->
-    <ellipse cx="60" cy="45" rx="36" ry="13" fill="#e0aa6b"/>             <!-- 座面（天板） -->
-    <path d="M34 42 Q60 34 86 42" stroke="#c98d54" stroke-width="2" fill="none"/> <!-- 木目 -->
+    <ellipse cx="60" cy="104" rx="38" ry="6" fill="rgba(107,74,47,.14)"/>
+    <rect x="34" y="52" width="9" height="50" rx="4" fill="#a9713f" transform="rotate(7 38 52)"/>
+    <rect x="77" y="52" width="9" height="50" rx="4" fill="#a9713f" transform="rotate(-7 82 52)"/>
+    <rect x="55.5" y="55" width="9" height="47" rx="4" fill="#8a5a30"/>
+    <path d="M42 80 Q60 74 78 80" stroke="#8a5a30" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="60" cy="50" rx="36" ry="14" fill="#b07c4a"/>
+    <ellipse cx="60" cy="45" rx="36" ry="13" fill="#e0aa6b"/>
+    <path d="M34 42 Q60 34 86 42" stroke="#c98d54" stroke-width="2" fill="none"/>
     <path d="M40 48 Q60 42 80 48" stroke="#c98d54" stroke-width="1.6" fill="none"/>
-    <ellipse cx="48" cy="40" rx="9" ry="3.5" fill="#f2cf9d" opacity=".8"/> <!-- つや -->
+    <ellipse cx="48" cy="40" rx="9" ry="3.5" fill="#f2cf9d" opacity=".8"/>
   </svg>`,
 
-  /* プティカウチ */
   couch: `<svg viewBox="0 0 120 120" role="img" aria-label="プティカウチ">
-    <ellipse cx="60" cy="106" rx="46" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
-    <rect x="22" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>      <!-- 脚 -->
+    <ellipse cx="60" cy="106" rx="46" ry="6" fill="rgba(107,74,47,.14)"/>
+    <rect x="22" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>
     <rect x="90" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>
-    <path d="M18 44 Q18 30 32 30 L88 30 Q102 30 102 44 L102 78 L18 78 Z" fill="#b5c9a4"/> <!-- 背もたれ -->
-    <path d="M24 40 Q60 32 96 40" stroke="#9dbb8f" stroke-width="2.4" fill="none" opacity=".8"/> <!-- 布の流れ -->
-    <rect x="12" y="52" width="18" height="36" rx="9" fill="#a3b98f"/>    <!-- 左ひじ掛け -->
-    <rect x="90" y="52" width="18" height="36" rx="9" fill="#a3b98f"/>    <!-- 右ひじ掛け -->
-    <rect x="26" y="62" width="34" height="20" rx="8" fill="#cfe0bd"/>    <!-- クッション左 -->
-    <rect x="60" y="62" width="34" height="20" rx="8" fill="#c4d8b0"/>    <!-- クッション右 -->
-    <rect x="18" y="80" width="84" height="16" rx="7" fill="#8a5a30"/>    <!-- 木の台座 -->
-    <path d="M24 88 Q60 84 96 88" stroke="#a9713f" stroke-width="1.8" fill="none"/> <!-- 木目 -->
-    <circle cx="43" cy="72" r="2" fill="#a3b98f"/><circle cx="77" cy="72" r="2" fill="#9cb489"/> <!-- ボタン -->
-    <path d="M20 36 L26 34" stroke="#e6efdb" stroke-width="2.4" stroke-linecap="round" opacity=".9"/> <!-- つや -->
+    <path d="M18 44 Q18 30 32 30 L88 30 Q102 30 102 44 L102 78 L18 78 Z" fill="#b5c9a4"/>
+    <path d="M24 40 Q60 32 96 40" stroke="#9dbb8f" stroke-width="2.4" fill="none" opacity=".8"/>
+    <rect x="12" y="52" width="18" height="36" rx="9" fill="#a3b98f"/>
+    <rect x="90" y="52" width="18" height="36" rx="9" fill="#a3b98f"/>
+    <rect x="26" y="62" width="34" height="20" rx="8" fill="#cfe0bd"/>
+    <rect x="60" y="62" width="34" height="20" rx="8" fill="#c4d8b0"/>
+    <rect x="18" y="80" width="84" height="16" rx="7" fill="#8a5a30"/>
+    <path d="M24 88 Q60 84 96 88" stroke="#a9713f" stroke-width="1.8" fill="none"/>
+    <circle cx="43" cy="72" r="2" fill="#a3b98f"/><circle cx="77" cy="72" r="2" fill="#9cb489"/>
+    <path d="M20 36 L26 34" stroke="#e6efdb" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
   </svg>`,
 
-  /* プティチェスト */
   chest: `<svg viewBox="0 0 120 120" role="img" aria-label="プティチェスト">
-    <ellipse cx="60" cy="108" rx="42" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
-    <rect x="27" y="97" width="9" height="10" rx="3" fill="#8a5a30"/>     <!-- 脚 -->
+    <ellipse cx="60" cy="108" rx="42" ry="6" fill="rgba(107,74,47,.14)"/>
+    <rect x="27" y="97" width="9" height="10" rx="3" fill="#8a5a30"/>
     <rect x="84" y="97" width="9" height="10" rx="3" fill="#8a5a30"/>
-    <rect x="24" y="30" width="72" height="70" rx="7" fill="#b07c4a" stroke="#8a5a30" stroke-width="3"/> <!-- 本体 -->
-    <rect x="18" y="22" width="84" height="12" rx="5" fill="#8a5a30"/>    <!-- 天板 -->
-    <path d="M22 27 Q60 23 98 27" stroke="#a9713f" stroke-width="1.6" fill="none"/> <!-- 天板の木目 -->
-    <rect x="32" y="40" width="56" height="24" rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2"/> <!-- 引き出し上 -->
-    <rect x="32" y="69" width="56" height="24" rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2"/> <!-- 引き出し下 -->
-    <circle cx="60" cy="52" r="4" fill="#c9a24b" stroke="#a97c14" stroke-width="1.4"/> <!-- 真鍮の取っ手 -->
+    <rect x="24" y="30" width="72" height="70" rx="7" fill="#b07c4a" stroke="#8a5a30" stroke-width="3"/>
+    <rect x="18" y="22" width="84" height="12" rx="5" fill="#8a5a30"/>
+    <path d="M22 27 Q60 23 98 27" stroke="#a9713f" stroke-width="1.6" fill="none"/>
+    <rect x="32" y="40" width="56" height="24" rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2"/>
+    <rect x="32" y="69" width="56" height="24" rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2"/>
+    <circle cx="60" cy="52" r="4" fill="#c9a24b" stroke="#a97c14" stroke-width="1.4"/>
     <circle cx="60" cy="81" r="4" fill="#c9a24b" stroke="#a97c14" stroke-width="1.4"/>
-    <path d="M37 46 Q60 43 83 46" stroke="#c98d54" stroke-width="1.4" fill="none"/>   <!-- 木目 -->
+    <path d="M37 46 Q60 43 83 46" stroke="#c98d54" stroke-width="1.4" fill="none"/>
     <path d="M37 75 Q60 72 83 75" stroke="#c98d54" stroke-width="1.4" fill="none"/>
-    <path d="M28 36 L34 36" stroke="#f2cf9d" stroke-width="2.4" stroke-linecap="round" opacity=".8"/> <!-- つや -->
+    <path d="M28 36 L34 36" stroke="#f2cf9d" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>
   </svg>`,
 
-  /* 密談椅子（背の高いウィングチェア） */
   mitsudan: `<svg viewBox="0 0 120 120" role="img" aria-label="密談椅子">
-    <ellipse cx="60" cy="108" rx="40" ry="6" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
-    <rect x="30" y="96" width="8" height="11" rx="3" fill="#6e4526"/>     <!-- 脚 -->
+    <ellipse cx="60" cy="108" rx="40" ry="6" fill="rgba(107,74,47,.14)"/>
+    <rect x="30" y="96" width="8" height="11" rx="3" fill="#6e4526"/>
     <rect x="82" y="96" width="8" height="11" rx="3" fill="#6e4526"/>
-    <path d="M32 14 Q60 4 88 14 L92 74 L28 74 Z" fill="#8a4a3a"/>         <!-- 高い背もたれ -->
-    <path d="M32 14 Q26 16 26 26 L28 74 L36 74 L34 16 Z" fill="#7a3f31"/> <!-- 左ウィング -->
-    <path d="M88 14 Q94 16 94 26 L92 74 L84 74 L86 16 Z" fill="#7a3f31"/> <!-- 右ウィング -->
-    <path d="M40 22 Q60 14 80 22" stroke="#a05c48" stroke-width="2.4" fill="none" opacity=".9"/> <!-- 布の陰影 -->
+    <path d="M32 14 Q60 4 88 14 L92 74 L28 74 Z" fill="#8a4a3a"/>
+    <path d="M32 14 Q26 16 26 26 L28 74 L36 74 L34 16 Z" fill="#7a3f31"/>
+    <path d="M88 14 Q94 16 94 26 L92 74 L84 74 L86 16 Z" fill="#7a3f31"/>
+    <path d="M40 22 Q60 14 80 22" stroke="#a05c48" stroke-width="2.4" fill="none" opacity=".9"/>
     <path d="M38 36 Q60 30 82 36" stroke="#a05c48" stroke-width="2" fill="none" opacity=".7"/>
-    <rect x="30" y="70" width="60" height="16" rx="8" fill="#a05c48"/>    <!-- 座面クッション -->
-    <rect x="26" y="84" width="68" height="12" rx="5" fill="#6e4526"/>    <!-- 木の台座 -->
-    <path d="M32 90 Q60 87 88 90" stroke="#8a5a30" stroke-width="1.6" fill="none"/> <!-- 木目 -->
-    <circle cx="60" cy="48" r="2.2" fill="#c98d76"/>                      <!-- ボタン飾り -->
+    <rect x="30" y="70" width="60" height="16" rx="8" fill="#a05c48"/>
+    <rect x="26" y="84" width="68" height="12" rx="5" fill="#6e4526"/>
+    <path d="M32 90 Q60 87 88 90" stroke="#8a5a30" stroke-width="1.6" fill="none"/>
+    <circle cx="60" cy="48" r="2.2" fill="#c98d76"/>
     <circle cx="48" cy="56" r="2" fill="#b87a63"/><circle cx="72" cy="56" r="2" fill="#b87a63"/>
-    <path d="M38 18 L44 15" stroke="#c98d76" stroke-width="2.2" stroke-linecap="round" opacity=".8"/> <!-- つや -->
+    <path d="M38 18 L44 15" stroke="#c98d76" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
   </svg>`,
 
-  /* 三面鏡ドレッサー */
   dresser: `<svg viewBox="0 0 120 120" role="img" aria-label="三面鏡ドレッサー">
-    <ellipse cx="60" cy="112" rx="44" ry="5.5" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
-    <rect x="14" y="24" width="24" height="40" rx="9" fill="#b07c4a" transform="rotate(-8 26 44)"/>  <!-- 左鏡枠 -->
-    <rect x="18" y="28" width="16" height="32" rx="7" fill="#d8e9ef" transform="rotate(-8 26 44)"/>  <!-- 左鏡 -->
-    <rect x="82" y="24" width="24" height="40" rx="9" fill="#b07c4a" transform="rotate(8 94 44)"/>   <!-- 右鏡枠 -->
-    <rect x="86" y="28" width="16" height="32" rx="7" fill="#d8e9ef" transform="rotate(8 94 44)"/>   <!-- 右鏡 -->
-    <rect x="41" y="10" width="38" height="58" rx="12" fill="#b07c4a" stroke="#8a5a30" stroke-width="2.5"/> <!-- 中央鏡枠 -->
-    <rect x="47" y="16" width="26" height="46" rx="9" fill="#e2f0f5"/>    <!-- 中央鏡 -->
-    <path d="M52 22 L58 40" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".85"/>  <!-- 鏡の反射 -->
+    <ellipse cx="60" cy="112" rx="44" ry="5.5" fill="rgba(107,74,47,.14)"/>
+    <rect x="14" y="24" width="24" height="40" rx="9" fill="#b07c4a" transform="rotate(-8 26 44)"/>
+    <rect x="18" y="28" width="16" height="32" rx="7" fill="#d8e9ef" transform="rotate(-8 26 44)"/>
+    <rect x="82" y="24" width="24" height="40" rx="9" fill="#b07c4a" transform="rotate(8 94 44)"/>
+    <rect x="86" y="28" width="16" height="32" rx="7" fill="#d8e9ef" transform="rotate(8 94 44)"/>
+    <rect x="41" y="10" width="38" height="58" rx="12" fill="#b07c4a" stroke="#8a5a30" stroke-width="2.5"/>
+    <rect x="47" y="16" width="26" height="46" rx="9" fill="#e2f0f5"/>
+    <path d="M52 22 L58 40" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".85"/>
     <path d="M60 20 L64 32" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>
-    <circle cx="60" cy="8" r="3.4" fill="#c9a24b"/>                       <!-- 冠飾り -->
-    <rect x="16" y="66" width="88" height="12" rx="5" fill="#8a5a30"/>    <!-- 天板 -->
-    <rect x="22" y="78" width="76" height="26" rx="6" fill="#b07c4a" stroke="#8a5a30" stroke-width="2.5"/> <!-- 引き出し部 -->
+    <circle cx="60" cy="8" r="3.4" fill="#c9a24b"/>
+    <rect x="16" y="66" width="88" height="12" rx="5" fill="#8a5a30"/>
+    <rect x="22" y="78" width="76" height="26" rx="6" fill="#b07c4a" stroke="#8a5a30" stroke-width="2.5"/>
     <rect x="28" y="83" width="28" height="16" rx="3.5" fill="#dfa96c" stroke="#8a5a30" stroke-width="1.6"/>
     <rect x="64" y="83" width="28" height="16" rx="3.5" fill="#dfa96c" stroke="#8a5a30" stroke-width="1.6"/>
-    <circle cx="42" cy="91" r="3" fill="#c9a24b"/><circle cx="78" cy="91" r="3" fill="#c9a24b"/>     <!-- 取っ手 -->
-    <rect x="26" y="104" width="8" height="7" rx="3" fill="#8a5a30"/>     <!-- 脚 -->
+    <circle cx="42" cy="91" r="3" fill="#c9a24b"/><circle cx="78" cy="91" r="3" fill="#c9a24b"/>
+    <rect x="26" y="104" width="8" height="7" rx="3" fill="#8a5a30"/>
     <rect x="86" y="104" width="8" height="7" rx="3" fill="#8a5a30"/>
-    <path d="M46 12 Q50 10 54 12" stroke="#c9a24b" stroke-width="1.6" fill="none"/> <!-- 彫刻飾り -->
+    <path d="M46 12 Q50 10 54 12" stroke="#c9a24b" stroke-width="1.6" fill="none"/>
   </svg>`,
 
-  /* ジュエリーチェスト */
   jewelry: `<svg viewBox="0 0 120 120" role="img" aria-label="ジュエリーチェスト">
-    <ellipse cx="60" cy="110" rx="38" ry="5.5" fill="rgba(107,74,47,.14)"/> <!-- 影 -->
-    <rect x="33" y="100" width="8" height="9" rx="3" fill="#6e4526"/>     <!-- 脚 -->
+    <ellipse cx="60" cy="110" rx="38" ry="5.5" fill="rgba(107,74,47,.14)"/>
+    <rect x="33" y="100" width="8" height="9" rx="3" fill="#6e4526"/>
     <rect x="79" y="100" width="8" height="9" rx="3" fill="#6e4526"/>
-    <rect x="30" y="26" width="60" height="76" rx="6" fill="#9a6435" stroke="#6e4526" stroke-width="3"/> <!-- 細身の本体 -->
-    <path d="M28 18 Q60 8 92 18 L92 28 L28 28 Z" fill="#6e4526"/>         <!-- ふっくら天板 -->
-    <path d="M34 22 Q60 15 86 22" stroke="#8a5a30" stroke-width="1.6" fill="none"/> <!-- 天板の木目 -->
-    <rect x="37" y="34" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/> <!-- 小抽斗×4 -->
+    <rect x="30" y="26" width="60" height="76" rx="6" fill="#9a6435" stroke="#6e4526" stroke-width="3"/>
+    <path d="M28 18 Q60 8 92 18 L92 28 L28 28 Z" fill="#6e4526"/>
+    <path d="M34 22 Q60 15 86 22" stroke="#8a5a30" stroke-width="1.6" fill="none"/>
+    <rect x="37" y="34" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
     <rect x="37" y="50" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
     <rect x="37" y="66" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
     <rect x="37" y="82" width="46" height="13" rx="3" fill="#c98d54" stroke="#6e4526" stroke-width="1.6"/>
-    <circle cx="60" cy="40.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/> <!-- 金の取っ手 -->
+    <circle cx="60" cy="40.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
     <circle cx="60" cy="56.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
     <circle cx="60" cy="72.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
     <circle cx="60" cy="88.5" r="2.6" fill="#e8c04b" stroke="#a97c14" stroke-width="1.2"/>
-    <path d="M96 30 l2.2 4.6 4.8.6-3.6 3.4.9 4.9-4.3-2.4-4.3 2.4.9-4.9-3.6-3.4 4.8-.6 Z" fill="#e8c04b"/> <!-- きらめき -->
+    <path d="M96 30 l2.2 4.6 4.8.6-3.6 3.4.9 4.9-4.3-2.4-4.3 2.4.9-4.9-3.6-3.4 4.8-.6 Z" fill="#e8c04b"/>
     <circle cx="24" cy="52" r="2.4" fill="#e8c04b" opacity=".8"/>
-    <path d="M34 30 L40 30" stroke="#dfae72" stroke-width="2.2" stroke-linecap="round" opacity=".8"/> <!-- つや -->
+    <path d="M34 30 L40 30" stroke="#dfae72" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
+  </svg>`,
+
+  /* キュリオケース（ガラスの飾り棚） */
+  curio: `<svg viewBox="0 0 120 120" role="img" aria-label="キュリオケース">
+    <ellipse cx="60" cy="112" rx="40" ry="5.5" fill="rgba(107,74,47,.14)"/>
+    <rect x="30" y="102" width="8" height="9" rx="3" fill="#6e4526"/>
+    <rect x="82" y="102" width="8" height="9" rx="3" fill="#6e4526"/>
+    <rect x="26" y="14" width="68" height="90" rx="7" fill="#9a6435" stroke="#6e4526" stroke-width="3"/>
+    <path d="M26 14 Q60 6 94 14" stroke="#6e4526" stroke-width="5" fill="none" stroke-linecap="round"/> <!-- 冠 -->
+    <rect x="34" y="24" width="52" height="72" rx="4" fill="#ddedf2"/>    <!-- ガラス -->
+    <path d="M38 30 L52 66" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/> <!-- 反射 -->
+    <path d="M48 28 L56 48" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".65"/>
+    <path d="M34 48 L86 48" stroke="#9a6435" stroke-width="3"/>           <!-- 棚板 -->
+    <path d="M34 72 L86 72" stroke="#9a6435" stroke-width="3"/>
+    <circle cx="46" cy="40" r="4" fill="#c9a24b" opacity=".9"/>           <!-- 飾られた宝物たち -->
+    <rect x="62" y="36" width="10" height="9" rx="2" fill="#b8563e" opacity=".85"/>
+    <circle cx="70" cy="62" r="4.5" fill="#7a9c6e" opacity=".85"/>
+    <rect x="44" y="58" width="9" height="11" rx="2" fill="#8a6446" opacity=".85"/>
+    <path d="M54 84 l1.8 3.7 4 .5-2.9 2.8.7 4-3.6-2-3.6 2 .7-4-2.9-2.8 4-.5 Z" fill="#e8c04b"/>
+    <circle cx="90" cy="58" r="3" fill="#c9a24b" stroke="#a97c14" stroke-width="1.2"/> <!-- 取っ手 -->
+  </svg>`,
+
+  /* プティワードローブ（小さな洋服だんす） */
+  wardrobe: `<svg viewBox="0 0 120 120" role="img" aria-label="プティワードローブ">
+    <ellipse cx="60" cy="112" rx="40" ry="5.5" fill="rgba(107,74,47,.14)"/>
+    <rect x="31" y="102" width="8" height="9" rx="3" fill="#6e4526"/>
+    <rect x="81" y="102" width="8" height="9" rx="3" fill="#6e4526"/>
+    <rect x="27" y="18" width="66" height="86" rx="7" fill="#b07c4a" stroke="#8a5a30" stroke-width="3"/>
+    <path d="M25 18 Q60 6 95 18 L95 24 L25 24 Z" fill="#8a5a30"/>          <!-- 冠 -->
+    <circle cx="60" cy="12" r="3" fill="#c9a24b"/>
+    <rect x="33" y="28" width="25" height="68" rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2"/> <!-- 左扉 -->
+    <rect x="62" y="28" width="25" height="68" rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2"/> <!-- 右扉 -->
+    <rect x="38" y="34" width="15" height="26" rx="3" fill="none" stroke="#b07c4a" stroke-width="2"/>    <!-- 鏡板 -->
+    <rect x="67" y="34" width="15" height="26" rx="3" fill="none" stroke="#b07c4a" stroke-width="2"/>
+    <rect x="38" y="66" width="15" height="24" rx="3" fill="none" stroke="#b07c4a" stroke-width="2"/>
+    <rect x="67" y="66" width="15" height="24" rx="3" fill="none" stroke="#b07c4a" stroke-width="2"/>
+    <circle cx="56.5" cy="62" r="2.6" fill="#c9a24b" stroke="#a97c14" stroke-width="1.2"/> <!-- 取っ手 -->
+    <circle cx="63.5" cy="62" r="2.6" fill="#c9a24b" stroke="#a97c14" stroke-width="1.2"/>
+    <path d="M36 30 L42 28" stroke="#f2cf9d" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
   </svg>`
 };
 
 /* ==========================================================
-   ゲームデータ
+   材料・設計・仕上げ（制作の選択肢）
+   ========================================================== */
+/* 材料：仕入れモーダルで購入し、制作で消費する。
+   type:"wood" は制作時に選ぶ「素材」候補。q/pop は選んだときの補正 */
+const MATERIALS = [
+  { id: "walnut", name: "ウォールナット", icon: "🟫", price: 500, type: "wood",
+    q: 5, pop: 5, priceMult: 1.05, desc: "深い色つやの高級材。品質+5・人気+5・価格+5%" },
+  { id: "oak",    name: "オーク",        icon: "🪵", price: 350, type: "wood",
+    q: 5, pop: 0, priceMult: 1,    desc: "力強い木目の定番材。品質+5" },
+  { id: "cherry", name: "チェリー",      icon: "🌸", price: 400, type: "wood",
+    q: 0, pop: 8, priceMult: 1,    desc: "使うほど赤みが深まる材。人気+8" },
+  { id: "brass",  name: "真鍮金具",      icon: "🔩", price: 250, type: "part",
+    desc: "取っ手や蝶番。アンティークの顔" },
+  { id: "glass",  name: "ガラス",        icon: "🪟", price: 400, type: "part",
+    desc: "鏡や飾り棚に。割れ物注意" },
+  { id: "cloth",  name: "布",            icon: "🧵", price: 300, type: "part",
+    desc: "張り地・内張り用のやさしい布" }
+];
+
+/* 設計：家具のかたちの方向性。extraWood は必要木材の増減 */
+const DESIGNS = [
+  { id: "classic", name: "クラシック", icon: "🏛", q: 5, pop: 5,  priceMult: 1,   extraWood: 0,
+    note: "品質+5 人気+5" },
+  { id: "gouka",   name: "豪華",       icon: "👑", q: 0, pop: 10, priceMult: 1.2, extraWood: 1,
+    note: "人気+10 価格+20% 木材+1" },
+  { id: "kogata",  name: "小型",       icon: "🐿", q: 0, pop: 5,  priceMult: 0.9, extraWood: 0,
+    note: "人気+5 価格-10% ドール向き" }
+];
+
+/* 仕上げ：塗装・風合い */
+const FINISHES = [
+  { id: "antique",  name: "アンティーク", icon: "🕰", q: 0, pop: 10, priceMult: 1,
+    note: "人気+10" },
+  { id: "natural",  name: "ナチュラル",   icon: "🍃", q: 5, pop: 0,  priceMult: 1,
+    note: "品質+5" },
+  { id: "shikkoku", name: "漆黒",         icon: "🌑", q: 0, pop: 5,  priceMult: 1.15,
+    note: "人気+5 価格+15%" }
+];
+
+/* ==========================================================
+   家具データ（図鑑の主役）
    ----------------------------------------------------------
-   家具を追加するときは FURNITURE 配列にオブジェクトを
-   1つ足すだけでOK（図鑑・物語・手紙・解放判定はすべて自動）。
-   art は SVG_ART のキー名（なければ icon の絵文字で表示）。
-   deadline: 納期（時間）。工程の合計時間がこれを超えると納期おくれ。
-   letter:   その家具ではじめて見つかる「手紙のきれはし」。
+   追加はこの配列に1つ足すだけ。図鑑・設計図・物語・手紙は自動。
+   - materials: {wood:必要木材数, brass/glass/cloth:部品数}
+   - unlock: 設計図の解放条件
+       {type:"level", v:N} … 工房レベルN
+       {type:"visitors", v:N} … のべ来館者N人
+       {type:"letters", v:N} … 手紙のきれはしN枚
+   - basePop: 展示したときの基本人気
+   - letter: 手紙のきれはし（無い家具もある。物語は副要素）
+   - photo: 将来の拡張用。画像URL/DataURLを入れると
+     SVGの代わりにその写真が図鑑・カードに表示される
    ========================================================== */
 const FURNITURE = [
   {
-    id: "stool",
-    name: "小さなスツール",
-    icon: "🪑",
-    art: "stool",
+    id: "stool", name: "小さなスツール", icon: "🪑", art: "stool", photo: null,
     description: "工房の定番。まあるい座面がかわいい、木のぬくもりを感じる椅子。",
-    price: 1200,          // 基本価格（品質・納期で変動）
-    exp: 10,              // 納品でもらえる経験値
-    deadline: 10,         // 納期（時間）
-    unlockLevel: 1,       // この工房レベルで解放
-    unlocked: true,       // 初期解放フラグ
+    price: 1200, exp: 10, deadline: 10, basePop: 20,
+    materials: { wood: 1 },
+    unlock: { type: "level", v: 1 },
     steps: [
       { label: "木材を選ぶ", icon: "🪵", msg: "節の少ない、やさしい木目の板を選んだ。" },
       { label: "研磨する",   icon: "🧽", msg: "紙やすりでていねいに。手ざわりがつるつるになってきた。" },
-      { label: "塗装する",   icon: "🖌️", msg: "オイルを薄く伸ばすと、木目がふわっと浮かびあがった。" },
+      { label: "塗装する",   icon: "🖌️", msg: "塗料を薄く伸ばすと、木目がふわっと浮かびあがった。" },
       { label: "検品する",   icon: "🔍", msg: "がたつきなし、ささくれなし。うん、いい椅子だ。" }
     ],
     story: "はじめて作った小さな椅子は、工房の窓辺に置かれた。朝の光を受けて、木目が少しだけ誇らしげに見えた。",
-    letter: "工房の古い道具箱の底で、破れた便箋のきれはしを見つけた。「……ヘンリー様。この手紙を書くのは、これで三度目です。何度書いても、途中でペンが止まってしまうのです……」——続きは、どこかの家具の中？"
+    letter: "工房の古い道具箱の底で、破れた便箋のきれはしを見つけた。「……ヘンリー様。この手紙を書くのは、これで三度目です。何度書いても、途中でペンが止まってしまうのです……」"
   },
   {
-    id: "couch",
-    name: "プティカウチ",
-    icon: "🛋️",
-    art: "couch",
+    id: "couch", name: "プティカウチ", icon: "🛋️", art: "couch", photo: null,
     description: "小さなカウチ。ふたりには少しせまくて、ひとりと一匹にはちょうどいい。",
-    price: 2800,
-    exp: 20,
-    deadline: 12,
-    unlockLevel: 2,
-    unlocked: false,
+    price: 2800, exp: 20, deadline: 12, basePop: 30,
+    materials: { wood: 1, cloth: 2 },
+    unlock: { type: "level", v: 2 },
     steps: [
-      { label: "木材を選ぶ",       icon: "🪵", msg: "しなやかで丈夫なブナ材。カウチの骨組みにぴったりだ。" },
+      { label: "木材を選ぶ",       icon: "🪵", msg: "しなやかで丈夫な板。カウチの骨組みにぴったりだ。" },
       { label: "フレームを組む",   icon: "🔨", msg: "ほぞを組んで、ゆすってもきしまない骨組みができた。" },
-      { label: "クッションを張る", icon: "🪡", msg: "淡いグリーンの布を、しわなくぴんと張った。" },
-      { label: "塗装する",         icon: "🖌️", msg: "木部にオイルをなじませ、布との境目を美しく整えた。" },
+      { label: "クッションを張る", icon: "🪡", msg: "布を、しわなくぴんと張った。" },
+      { label: "塗装する",         icon: "🖌️", msg: "木部を仕上げ、布との境目を美しく整えた。" },
       { label: "検品する",         icon: "🔍", msg: "座ってみる。……立ちたくなくなる。これは良いカウチだ。" }
     ],
     story: "小さなカウチは、ふたりで座るには少しせまい。だからこそ、猫と、本と、ひとりの午後にちょうどよかった。",
-    letter: "カウチの張り地の下から、二枚目のきれはし。「あなたが初めてこの工房に来た日を覚えています。あなたは小さな椅子を、まるで生きもののように撫でました。ああ、この人だ、と思ったのです……」"
+    letter: "カウチの張り地の下から、二枚目のきれはし。「あなたが初めてこの工房に来た日を覚えています。あなたは小さな椅子を、まるで生きもののように撫でました……」"
   },
   {
-    id: "chest",
-    name: "プティチェスト",
-    icon: "🗄️",
-    art: "chest",
+    id: "chest", name: "プティチェスト", icon: "🗄️", art: "chest", photo: null,
     description: "アンティーク風の小さなチェスト。引き出しには、だいじなものをひとつだけ。",
-    price: 3500,
-    exp: 25,
-    deadline: 12,
-    unlockLevel: 2,
-    unlocked: false,
+    price: 3500, exp: 25, deadline: 12, basePop: 30,
+    materials: { wood: 2, brass: 1 },
+    unlock: { type: "level", v: 2 },
     steps: [
-      { label: "木材を選ぶ",     icon: "🪵", msg: "少し古びた色味の板。アンティークにはこれが合う。" },
+      { label: "木材を選ぶ",     icon: "🪵", msg: "少し古びた色味の板。チェストにはこれが合う。" },
       { label: "引き出しを作る", icon: "📦", msg: "すーっと滑らかに開く引き出し。何度も開け閉めして確かめた。" },
-      { label: "金具を付ける",   icon: "🔩", msg: "真鍮の取っ手を付けると、ぐっとアンティークらしくなった。" },
-      { label: "塗装する",       icon: "🖌️", msg: "飴色の塗料を重ねて、時を経たような深い色に。" },
+      { label: "金具を付ける",   icon: "🔩", msg: "真鍮の取っ手を付けると、ぐっと表情が生まれた。" },
+      { label: "塗装する",       icon: "🖌️", msg: "塗料を重ねて、深みのある色に。" },
       { label: "検品する",       icon: "🔍", msg: "引き出しの奥まで、ていねいに拭きあげた。" }
     ],
     story: "小さな引き出しの奥には、誰かの大切なものがしまわれる。指輪か、手紙か、それとも言えなかった一言か。",
     letter: "引き出しの奥に、三枚目のきれはしが貼りついていた。「わたしはもう、長くはないのでしょう。悔いはありません。ただ、心残りは、たったひとつだけ……」"
   },
   {
-    id: "mitsudan",
-    name: "密談椅子",
-    icon: "🪑",
-    art: "mitsudan",
+    id: "mitsudan", name: "密談椅子", icon: "🪑", art: "mitsudan", photo: null,
     description: "背の高いウィングチェア。ひそひそ話と、内緒の約束がよく似合う。",
-    price: 5000,
-    exp: 35,
-    deadline: 12,
-    unlockLevel: 3,
-    unlocked: false,
+    price: 5000, exp: 35, deadline: 12, basePop: 40,
+    materials: { wood: 2, cloth: 1 },
+    unlock: { type: "level", v: 3 },
     steps: [
-      { label: "木材を選ぶ",     icon: "🪵", msg: "どっしりしたウォールナット。長話を支える椅子には、これだ。" },
+      { label: "木材を選ぶ",     icon: "🪵", msg: "どっしりした板。長話を支える椅子には、これだ。" },
       { label: "背もたれを彫る", icon: "🗡️", msg: "声を包みこむような、高い背もたれを彫り出した。" },
-      { label: "座面を張る",     icon: "🪡", msg: "深い臙脂の布を張る。座った人の秘密ごと、受けとめる色だ。" },
+      { label: "座面を張る",     icon: "🪡", msg: "深い色の布を張る。座った人の秘密ごと、受けとめる色だ。" },
       { label: "塗装する",       icon: "🖌️", msg: "つや消しの仕上げ。ひかえめな椅子ほど、話がはずむ。" },
       { label: "検品する",       icon: "🔍", msg: "座って耳をすます。……この椅子は、聞き上手だ。" }
     ],
     story: "背の高い椅子は、ひそひそ話がよく似合う。ここで交わされた約束は、なぜかちゃんと守られるのだという。",
-    letter: "座面の裏から、四枚目のきれはし。「あなたに伝えそびれた、大切な言葉があるのです。面と向かうと、どうしても言えませんでした。だからわたしは、この椅子の作り方をあなたに教えたのです……」"
+    letter: "座面の裏から、四枚目のきれはし。「あなたに伝えそびれた、大切な言葉があるのです。面と向かうと、どうしても言えませんでした……」"
   },
   {
-    id: "dresser",
-    name: "三面鏡ドレッサー",
-    icon: "🪞",
-    art: "dresser",
+    id: "dresser", name: "三面鏡ドレッサー", icon: "🪞", art: "dresser", photo: null,
     description: "工房の技を集めた特別な一台。三枚の鏡が、いろんな自分を映してくれる。",
-    price: 8000,
-    exp: 60,
-    deadline: 15,
-    unlockLevel: 3,
-    unlocked: false,
+    price: 8000, exp: 60, deadline: 15, basePop: 45,
+    materials: { wood: 2, glass: 3, brass: 1 },
+    unlock: { type: "level", v: 3 },
     steps: [
-      { label: "木材を選ぶ", icon: "🪵", msg: "最高のホワイトオーク。特別な家具には特別な木を。" },
+      { label: "木材を選ぶ", icon: "🪵", msg: "特別な家具には特別な木を。" },
       { label: "鏡枠を作る", icon: "🖼️", msg: "三枚の鏡の枠を、寸分たがわず組み上げた。" },
       { label: "彫刻する",   icon: "🗡️", msg: "彫刻刀の先から、小さな花模様が咲いていく。" },
       { label: "鏡を付ける", icon: "🪞", msg: "鏡をそっとはめこむ。工房の天井が三つ映った。" },
@@ -799,106 +935,170 @@ const FURNITURE = [
       { label: "検品する",   icon: "🔍", msg: "鏡の中の自分と目が合った。ちょっと職人の顔になってきたかも。" }
     ],
     story: "ヘンリーさんは鏡をのぞきこんだ。そこには、今の自分だけでなく、家具に込められた職人の時間まで映っているようだった。",
-    letter: "鏡の裏板から、五枚目のきれはし。「覚えていますか。雨の日の工房で、ふたりで直した三面鏡を。あなたは鏡の中のわたしに向かって、不器用に笑いましたね。あの日のことを、わたしは何度も思い出します……」"
+    letter: "鏡の裏板から、五枚目のきれはし。「覚えていますか。雨の日の工房で、ふたりで直した三面鏡を。あの日のことを、わたしは何度も思い出します……」"
   },
   {
-    id: "jewelry",
-    name: "ジュエリーチェスト",
-    icon: "💍",
-    art: "jewelry",
+    id: "jewelry", name: "ジュエリーチェスト", icon: "💍", art: "jewelry", photo: null,
     description: "小さな抽斗がならぶ宝物の家。いちばん小さな抽斗に、いちばん大きな思い出を。",
-    price: 12000,
-    exp: 80,
-    deadline: 15,
-    unlockLevel: 4,
-    unlocked: false,
+    price: 12000, exp: 80, deadline: 15, basePop: 55,
+    materials: { wood: 2, brass: 4, cloth: 1 },
+    unlock: { type: "level", v: 4 },
     steps: [
-      { label: "木材を選ぶ",       icon: "🪵", msg: "きめの細かいチェリー材。宝物を守る木は、静かで強い。" },
+      { label: "木材を選ぶ",       icon: "🪵", msg: "きめの細かい板。宝物を守る木は、静かで強い。" },
       { label: "小さな抽斗を作る", icon: "📦", msg: "指先ほどの抽斗を、ひとつ、またひとつ。息を止めて組む。" },
-      { label: "内張りを張る",     icon: "🪡", msg: "深紅のベルベットを敷く。指輪の帰る場所ができた。" },
+      { label: "内張りを張る",     icon: "🪡", msg: "やわらかな布を敷く。指輪の帰る場所ができた。" },
       { label: "金具を付ける",     icon: "🔩", msg: "小さな金の取っ手たち。ならぶと星座のようだ。" },
       { label: "塗装する",         icon: "🖌️", msg: "何度も塗り重ねて、鏡のようなつやに仕上げた。" },
       { label: "検品する",         icon: "🔍", msg: "全部の抽斗を開けて、閉めた。カタリ、と良い音がした。" }
     ],
     story: "いちばん小さな抽斗には、いちばん大きな思い出が入る。ジュエリーチェストとは、そういう家具なのだ。",
-    letter: "鍵付きのいちばん小さな抽斗に、最後のきれはしが入っていた。「——ありがとう。わたしの家具たちを、どうか頼みます。そしてどうか、あなたの毎日が……」……手紙のきれはしが、すべてそろった。"
+    letter: "鍵付きのいちばん小さな抽斗に、最後のきれはしが入っていた。「——ありがとう。わたしの家具たちを、どうか頼みます。そしてどうか、あなたの毎日が……」"
+  },
+  {
+    id: "curio", name: "キュリオケース", icon: "🏺", art: "curio", photo: null,
+    description: "ガラスの向こうに思い出を飾る、小さな博物館。来館者の目をいちばん集める。",
+    price: 15000, exp: 100, deadline: 15, basePop: 50,
+    materials: { wood: 2, glass: 4, brass: 2 },
+    unlock: { type: "visitors", v: 100 },
+    steps: [
+      { label: "木材を選ぶ",     icon: "🪵", msg: "まっすぐで狂いのない板。ガラスを支える骨格だ。" },
+      { label: "枠を組む",       icon: "🔨", msg: "ミリ単位で枠を組む。ガラスは正直者だから、ごまかしがきかない。" },
+      { label: "ガラスをはめる", icon: "🪟", msg: "息を止めて、そっと。ガラス越しの世界が生まれた。" },
+      { label: "棚板を渡す",     icon: "📐", msg: "飾るものを想像しながら、棚の高さを決めていく。" },
+      { label: "塗装する",       icon: "🖌️", msg: "枠を深い色に。ガラスの透明感が引き立った。" },
+      { label: "検品する",       icon: "🔍", msg: "扉の開閉、ぴたり。ガラスに指紋ひとつ残さず納品だ。" }
+    ],
+    story: "ガラスの向こうに並ぶのは、売り物ではなく思い出。キュリオケースは、暮らしの中の小さな博物館なのだ。",
+    letter: null
+  },
+  {
+    id: "wardrobe", name: "プティワードローブ", icon: "👗", art: "wardrobe", photo: null,
+    description: "ドールたちの一張羅をしまう小さな洋服だんす。扉を開けると木の香り。",
+    price: 9000, exp: 70, deadline: 14, basePop: 40,
+    materials: { wood: 3, brass: 2 },
+    unlock: { type: "letters", v: 3 },
+    steps: [
+      { label: "木材を選ぶ",   icon: "🪵", msg: "軽くて丈夫な板。小さな扉には小さな木目を。" },
+      { label: "扉を作る",     icon: "🚪", msg: "左右の扉を対に。木目がつながるよう板を選び直した。" },
+      { label: "蝶番を付ける", icon: "🔩", msg: "小さな真鍮の蝶番。きしまず、静かに開く。" },
+      { label: "塗装する",     icon: "🖌️", msg: "内側は無塗装のまま。木の香りが服にうつるように。" },
+      { label: "検品する",     icon: "🔍", msg: "扉を閉めると、コトンとやさしい音がした。" }
+    ],
+    story: "小さな扉を開けると、木の香りがした。プティワードローブには、ドールたちの一張羅と、少しの秘密がしまわれている。",
+    letter: null
   }
 ];
 
-/* 最終章：すべての手紙のきれはしを集めると解放される（連載・ヘンリーの物語） */
+/* ----------------------------------------------------------
+   隠しレシピ（発見要素）
+   特定の「設計×素材×仕上げ」の組み合わせで作ると、
+   隠し家具として図鑑に登録される。追加もこの配列だけでOK。
+   ---------------------------------------------------------- */
+const RECIPES = [
+  {
+    id: "earl_mitsudan", baseId: "mitsudan",
+    name: "伯爵の密談椅子", icon: "👑",
+    combo: { design: "gouka", wood: "walnut", finish: "antique" },
+    filter: "saturate(1.35) brightness(.92) contrast(1.1)",
+    popBonus: 25, priceMult: 1.8,
+    description: "深いウォールナットに時を重ねた仕上げ。ささやきさえ豪華に聞こえる、伝説の一脚。",
+    story: "むかし、ある伯爵がこの椅子で交わした約束は、三代あとまで守られたという。豪華な椅子は、約束まで重くするらしい。",
+    hint: "密談椅子を、いちばん贅沢な組み合わせで作ると……？"
+  },
+  {
+    id: "moon_curio", baseId: "curio",
+    name: "月夜のキュリオケース", icon: "🌙",
+    combo: { design: "kogata", wood: "cherry", finish: "shikkoku" },
+    filter: "hue-rotate(200deg) saturate(.7) brightness(.85)",
+    popBonus: 25, priceMult: 1.8,
+    description: "漆黒の枠に、チェリーの赤みがほのかに透ける。夜になると、ガラスが月の光を集める。",
+    story: "工房の夜、だれもいないはずのショールームで、ガラスがきらりと光ることがある。月が、飾られた思い出を見にくるのだ。",
+    hint: "キュリオケースを、夜のような組み合わせで小さく作ると……？"
+  },
+  {
+    id: "clover_couch", baseId: "couch",
+    name: "白つめ草のプティカウチ", icon: "🍀",
+    combo: { design: "classic", wood: "oak", finish: "natural" },
+    filter: "hue-rotate(20deg) saturate(1.2) brightness(1.06)",
+    popBonus: 25, priceMult: 1.8,
+    description: "オークの素肌に生成りの布。はらっぱの昼寝みたいな、いちばん素直なカウチ。",
+    story: "飾らない材料だけで作ったカウチは、なぜかいちばん長く愛された。白つめ草の花冠のような家具、と誰かが呼んだ。",
+    hint: "プティカウチを、いちばん素直な組み合わせで作ると……？"
+  }
+];
+
+/* 最終章：手紙を持つ家具をすべて完成させると解放 */
 const FINAL_STORY = {
   id: "final",
   title: "最終章　届かなかった手紙",
-  text: "六枚のきれはしを、作業台の上でそっとつなぎ合わせた。それは、遠い昔この工房で働いていた老職人から、若き日のヘンリーさんへの手紙だった。「あなたに伝えそびれた言葉は、けっきょく全部、家具に込めてしまいました。あなたの毎日が、この家具たちのように長く、あたたかくありますように」。出されることのなかった手紙は、何十年もの時を経て、小さな家具たちと一緒に、ちゃんと届いたのだ。ヘンリーさんは三面鏡の前でその手紙を読み、少しだけ泣いて、たくさん笑った。——松永工房の家具には、物語が宿る。きみが作ったあの椅子にも、きっと。"
+  text: "六枚のきれはしを、作業台の上でそっとつなぎ合わせた。それは、遠い昔この工房で働いていた老職人から、若き日のヘンリーさんへの手紙だった。「あなたに伝えそびれた言葉は、けっきょく全部、家具に込めてしまいました。あなたの毎日が、この家具たちのように長く、あたたかくありますように」。出されることのなかった手紙は、何十年もの時を経て、小さな家具たちと一緒に、ちゃんと届いたのだ。——松永工房の家具には、物語が宿る。きみが作ったあの椅子にも、きっと。"
 };
 
-/* ----------------------------------------------------------
-   品質システム（100点満点）
-   素材の品質（BASE_QUALITY＋設備ボーナス）からスタートし、
-   工程ごとの「ていねい／ふつう／急ぐ」の判断で上下する。
-   - ていねい: +12・3時間（じっくり）
-   - ふつう  : +6 ・2時間（安定）
-   - 急ぐ    : +1〜+10ランダム・1時間。ときどき手がすべって品質低下
-   時間を使いすぎると納期おくれ → 品質を取るか、期日を取るか。
-   ---------------------------------------------------------- */
-const BASE_QUALITY = 50;   // 素材そのものの品質。設備と腕前が上乗せされる
-const HOURS_PER_DAY = 8;   // 1日の作業時間
+/* ==========================================================
+   品質・時間・納期（第4章から継続）
+   ========================================================== */
+const BASE_QUALITY = 50;
+const HOURS_PER_DAY = 8;
 
 const CHOICES = [
   { id: "teinei", label: "ていねい", icon: "🌸", note: "品質+12<br>⏱3時間", cls: "choice-teinei",
-    time: 750, hours: 3,
-    pts: () => 12,
+    time: 750, hours: 3, pts: () => 12,
     working: "じっくり、じっくり…",
     henry: ["うむ、木目とじっくり向き合っておるな。", "急がば回れ。それが職人の速さじゃよ。",
-            "その手つき、もう見習いではないのう。", "道具を大事に使う者は、良い仕事をするもんじゃ。"] },
-  { id: "futsuu", label: "ふつう",   icon: "🙂", note: "品質+6<br>⏱2時間", cls: "",
-    time: 380, hours: 2,
-    pts: () => 6,
+            "その手つき、もう見習いではないのう。"] },
+  { id: "futsuu", label: "ふつう", icon: "🙂", note: "品質+6<br>⏱2時間", cls: "",
+    time: 380, hours: 2, pts: () => 6,
     working: "こつこつ、こつこつ…",
     henry: ["よいペースじゃな。", "こつこつが一番じゃよ。", "安定した仕事も、立派な腕前じゃ。"] },
-  { id: "isogu",  label: "急ぐ",     icon: "💨", note: "品質+1〜10<br>⏱1時間", cls: "",
+  { id: "isogu", label: "急ぐ", icon: "💨", note: "品質+1〜10<br>⏱1時間", cls: "",
     time: 140, hours: 1,
     pts: () => {
-      /* 2割でミスして品質低下、それ以外は +1〜+10 のランダム */
       if (Math.random() < 0.2) return -(1 + Math.floor(Math.random() * 8));
       return 1 + Math.floor(Math.random() * 10);
     },
     working: "ささっと！",
-    henry: ["おっと、木くずが舞っておるぞ〜。", "はやさも腕のうち…じゃが、ほどほどにな。",
-            "むむ、その勢い、若いのう。"] }
+    henry: ["おっと、木くずが舞っておるぞ〜。", "はやさも腕のうち…じゃが、ほどほどにな。"] }
 ];
 
-/* 品質ランク：品質スコア（0〜100点）で決まる */
 const RANKS = {
-  S: { min: 90, mult: 1.5,  label: "最高級のできばえ！" },
-  A: { min: 75, mult: 1.2,  label: "とても良いできばえ" },
-  B: { min: 60, mult: 1.0,  label: "ふつうのできばえ" },
-  C: { min: 0,  mult: 0.75, label: "ちょっと急ぎすぎたかも…" }
+  S: { min: 90, mult: 1.5,  label: "最高級のできばえ！", popBonus: 15 },
+  A: { min: 75, mult: 1.2,  label: "とても良いできばえ", popBonus: 8 },
+  B: { min: 60, mult: 1.0,  label: "ふつうのできばえ",   popBonus: 0 },
+  C: { min: 0,  mult: 0.75, label: "ちょっと急ぎすぎたかも…", popBonus: -5 }
 };
-const RANK_ORDER = ["C", "B", "A", "S"];   // 図鑑の「最高品質」比較用
+const RANK_ORDER = ["C", "B", "A", "S"];
+const ONTIME_MULT = 1.1;
+const LATE_MULT   = 0.8;
 
-/* 納期ボーナス／ペナルティ（納品価格にかかる倍率） */
-const ONTIME_MULT = 1.1;   // 期日内 +10%
-const LATE_MULT   = 0.8;   // 納期おくれ -20%
-
-/* ----------------------------------------------------------
-   設備投資（お金の使い道）
-   買うと工房がずっと強くなる。effectQ: 素材品質ボーナス、
-   effectPrice: 納品価格の倍率ボーナス。
-   ---------------------------------------------------------- */
+/* ==========================================================
+   設備（工房発展）：品質・速度・展示・来館者
+   ========================================================== */
 const GEAR = [
   { id: "workbench", name: "がっしりした作業台", icon: "🪚", price: 5000,
-    effectQ: 5, effectPrice: 1,
-    desc: "樫の一枚板の作業台。手元が安定して、素材の品質+5。" },
+    effectQ: 5, desc: "手元が安定して、素材の品質+5。" },
   { id: "booth", name: "塗装ブース", icon: "🎨", price: 10000,
-    effectQ: 10, effectPrice: 1,
-    desc: "ほこりの入らない塗装部屋。仕上がりが見違えて、素材の品質+10。" },
+    effectQ: 10, desc: "ほこりの入らない塗装部屋。素材の品質+10。" },
   { id: "studio", name: "撮影スペース", icon: "📷", price: 15000,
-    effectQ: 0, effectPrice: 1.2,
-    desc: "自然光のきれいな撮影コーナー。SNS映えして、納品価格+20%。" }
+    effectPrice: 1.2, desc: "SNS映えして納品価格+20%。" },
+  { id: "showroom", name: "ショールーム増築", icon: "🖼", price: 12000,
+    effectSlots: 3, desc: "展示スペースを増築。展示枠+3。" },
+  { id: "second", name: "第二工房", icon: "🏭", price: 25000,
+    effectSpeed: 1, desc: "助っ人が下ごしらえ。全工程の時間-1時間（最短1時間）。" },
+  { id: "overseas", name: "海外展示室", icon: "🌍", price: 40000,
+    effectVisitors: 1.5, desc: "海を越えて工房の名が届く。来館者数+50%。" }
+];
+const BASE_SLOTS = 2;   // 展示枠の初期値
+
+/* 展示セットボーナス：条件を満たすと来館収益が増える。追加もここだけ */
+const SET_BONUSES = [
+  { id: "antique_set", name: "アンティークセット", mult: 1.2,
+    desc: "アンティーク仕上げ2点以上 → 収益+20%",
+    check: (pieces) => pieces.filter(p => p.finish === "antique").length >= 2 },
+  { id: "doll_set", name: "ドール家具セット", mult: 1.15,
+    desc: "プティ家具（小さな家具）2点以上 → 収益+15%",
+    check: (pieces) => pieces.filter(p => p.name.includes("プティ") || p.design === "kogata").length >= 2 }
 ];
 
-/* 納品時のヘンリーさんのひとこと（ランク別） */
 const HENRY_DELIVER = {
   S: "ほほう…！わしの目に狂いはなかった。これは宝物になるぞ。",
   A: "うんうん、胸を張ってよい仕事じゃ。",
@@ -906,70 +1106,54 @@ const HENRY_DELIVER = {
   C: "まあ、こういう日もあるさ。木はまた待っていてくれるでな。"
 };
 
-/* 工程のあいまにランダム表示される「工房まめ知識」
-   （手仕事の魅力を、さりげなく伝える読みもの） */
 const TRIVIA = [
   "木には「顔」があっての。板の木目を読んで向きを決めるだけで、家具の表情がまるで変わるんじゃ。",
-  "オイル仕上げの家具は、木が呼吸しておる。年月とともに色が深まって、使う人の歴史が染みこんでいくのじゃよ。",
-  "真鍮の金具は、さわるほどに鈍く光る。アンティークの取っ手の色は、何十年ぶんの手のぬくもりの色なんじゃ。",
-  "研磨はの、番手の粗いやすりから細かいやすりへ、順番に。近道をすると、塗装のときに全部ばれてしまうんじゃ。",
-  "アンティーク家具の小さな傷は、消さずに残すこともある。傷も物語のうち、というわけじゃな。",
-  "ドールサイズの家具でも、ほんものと同じ木、同じ技で作るんじゃと。小さな引き出しも、ちゃんと開くんじゃぞ。",
-  "木は切られたあとも、湿気を吸ったり吐いたりして生きておる。じゃから職人は、木が動くことを見越して作るんじゃ。",
-  "塗装は一度に厚く塗らず、薄く塗って乾かして、また塗る。急がないことが、いちばんの近道じゃ。",
-  "三面鏡の蝶番の角度にはこだわりがあっての。左右の鏡が、ちょうど横顔を映す角度に止まるんじゃよ。",
-  "良い椅子は、座る前から分かる。四本の脚が床にぴたりと吸いつくように立っておるでな。",
-  "ウィングチェアの「耳」はの、暖炉の時代にすきま風から頭を守った名残じゃ。今は、内緒話を守っておる。",
-  "ベルベットの内張りは、宝石を守るだけでなく、抽斗を開けた人の心もふわりと受けとめるんじゃよ。"
+  "オイル仕上げの家具は、木が呼吸しておる。年月とともに色が深まっていくのじゃよ。",
+  "真鍮の金具は、さわるほどに鈍く光る。何十年ぶんの手のぬくもりの色じゃ。",
+  "研磨は粗いやすりから細かいやすりへ、順番に。近道は塗装のときに全部ばれるんじゃ。",
+  "アンティークの小さな傷は、消さずに残すこともある。傷も物語のうち、というわけじゃな。",
+  "ドールサイズの家具でも、ほんものと同じ木、同じ技。小さな引き出しも、ちゃんと開くんじゃぞ。",
+  "木は切られたあとも湿気を吸ったり吐いたりして生きておる。木が動くことを見越して作るんじゃ。",
+  "ウォールナットは「木のダイヤ」と呼ばれるほどの銘木での。深い色は塗装ではなく、木そのものの色じゃ。",
+  "チェリー材は年月とともに飴色に育つ。買った日がいちばん薄い色、というわけじゃな。",
+  "展示の並べ方にもコツがあっての。物語がつながるように並べると、お客さんの足が止まるんじゃよ。",
+  "ウィングチェアの「耳」は、暖炉の時代にすきま風から頭を守った名残じゃ。",
+  "ガラス棚のうしろに鏡を仕込むと、飾ったものが倍に見える。ちょっとした魔法じゃろ？"
 ];
 
-/* 工房レベル：exp の累計がしきい値を超えるとレベルアップ
-   LEVELS[i] = レベル i+1 になるのに必要な累計経験値 */
 const LEVELS = [0, 30, 100, 250, 500, 1000];
 const LEVEL_TITLES = ["見習い職人", "若手職人", "一人前の職人", "熟練の職人", "工房の匠", "伝説の職人"];
 
-/* 図鑑の「工房まめ知識」（家具や工房の背景を伝える読みもの） */
 const KNOWLEDGE = [
-  {
-    icon: "🎀",
-    title: "Petit.Continue（プティ・コンティニュー）",
-    text: "松永工房のドール家具シリーズ。「小さな物語は、つづいていく」という願いをこめた名前です。手のひらサイズでも、木材選びから塗装まで、本物の家具とおなじ手仕事。プティカウチもプティチェストも、この物語の住人たちです。"
-  },
-  {
-    icon: "🕰️",
-    title: "アンティーク家具",
-    text: "長い時を旅してきた家具たち。工房では、傷んだアンティークをていねいに修復して、つぎの持ち主へ手渡します。新品にはない飴色のつやと小さな傷あとは、家具が生きてきた証。物語ごと受けつぐのが、工房の流儀です。"
-  },
-  {
-    icon: "🔨",
-    title: "職人技",
-    text: "木の顔（木目）を読んで板を選び、指先の感覚だけを頼りに研磨し、塗りかさねて色に深みを出す——機械にはまかせられない仕事が、工房にはたくさんあります。ゲームで「ていねい」を選んだときの気持ちこそ、職人技のはじまりです。"
-  }
+  { icon: "🎀", title: "Petit.Continue（プティ・コンティニュー）",
+    text: "松永工房のドール家具シリーズ。「小さな物語は、つづいていく」という願いをこめた名前です。手のひらサイズでも、木材選びから塗装まで本物とおなじ手仕事です。" },
+  { icon: "🕰️", title: "アンティーク家具",
+    text: "長い時を旅してきた家具たち。傷んだアンティークをていねいに修復して、つぎの持ち主へ。飴色のつやと小さな傷あとは、家具が生きてきた証です。" },
+  { icon: "🔨", title: "職人技",
+    text: "木目を読んで板を選び、指先の感覚で研磨し、塗りかさねて深みを出す。ゲームで「ていねい」を選んだときの気持ちこそ、職人技のはじまりです。" }
 ];
 
-/* 松永工房の紹介ページ */
 const ABOUT_BLOCKS = [
-  {
-    icon: "🌳",
-    title: "手仕事の家具工房",
-    text: "有限会社松永工房は、木の温かみを大切にする小さな家具工房です。一枚の板から、座る人・使う人の毎日を想像しながら、一つひとつ手仕事で家具を作っています。"
-  },
-  {
-    icon: "🕰️",
-    title: "アンティークと修復",
-    text: "時を経た家具のやさしい風合いが好きで、アンティーク家具の修復・再生にも取り組んでいます。壊れてしまった思い出の家具も、どうぞご相談ください。"
-  },
-  {
-    icon: "🎀",
-    title: "ドール家具 Petit.Continue",
-    text: "手のひらにのる小さな家具のシリーズ。ドールハウスの世界にも、本物とおなじ木材・おなじ技を。小さくても、ちゃんと引き出しが開きます。"
-  },
-  {
-    icon: "📜",
-    title: "家具に、物語を",
-    text: "工房の家具にはそれぞれ小さな物語があります。このゲームの案内役・ヘンリーさんの物語も、その一つ。あなたの暮らしに届いた家具が、あたらしい物語のはじまりになりますように。"
-  }
+  { icon: "🌳", title: "手仕事の家具工房",
+    text: "有限会社松永工房は、木の温かみを大切にする小さな家具工房です。一枚の板から、使う人の毎日を想像しながら、一つひとつ手仕事で家具を作っています。" },
+  { icon: "🕰️", title: "アンティークと修復",
+    text: "時を経た家具のやさしい風合いが好きで、アンティーク家具の修復・再生にも取り組んでいます。思い出の家具も、どうぞご相談ください。" },
+  { icon: "🎀", title: "ドール家具 Petit.Continue",
+    text: "手のひらにのる小さな家具のシリーズ。ドールハウスの世界にも、本物とおなじ木材・おなじ技を。" },
+  { icon: "📜", title: "家具に、物語を",
+    text: "工房の家具にはそれぞれ小さな物語があります。あなたの暮らしに届いた家具が、あたらしい物語のはじまりになりますように。" }
 ];
+
+const SNS_BY_RANK = {
+  S: ["📱 大バズり！「これぞ職人技…木目が芸術です」", "📺 テレビ局から取材の申し込みが来ました！",
+      "📱 海外のコレクターから問い合わせが殺到！", "🏆 「今年いちばんの家具」とSNSで絶賛されました！"],
+  A: ["📱 SNSで話題になりました！「木のぬくもりがすごい…」", "📱 「ドールハウスに置きたい！」と拡散中",
+      "📮 お客さまから、ていねいなお礼の手紙が届きました。", "📻 地元のラジオで工房が紹介されました！"],
+  B: ["📱 じわじわ拡散中…「なんだかほっとする家具」", "🚚 配達員さんが「いい香りの荷物ですね」と笑いました。",
+      "🐈 工房の猫が完成品の上で丸くなりました。", "📱 「#松永工房」のタグ付き投稿がすこし増えました。"],
+  C: ["📱 「味がある…のかな？」という声もちらほら。", "🤔 お客さまが少し首をかしげました。…でも笑って受け取ってくれました。",
+      "📱 「つぎはもっとすごいのを見たい！」と励まされました。", "🍵 ヘンリーさんがお茶をいれてくれました。「次があるさ」"]
+};
 
 const SAVE_KEY = "matsunaga-craft-story-v1";
 
@@ -977,67 +1161,79 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 4,                 // セーブデータのバージョン（旧データ移行の目印）
+  ver: 5,
   money: 0,
-  exp: 0,                 // 累計経験値（レベルはここから算出）
+  exp: 0,
   level: 1,
-  day: 1,                 // 何日目か
-  hoursLeft: HOURS_PER_DAY, // きょうの残り作業時間
-  currentId: null,        // 制作中の家具id（null=家具えらび画面）
-  stepIndex: 0,           // 現在の工程番号
-  quality: 0,             // 制作中の品質スコア（0〜100点）
-  craftUsed: 0,           // 制作中の家具に使った時間（納期判定用）
-  gear: [],               // 買った設備のidリスト
-  completed: {},          // { 家具id: {count, best, bestScore} } 図鑑用
-  stories: []             // 解放済み物語の家具id（"final"含む）
+  day: 1,
+  hoursLeft: HOURS_PER_DAY,
+  totalVisitors: 0,               // のべ来館者（設計図解放にも使う）
+  materials: { walnut: 0, oak: 2, cherry: 0, brass: 0, glass: 0, cloth: 2 },  // 最初の持ち材料
+  currentId: null,                // 制作中の家具id
+  craft: null,                    // 制作中の選択 {design, wood, finish}
+  stepIndex: 0,
+  quality: 0,
+  craftUsed: 0,
+  gear: [],                       // 買った設備
+  showroom: [],                   // 展示中の家具 [{fid,name,design,wood,finish,score,rank,pop,price}]
+  seenBP: [],                     // 解放告知済みの設計図id
+  completed: {},                  // { 図鑑id: {count, best, bestScore, bestPop} }
+  stories: []                     // 解放済み物語のid（家具id・レシピid・"final"）
 };
 
-/* ---------- セーブ／ロード（ローカルストレージ） ---------- */
+/* 制作前の設計えらび（一時状態。セーブしない） */
+let prep = null;   // {fid, design, wood, finish}
+
+/* ---------- セーブ／ロード ---------- */
 function save() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* プライベートモード等では保存できないが続行可能 */ }
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* 保存不可でも続行 */ }
 }
 function load() {
-  let savedVer = 4;   // セーブが無ければ移行は不要
+  let savedVer = 5;
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      savedVer = data.ver;   // 旧セーブ（第1・2章）には ver が無い → undefined
+      savedVer = data.ver;
       state = Object.assign(state, data);
     }
   } catch (e) { /* 壊れたデータは無視して新規開始 */ }
 
-  /* --- 旧セーブデータからの移行（壊さずに引き継ぐ） --- */
-  /* 第1章: completed が数値だった旧形式 → {count, best} 形式へ */
+  /* --- 旧セーブデータからの移行（第1〜4章を壊さず引き継ぐ） --- */
   Object.keys(state.completed).forEach(id => {
     if (typeof state.completed[id] === "number") {
       state.completed[id] = { count: state.completed[id], best: null };
     }
   });
   if (typeof state.quality !== "number") state.quality = state.stepIndex;
-
-  /* 第1・2章: 品質が工程ポイント制（1工程0〜2点）→ 100点制へ換算
-     旧1ポイント ≒ 新6点（ふつう相当）として引き継ぐ */
-  if (savedVer === undefined) {
-    if (state.currentId) {
-      state.quality = Math.max(0, Math.min(100, BASE_QUALITY + state.quality * 6));
-    } else {
-      state.quality = 0;
-    }
+  if (savedVer === undefined) {   // 第1・2章: 品質を100点制へ換算
+    state.quality = state.currentId
+      ? Math.max(0, Math.min(100, BASE_QUALITY + state.quality * 6)) : 0;
   }
-
-  /* 第3章まで共通: 図鑑スコア欄・時間・設備を補完（第4章形式へ） */
-  if (savedVer !== 4) {
-    Object.values(state.completed).forEach(rec => {
-      if (rec && typeof rec === "object" && rec.bestScore === undefined) rec.bestScore = null;
-    });
+  if (savedVer !== 4 && savedVer !== 5) {   // 第3章まで: 時間・設備を補完
     if (typeof state.day !== "number") state.day = 1;
     if (typeof state.hoursLeft !== "number") state.hoursLeft = HOURS_PER_DAY;
     if (!Array.isArray(state.gear)) state.gear = [];
-    /* 旧セーブに使用時間の記録は無いので、制作途中なら
-       「ふつう」相当（1工程2時間）の時間を使ったとみなす */
     state.craftUsed = state.currentId ? state.stepIndex * 2 : 0;
-    state.ver = 4;
+  }
+  if (savedVer !== 5) {   // 第4章まで: 材料・展示・来館者を補完
+    Object.values(state.completed).forEach(rec => {
+      if (rec && typeof rec === "object") {
+        if (rec.bestScore === undefined) rec.bestScore = null;
+        if (rec.bestPop === undefined) rec.bestPop = null;
+      }
+    });
+    if (!state.materials || typeof state.materials !== "object") {
+      state.materials = { walnut: 0, oak: 2, cherry: 0, brass: 0, glass: 0, cloth: 2 };
+    }
+    if (!Array.isArray(state.showroom)) state.showroom = [];
+    if (typeof state.totalVisitors !== "number") state.totalVisitors = 0;
+    if (!Array.isArray(state.seenBP)) state.seenBP = [];
+    /* 旧セーブで制作途中なら、標準の組み合わせで続行（材料消費なし） */
+    if (state.currentId && !state.craft) {
+      state.craft = { design: "classic", wood: "oak", finish: "natural" };
+    }
+    state.ver = 5;
   }
 }
 
@@ -1046,44 +1242,75 @@ function load() {
    ========================================================== */
 const $ = (sel) => document.querySelector(sel);
 const furnitureById = (id) => FURNITURE.find(f => f.id === id);
-const artOf = (f, cls) => SVG_ART[f.art]
-  ? `<span class="${cls}">${SVG_ART[f.art]}</span>`
-  : `<span class="icon">${f.icon}</span>`;   // svg が無い家具は絵文字で表示
+const materialById = (id) => MATERIALS.find(m => m.id === id);
+const designById = (id) => DESIGNS.find(d => d.id === id) || DESIGNS[0];
+const finishById = (id) => FINISHES.find(f => f.id === id) || FINISHES[1];
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-/* 現在レベルの算出と、家具の解放フラグ更新 */
+/* 図鑑・カードの絵。photo(将来のユーザー写真) → SVG → 絵文字 の順で採用 */
+function artOf(entry, cls, filter) {
+  if (entry.photo) return `<span class="${cls}"><img src="${entry.photo}" alt="${entry.name}"></span>`;
+  if (SVG_ART[entry.art]) {
+    const st = filter ? ` style="filter:${filter}"` : "";
+    return `<span class="${cls}"${st}>${SVG_ART[entry.art]}</span>`;
+  }
+  return `<span class="icon">${entry.icon}</span>`;
+}
+
 function calcLevel(exp) {
   let lv = 1;
   for (let i = 0; i < LEVELS.length; i++) if (exp >= LEVELS[i]) lv = i + 1;
   return lv;
 }
-function refreshUnlocks() {
-  FURNITURE.forEach(f => { f.unlocked = state.level >= f.unlockLevel; });
+
+/* 手紙のきれはしを何枚見つけたか */
+const lettersFound = () => FURNITURE.filter(f => f.letter && state.stories.includes(f.id)).length;
+
+/* 設計図の解放判定 */
+function bpUnlocked(f) {
+  const u = f.unlock;
+  if (u.type === "level") return state.level >= u.v;
+  if (u.type === "visitors") return state.totalVisitors >= u.v;
+  if (u.type === "letters") return lettersFound() >= u.v;
+  return false;
+}
+function bpCondLabel(f) {
+  const u = f.unlock;
+  if (u.type === "level") return `工房レベル ${u.v} で解放`;
+  if (u.type === "visitors") return `のべ来館者 ${u.v} 人で解放`;
+  if (u.type === "letters") return `手紙のきれはし ${u.v} 枚で解放`;
+  return "";
+}
+/* 新しく解放された設計図があれば告知文を返す */
+function announceBP() {
+  const now = FURNITURE.filter(bpUnlocked).map(f => f.id);
+  const fresh = now.filter(id => !state.seenBP.includes(id));
+  state.seenBP = now;
+  if (!fresh.length) return "";
+  confetti();
+  return `　📜 新しい設計図「${fresh.map(id => furnitureById(id).name).join("・")}」を手に入れた！`;
 }
 
 /* 設備の効果 */
 const hasGear = (id) => state.gear.includes(id);
-function gearQualityBonus() {
-  return GEAR.filter(g => hasGear(g.id)).reduce((sum, g) => sum + g.effectQ, 0);
-}
-function gearPriceMult() {
-  return GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * g.effectPrice, 1);
-}
+const gearQualityBonus = () => GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectQ || 0), 0);
+const gearPriceMult   = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * (g.effectPrice || 1), 1);
+const gearVisitorMult = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * (g.effectVisitors || 1), 1);
+const showSlots       = () => BASE_SLOTS + GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectSlots || 0), 0);
+const speedBonus      = () => GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectSpeed || 0), 0);
+const effHours = (choice) => Math.max(1, choice.hours - speedBonus());
 
-/* 品質スコア（0〜100点）→ ランク（S/A/B/C） */
 function calcRank(score) {
   for (const r of ["S", "A", "B"]) if (score >= RANKS[r].min) return r;
   return "C";
 }
 const rankBadge = (r) => `<span class="rank-badge rank-${r}">${r}</span>`;
 
-/* ヘンリーさんの吹き出しにメッセージ表示 */
 function showMessage(text) {
   const box = $("#message");
   box.style.opacity = 0;
   setTimeout(() => { $("#message-text").textContent = text; box.style.opacity = 1; }, 180);
 }
-
-/* きらきら紙吹雪 */
 function confetti() {
   const emojis = ["✨", "🌸", "🪵", "⭐", "🍃", "💛"];
   for (let i = 0; i < 14; i++) {
@@ -1096,132 +1323,247 @@ function confetti() {
     setTimeout(() => s.remove(), 2400);
   }
 }
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-/* 工房まめ知識：工程のあと4割の確率でひょっこり表示 */
 function maybeShowTrivia() {
   const box = $("#trivia");
-  if (Math.random() < 0.4) {
+  if (Math.random() < 0.35) {
     box.hidden = false;
     box.innerHTML = `🌰 <b>工房まめ知識</b>　${pick(TRIVIA)}`;
     box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
-  } else {
-    box.hidden = true;
-  }
+  } else box.hidden = true;
 }
 function hideTrivia() { $("#trivia").hidden = true; }
 
-/* 納品時のSNS反応：品質ランクで変わる */
-const SNS_BY_RANK = {
-  S: [
-    "📱 大バズり！「これぞ職人技…木目が芸術です」",
-    "📺 テレビ局から取材の申し込みが来ました！",
-    "📱 海外のコレクターから問い合わせが殺到！",
-    "🏆 「今年いちばんの家具」とSNSで絶賛されました！"
-  ],
-  A: [
-    "📱 SNSで話題になりました！「木のぬくもりがすごい…」",
-    "📱 SNSで話題になりました！「ドールハウスに置きたい！」",
-    "📮 お客さまから、ていねいなお礼の手紙が届きました。",
-    "📻 地元のラジオで工房が紹介されました！"
-  ],
-  B: [
-    "📱 じわじわ拡散中…「なんだかほっとする家具」",
-    "🚚 配達員さんが「いい香りの荷物ですね」と笑いました。",
-    "🐈 工房の猫が完成品の上で丸くなりました（納品前にどいてもらいました）。",
-    "📱 「#松永工房」のタグ付き投稿がすこし増えました。"
-  ],
-  C: [
-    "📱 「味がある…のかな？」という声もちらほら。",
-    "🤔 お客さまが少し首をかしげました。…でも笑って受け取ってくれました。",
-    "📱 「つぎはもっとすごいのを見たい！」と励まされました。",
-    "🍵 ヘンリーさんがお茶をいれてくれました。「次があるさ」"
-  ]
-};
+/* ==========================================================
+   材料：所持数・必要数・消費
+   ========================================================== */
+/* 必要材料 {woodId or null, wood数, 部品} を prep/craft の選択から計算 */
+function neededMaterials(f, designId) {
+  const d = designById(designId);
+  const woodCount = Math.max(1, (f.materials.wood || 0) + (d.extraWood || 0));
+  const parts = {};
+  ["brass", "glass", "cloth"].forEach(k => { if (f.materials[k]) parts[k] = f.materials[k]; });
+  return { woodCount, parts };
+}
+/* 選んだ木材・部品が足りているか */
+function canCraft(f, designId, woodId) {
+  const need = neededMaterials(f, designId);
+  if ((state.materials[woodId] || 0) < need.woodCount) return false;
+  return Object.keys(need.parts).every(k => (state.materials[k] || 0) >= need.parts[k]);
+}
+/* どれかの木材で作れるか（設計図一覧の判定用） */
+function canCraftAnyWood(f) {
+  return MATERIALS.filter(m => m.type === "wood")
+    .some(w => canCraft(f, prepDesignDefault(f), w.id));
+}
+function prepDesignDefault() { return "classic"; }
+/* 材料を消費して制作開始 */
+function consumeMaterials(f, designId, woodId) {
+  const need = neededMaterials(f, designId);
+  state.materials[woodId] -= need.woodCount;
+  Object.keys(need.parts).forEach(k => { state.materials[k] -= need.parts[k]; });
+}
 
 /* ==========================================================
-   描画
+   図鑑エントリ（家具＋隠しレシピ）
+   ========================================================== */
+function allDexEntries() {
+  return FURNITURE.map(f => ({ kind: "base", ...f }))
+    .concat(RECIPES.map(r => {
+      const base = furnitureById(r.baseId);
+      return { kind: "secret", id: r.id, name: r.name, icon: r.icon,
+               art: base.art, photo: null, artFilter: r.filter,
+               description: r.description, story: r.story, hint: r.hint };
+    }));
+}
+const dexTotal = () => allDexEntries().length;
+const dexFound = () => allDexEntries().filter(e => state.completed[e.id] && state.completed[e.id].count > 0).length;
+
+/* ==========================================================
+   描画：ステータス
    ========================================================== */
 function renderStatus() {
   $("#st-money").textContent = state.money.toLocaleString();
-  $("#st-exp").textContent = state.exp;
   $("#st-level").textContent = state.level;
   $("#st-day").textContent = state.day;
   $("#st-hours").textContent = state.hoursLeft;
+  $("#st-visitors").textContent = state.totalVisitors.toLocaleString();
 
-  /* 次のレベルまでの進捗バー */
   const cur = LEVELS[state.level - 1];
-  const next = LEVELS[state.level];   // 最大レベルなら undefined
-  const fill = $("#lv-fill");
-  const label = $("#lv-label");
+  const next = LEVELS[state.level];
+  const fill = $("#lv-fill"), label = $("#lv-label");
   const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
   if (next === undefined) {
     fill.style.width = "100%";
-    label.textContent = `${title}（最高レベル！）`;
+    label.textContent = `${title}（最高レベル！）　📖 図鑑 ${dexFound()} / ${dexTotal()}`;
   } else {
     fill.style.width = Math.min(100, ((state.exp - cur) / (next - cur)) * 100) + "%";
-    label.textContent = `${title}　次のレベルまで あと${next - state.exp}`;
+    label.textContent = `${title}　次のレベルまで あと${next - state.exp}　📖 図鑑 ${dexFound()} / ${dexTotal()}`;
   }
 }
 
-/* 家具えらび画面 */
+/* ==========================================================
+   描画：設計図えらび（ホーム画面）
+   ========================================================== */
 function renderSelect() {
   const list = FURNITURE.map(f => {
-    if (f.unlocked) {
+    if (bpUnlocked(f)) {
+      const need = neededMaterials(f, "classic");
+      const partChips = Object.keys(need.parts).map(k => {
+        const m = materialById(k);
+        const ok = (state.materials[k] || 0) >= need.parts[k];
+        return `<span class="mat-chip${ok ? "" : " ng"}">${m.icon}${m.name}×${need.parts[k]}</span>`;
+      }).join("");
+      const woodOk = MATERIALS.some(m => m.type === "wood" && (state.materials[m.id] || 0) >= need.woodCount);
+      const woodChip = `<span class="mat-chip${woodOk ? "" : " ng"}">🪵木材×${need.woodCount}〜</span>`;
       return `<button class="select-item" data-id="${f.id}">
         ${artOf(f, "thumb")}
         <span><span class="name">${f.name}</span>
-        <div class="info">💰${f.price.toLocaleString()}円〜 ／ ✨${f.exp} ／ 工程 ${f.steps.length}つ ／ ⏳納期 ${f.deadline}時間</div></span>
+        <div class="info">💰${f.price.toLocaleString()}円〜 ／ ⏳納期${f.deadline}h ／ 人気${f.basePop}<br>${woodChip}${partChips}</div></span>
       </button>`;
     }
     return `<div class="select-item locked">
-      <span class="icon">🔒</span>
-      <span><span class="name">？？？</span>
-      <div class="info">工房レベル ${f.unlockLevel} で解放されます</div></span>
+      <span class="icon">📜</span>
+      <span><span class="name">？？？の設計図</span>
+      <div class="info">${bpCondLabel(f)}</div></span>
     </div>`;
   }).join("");
-  $("#card-area").innerHTML = `<div class="select-title">🔨 今日はどの家具を作る？</div>
+  $("#card-area").innerHTML = `<div class="select-title">📜 どの設計図で作る？（図鑑 ${dexFound()}/${dexTotal()}）</div>
     <div class="select-list">${list}</div>`;
   $("#steps-area").innerHTML = "";
 
-  /* 家具を選んで制作開始 */
   document.querySelectorAll(".select-item[data-id]").forEach(btn => {
     btn.addEventListener("click", () => {
-      state.currentId = btn.dataset.id;
-      state.stepIndex = 0;
-      state.quality = BASE_QUALITY + gearQualityBonus();   // 素材の品質＋設備の力
-      state.craftUsed = 0;
-      save();
-      hideTrivia();
-      const f = furnitureById(state.currentId);
-      showMessage(`「${f.name}」の依頼じゃ。納期は${f.deadline}時間。品質を取るか、期日を取るか…職人の腕の見せどころじゃよ。`);
+      const f = furnitureById(btn.dataset.id);
+      /* 設計えらびへ。木材は持っているものを初期選択 */
+      const firstWood = MATERIALS.find(m => m.type === "wood" && (state.materials[m.id] || 0) > 0);
+      prep = { fid: f.id, design: "classic", wood: firstWood ? firstWood.id : "oak", finish: "natural" };
+      showMessage(`「${f.name}」じゃな。設計・素材・仕上げで、家具の顔つきが決まるんじゃよ。`);
       render();
     });
   });
 }
 
-/* 制作画面（家具カード＋工程チップ＋3択ボタン） */
+/* ==========================================================
+   描画：制作前の設計えらび（設計・素材・仕上げ）
+   ========================================================== */
+function renderPrep() {
+  const f = furnitureById(prep.fid);
+  const need = neededMaterials(f, prep.design);
+  const ok = canCraft(f, prep.design, prep.wood);
+
+  /* 選択肢の行を作る共通関数 */
+  const row = (items, key, fmt) => items.map(it =>
+    `<button class="opt-chip${prep[key] === it.id ? " selected" : ""}" data-k="${key}" data-v="${it.id}" ${fmt && fmt(it) === false ? "disabled" : ""}>
+      ${it.icon} ${it.name}<span class="o-note">${it.note || it.desc || ""}</span>
+    </button>`).join("");
+
+  const woods = MATERIALS.filter(m => m.type === "wood").map(m => ({
+    ...m, note: `${m.desc.split("。")[1] || ""}　所持${state.materials[m.id] || 0}`
+  }));
+
+  const partChips = Object.keys(need.parts).map(k => {
+    const m = materialById(k);
+    const okp = (state.materials[k] || 0) >= need.parts[k];
+    return `<span class="mat-chip${okp ? "" : " ng"}">${m.icon}${m.name} ${state.materials[k] || 0}/${need.parts[k]}</span>`;
+  }).join("");
+  const woodOk = (state.materials[prep.wood] || 0) >= need.woodCount;
+  const woodChip = `<span class="mat-chip${woodOk ? "" : " ng"}">${materialById(prep.wood).icon}${materialById(prep.wood).name} ${state.materials[prep.wood] || 0}/${need.woodCount}</span>`;
+
+  $("#card-area").innerHTML = `
+    <div class="card">
+      ${artOf(f, "art")}
+      <h2>${f.name}</h2>
+      <p class="desc">${f.description}</p>
+      <div class="prep-group"><div class="g-title">📐 設計</div>
+        <div class="opt-row">${row(DESIGNS, "design")}</div></div>
+      <div class="prep-group"><div class="g-title">🪵 素材（木材）</div>
+        <div class="opt-row">${row(woods, "wood")}</div></div>
+      <div class="prep-group"><div class="g-title">🖌️ 仕上げ</div>
+        <div class="opt-row">${row(FINISHES, "finish")}</div></div>
+      <div class="prep-group"><div class="g-title">🧺 使う材料</div>
+        <div style="text-align:center;">${woodChip}${partChips}</div></div>
+    </div>`;
+
+  $("#steps-area").innerHTML =
+    `<button class="start-btn" id="btn-start" ${ok ? "" : "disabled"}>
+      ${ok ? "🔨 制作をはじめる" : "🧺 材料が足りない（仕入れよう）"}</button>
+     <div class="cancel-link" id="btn-cancel">設計図えらびに戻る</div>`;
+
+  document.querySelectorAll(".opt-chip").forEach(b =>
+    b.addEventListener("click", () => { prep[b.dataset.k] = b.dataset.v; render(); }));
+  $("#btn-cancel").addEventListener("click", () => { prep = null; render(); });
+  $("#btn-start").addEventListener("click", () => {
+    if (!canCraft(f, prep.design, prep.wood)) return;
+    consumeMaterials(f, prep.design, prep.wood);
+    state.currentId = f.id;
+    state.craft = { design: prep.design, wood: prep.wood, finish: prep.finish };
+    state.stepIndex = 0;
+    state.craftUsed = 0;
+    /* 品質＝素材50＋設備＋設計・素材・仕上げの補正 */
+    state.quality = BASE_QUALITY + gearQualityBonus()
+      + designById(prep.design).q + materialById(prep.wood).q + finishById(prep.finish).q;
+    prep = null;
+    save();
+    hideTrivia();
+    showMessage(`材料をそろえて、いざ制作じゃ。納期は${f.deadline}時間。よい家具になりそうかの？`);
+    render();
+  });
+}
+
+/* ==========================================================
+   完成品（ピース）の計算：隠しレシピ判定・人気・価格
+   ========================================================== */
+function matchRecipe() {
+  const c = state.craft || {};
+  return RECIPES.find(r => r.baseId === state.currentId &&
+    r.combo.design === c.design && r.combo.wood === c.wood && r.combo.finish === c.finish) || null;
+}
+function currentPiece() {
+  const f = furnitureById(state.currentId);
+  const c = state.craft || { design: "classic", wood: "oak", finish: "natural" };
+  const v = matchRecipe();
+  const score = Math.round(state.quality);
+  const rank = calcRank(score);
+  const onTime = state.craftUsed <= f.deadline;
+  const d = designById(c.design), w = materialById(c.wood), fin = finishById(c.finish);
+  const pop = Math.max(1, f.basePop + (v ? v.popBonus : 0) + d.pop + (w.pop || 0) + fin.pop + RANKS[rank].popBonus);
+  const mult = RANKS[rank].mult * (onTime ? ONTIME_MULT : LATE_MULT)
+    * d.priceMult * (w.priceMult || 1) * fin.priceMult * (v ? v.priceMult : 1) * gearPriceMult();
+  const price = Math.round(f.price * mult / 10) * 10;
+  return {
+    fid: v ? v.id : f.id, baseId: f.id, name: v ? v.name : f.name,
+    design: c.design, wood: c.wood, finish: c.finish,
+    score, rank, onTime, pop, price, secret: !!v
+  };
+}
+
+/* ==========================================================
+   描画：制作画面
+   ========================================================== */
 function renderCraft() {
   const f = furnitureById(state.currentId);
+  const c = state.craft || {};
   const total = f.steps.length;
   const done = state.stepIndex >= total;
   const pct = Math.round((state.stepIndex / total) * 100);
   const score = Math.round(state.quality);
-  const qPct = Math.max(0, Math.min(100, score));   // 品質ゲージ＝スコアそのまま
+  const qPct = Math.max(0, Math.min(100, score));
   const rank = calcRank(score);
 
-  /* 納期表示（残り時間 or 超過） */
   const remain = f.deadline - state.craftUsed;
   const deadlineChip = remain >= 0
-    ? `<span>⏳ 納期まで あと${remain}時間</span>`
-    : `<span class="late">⏰ 納期超過 ${-remain}時間</span>`;
+    ? `<span>⏳あと${remain}h</span>`
+    : `<span class="late">⏰超過${-remain}h</span>`;
+  const attrChips =
+    `<span>${designById(c.design).icon}${designById(c.design).name}</span>` +
+    `<span>${materialById(c.wood) ? materialById(c.wood).icon + materialById(c.wood).name : ""}</span>` +
+    `<span>${finishById(c.finish).icon}${finishById(c.finish).name}</span>`;
 
   $("#card-area").innerHTML = `
     <div class="card${done ? " done" : ""}" id="craft-card">
       ${artOf(f, "art")}
-      <h2>${f.name}${done ? " ✨" : ""}</h2>
-      <p class="desc">${f.description}</p>
-      <div class="meta"><span>💰 ${f.price.toLocaleString()}円〜</span><span>✨ ${f.exp}</span>${deadlineChip}</div>
+      <h2>${done ? currentPiece().name + " ✨" : f.name}</h2>
+      <div class="meta">${attrChips}${deadlineChip}</div>
       <div class="progress"><i style="width:${pct}%"></i></div>
       <div class="progress-label">${done ? "🎉 完成！" : `工程 ${state.stepIndex} / ${total}`}</div>
       <div class="quality-row">
@@ -1232,7 +1574,6 @@ function renderCraft() {
       </div>
     </div>`;
 
-  /* 工程チップ（進捗表示） */
   const chips = `<div class="steps">` + f.steps.map((s, i) => {
     const cls = i < state.stepIndex ? "done-step" : (i === state.stepIndex ? "current" : "");
     const mark = i < state.stepIndex ? "✅ " : `${s.icon} `;
@@ -1240,154 +1581,170 @@ function renderCraft() {
   }).join("") + `</div>`;
 
   if (done) {
-    /* 完成 → 品質ランク・納期・設備に応じた価格で納品 */
-    const onTime = state.craftUsed <= f.deadline;
-    const price = finalPrice(f, rank, onTime);
+    /* 完成 → 納品（即金）か 展示（来館収入）を選ぶ */
+    const p = currentPiece();
+    const slotsFree = state.showroom.length < showSlots();
     $("#steps-area").innerHTML = chips +
-      `<button class="deliver-btn" id="btn-deliver">🚚 納品する（品質${rank}・${onTime ? "期日内✨" : "納期おくれ"}・＋${price.toLocaleString()}円）</button>`;
-    $("#btn-deliver").addEventListener("click", deliver);
+      `<div class="finish-row">
+        <button class="deliver-btn" id="btn-deliver">🚚 納品する<br>＋${p.price.toLocaleString()}円</button>
+        <button class="exhibit-btn" id="btn-exhibit" ${slotsFree ? "" : "disabled"}>🖼 展示する<br>${slotsFree ? `人気${p.pop}・毎日収入` : `展示枠がいっぱい`}</button>
+      </div>`;
+    $("#btn-deliver").addEventListener("click", () => finishCraft(false));
+    $("#btn-exhibit").addEventListener("click", () => { if (slotsFree) finishCraft(true); });
   } else {
-    /* 現在の工程を「ていねい／ふつう／急ぐ」から選んで進める */
     const step = f.steps[state.stepIndex];
     $("#steps-area").innerHTML = chips +
       `<div class="choice-title">${step.icon} 「${step.label}」…どんな仕事ぶりでいく？</div>
        <div class="choices">` +
-      CHOICES.map(c =>
-        `<button class="choice-btn ${c.cls}" data-choice="${c.id}">
-          <span class="c-icon">${c.icon}</span>
-          <span class="c-label">${c.label}</span>
-          <span class="c-note">${c.note}</span>
+      CHOICES.map(ch =>
+        `<button class="choice-btn ${ch.cls}" data-choice="${ch.id}">
+          <span class="c-icon">${ch.icon}</span>
+          <span class="c-label">${ch.label}</span>
+          <span class="c-note">${ch.note.replace(/⏱\d+時間/, "⏱" + effHours(ch) + "時間")}</span>
         </button>`).join("") +
       `</div>`;
     document.querySelectorAll(".choice-btn").forEach(b =>
       b.addEventListener("click", () => doStep(b.dataset.choice)));
   }
 
-  /* 工程ボタン・納品ボタンが固定フッターに隠れないよう、
-     制作中は操作エリアが見える位置まで自動スクロール。
-     吹き出しの文章やまめ知識で高さが変わるため、少し後にもう一度 */
   const toBottom = () => { if (state.currentId) window.scrollTo(0, document.documentElement.scrollHeight); };
   requestAnimationFrame(toBottom);
   setTimeout(toBottom, 450);
 }
 
 function render() {
-  refreshUnlocks();
   renderStatus();
-  if (state.currentId) renderCraft(); else renderSelect();
+  if (state.currentId) renderCraft();
+  else if (prep) renderPrep();
+  else renderSelect();
 }
 
 /* ==========================================================
    ゲーム進行
    ========================================================== */
-/* 納品価格：基本価格 × 品質ランク × 納期 × 設備（10円単位に丸める） */
-function finalPrice(f, rank, onTime) {
-  const mult = RANKS[rank].mult * (onTime ? ONTIME_MULT : LATE_MULT) * gearPriceMult();
-  return Math.round(f.price * mult / 10) * 10;
-}
-
-/* 工程をひとつ進める（choiceId: 仕事ぶりの選択）
-   ボタンをいったん止めて「作業の所要時間」を感じさせてから結果を出す */
 function doStep(choiceId) {
   const f = furnitureById(state.currentId);
   const step = f.steps[state.stepIndex];
-  const choice = CHOICES.find(c => c.id === choiceId) || CHOICES[1];
+  const choice = CHOICES.find(ch => ch.id === choiceId) || CHOICES[1];
+  const hours = effHours(choice);
 
-  /* 作業中…（連打防止＋時間の演出） */
   document.querySelectorAll(".choice-btn").forEach(b => b.disabled = true);
   showMessage(`${step.icon} ${step.label}中… ${choice.working}`);
 
   setTimeout(() => {
-    /* 品質スコアの増減（急ぐはランダム。ときどきミスで低下） */
     const delta = choice.pts();
     state.quality = Math.max(0, Math.min(100, state.quality + delta));
     state.stepIndex++;
 
-    /* 時間が経つ。1日8時間を使いきると日付が変わる */
-    state.craftUsed += choice.hours;
-    state.hoursLeft -= choice.hours;
-    let dayChanged = false;
+    /* 時間経過。日付が変わると来館者がやってくる */
+    state.craftUsed += hours;
+    state.hoursLeft -= hours;
+    let extra = "";
     while (state.hoursLeft <= 0) {
       state.hoursLeft += HOURS_PER_DAY;
       state.day++;
-      dayChanged = true;
+      extra += dailyVisitors();
     }
     save();
 
-    /* ヘンリーさんのひとこと＋工程メッセージ */
-    const comment = delta < 0
-      ? "ありゃ、手がすべったかの…！"
-      : pick(choice.henry);
+    const comment = delta < 0 ? "ありゃ、手がすべったかの…！" : pick(choice.henry);
     const sign = delta >= 0 ? `+${delta}` : `${delta}`;
-    let msg = `${step.icon} ${step.msg}　${comment}（品質${sign}・${choice.hours}時間）`;
-    if (dayChanged) msg += `　🌙 日が暮れた。${state.day}日目の朝じゃ。`;
+    let msg = `${step.icon} ${step.msg}　${comment}（品質${sign}・${hours}時間）${extra}`;
+    msg += announceBP();
     showMessage(msg);
     maybeShowTrivia();
 
     render();
     if (state.stepIndex >= f.steps.length) {
-      /* 完成演出（カードが光る＋紙吹雪） */
       confetti();
-      const rank = calcRank(state.quality);
-      const onTime = state.craftUsed <= f.deadline;
-      showMessage(`🎉 「${f.name}」完成じゃ！ 品質${Math.round(state.quality)}点、${RANKS[rank].label}${onTime ? "　しかも期日内じゃ！" : "　納期は…まあ、次がんばろうかの。"}`);
+      const p = currentPiece();
+      showMessage(`🎉 「${p.name}」完成じゃ！ 品質${p.score}点、${RANKS[p.rank].label}${p.onTime ? "　期日内じゃ！" : ""}${p.secret ? "　…おや、これはただの家具ではないぞ…！" : ""}　納品するか、展示するか選ぶのじゃ。`);
     }
   }, choice.time);
 }
 
-/* 納品：品質と納期で報酬・SNS反応が変わる。図鑑登録・物語解放・レベルアップ */
-function deliver() {
+/* 日付が変わったときの来館者と売店収入 */
+function dailyVisitors() {
+  const pieces = state.showroom;
+  const popSum = pieces.reduce((s, p) => s + p.pop, 0);
+  const bonusMult = SET_BONUSES.reduce((m, b) => m * (b.check(pieces) ? b.mult : 1), 1);
+  const visitors = Math.max(1, Math.round((3 + popSum * 0.8) * gearVisitorMult()));
+  state.totalVisitors += visitors;
+  let text = `　🌙 ${state.day}日目の朝じゃ。`;
+  if (popSum > 0) {
+    const income = Math.round(visitors * 12 * bonusMult / 10) * 10;
+    state.money += income;
+    text += `昨日の来館者${visitors}人・売店収入+${income.toLocaleString()}円！`;
+  } else {
+    text += `来館者${visitors}人（展示があればもっと来るんじゃがのう）。`;
+  }
+  return text;
+}
+
+/* 完成品を 納品(即売) または 展示 する。図鑑登録は両方共通 */
+function finishCraft(exhibit) {
+  const p = currentPiece();
   const f = furnitureById(state.currentId);
-  const score = Math.round(state.quality);
-  const rank = calcRank(score);
-  const onTime = state.craftUsed <= f.deadline;
-  const price = finalPrice(f, rank, onTime);
-  const rec = state.completed[f.id];
+  const rec = state.completed[p.fid];
   const firstTime = !rec;
 
-  state.money += price;
-  state.exp += f.exp;
-
-  /* 図鑑記録：制作回数・最高品質ランク・最高品質スコアを更新 */
+  /* --- 図鑑登録（回数・最高品質・最高人気） --- */
   if (rec) {
     rec.count++;
-    if (rec.best === null || RANK_ORDER.indexOf(rank) > RANK_ORDER.indexOf(rec.best)) rec.best = rank;
-    if (rec.bestScore == null || score > rec.bestScore) rec.bestScore = score;
+    if (rec.best === null || RANK_ORDER.indexOf(p.rank) > RANK_ORDER.indexOf(rec.best)) rec.best = p.rank;
+    if (rec.bestScore == null || p.score > rec.bestScore) rec.bestScore = p.score;
+    if (rec.bestPop == null || p.pop > rec.bestPop) rec.bestPop = p.pop;
   } else {
-    state.completed[f.id] = { count: 1, best: rank, bestScore: score };
+    state.completed[p.fid] = { count: 1, best: p.rank, bestScore: p.score, bestPop: p.pop };
   }
 
-  /* レベルアップ判定 */
+  state.exp += f.exp;
   const newLevel = calcLevel(state.exp);
   const leveledUp = newLevel > state.level;
   state.level = newLevel;
 
-  /* 制作終了 → 家具えらびへ */
+  /* --- 納品 or 展示 --- */
+  let msg;
+  if (exhibit) {
+    state.showroom.push(p);
+    msg = `🖼 「${p.name}」をショールームに展示した！ 人気${p.pop}。あすから来館者が見にくるぞ。`;
+  } else {
+    state.money += p.price;
+    const sns = pick(SNS_BY_RANK[p.rank]);
+    msg = `🚚 品質${p.rank}（${p.score}点）・${p.onTime ? "期日内✨" : "納期おくれ…"}で納品！ ＋${p.price.toLocaleString()}円　${HENRY_DELIVER[p.rank]}　${sns}`;
+  }
+
+  if (leveledUp) {
+    msg += `　🏠 工房レベルが ${state.level} に上がったぞ！`;
+    confetti();
+  }
+
+  /* 制作終了 */
   state.currentId = null;
+  state.craft = null;
   state.stepIndex = 0;
   state.quality = 0;
   state.craftUsed = 0;
   hideTrivia();
 
-  /* 納品メッセージ（ヘンリーさんのひとこと＋ランク別SNS反応） */
-  const sns = pick(SNS_BY_RANK[rank]);
-  let msg = `🚚 品質${rank}（${score}点）・${onTime ? "期日内✨" : "納期おくれ…"}で納品！ ＋${price.toLocaleString()}円　${HENRY_DELIVER[rank]}　${sns}`;
-  if (leveledUp) {
-    msg += `　🏠 工房レベルが ${state.level} に上がったぞ！`;
-    const unlockedNow = FURNITURE.filter(x => x.unlockLevel === state.level);
-    if (unlockedNow.length) msg += ` 「${unlockedNow.map(x => x.name).join("・")}」が作れるようになった！`;
-    confetti();
-  }
+  msg += announceBP();
   showMessage(msg);
 
-  /* 初完成 → 物語＋手紙のきれはしを解放 */
+  /* --- 初完成：図鑑に物語（＋手紙）が登録される --- */
   if (firstTime) {
-    state.stories.push(f.id);
-    openStoryPop(`「${f.name}」の物語`, `${f.story}\n\n💌 ${f.letter}`);
+    state.stories.push(p.fid);
+    if (p.secret) {
+      const r = RECIPES.find(x => x.id === p.fid);
+      openStoryPop(`🎊 隠しレシピ発見！「${p.name}」`, `${r.description}\n\n${r.story}`, "🎊✨");
+    } else if (f.letter && p.fid === f.id) {
+      openStoryPop(`「${f.name}」を図鑑に登録！`, `${f.story}\n\n💌 ${f.letter}`);
+    } else {
+      openStoryPop(`「${p.name}」を図鑑に登録！`, f.story);
+    }
   }
-  /* 手紙のきれはしがすべてそろったら最終章を解放 */
+  /* 手紙がすべてそろったら最終章 */
   if (!state.stories.includes("final") &&
-      FURNITURE.every(x => state.stories.includes(x.id))) {
+      FURNITURE.filter(x => x.letter).every(x => state.stories.includes(x.id))) {
     state.stories.push("final");
     setTimeout(() => openStoryPop(FINAL_STORY.title, FINAL_STORY.text), firstTime ? 600 : 0);
   }
@@ -1397,90 +1754,154 @@ function deliver() {
 }
 
 /* ==========================================================
-   モーダル（図鑑・物語・設備・工房紹介）
+   モーダル
    ========================================================== */
 function openModal(id) { $("#" + id).classList.add("open"); }
 function closeModal(id) { $("#" + id).classList.remove("open"); }
-
-/* 図鑑：品質ランク・最高品質スコア・制作回数を表示 */
-function renderDex() {
-  $("#dex-list").innerHTML = FURNITURE.map(f => {
-    const rec = state.completed[f.id];
-    if (rec && rec.count > 0) {
-      const best = rec.best
-        ? `最高品質 ${rankBadge(rec.best)}${rec.bestScore != null ? ` <b>${rec.bestScore}点</b>` : ""}`
-        : `最高品質 <span class="rank-badge rank-B">—</span>`;   // 旧セーブは記録なし
-      return `<div class="dex-item">
-        ${artOf(f, "thumb")}
-        <span><div class="name">${f.name}</div>
-        <div class="count">🔨 制作回数 ${rec.count} 台　${best}</div></span>
-      </div>`;
-    }
-    return `<div class="dex-item unknown">
-      <span class="icon">❓</span>
-      <span><div class="name">？？？</div>
-      <div class="count">まだ作ったことがない</div></span>
-    </div>`;
-  }).join("");
-
-  /* 工房まめ知識（Petit.Continue・アンティーク・職人技） */
-  $("#knowledge-list").innerHTML = KNOWLEDGE.map(k =>
-    `<div class="knowledge"><h4>${k.icon} ${k.title}</h4><p>${k.text}</p></div>`).join("");
+function openStoryPop(title, text, badge) {
+  $("#pop-badge").textContent = badge || "📜✨";
+  $("#pop-title").textContent = title;
+  $("#pop-text").textContent = text;
+  openModal("story-pop");
 }
 
-/* 物語モーダル：手紙のきれはし（メインストーリー）＋家具の物語 */
-function renderStories() {
-  /* --- 手紙のきれはし --- */
-  const found = FURNITURE.filter(f => state.stories.includes(f.id)).length;
-  let letters = `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
-    あつめたきれはし　${found} / ${FURNITURE.length}</p>`;
-  letters += FURNITURE.map((f, i) => {
-    if (state.stories.includes(f.id)) {
-      return `<div class="letter-item">
-        <h4>💌 きれはし その${i + 1}</h4>${f.letter}
+/* ---------- 図鑑（主役）：画像・説明・記録・物語・手紙・達成率 ---------- */
+function renderDex() {
+  const found = dexFound(), total = dexTotal();
+  $("#dex-complete").innerHTML = `<div class="dex-complete">
+    <div class="big">📖 ${found} / ${total}</div>
+    <div class="small">コンプリート率 ${Math.round(found / total * 100)}%　全部あつめて図鑑を完成させよう！</div>
+  </div>`;
+
+  $("#dex-list").innerHTML = allDexEntries().map(e => {
+    const rec = state.completed[e.id];
+    if (rec && rec.count > 0) {
+      const story = state.stories.includes(e.id) && e.story
+        ? `<div class="d-story">📜 ${e.story}</div>` : "";
+      return `<div class="dex-item${e.kind === "secret" ? " secret" : ""}">
+        <div class="d-head">
+          ${artOf(e, "thumb", e.artFilter)}
+          <span><div class="name">${e.kind === "secret" ? "✨ " : ""}${e.name}</div>
+          <div class="count">🔨 ${rec.count}台　最高品質 ${rec.best ? rankBadge(rec.best) : "—"}${rec.bestScore != null ? ` <b>${rec.bestScore}点</b>` : ""}　💖 人気 ${rec.bestPop != null ? rec.bestPop : "—"}</div></span>
+        </div>
+        <div class="d-desc">${e.description}</div>
+        ${story}
       </div>`;
     }
-    const hint = f.unlocked ? `「${f.name}」` : "まだ見ぬ家具";
-    return `<div class="letter-item locked">
-      <h4>🔒 きれはし その${i + 1}</h4>${hint}をはじめて完成させると、見つかるかもしれない……
+    /* 未発見 */
+    const hint = e.kind === "secret"
+      ? `🔮 ${e.hint}`
+      : (bpUnlocked(e) ? "設計図はある。作って図鑑に登録しよう！" : bpCondLabel(e));
+    return `<div class="dex-item unknown${e.kind === "secret" ? " secret" : ""}">
+      <div class="d-head">
+        <span class="icon">${e.kind === "secret" ? "✨" : "❓"}</span>
+        <span><div class="name">？？？</div>
+        <div class="count">${hint}</div></span>
+      </div>
     </div>`;
   }).join("");
 
+  /* 手紙のきれはし（図鑑の横で読める短編。副要素） */
+  const withLetters = FURNITURE.filter(f => f.letter);
+  const lf = lettersFound();
+  let letters = `<p style="text-align:center;font-size:.72rem;color:var(--brown-mid);margin-bottom:10px;">
+    あつめたきれはし　${lf} / ${withLetters.length}</p>`;
+  letters += withLetters.map((f, i) => {
+    if (state.stories.includes(f.id)) {
+      return `<div class="letter-item"><h4>💌 きれはし その${i + 1}</h4>${f.letter}</div>`;
+    }
+    return `<div class="letter-item locked"><h4>🔒 きれはし その${i + 1}</h4>ある家具をはじめて完成させると見つかるらしい……</div>`;
+  }).join("");
   if (state.stories.includes("final")) {
-    letters += `<div class="story-item final">
-      <h4>💌 ${FINAL_STORY.title}</h4><p>${FINAL_STORY.text}</p>
-    </div>`;
+    letters += `<div class="story-item final"><h4>💌 ${FINAL_STORY.title}</h4><p>${FINAL_STORY.text}</p></div>`;
   } else {
-    letters += `<div class="story-item locked final">
-      <h4>🔒 ${FINAL_STORY.title}</h4><p>きれはしを${FURNITURE.length}枚すべて集めると、手紙の全文が読めるらしい……。</p>
-    </div>`;
+    letters += `<div class="story-item locked final"><h4>🔒 ${FINAL_STORY.title}</h4><p>きれはしをすべて集めると、手紙の全文が読めるらしい……。</p></div>`;
   }
   $("#letter-list").innerHTML = letters;
-
-  /* --- 家具の物語 --- */
-  $("#story-list").innerHTML = FURNITURE.map(f => {
-    if (state.stories.includes(f.id)) {
-      return `<div class="story-item">
-        <h4>${f.icon} 「${f.name}」の物語</h4><p>${f.story}</p>
-      </div>`;
-    }
-    return `<div class="story-item locked">
-      <h4>🔒 まだ読めない物語</h4><p>この家具をはじめて完成させると読めるようになる。</p>
-    </div>`;
-  }).join("");
 }
 
-/* 設備投資：お金の使い道。買うと工房がずっと強くなる */
+/* ---------- ショールーム（展示） ---------- */
+function renderShow() {
+  const pieces = state.showroom;
+  const popSum = pieces.reduce((s, p) => s + p.pop, 0);
+  const bonuses = SET_BONUSES.map(b =>
+    `<span class="bonus-chip${b.check(pieces) ? "" : " off"}">${b.check(pieces) ? "✓ " : ""}${b.name}　${b.desc}</span>`).join(" ");
+  const estVisitors = Math.max(1, Math.round((3 + popSum * 0.8) * gearVisitorMult()));
+  const bonusMult = SET_BONUSES.reduce((m, b) => m * (b.check(pieces) ? b.mult : 1), 1);
+  const estIncome = popSum > 0 ? Math.round(estVisitors * 12 * bonusMult / 10) * 10 : 0;
+
+  let html = `<div class="show-head">
+    展示 <b>${pieces.length} / ${showSlots()}</b> 枠　合計人気 <b>${popSum}</b><br>
+    あすの来館予想 👥${estVisitors}人・売店収入 💰${estIncome.toLocaleString()}円/日<br>${bonuses}
+  </div>`;
+
+  if (!pieces.length) {
+    html += `<p style="text-align:center;font-size:.76rem;color:var(--brown-mid);line-height:1.9;">
+      まだ何も展示されていない。<br>家具を完成させたとき「🖼 展示する」を選ぶと<br>ここに並んで、毎日収入を生むぞ。</p>`;
+  } else {
+    html += pieces.map((p, i) => {
+      const base = furnitureById(p.baseId || p.fid) || {};
+      const r = RECIPES.find(x => x.id === p.fid);
+      return `<div class="show-item">
+        ${artOf(base, "thumb", r ? r.filter : null)}
+        <span class="s-body"><div class="s-name">${p.secret ? "✨ " : ""}${p.name}</div>
+        <div class="s-info">${rankBadge(p.rank)} ${p.score}点　💖人気${p.pop}　${designById(p.design).name}・${materialById(p.wood) ? materialById(p.wood).name : ""}・${finishById(p.finish).name}</div></span>
+        <button class="sell-btn" data-i="${i}">💰 ${p.price.toLocaleString()}円で売る</button>
+      </div>`;
+    }).join("");
+  }
+  $("#show-body").innerHTML = html;
+
+  document.querySelectorAll(".sell-btn[data-i]").forEach(b =>
+    b.addEventListener("click", () => {
+      const i = +b.dataset.i;
+      const p = state.showroom[i];
+      if (!p) return;
+      state.money += p.price;
+      state.showroom.splice(i, 1);
+      save();
+      showMessage(`🚚 展示していた「${p.name}」が売れた！ ＋${p.price.toLocaleString()}円`);
+      renderShow(); renderStatus();
+    }));
+}
+
+/* ---------- 仕入れ（材料） ---------- */
+function renderMarket() {
+  $("#market-body").innerHTML =
+    `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
+      所持金 💰 ${state.money.toLocaleString()}円</p>` +
+    MATERIALS.map(m => `<div class="mat-item">
+      <span class="m-icon">${m.icon}</span>
+      <span class="m-body"><div class="m-name">${m.name}</div>
+      <div class="m-desc">${m.desc}</div></span>
+      <span class="m-own">×${state.materials[m.id] || 0}</span>
+      <button class="mat-buy" data-m="${m.id}" ${state.money < m.price ? "disabled" : ""}>
+        ${m.price.toLocaleString()}円</button>
+    </div>`).join("");
+
+  document.querySelectorAll(".mat-buy[data-m]").forEach(b =>
+    b.addEventListener("click", () => {
+      const m = materialById(b.dataset.m);
+      if (!m || state.money < m.price) return;
+      state.money -= m.price;
+      state.materials[m.id] = (state.materials[m.id] || 0) + 1;
+      save();
+      renderMarket(); renderStatus();
+      if (prep || !state.currentId) render();   /* 設計図一覧の在庫表示も更新 */
+    }));
+}
+
+/* ---------- 設備 ---------- */
 function renderGear() {
   $("#gear-list").innerHTML =
     `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
-      いまの所持金　💰 ${state.money.toLocaleString()}円</p>` +
+      所持金 💰 ${state.money.toLocaleString()}円</p>` +
     GEAR.map(g => {
       const owned = hasGear(g.id);
       const btn = owned
         ? `<span class="gear-owned">✓ 導入済み</span>`
         : `<button class="gear-buy" data-gear="${g.id}" ${state.money < g.price ? "disabled" : ""}>
-            💰${g.price.toLocaleString()}円で買う</button>`;
+            💰${g.price.toLocaleString()}円</button>`;
       return `<div class="gear-item">
         <span class="g-icon">${g.icon}</span>
         <span class="g-body"><div class="g-name">${g.name}</div>
@@ -1489,7 +1910,6 @@ function renderGear() {
       </div>`;
     }).join("");
 
-  /* 購入処理 */
   document.querySelectorAll(".gear-buy[data-gear]").forEach(b =>
     b.addEventListener("click", () => {
       const g = GEAR.find(x => x.id === b.dataset.gear);
@@ -1498,13 +1918,12 @@ function renderGear() {
       state.gear.push(g.id);
       save();
       confetti();
-      showMessage(`🛠 「${g.name}」を工房に迎えた！ ${g.desc}　良い道具は良い仕事を作るんじゃよ。`);
-      renderGear();       // モーダルを買った状態に更新
-      renderStatus();     // 所持金表示を更新
+      showMessage(`🛠 「${g.name}」を工房に迎えた！ ${g.desc}　工房がまた一歩、大きくなったのう。`);
+      renderGear(); renderStatus();
     }));
 }
 
-/* 松永工房紹介ページ */
+/* ---------- 工房紹介 ---------- */
 function renderAbout() {
   $("#about-body").innerHTML =
     `<div class="about-hero">
@@ -1513,13 +1932,8 @@ function renderAbout() {
     </div>` +
     ABOUT_BLOCKS.map(b =>
       `<div class="about-block"><h4>${b.icon} ${b.title}</h4><p>${b.text}</p></div>`).join("");
-}
-
-/* 物語解放ポップアップ */
-function openStoryPop(title, text) {
-  $("#pop-title").textContent = title;
-  $("#pop-text").textContent = text;
-  openModal("story-pop");
+  $("#knowledge-list").innerHTML = KNOWLEDGE.map(k =>
+    `<div class="knowledge"><h4>${k.icon} ${k.title}</h4><p>${k.text}</p></div>`).join("");
 }
 
 /* ==========================================================
@@ -1527,25 +1941,23 @@ function openStoryPop(title, text) {
    ========================================================== */
 function init() {
   load();
-  /* 途中セーブとの整合（レベルは常にexpから再計算） */
   state.level = calcLevel(state.exp);
+  /* 初回は現在解放済みの設計図を「告知済み」にしておく（起動時に騒がない） */
+  if (!state.seenBP.length) state.seenBP = FURNITURE.filter(bpUnlocked).map(f => f.id);
 
-  /* 案内役ヘンリーさんを描画（常時表示） */
   $("#henry-avatar").innerHTML = SVG_ART.henry;
 
-  /* フッターのボタン */
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
-  $("#btn-story").addEventListener("click", () => { renderStories(); openModal("story-modal"); });
+  $("#btn-show").addEventListener("click", () => { renderShow(); openModal("show-modal"); });
+  $("#btn-market").addEventListener("click", () => { renderMarket(); openModal("market-modal"); });
   $("#btn-gear").addEventListener("click", () => { renderGear(); openModal("gear-modal"); });
   $("#btn-about").addEventListener("click", () => { renderAbout(); openModal("about-modal"); });
 
-  /* モーダルの閉じるボタン（下の「とじる」＋右上の✕）・背景タップ */
   document.querySelectorAll("[data-close]").forEach(b =>
     b.addEventListener("click", () => closeModal(b.dataset.close)));
   document.querySelectorAll(".modal-back").forEach(m =>
     m.addEventListener("click", (e) => { if (e.target === m) m.classList.remove("open"); }));
 
-  /* リセット（工房紹介ページの下にひっそり） */
   $("#btn-reset").addEventListener("click", () => {
     if (confirm("セーブデータを消して、はじめからやり直しますか？")) {
       localStorage.removeItem(SAVE_KEY);
@@ -1555,12 +1967,11 @@ function init() {
 
   render();
   if (state.currentId) {
-    const f = furnitureById(state.currentId);
-    showMessage(`おかえり。「${f.name}」の続きを作ろうかの。`);
+    showMessage(`おかえり。「${furnitureById(state.currentId).name}」の続きを作ろうかの。`);
   } else if (state.exp > 0) {
-    showMessage("おかえり。今日も一緒に、いい家具を作ろうじゃないか。");
+    showMessage(`おかえり。図鑑は ${dexFound()}/${dexTotal()}。今日はどれを作って、どう並べるかの？`);
   } else {
-    showMessage("ようこそ、松永工房へ。わしはヘンリー。この工房の家具に惚れこんでのう、勝手に案内役をしておる。……そういえば最近、家具の中から古い手紙のきれはしが見つかるんじゃよ。");
+    showMessage("ようこそ、松永工房へ。わしはヘンリー、案内役じゃ。まずは設計図をえらんで一台作り、図鑑に登録してみるのじゃ。ゆくゆくは展示室に家具を並べて、たくさんのお客を呼ぶんじゃぞ。");
   }
 }
 
