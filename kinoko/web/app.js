@@ -3,7 +3,7 @@
    index.html（ホーム）と zukan.html（図鑑）の両方で動作
    ========================================================= */
 
-const EDIBILITY_COLORS = { "食用": "#5a7d4a", "毒": "#b03a2e", "食不適": "#9a8f73" };
+const EDIBILITY_COLORS = { "食用": "#5a7d4a", "毒": "#b03a2e", "食不適": "#9a8f73", "不詳": "#7a7368" };
 const HOME_PREVIEW_COUNT = 8;
 
 const state = {
@@ -52,7 +52,10 @@ async function init() {
 /* ---------------- ホーム ---------------- */
 function renderHome() {
   const cnt = $("#aboutCount");
-  if (cnt) cnt.textContent = `${state.records.length}種を記録（順次追加中）`;
+  if (cnt) {
+    const species = new Set(state.records.map((r) => r.wamei)).size;
+    cnt.textContent = `${state.records.length}件・${species}種を記録`;
+  }
 
   const preview = [...state.records]
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -244,8 +247,14 @@ function openModal(id) {
   }
   const rating = r.rating ? `<div class="modal__section"><span class="rating">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</span></div>` : "";
 
+  const photos = (r.photos && r.photos.length) ? r.photos : (r.photo ? [r.photo] : []);
+  const thumbs = photos.length > 1
+    ? `<div class="modal__thumbs">${photos.map((p, i) =>
+        `<div class="mth ph" data-photo="${escapeAttr(p)}" data-i="${i}" aria-current="${i === 0}"></div>`).join("")}</div>`
+    : "";
   $("#modalBody").innerHTML = `
-    <div class="modal__hero"><div class="ph" ${photoAttr(r.photo)} data-label="${escapeAttr(r.wamei)}"></div></div>
+    <div class="modal__hero"><div class="ph" id="modalHero" ${photoAttr(photos[0] || r.photo)} data-label="${escapeAttr(r.wamei)}"></div></div>
+    ${thumbs}
     <div class="modal__content">
       <h2 class="modal__wamei" id="modalTitle">${escapeHTML(r.wamei)} <span class="modal__kana">（${escapeHTML(r.kana || "")}）</span></h2>
       <p class="modal__gakumei">${escapeHTML(r.gakumei || "")}</p>
@@ -259,7 +268,22 @@ function openModal(id) {
       ${rating}
     </div>`;
   hydratePhotos($("#modalBody"));
+  bindThumbs();
   openModalShell();
+}
+
+function bindThumbs() {
+  const hero = $("#modalHero");
+  const thumbs = $$(".modal__thumbs .mth");
+  if (!hero || thumbs.length < 2) return;
+  thumbs.forEach((t) =>
+    t.addEventListener("click", () => {
+      const url = t.getAttribute("data-photo");
+      hero.style.backgroundImage = `url("${url}")`;
+      hero.setAttribute("data-loaded", "1");
+      thumbs.forEach((x) => x.setAttribute("aria-current", x === t));
+    })
+  );
 }
 
 function openColumn(id) {
