@@ -1,19 +1,21 @@
 /* =========================================================
-   管理ページ  —  記録の追加・編集 → GitHubへ直接公開
-   依存ライブラリなし。トークンはこの端末のブラウザのみに保存。
+   管理ページ  —  記録の追加・写真の追加/並び替え/詳細編集 → GitHubへ公開
+   依存ライブラリなし。GitHubトークンはこの端末のブラウザのみに保存。
    ========================================================= */
 
+const ADMIN_PW = "100";               // ログインパスワード（固定）
 const CFG_KEY = "kinoko_admin_cfg";
 const RECORDS_PATH = "kinoko/web/data/records.json";
 const PHOTO_DIR = "kinoko/web/data/photos";
 
-const DEFAULT_CFG = { token: "", owner: "KijibuKoBo", repo: "-", branch: "main", pin: "" };
+const DEFAULT_CFG = { token: "", owner: "KijibuKoBo", repo: "-", branch: "main" };
 
 let cfg = loadCfg();
-let records = [];          // 現在のローカル表示用
-let pendingPhotoB64 = null; // 圧縮済み写真（base64・プレフィックス無し）
+let records = [];            // 現在のローカル表示用
+let photoItems = [];         // 編集中レコードの写真: {kind:'existing',path} | {kind:'new',b64}
 
 const $ = (s) => document.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
 /* ---------------- 起動 ---------------- */
 boot();
@@ -22,21 +24,21 @@ function boot() {
   fillSettingsForm();
   bindUI();
   loadRecordsLocal();
-
-  if (cfg.pin) {
-    showLock();
-  } else {
-    unlock();
-  }
+  showLock();                // 常にパスワードで保護
 }
 
 function showLock() {
   $("#lock").hidden = false;
-  $("#pinInput").focus();
+  $("#adminMain").hidden = true;
+  setTimeout(() => $("#pinInput").focus(), 50);
 }
 function unlock() {
   $("#lock").hidden = true;
   $("#adminMain").hidden = false;
+}
+function checkPin() {
+  if ($("#pinInput").value.trim() === ADMIN_PW) { $("#pinErr").hidden = true; unlock(); }
+  else { $("#pinErr").hidden = false; $("#pinInput").select(); }
 }
 
 /* ---------------- 設定 ---------------- */
@@ -45,13 +47,11 @@ function loadCfg() {
   catch { return { ...DEFAULT_CFG }; }
 }
 function saveCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
-
 function fillSettingsForm() {
   $("#cfgToken").value = cfg.token || "";
   $("#cfgOwner").value = cfg.owner || "";
   $("#cfgRepo").value = cfg.repo || "";
   $("#cfgBranch").value = cfg.branch || "";
-  $("#cfgPin").value = cfg.pin || "";
 }
 
 /* ---------------- UIバインド ---------------- */
@@ -66,14 +66,13 @@ function bindUI() {
     cfg.owner = $("#cfgOwner").value.trim() || DEFAULT_CFG.owner;
     cfg.repo = $("#cfgRepo").value.trim() || DEFAULT_CFG.repo;
     cfg.branch = $("#cfgBranch").value.trim() || DEFAULT_CFG.branch;
-    cfg.pin = $("#cfgPin").value.trim();
     saveCfg();
     status("#cfgStatus", "✓ 設定を保存しました", "ok");
   });
 
   $("#testBtn").addEventListener("click", testConnection);
 
-  // PINロック
+  // パスワード
   $("#pinBtn").addEventListener("click", checkPin);
   $("#pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkPin(); });
 
@@ -86,8 +85,10 @@ function bindUI() {
   });
   $("#resetBtn").addEventListener("click", () => { $("#editSelect").value = ""; clearForm(); });
 
-  // 写真選択 → 圧縮 & プレビュー
+  // 写真の追加（複数）
   $("#f_photo").addEventListener("change", onPhotoSelected);
+  // 写真リストの操作（並び替え・削除）
+  $("#photoList").addEventListener("click", onPhotoListClick);
 
   $("#previewBtn").addEventListener("click", showPreview);
   $("#publishBtn").addEventListener("click", publish);
@@ -95,30 +96,33 @@ function bindUI() {
   // モーダル
   $("#modal").addEventListener("click", (e) => { if (e.target.dataset.close !== undefined) closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  clearForm();
 }
 
-function checkPin() {
-  if ($("#pinInput").value === cfg.pin) { unlock(); }
-  else { $("#pinErr").hidden = false; }
-}
-
-/* ---------------- ローカル記録読み込み（編集候補・ID採番用） ---------------- */
+/* ---------------- ローカル記録読み込み ---------------- */
 async function loadRecordsLocal() {
   try {
     const res = await fetch("data/records.json", { cache: "no-store" });
     const data = await res.json();
     records = data.records || [];
   } catch { records = []; }
+  refreshEditSelect();
+}
+
+function refreshEditSelect() {
   const sel = $("#editSelect");
-  records
-    .slice()
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">＋ 新しいキノコを追加</option>`;
+  records.slice()
     .sort((a, b) => (a.kana || a.wamei).localeCompare(b.kana || b.wamei, "ja"))
     .forEach((r) => {
       const o = document.createElement("option");
       o.value = r.id;
-      o.textContent = `${r.wamei}（${r.date}）`;
+      o.textContent = `${r.wamei}（${r.date || "日付なし"}）`;
       sel.appendChild(o);
     });
+  sel.value = cur;
 }
 
 /* ---------------- フォーム入出力 ---------------- */
@@ -138,28 +142,24 @@ function fillForm(r) {
   $("#f_quantity").value = r.quantity || "";
   $("#f_aka").value = (r.aka || []).join(", ");
   $("#f_lookalikes").value = (r.lookalikes || []).join(", ");
-  $("#f_rating").value = r.rating ?? "";
+  $("#f_rating").value = r.rating || "";
   $("#f_taste").value = r.taste || "";
   $("#f_notes").value = r.notes || "";
   $("#f_caution").value = r.caution || "";
-  // 既存写真があればプレビュー（差し替えなければそのまま使う）
-  pendingPhotoB64 = null;
-  $("#f_photo").value = "";
-  const ph = $("#photoPreview");
-  if (r.photo) {
-    ph.innerHTML = `<img src="${r.photo}" alt="" />`;
-  } else {
-    ph.innerHTML = `<div class="ph" data-label="写真未選択"></div>`;
-  }
+
+  const paths = (r.photos && r.photos.length) ? r.photos : (r.photo ? [r.photo] : []);
+  photoItems = paths.map((p) => ({ kind: "existing", path: p }));
+  renderPhotoList();
+  status("#publishStatus", "");
 }
 
 function clearForm() {
   ["f_wamei","f_kana","f_gakumei","f_family","f_area","f_elevation","f_season",
    "f_weather","f_habitat","f_host","f_quantity","f_aka","f_lookalikes","f_rating",
-   "f_taste","f_notes","f_caution","f_date","f_photo"].forEach((id) => { $("#"+id).value = ""; });
+   "f_taste","f_notes","f_caution","f_date"].forEach((id) => { const el = $("#"+id); if (el) el.value = ""; });
   $("#f_edibility").value = "食用";
-  pendingPhotoB64 = null;
-  $("#photoPreview").innerHTML = `<div class="ph" data-label="写真未選択"></div>`;
+  photoItems = [];
+  renderPhotoList();
   status("#publishStatus", "");
 }
 
@@ -174,7 +174,7 @@ function readForm() {
     edibility: $("#f_edibility").value,
     date: $("#f_date").value,
     area: $("#f_area").value.trim(),
-    elevation: $("#f_elevation").value ? Number($("#f_elevation").value) : "",
+    elevation: $("#f_elevation").value ? Number($("#f_elevation").value) : null,
     habitat: $("#f_habitat").value.trim(),
     host: $("#f_host").value.trim(),
     season: $("#f_season").value.trim(),
@@ -188,16 +188,52 @@ function readForm() {
   };
 }
 
-/* ---------------- 写真圧縮 ---------------- */
-function onPhotoSelected(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+/* ---------------- 写真リスト ---------------- */
+function photoSrc(it) { return it.kind === "new" ? `data:image/jpeg;base64,${it.b64}` : it.path; }
+
+function renderPhotoList() {
+  const box = $("#photoList");
+  if (!photoItems.length) {
+    box.innerHTML = `<p class="adm-note adm-photolist__empty">写真がありません。「＋ 写真を追加」から選んでください。</p>`;
+    return;
+  }
+  box.innerHTML = photoItems.map((it, i) => `
+    <div class="adm-pcard${i === 0 ? " is-main" : ""}">
+      <div class="adm-pcard__img" style="background-image:url('${photoSrc(it)}')"></div>
+      ${i === 0 ? `<span class="adm-pcard__badge">メイン</span>` : ""}
+      ${it.kind === "new" ? `<span class="adm-pcard__new">新規</span>` : ""}
+      <div class="adm-pcard__ctrl">
+        <button type="button" data-act="left" data-i="${i}" ${i === 0 ? "disabled" : ""} title="左へ">◀</button>
+        <button type="button" data-act="main" data-i="${i}" ${i === 0 ? "disabled" : ""} title="メインにする">★</button>
+        <button type="button" data-act="right" data-i="${i}" ${i === photoItems.length - 1 ? "disabled" : ""} title="右へ">▶</button>
+        <button type="button" data-act="del" data-i="${i}" title="削除">🗑</button>
+      </div>
+    </div>`).join("");
+}
+
+function onPhotoListClick(e) {
+  const btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  const i = Number(btn.dataset.i);
+  const act = btn.dataset.act;
+  if (act === "left" && i > 0) swapPhoto(i, i - 1);
+  else if (act === "right" && i < photoItems.length - 1) swapPhoto(i, i + 1);
+  else if (act === "main" && i > 0) { const [it] = photoItems.splice(i, 1); photoItems.unshift(it); renderPhotoList(); }
+  else if (act === "del") { photoItems.splice(i, 1); renderPhotoList(); }
+}
+function swapPhoto(i, j) { [photoItems[i], photoItems[j]] = [photoItems[j], photoItems[i]]; renderPhotoList(); }
+
+async function onPhotoSelected(e) {
+  const files = [...e.target.files];
+  e.target.value = "";
+  if (!files.length) return;
   status("#publishStatus", "写真を処理中…");
-  compressImage(file).then((b64) => {
-    pendingPhotoB64 = b64;
-    $("#photoPreview").innerHTML = `<img src="data:image/jpeg;base64,${b64}" alt="" />`;
-    status("#publishStatus", "");
-  }).catch((err) => status("#publishStatus", "写真の読み込みに失敗：" + err, "err"));
+  for (const f of files) {
+    try { const b64 = await compressImage(f); photoItems.push({ kind: "new", b64 }); }
+    catch (err) { console.warn("写真処理失敗", err); }
+  }
+  renderPhotoList();
+  status("#publishStatus", `写真を${files.length}枚追加しました。並び替え後に「公開する」を押してください。`, "ok");
 }
 
 function compressImage(file, maxDim = 1600, quality = 0.85) {
@@ -226,31 +262,23 @@ function compressImage(file, maxDim = 1600, quality = 0.85) {
 function nextId() {
   let max = 0;
   records.forEach((r) => {
-    const m = /^k(\d+)$/.exec(r.id || "");
+    const m = /(\d+)$/.exec(r.id || "");
     if (m) max = Math.max(max, parseInt(m[1], 10));
   });
-  return "k" + String(max + 1).padStart(3, "0");
+  return "c" + String(max + 1).padStart(3, "0");
 }
 
 /* ---------------- プレビュー ---------------- */
 function showPreview() {
   const r = readForm();
   if (!r.wamei) { status("#publishStatus", "和名を入力してください", "err"); return; }
-  const photoSrc = pendingPhotoB64
-    ? `data:image/jpeg;base64,${pendingPhotoB64}`
-    : (currentEditingPhoto() || "");
-  renderPreview(r, photoSrc);
+  const src = photoItems.length ? photoSrc(photoItems[0]) : "";
+  renderPreview(r, src);
 }
 
-function currentEditingPhoto() {
-  const id = $("#editSelect").value;
-  const r = records.find((x) => x.id === id);
-  return r ? r.photo : "";
-}
-
-function renderPreview(r, photoSrc) {
+function renderPreview(r, src) {
   const edClass = r.edibility === "食用" ? "edible" : r.edibility === "毒" ? "poison" : "unfit";
-  const heroPhoto = photoSrc ? `<img src="${photoSrc}" alt="" />` : `<div class="ph" data-label="${esc(r.wamei)}"></div>`;
+  const hero = src ? `<img src="${src}" alt="" />` : `<div class="ph" data-label="${esc(r.wamei)}"></div>`;
   const dl = [
     ["採集日", fmtDate(r.date)], ["科", r.family], ["別名", (r.aka||[]).join("・")],
     ["採集地", r.area], ["標高", r.elevation ? r.elevation+" m" : ""], ["発生環境", r.habitat],
@@ -264,7 +292,7 @@ function renderPreview(r, photoSrc) {
     secs.push(`<div class="modal__section"><h3>注意・似たキノコ</h3><div class="caution-box"><strong>⚠</strong> ${esc(r.caution||"判別に注意。")}</div>${look}</div>`);
   }
   $("#modalBody").innerHTML = `
-    <div class="modal__hero">${heroPhoto}</div>
+    <div class="modal__hero">${hero}</div>
     <div class="modal__content">
       <h2 class="modal__wamei">${esc(r.wamei)} <span class="modal__kana">（${esc(r.kana)}）</span></h2>
       <p class="modal__gakumei">${esc(r.gakumei)}</p>
@@ -278,12 +306,8 @@ function renderPreview(r, photoSrc) {
 function closeModal() { $("#modal").hidden = true; document.body.style.overflow = ""; }
 
 /* ---------------- GitHub API ---------------- */
-function ghHeaders() {
-  return { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" };
-}
-function ghUrl(path) {
-  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`;
-}
+function ghHeaders() { return { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" }; }
+function ghUrl(path) { return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`; }
 async function ghGet(path) {
   const res = await fetch(ghUrl(path) + "?ref=" + encodeURIComponent(cfg.branch), { headers: ghHeaders(), cache: "no-store" });
   if (res.status === 404) return null;
@@ -299,7 +323,7 @@ async function ghPut(path, contentB64, message, sha) {
 }
 
 async function testConnection() {
-  if (!cfg.token) { cfg.token = $("#cfgToken").value.trim(); }
+  cfg.token = $("#cfgToken").value.trim() || cfg.token;
   cfg.owner = $("#cfgOwner").value.trim() || DEFAULT_CFG.owner;
   cfg.repo = $("#cfgRepo").value.trim() || DEFAULT_CFG.repo;
   cfg.branch = $("#cfgBranch").value.trim() || DEFAULT_CFG.branch;
@@ -308,17 +332,16 @@ async function testConnection() {
     const f = await ghGet(RECORDS_PATH);
     if (!f) throw new Error("records.json が見つかりません（ブランチ/パスを確認）");
     status("#cfgStatus", "✓ 接続OK。records.json を確認できました。", "ok");
-  } catch (e) {
-    status("#cfgStatus", "✗ " + e.message, "err");
-  }
+  } catch (e) { status("#cfgStatus", "✗ " + e.message, "err"); }
 }
 
 /* ---------------- 公開 ---------------- */
 async function publish() {
   const r = readForm();
-  if (!cfg.token) { openSettings(); status("#publishStatus", "先に⚙設定でGitHubトークンを登録してください", "err"); return; }
+  if (!cfg.token) { openSettings(); status("#publishStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
   if (!r.wamei) { status("#publishStatus", "和名は必須です", "err"); return; }
   if (!r.date) { status("#publishStatus", "採集日は必須です", "err"); return; }
+  if (!photoItems.length) { status("#publishStatus", "写真を1枚以上追加してください", "err"); return; }
 
   const editingId = $("#editSelect").value;
   const id = editingId || nextId();
@@ -332,57 +355,39 @@ async function publish() {
     const json = JSON.parse(b64decode(file.content));
     json.records = json.records || [];
 
-    // 既存の写真パスを引き継ぐ
-    const existing = json.records.find((x) => x.id === id);
-    let photoPath = existing ? existing.photo : "";
-
-    // 2) 写真があればアップロード
-    if (pendingPhotoB64) {
-      progress("写真をアップロード中…");
-      const fname = `${id}.jpg`;
-      const ppath = `${PHOTO_DIR}/${fname}`;
-      const prev = await ghGet(ppath);   // 既存なら上書き用sha
-      await ghPut(ppath, pendingPhotoB64, `写真: ${r.wamei} (${id})`, prev ? prev.sha : undefined);
-      photoPath = `data/photos/${fname}`;
+    // 2) 新規写真をアップロードし、写真パスを順番どおりに組み立て
+    const finalPhotos = [];
+    for (let i = 0; i < photoItems.length; i++) {
+      const it = photoItems[i];
+      if (it.kind === "existing") { finalPhotos.push(it.path); continue; }
+      progress(`写真をアップロード中… (${i + 1}/${photoItems.length})`);
+      const fname = `${id}-u${Date.now()}-${i}.jpg`;
+      await ghPut(`${PHOTO_DIR}/${fname}`, it.b64, `写真: ${r.wamei} (${id})`);
+      finalPhotos.push(`data/photos/${fname}`);
     }
 
     // 3) レコードを組み立て
-    const record = { id, ...r, photo: photoPath || "" };
-    if (existing) {
-      Object.assign(existing, record);
-    } else {
-      json.records.push(record);
-    }
+    const existing = json.records.find((x) => x.id === id);
+    const record = { id, ...r, photo: finalPhotos[0] || "", photos: finalPhotos };
+    if (existing) Object.assign(existing, record);
+    else json.records.push(record);
 
     // 4) records.json を保存
     progress("記録を保存中…");
     const newContent = JSON.stringify(json, null, 2) + "\n";
     await ghPut(RECORDS_PATH, b64encode(newContent), `記録: ${r.wamei} (${id}) を${existing ? "更新" : "追加"}`, file.sha);
 
-    // ローカルにも反映
-    records = json.records;
-
+    records = json.records;   // ローカル反映
     setBusy(false);
     status("#publishStatus",
       `✅ 「${r.wamei}」を公開しました（${existing ? "更新" : "追加"}）。HPに反映されるまで1〜2分ほどお待ちください。`, "ok");
     refreshEditSelect();
-    if (!editingId) { $("#editSelect").value = ""; clearForm(); }
+    if (editingId) { const cur = records.find((x) => x.id === id); if (cur) fillForm(cur); }
+    else { $("#editSelect").value = ""; clearForm(); }
   } catch (e) {
     setBusy(false);
     status("#publishStatus", "✗ 公開に失敗：" + e.message, "err");
   }
-}
-
-function refreshEditSelect() {
-  const sel = $("#editSelect");
-  const cur = sel.value;
-  sel.innerHTML = `<option value="">＋ 新しいキノコを追加</option>`;
-  records.slice().sort((a, b) => (a.kana||a.wamei).localeCompare(b.kana||b.wamei, "ja")).forEach((r) => {
-    const o = document.createElement("option");
-    o.value = r.id; o.textContent = `${r.wamei}（${r.date}）`;
-    sel.appendChild(o);
-  });
-  sel.value = cur;
 }
 
 /* ---------------- ヘルパ ---------------- */
@@ -396,6 +401,7 @@ function setBusy(b) {
 function progress(msg) { $("#progress").hidden = false; $("#progress").textContent = "⏳ " + msg; }
 function status(sel, msg, kind) {
   const el = $(sel);
+  if (!el) return;
   el.textContent = msg || "";
   el.className = "adm-status" + (sel === "#publishStatus" ? " adm-status--big" : "") + (kind ? " is-" + kind : "");
 }
