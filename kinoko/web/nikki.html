@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>採集日誌 ｜ 石原巖のキノコ採集記録</title>
+  <meta name="description" content="石原巖の採集日誌（2015〜2020）。いつ・どこで・どのキノコに出会ったかの日々の記録。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --forest:#1f3a2e; --forest-deep:#16271f; --gold:#a8854a; --gold-soft:#c9a86a;
+      --cream:#f4efe4; --paper:#fbf8f1; --ink:#2b2a25; --sub:#6f6a5c; --line:#ddd5c4;
+      --food:#2f6b3a; --pois:#b03a2e;
+      --serif:"Shippori Mincho", serif; --sans:"Noto Sans JP", sans-serif; --latin:"Cormorant Garamond", serif;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ margin:0; padding:0; }
+    body{ font-family:var(--serif); color:var(--ink); background:var(--cream); line-height:1.8; -webkit-font-smoothing:antialiased; }
+
+    .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between;
+      padding:14px 20px; background:var(--forest-deep); color:#f1ede2; }
+    .topbar__brand{ text-decoration:none; color:#f1ede2; line-height:1.2; }
+    .topbar__brand small{ display:block; font-size:.68rem; letter-spacing:.14em; color:var(--gold-soft); }
+    .topbar__brand b{ font-size:1.05rem; font-weight:700; letter-spacing:.06em; }
+    .topbar__back{ color:var(--gold-soft); text-decoration:none; font-family:var(--sans); font-size:.86rem; }
+    .topbar__back:hover{ color:#fff; }
+
+    .wrap{ max-width:920px; margin:0 auto; padding:34px 18px 80px; }
+    .head{ text-align:center; margin-bottom:26px; }
+    .head__en{ font-family:var(--latin); letter-spacing:.4em; color:var(--gold); font-size:1rem; }
+    .head__ja{ font-size:2rem; margin:6px 0 0; font-weight:800; letter-spacing:.05em; }
+    .head__desc{ color:var(--sub); font-size:.92rem; margin:12px 0 0; }
+
+    .stats{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:22px 0 26px; }
+    .stat{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:14px 22px; text-align:center; min-width:120px; }
+    .stat__num{ font-family:var(--latin); font-size:1.9rem; color:var(--forest); font-weight:600; line-height:1; }
+    .stat__label{ font-family:var(--sans); font-size:.74rem; color:var(--sub); margin-top:6px; }
+
+    .controls{ position:sticky; top:56px; z-index:20; background:var(--cream); padding:12px 0; border-bottom:1px solid var(--line); margin-bottom:8px; }
+    .years{ display:flex; gap:7px; flex-wrap:wrap; justify-content:center; margin-bottom:10px; }
+    .ybtn{ font-family:var(--sans); font-size:.82rem; border:1px solid var(--line); background:var(--paper); color:var(--ink);
+      padding:6px 15px; border-radius:999px; cursor:pointer; transition:.15s; }
+    .ybtn:hover{ border-color:var(--gold); }
+    .ybtn[aria-pressed="true"]{ background:var(--forest); color:#fff; border-color:var(--forest); }
+    .search{ display:block; width:100%; max-width:440px; margin:0 auto; }
+    .search input{ width:100%; font-family:var(--sans); font-size:.92rem; padding:10px 14px; border:1px solid var(--line);
+      border-radius:999px; background:var(--paper); color:var(--ink); }
+
+    .timing{ margin:6px 0 26px; border:1px solid var(--line); border-radius:12px; background:var(--paper); overflow:hidden; }
+    .timing summary{ cursor:pointer; padding:14px 18px; font-weight:700; color:var(--forest); font-family:var(--sans); font-size:.92rem; list-style:none; }
+    .timing summary::-webkit-details-marker{ display:none; }
+    .timing summary::before{ content:"▸ "; color:var(--gold); }
+    .timing[open] summary::before{ content:"▾ "; }
+    .timing__body{ padding:0 16px 12px; overflow-x:auto; }
+    .timing table{ width:100%; border-collapse:collapse; font-size:.84rem; font-family:var(--sans); }
+    .timing th,.timing td{ text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+    .timing th{ color:var(--sub); font-weight:600; white-space:nowrap; }
+    .timing td:first-child{ font-family:var(--serif); font-weight:600; white-space:nowrap; }
+
+    .yearblock__h{ font-family:var(--latin); font-size:1.5rem; color:var(--forest); border-bottom:2px solid var(--forest);
+      padding-bottom:6px; margin:30px 0 6px; }
+    .monthblock{ margin:16px 0; }
+    .monthblock__h{ font-family:var(--sans); font-size:.9rem; font-weight:700; color:var(--gold); margin:14px 0 8px; letter-spacing:.06em; }
+    .entry{ display:flex; gap:12px; padding:9px 4px; border-bottom:1px dotted var(--line); align-items:baseline; }
+    .entry__date{ font-family:var(--latin); font-size:1rem; color:var(--sub); min-width:56px; white-space:nowrap; }
+    .entry__main{ flex:1; }
+    .entry__sp{ font-weight:700; font-size:1rem; }
+    .entry__place{ font-family:var(--sans); font-size:.78rem; color:var(--forest); margin-left:8px; }
+    .entry__meta{ font-family:var(--sans); font-size:.76rem; color:var(--sub); margin-top:2px; }
+    .entry__tag{ display:inline-block; font-family:var(--sans); font-size:.7rem; background:#eae3d2; color:#6b6450;
+      padding:1px 8px; border-radius:999px; margin-left:6px; }
+    .empty{ text-align:center; color:var(--sub); padding:40px; font-family:var(--sans); }
+    .loading{ text-align:center; color:var(--sub); padding:60px; font-family:var(--sans); }
+
+    .footer{ text-align:center; padding:30px 16px; color:var(--sub); font-family:var(--sans); font-size:.78rem; border-top:1px solid var(--line); }
+    .footer a{ color:var(--forest); }
+    @media (max-width:600px){ .head__ja{ font-size:1.6rem; } .controls{ top:52px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="topbar__brand" href="index.html"><small>石原巖の</small><b>キノコ採集記録</b></a>
+    <a class="topbar__back" href="index.html">← ホームへ</a>
+  </header>
+
+  <main class="wrap">
+    <div class="head">
+      <span class="head__en">FIELD DIARY</span>
+      <h1 class="head__ja">採集日誌</h1>
+      <p class="head__desc">いつ・どこで・どのキノコに出会ったか。日々の採集の記録です。</p>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <details class="timing" id="timing">
+      <summary>採取のめやす（適期・場所）を見る</summary>
+      <div class="timing__body" id="timingBody"></div>
+    </details>
+
+    <div class="controls">
+      <div class="years" id="years"></div>
+      <div class="search"><input type="search" id="search" placeholder="キノコ名・採集場所で検索…" aria-label="検索" /></div>
+    </div>
+
+    <div id="list"><div class="loading">日誌を読み込んでいます…</div></div>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> 石原 巖 ｜ 長岡キノコ採集記録　—
+      <a href="index.html">ホーム</a> ・ <a href="zukan.html">図鑑</a> ・ <a href="book.html">書籍</a></p>
+    <p>採集場所の一部は保全のため表記をぼかしています。食毒の最終判断はご自身の責任で。</p>
+  </footer>
+
+  <script>
+    const state = { entries: [], timing: [], year: "all", q: "" };
+    const $ = (s) => document.querySelector(s);
+    const MONTHS = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+
+    init();
+    async function init(){
+      document.getElementById("year").textContent = new Date().getFullYear();
+      try{
+        const [d, t] = await Promise.all([
+          fetch("data/diary.json",{cache:"no-store"}).then(r=>r.json()),
+          fetch("data/collect-timing.json",{cache:"no-store"}).then(r=>r.json()).catch(()=>({items:[]})),
+        ]);
+        state.entries = d.entries || [];
+        state.timing = (t && t.items) || [];
+      }catch(e){
+        $("#list").innerHTML = `<div class="empty">日誌を読み込めませんでした。</div>`; return;
+      }
+      renderStats(); renderTiming(); renderYears(); bind(); render();
+    }
+
+    function renderStats(){
+      const yrs = [...new Set(state.entries.map(e=>e.year))];
+      const sp = new Set(state.entries.map(e=>e.species)).size;
+      const stats = [
+        { n: state.entries.length, l: "採集の記録" },
+        { n: sp, l: "のべ種類" },
+        { n: yrs.length + "年", l: `${Math.min(...yrs)}〜${Math.max(...yrs)}` },
+      ];
+      $("#stats").innerHTML = stats.map(s=>`<div class="stat"><div class="stat__num">${s.n}</div><div class="stat__label">${s.l}</div></div>`).join("");
+    }
+
+    function renderTiming(){
+      if(!state.timing.length){ $("#timing").hidden = true; return; }
+      const rows = state.timing.map(t=>`<tr><td>${esc(t.species)}</td><td>${esc(t.period)}</td><td>${esc(t.place)}</td><td>${esc(t.note||"")}</td></tr>`).join("");
+      $("#timingBody").innerHTML = `<table><thead><tr><th>種類</th><th>採取時期</th><th>採取場所</th><th>備考</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    function renderYears(){
+      const yrs = [...new Set(state.entries.map(e=>e.year))].sort((a,b)=>b-a);
+      const btns = [`<button class="ybtn" data-y="all" aria-pressed="true">すべて</button>`]
+        .concat(yrs.map(y=>`<button class="ybtn" data-y="${y}" aria-pressed="false">${y}</button>`));
+      $("#years").innerHTML = btns.join("");
+    }
+
+    function bind(){
+      $("#years").addEventListener("click", (e)=>{
+        const b = e.target.closest(".ybtn"); if(!b) return;
+        state.year = b.dataset.y;
+        document.querySelectorAll(".ybtn").forEach(x=>x.setAttribute("aria-pressed", x===b));
+        render();
+      });
+      $("#search").addEventListener("input", (e)=>{ state.q = e.target.value.trim(); render(); });
+    }
+
+    function visible(){
+      let list = state.entries;
+      if(state.year!=="all") list = list.filter(e=>String(e.year)===String(state.year));
+      if(state.q){ const q=state.q.toLowerCase();
+        list = list.filter(e=>(e.species+" "+e.place+" "+(e.note||"")).toLowerCase().includes(q)); }
+      return list;
+    }
+
+    function render(){
+      const list = visible();
+      if(!list.length){ $("#list").innerHTML = `<div class="empty">該当する記録がありません。</div>`; return; }
+      // group by year desc, month asc
+      const byYear = {};
+      list.forEach(e=>{ (byYear[e.year] ||= {}); (byYear[e.year][e.month] ||= []).push(e); });
+      const years = Object.keys(byYear).map(Number).sort((a,b)=>b-a);
+      let html = "";
+      for(const y of years){
+        html += `<div class="yearblock"><div class="yearblock__h">${y}年 <span style="font-size:.9rem;color:var(--sub)">（${Object.values(byYear[y]).reduce((s,a)=>s+a.length,0)}件）</span></div>`;
+        const months = Object.keys(byYear[y]).map(Number).sort((a,b)=>a-b);
+        for(const m of months){
+          html += `<div class="monthblock"><div class="monthblock__h">${MONTHS[m-1]}</div>`;
+          html += byYear[y][m].map(entryHTML).join("");
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+      $("#list").innerHTML = html;
+    }
+
+    function entryHTML(e){
+      const date = e.day ? `${e.month}/${e.day}` : `${e.month}月`;
+      const tag = e.edib ? `<span class="entry__tag">${esc(e.edib)}</span>` : "";
+      const meta = [e.weather, e.note].filter(Boolean).map(esc).join(" ・ ");
+      return `<div class="entry">
+        <span class="entry__date">${date}</span>
+        <span class="entry__main">
+          <span class="entry__sp">${esc(e.species)}</span>${tag}
+          ${e.place?`<span class="entry__place">📍${esc(e.place)}</span>`:""}
+          ${meta?`<div class="entry__meta">${meta}</div>`:""}
+        </span>
+      </div>`;
+    }
+
+    function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+  </script>
+</body>
+</html>
