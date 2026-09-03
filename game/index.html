@@ -519,6 +519,62 @@ footer{
   margin-top:14px; text-decoration:underline; cursor:pointer;
 }
 
+/* 職人（あなた）の顔と名前 */
+.player-row{
+  display:flex; align-items:center; justify-content:center; gap:7px; margin-top:5px;
+}
+.player-face{
+  width:32px; height:32px; flex:0 0 32px; cursor:pointer;
+  background:var(--paper); border:2px solid var(--brown-soft); border-radius:50%;
+  overflow:hidden; box-shadow:0 1px 3px rgba(107,74,47,.25);
+}
+.player-face svg{ width:100%; height:100%; display:block; }
+.player-row .lvbar-label{ margin-top:0; text-align:left; }
+.player-row .lvbar-label b{ color:var(--brown); }
+
+/* 似顔絵メーカー：顔と名前は上に貼りつけて、パーツを選ぶ間も見えるようにする */
+.av-top{
+  position:sticky; top:0; z-index:1;
+  background:var(--paper); padding:2px 0 8px;
+  box-shadow:0 6px 8px -6px rgba(107,74,47,.3);
+}
+.av-preview{
+  width:104px; height:104px; margin:0 auto 4px;
+  background:var(--paper); border:3px solid var(--brown-soft); border-radius:50%;
+  overflow:hidden; box-shadow:var(--shadow);
+}
+.av-preview svg{ width:100%; height:100%; display:block; }
+.av-name-input{
+  display:block; width:100%; max-width:240px; margin:8px auto 0;
+  font-family:inherit; font-size:1rem; text-align:center; color:var(--brown);
+  padding:10px 12px; border-radius:14px;
+  border:2.5px solid var(--brown-soft); background:#fffdf7;
+}
+.av-name-input:focus{ outline:none; border-color:var(--green-deep); }
+.av-hint{ text-align:center; font-size:.68rem; color:var(--brown-mid); margin-bottom:6px; }
+.av-row{ margin-top:10px; }
+.av-row .g-title{ font-size:.74rem; font-weight:bold; text-align:center; margin-bottom:5px; }
+.av-opts{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+.av-chip{
+  width:46px; height:46px; padding:0; cursor:pointer; overflow:hidden;
+  border:2px solid var(--brown-soft); border-radius:12px; background:#fffdf7;
+}
+.av-chip svg{ width:100%; height:100%; display:block; }
+.av-chip.selected{ border-color:var(--green-deep); box-shadow:0 0 0 2px rgba(122,156,110,.35); }
+.av-swatch{
+  width:34px; height:34px; border-radius:50%; cursor:pointer;
+  border:2.5px solid var(--brown-soft); padding:0;
+}
+.av-swatch.selected{ border-color:var(--green-deep); box-shadow:0 0 0 2px rgba(122,156,110,.35); }
+.av-done{
+  display:block; width:100%; margin-top:14px;
+  font-family:inherit; font-size:1rem; font-weight:bold; color:#fff;
+  padding:14px; border-radius:18px; border:none; cursor:pointer;
+  background:linear-gradient(180deg,var(--green),var(--green-deep));
+  box-shadow:0 4px 0 #5f7d55;
+}
+.av-done:active{ transform:translateY(3px); box-shadow:0 1px 0 #5f7d55; }
+
 /* 集中力が心もとないときのチップ */
 .chip.focus-low{ border-color:var(--red); color:var(--red); }
 
@@ -599,7 +655,10 @@ footer{
     <span class="chip">👥 のべ<span id="st-visitors">0</span>人</span>
   </div>
   <div class="lvbar"><i id="lv-fill"></i></div>
-  <div class="lvbar-label" id="lv-label"></div>
+  <div class="player-row">
+    <span class="player-face" id="player-face" title="職人を変える"></span>
+    <span class="lvbar-label" id="lv-label"></span>
+  </div>
 </header>
 
 <!-- ========== メイン ========== -->
@@ -682,6 +741,21 @@ footer{
   </div>
 </div>
 
+<!-- ========== モーダル：職人の似顔絵メーカー ========== -->
+<div class="modal-back" id="avatar-modal">
+  <div class="modal">
+    <button class="x-close" data-close="avatar-modal" aria-label="とじる">✕</button>
+    <h3 id="avatar-title">🧑‍🔧 あなたの職人</h3>
+    <div class="av-top">
+      <div class="av-preview" id="av-preview"></div>
+      <input class="av-name-input" id="av-name" maxlength="12" placeholder="名前を入れてください">
+    </div>
+    <div class="av-hint">ヘンリーさんが、この名前で呼んでくれます</div>
+    <div id="av-rows"></div>
+    <button class="av-done" id="av-done">この職人ではじめる</button>
+  </div>
+</div>
+
 <!-- ========== モーダル：物語解放ポップアップ ========== -->
 <div class="modal-back" id="story-pop">
   <div class="modal">
@@ -694,6 +768,141 @@ footer{
 </div>
 
 <script>
+/* ==========================================================
+   職人（プレイヤー）の似顔絵
+   ----------------------------------------------------------
+   パーツを組み合わせてSVGを描く。保存されるのは番号だけなので軽い。
+   パーツを増やすときは、各配列に1つ足すだけでよい。
+   ヘンリーさんと同じ 100×100 の座標系・同じ色調で描く。
+   ========================================================== */
+const AV_SKIN = ["#f6ddba", "#eccaa0", "#d9a878", "#b8825a"];
+const AV_HAIR_COLOR = ["#3a2a1c", "#6b4a2f", "#a9713f", "#d8b45e", "#e9e9e2", "#7a3f31"];
+
+/* 髪：back は顔の後ろ、front は顔にかかる前髪 */
+const AV_HAIR = [
+  { name: "みじかめ",
+    back: () => "",
+    front: c => `<path d="M16 48 Q18 16 50 14 Q82 16 84 48 Q76 34 50 34 Q24 34 16 48 Z" fill="${c}"/>` },
+  { name: "ながめ",
+    back: c => `<path d="M12 52 Q12 14 50 12 Q88 14 88 52 L88 90 Q83 66 74 60 L26 60 Q17 66 12 90 Z" fill="${c}"/>`,
+    front: c => `<path d="M16 48 Q18 16 50 14 Q82 16 84 48 Q74 32 58 34 Q52 24 44 34 Q28 34 16 48 Z" fill="${c}"/>` },
+  { name: "むすび",
+    back: c => `<circle cx="50" cy="11" r="11" fill="${c}"/>`,
+    front: c => `<path d="M16 48 Q18 16 50 14 Q82 16 84 48 Q78 32 56 32 Q34 32 16 48 Z" fill="${c}"/>` },
+  { name: "くるくる",
+    back: () => "",
+    front: c => `<path d="M17 48 Q13 34 22 30 Q20 16 34 18 Q40 8 50 14 Q60 8 66 18 Q80 16 78 30 Q87 34 83 48 Q72 34 50 34 Q28 34 17 48 Z" fill="${c}"/>` },
+  { name: "ぼうず",
+    back: () => "",
+    front: c => `<path d="M19 46 Q23 22 50 20 Q77 22 81 46 Q73 37 50 37 Q27 37 19 46 Z" fill="${c}" opacity=".8"/>` },
+  { name: "つるり",
+    back: () => "", front: () => "" }
+];
+
+/* 目 */
+const AV_EYES = [
+  { name: "まるい", svg: () => `
+    <circle cx="38" cy="53" r="4.2" fill="#4a3423"/><circle cx="62" cy="53" r="4.2" fill="#4a3423"/>
+    <circle cx="39.4" cy="51.6" r="1.4" fill="#fff"/><circle cx="63.4" cy="51.6" r="1.4" fill="#fff"/>` },
+  { name: "にこにこ", svg: () => `
+    <path d="M32 55 Q38 48 44 55" stroke="#4a3423" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M56 55 Q62 48 68 55" stroke="#4a3423" stroke-width="2.8" fill="none" stroke-linecap="round"/>` },
+  { name: "きりっと", svg: () => `
+    <path d="M32 53 Q38 48 44 53 Q38 56 32 53 Z" fill="#4a3423"/>
+    <path d="M56 53 Q62 48 68 53 Q62 56 56 53 Z" fill="#4a3423"/>
+    <path d="M32 45 L44 47" stroke="#4a3423" stroke-width="2" stroke-linecap="round"/>
+    <path d="M68 45 L56 47" stroke="#4a3423" stroke-width="2" stroke-linecap="round"/>` },
+  { name: "ねむそう", svg: () => `
+    <path d="M33 52 Q38 56 43 52" stroke="#4a3423" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M57 52 Q62 56 67 52" stroke="#4a3423" stroke-width="2.6" fill="none" stroke-linecap="round"/>` }
+];
+
+/* 口 */
+const AV_MOUTH = [
+  { name: "にっこり", svg: () => `<path d="M42 68 Q50 76 58 68" stroke="#a56b57" stroke-width="2.6" fill="none" stroke-linecap="round"/>` },
+  { name: "まっすぐ", svg: () => `<path d="M44 71 L56 71" stroke="#a56b57" stroke-width="2.6" stroke-linecap="round"/>` },
+  { name: "にやり",   svg: () => `<path d="M42 70 Q50 75 59 66" stroke="#a56b57" stroke-width="2.6" fill="none" stroke-linecap="round"/>` },
+  { name: "おどろき", svg: () => `<ellipse cx="50" cy="71" rx="4" ry="5.2" fill="#a56b57"/>` }
+];
+
+/* かぶりもの */
+const AV_HAT = [
+  { name: "なし", svg: () => "" },
+  { name: "手ぬぐい", svg: () => `
+    <path d="M14 44 Q16 22 50 20 Q84 22 86 44 Q68 33 50 33 Q32 33 14 44 Z" fill="#cddfe8"/>
+    <path d="M14 44 Q50 34 86 44 L86 49 Q50 39 14 49 Z" fill="#a9c6d6"/>
+    <path d="M84 44 L94 52 L86 54 Z" fill="#cddfe8"/>` },
+  { name: "キャップ", svg: () => `
+    <path d="M16 42 Q18 16 50 15 Q82 16 84 42 Q68 31 50 31 Q32 31 16 42 Z" fill="#7a9c6e"/>
+    <path d="M14 42 Q50 36 86 42 Q88 48 84 49 L16 49 Q12 48 14 42 Z" fill="#5f7d55"/>
+    <circle cx="50" cy="16" r="3.4" fill="#5f7d55"/>` },
+  { name: "麦わら", svg: () => `
+    <ellipse cx="50" cy="42" rx="46" ry="10" fill="#e3c179"/>
+    <ellipse cx="50" cy="40" rx="46" ry="9" fill="#eecf8d"/>
+    <path d="M22 40 Q24 14 50 13 Q76 14 78 40 Q64 32 50 32 Q36 32 22 40 Z" fill="#e3c179"/>
+    <path d="M22 36 Q50 30 78 36 L78 40 Q50 34 22 40 Z" fill="#b8895a"/>` },
+  { name: "ニット帽", svg: () => `
+    <path d="M17 44 Q17 15 50 14 Q83 15 83 44 Q66 34 50 34 Q34 34 17 44 Z" fill="#b8563e"/>
+    <path d="M15 42 Q50 34 85 42 L85 50 Q50 42 15 50 Z" fill="#9a4530"/>
+    <circle cx="50" cy="11" r="5.5" fill="#e0bf74"/>` }
+];
+
+/* めがね */
+const AV_GLASSES = [
+  { name: "なし", svg: () => "" },
+  { name: "まる", svg: () => `
+    <circle cx="38" cy="53" r="9" fill="none" stroke="#6b4a2f" stroke-width="2.4"/>
+    <circle cx="62" cy="53" r="9" fill="none" stroke="#6b4a2f" stroke-width="2.4"/>
+    <path d="M47 53 L53 53" stroke="#6b4a2f" stroke-width="2.4"/>` },
+  { name: "しかく", svg: () => `
+    <rect x="29" y="46" width="18" height="14" rx="3" fill="none" stroke="#6b4a2f" stroke-width="2.4"/>
+    <rect x="53" y="46" width="18" height="14" rx="3" fill="none" stroke="#6b4a2f" stroke-width="2.4"/>
+    <path d="M47 53 L53 53" stroke="#6b4a2f" stroke-width="2.4"/>` }
+];
+
+/* ひげ */
+const AV_BEARD = [
+  { name: "なし", svg: () => "" },
+  { name: "口ひげ", svg: c => `<path d="M39 64 Q50 60 61 64 Q50 68 39 64 Z" fill="${c}"/>` },
+  { name: "あごひげ", svg: c => `
+    <path d="M24 58 Q26 84 50 90 Q74 84 76 58 L76 68 Q72 94 50 96 Q28 94 24 68 Z" fill="${c}"/>
+    <path d="M39 64 Q50 60 61 64 Q50 68 39 64 Z" fill="${c}"/>` }
+];
+
+/* 似顔絵SVGを組み立てる。av = {skin,hairColor,hair,eyes,mouth,hat,glasses,beard} の番号 */
+function buildAvatar(av) {
+  const a = Object.assign({ skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 }, av || {});
+  const skin = AV_SKIN[a.skin] || AV_SKIN[0];
+  const hc   = AV_HAIR_COLOR[a.hairColor] || AV_HAIR_COLOR[0];
+  const hair = AV_HAIR[a.hair] || AV_HAIR[0];
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="職人の顔">
+    ${hair.back(hc)}
+    <ellipse cx="17" cy="57" rx="5" ry="7" fill="${skin}"/>
+    <ellipse cx="83" cy="57" rx="5" ry="7" fill="${skin}"/>
+    <circle cx="50" cy="54" r="34" fill="${skin}"/>
+    <ellipse cx="30" cy="65" rx="5" ry="3.2" fill="#f0b9a0" opacity=".5"/>
+    <ellipse cx="70" cy="65" rx="5" ry="3.2" fill="#f0b9a0" opacity=".5"/>
+    ${(AV_BEARD[a.beard] || AV_BEARD[0]).svg(hc)}
+    ${(AV_MOUTH[a.mouth] || AV_MOUTH[0]).svg()}
+    ${(AV_EYES[a.eyes] || AV_EYES[0]).svg()}
+    ${(AV_GLASSES[a.glasses] || AV_GLASSES[0]).svg()}
+    ${hair.front(hc)}
+    ${(AV_HAT[a.hat] || AV_HAT[0]).svg()}
+  </svg>`;
+}
+
+/* 似顔絵メーカーで選べる項目。ここに足せば選択肢が増える */
+const AVATAR_ROWS = [
+  { key:"hair",      title:"髪型",       list:AV_HAIR },
+  { key:"hairColor", title:"髪の色",     list:AV_HAIR_COLOR, color:true },
+  { key:"skin",      title:"肌の色",     list:AV_SKIN,       color:true },
+  { key:"eyes",      title:"目",         list:AV_EYES },
+  { key:"mouth",     title:"口",         list:AV_MOUTH },
+  { key:"beard",     title:"ひげ",       list:AV_BEARD },
+  { key:"glasses",   title:"めがね",     list:AV_GLASSES },
+  { key:"hat",       title:"かぶりもの", list:AV_HAT }
+];
+
 /* ==========================================================
    SVGイラスト（絵本風・画像素材なし）
    隠し家具はベース家具のSVGに CSS フィルターをかけて表現。
@@ -1384,7 +1593,8 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 5,
+  ver: 7,
+  player: { name: "", avatar: { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 } },
   money: 0,
   exp: 0,
   level: 1,
@@ -1474,6 +1684,14 @@ function load() {
     });
     state.ver = 6;
   }
+  if (savedVer !== 7) {   // 第6章まで: 職人の名前と顔を用意する
+    if (!state.player || typeof state.player !== "object") state.player = {};
+    if (typeof state.player.name !== "string") state.player.name = "";
+    if (!state.player.avatar || typeof state.player.avatar !== "object") {
+      state.player.avatar = { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 };
+    }
+    state.ver = 7;
+  }
 }
 
 /* ==========================================================
@@ -1485,6 +1703,12 @@ const materialById = (id) => MATERIALS.find(m => m.id === id);
 const designById = (id) => DESIGNS.find(d => d.id === id) || DESIGNS[0];
 const finishById = (id) => FINISHES.find(f => f.id === id) || FINISHES[1];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+/* ヘンリーさんが呼びかけるときの、あなたの名前 */
+const you = () => (state.player && state.player.name) || "見習い";
+/* 名前はプレイヤーが打ち込むので、HTMLに差し込む前に必ず逃がす */
+const esc = (t) => String(t).replace(/[&<>"]/g,
+  c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
 
 /* 図鑑・カードの絵。photo(将来のユーザー写真) → SVG → 絵文字 の順で採用 */
 function artOf(entry, cls, filter) {
@@ -1634,12 +1858,14 @@ function renderStatus() {
   const next = LEVELS[state.level];
   const fill = $("#lv-fill"), label = $("#lv-label");
   const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+  $("#player-face").innerHTML = buildAvatar(state.player.avatar);
+  const who = `<b>${esc(you())}</b>・${title}`;
   if (next === undefined) {
     fill.style.width = "100%";
-    label.textContent = `${title}（最高レベル！）　📖 図鑑 ${dexFound()} / ${dexTotal()}`;
+    label.innerHTML = `${who}（最高レベル！）　📖 ${dexFound()}/${dexTotal()}`;
   } else {
     fill.style.width = Math.min(100, ((state.exp - cur) / (next - cur)) * 100) + "%";
-    label.textContent = `${title}　次のレベルまで あと${next - state.exp}　📖 図鑑 ${dexFound()} / ${dexTotal()}`;
+    label.innerHTML = `${who}　次のLvまで あと${next - state.exp}　📖 ${dexFound()}/${dexTotal()}`;
   }
 }
 
@@ -1679,7 +1905,7 @@ function renderSelect() {
       /* 設計えらびへ。木材は持っているものを初期選択 */
       const firstWood = MATERIALS.find(m => m.type === "wood" && (state.materials[m.id] || 0) > 0);
       prep = { fid: f.id, design: "classic", wood: firstWood ? firstWood.id : "oak", finish: "natural" };
-      showMessage(`「${f.name}」じゃな。設計・素材・仕上げで、家具の顔つきが決まるんじゃよ。`);
+      showMessage(`「${f.name}」じゃな。${you()}、設計・素材・仕上げで家具の顔つきが決まる。よう考えるのじゃ。`);
       render();
     });
   });
@@ -2055,14 +2281,14 @@ function finishCraft(exhibit) {
 
   /* はじめて作った家具は、山場がどこだったかを教えてくれる */
   if (!knewCritical) {
-    msg += `　🔥 この家具は「${f.steps[CRITICAL_STEP[f.id]].label}」が山場じゃったな。覚えておくのじゃぞ。`;
+    msg += `　🔥 ${you()}、この家具は「${f.steps[CRITICAL_STEP[f.id]].label}」が山場じゃったな。覚えておくのじゃぞ。`;
   }
   /* あと一歩で隠しレシピ、というときだけ手応えを口にする */
   if (near && !p.secret) {
     msg += `　……ふむ。なにか惜しい気がするのう。あと一つ、何かが違う。`;
   }
   if (leveledUp) {
-    msg += `　🏠 工房レベルが ${state.level} に上がったぞ！`;
+    msg += `　🏠 ${you()}、腕を上げたのう。工房レベルが ${state.level} じゃ！`;
     confetti();
   }
 
@@ -2289,12 +2515,71 @@ function renderGear() {
     }));
 }
 
+/* ---------- 似顔絵メーカー ---------- */
+let avDraft = null;    // 編集中の顔。決定するまで state には入れない
+let avFirst = false;   // はじめて職人をつくるところか
+
+function openAvatarEditor(first) {
+  avFirst = !!first;
+  avDraft = Object.assign({}, state.player.avatar);
+  $("#av-name").value = state.player.name || "";
+  $("#avatar-title").textContent = first ? "🧑‍🔧 あなたの職人をつくる" : "🧑‍🔧 職人を変える";
+  $("#av-done").textContent = first ? "この職人ではじめる" : "決定する";
+  renderAvatarEditor();
+  openModal("avatar-modal");
+}
+
+function renderAvatarEditor() {
+  $("#av-preview").innerHTML = buildAvatar(avDraft);
+  $("#av-rows").innerHTML = AVATAR_ROWS.map(row => {
+    const opts = row.list.map((it, i) => {
+      const sel = avDraft[row.key] === i ? " selected" : "";
+      if (row.color) {
+        return `<button class="av-swatch${sel}" style="background:${it}"
+          data-k="${row.key}" data-i="${i}" aria-label="${row.title} ${i + 1}"></button>`;
+      }
+      /* 選択肢ごとの見本：その部分だけ差し替えた顔を小さく描く */
+      const mini = Object.assign({}, avDraft);
+      mini[row.key] = i;
+      return `<button class="av-chip${sel}" data-k="${row.key}" data-i="${i}"
+        title="${it.name}" aria-label="${it.name}">${buildAvatar(mini)}</button>`;
+    }).join("");
+    return `<div class="av-row"><div class="g-title">${row.title}</div>
+      <div class="av-opts">${opts}</div></div>`;
+  }).join("");
+
+  document.querySelectorAll("#av-rows [data-k]").forEach(b =>
+    b.addEventListener("click", () => {
+      avDraft[b.dataset.k] = +b.dataset.i;
+      renderAvatarEditor();
+    }));
+}
+
+function saveAvatar() {
+  const nm = $("#av-name").value.trim().slice(0, 12);
+  state.player.name = nm || "見習い";
+  state.player.avatar = avDraft;
+  save();
+  closeModal("avatar-modal");
+  renderStatus();
+  showMessage(avFirst
+    ? `ようこそ、${you()}。わしはヘンリー、この工房に住みついておる案内役じゃ。まずは設計図をえらんで、一台こしらえてみるのじゃ。`
+    : `ほう、${you()}。ずいぶん職人らしい顔になったのう。`);
+}
+
 /* ---------- 工房紹介 ---------- */
 function renderAbout() {
+  const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
   $("#about-body").innerHTML =
     `<div class="about-hero">
       <span class="art">${SVG_ART.henry}</span>
       <div class="catch">「小さな家具にも、大きな物語を。」</div>
+    </div>
+    <div class="about-block" style="text-align:center">
+      <div class="av-preview" style="width:84px;height:84px;border-width:2px;">${buildAvatar(state.player.avatar)}</div>
+      <h4 style="margin-top:6px">${esc(you())}　<span style="font-weight:normal;color:var(--brown-mid)">${title}</span></h4>
+      <p style="text-align:center">この工房で家具をこしらえている職人。</p>
+      <button class="foot-btn" id="btn-edit-avatar" style="max-width:200px;margin:8px auto 0;display:block;min-height:44px">🧑‍🔧 職人を変える</button>
     </div>` +
     ABOUT_BLOCKS.map(b =>
       `<div class="about-block"><h4>${b.icon} ${b.title}</h4><p>${b.text}</p></div>`).join("");
@@ -2317,7 +2602,15 @@ function init() {
   $("#btn-show").addEventListener("click", () => { renderShow(); openModal("show-modal"); });
   $("#btn-market").addEventListener("click", () => { renderMarket(); openModal("market-modal"); });
   $("#btn-gear").addEventListener("click", () => { renderGear(); openModal("gear-modal"); });
-  $("#btn-about").addEventListener("click", () => { renderAbout(); openModal("about-modal"); });
+  $("#btn-about").addEventListener("click", () => {
+    renderAbout(); openModal("about-modal");
+    $("#btn-edit-avatar").addEventListener("click", () => {
+      closeModal("about-modal"); openAvatarEditor(false);
+    });
+  });
+  /* ヘッダーの顔をタップしても職人を変えられる */
+  $("#player-face").addEventListener("click", () => openAvatarEditor(false));
+  $("#av-done").addEventListener("click", saveAvatar);
 
   document.querySelectorAll("[data-close]").forEach(b =>
     b.addEventListener("click", () => closeModal(b.dataset.close)));
@@ -2332,10 +2625,14 @@ function init() {
   });
 
   render();
-  if (state.currentId) {
-    showMessage(`おかえり。「${furnitureById(state.currentId).name}」の続きを作ろうかの。`);
+  if (!state.player.name) {
+    /* はじめての起動：まず自分の職人をこしらえてもらう */
+    showMessage("ようこそ、松永工房へ。……そうじゃ、まだあんたのことを聞いておらんかった。");
+    openAvatarEditor(true);
+  } else if (state.currentId) {
+    showMessage(`おかえり、${you()}。「${furnitureById(state.currentId).name}」の続きを作ろうかの。`);
   } else if (state.exp > 0) {
-    showMessage(`おかえり。図鑑は ${dexFound()}/${dexTotal()}。今日はどれを作って、どう並べるかの？`);
+    showMessage(`おかえり、${you()}。図鑑は ${dexFound()}/${dexTotal()}。今日はどれを作って、どう並べるかの？`);
   } else {
     showMessage("ようこそ、松永工房へ。わしはヘンリー、案内役じゃ。まずは設計図をえらんで一台作り、図鑑に登録してみるのじゃ。ゆくゆくは展示室に家具を並べて、たくさんのお客を呼ぶんじゃぞ。");
   }
