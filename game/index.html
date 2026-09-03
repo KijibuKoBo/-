@@ -519,6 +519,59 @@ footer{
   margin-top:14px; text-decoration:underline; cursor:pointer;
 }
 
+/* 集中力が心もとないときのチップ */
+.chip.focus-low{ border-color:var(--red); color:var(--red); }
+
+/* 山場工程 */
+.step-chip.critical{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,75,.35); }
+.crit-tag{ color:#a97c14; font-size:.76rem; margin-left:4px; }
+.ct-type{ font-size:.64rem; font-weight:normal; color:var(--brown-soft); letter-spacing:.08em; }
+
+/* しくじりの警告 */
+.flaw-note{
+  text-align:center; font-size:.7rem; color:var(--red);
+  background:#f9ece8; border:1.5px dashed var(--red);
+  border-radius:10px; padding:5px 8px; margin-bottom:8px;
+}
+
+/* 今日はここまで */
+.rest-link{
+  text-align:center; font-size:.7rem; color:var(--brown-mid);
+  margin-top:10px; text-decoration:underline; cursor:pointer; padding:4px;
+}
+
+/* 職人手帳 */
+.note-item{
+  border:2px solid var(--wood-light); border-radius:12px;
+  padding:7px 11px; margin-bottom:7px; background:#fffdf7;
+  font-size:.7rem; line-height:1.7;
+}
+.note-item .n-head{ font-weight:bold; font-size:.78rem; }
+.note-item .n-combo{ color:var(--brown-mid); }
+.note-item.hit{ border-color:var(--gold); background:#fdf6e6; }
+.note-item.near{ border-color:var(--green-deep); }
+.note-near-tag{
+  display:inline-block; font-size:.64rem; font-weight:bold; color:var(--green-deep);
+  border:1.5px solid var(--green-deep); background:#eef5e8;
+  border-radius:999px; padding:1px 7px; margin-left:4px;
+}
+.note-empty{ text-align:center; font-size:.74rem; color:var(--brown-mid); line-height:1.9; }
+
+/* 図鑑の山場メモ */
+.dex-crit{
+  display:inline-block; font-size:.66rem; font-weight:bold; color:#a97c14;
+  border:1.5px solid var(--gold); background:#fdf3d5;
+  border-radius:999px; padding:1px 8px; margin-top:4px;
+}
+
+/* 来館者のひとこと */
+.visitor-line{
+  border:2px solid var(--wood-light); border-radius:12px;
+  padding:8px 11px; margin-bottom:10px;
+  background:linear-gradient(180deg,#fffef9,#fdf6e6);
+  font-size:.74rem; line-height:1.8; text-align:justify;
+}
+
 /* 物語解放ポップアップ */
 #story-pop .modal{ text-align:center; }
 #story-pop .story-text{
@@ -542,6 +595,7 @@ footer{
     <span class="chip">🏠 Lv.<span id="st-level">1</span></span>
     <span class="chip">📅 <span id="st-day">1</span>日目</span>
     <span class="chip">⏱ <span id="st-hours">8</span>h</span>
+    <span class="chip" id="chip-focus">🕯 <span id="st-focus">100</span></span>
     <span class="chip">👥 のべ<span id="st-visitors">0</span>人</span>
   </div>
   <div class="lvbar"><i id="lv-fill"></i></div>
@@ -577,6 +631,8 @@ footer{
     <h3>📖 家具図鑑</h3>
     <div id="dex-complete"></div>
     <div id="dex-list"></div>
+    <div class="dex-section-title">📓 職人手帳</div>
+    <div id="note-list"></div>
     <div class="dex-section-title">💌 届かなかった手紙</div>
     <div id="letter-list"></div>
     <button class="close" data-close="dex-modal">とじる</button>
@@ -870,7 +926,7 @@ const FURNITURE = [
       { label: "検品する",   icon: "🔍", msg: "がたつきなし、ささくれなし。うん、いい椅子だ。" }
     ],
     story: "はじめて作った小さな椅子は、工房の窓辺に置かれた。朝の光を受けて、木目が少しだけ誇らしげに見えた。",
-    letter: "工房の古い道具箱の底で、破れた便箋のきれはしを見つけた。「……ヘンリー様。この手紙を書くのは、これで三度目です。何度書いても、途中でペンが止まってしまうのです……」"
+    letter: "工房の古い道具箱の底で、破れた便箋のきれはしを見つけた。「……ヘンリー様。この手紙を書くのは、これで三度目です。何度書いても、途中でペンが止まってしまう。だからせめて、わたしの手が覚えていることだけでも書き残しておきます。いつかあなたが、職人になる日のために」"
   },
   {
     id: "couch", name: "プティカウチ", icon: "🛋️", art: "couch", photo: null,
@@ -886,7 +942,7 @@ const FURNITURE = [
       { label: "検品する",         icon: "🔍", msg: "座ってみる。……立ちたくなくなる。これは良いカウチだ。" }
     ],
     story: "小さなカウチは、ふたりで座るには少しせまい。だからこそ、猫と、本と、ひとりの午後にちょうどよかった。",
-    letter: "カウチの張り地の下から、二枚目のきれはし。「あなたが初めてこの工房に来た日を覚えています。あなたは小さな椅子を、まるで生きもののように撫でました……」"
+    letter: "カウチの張り地の下から、二枚目のきれはし。「あなたが初めてこの工房に来た日、わたしは小さなカウチを張っておりました。あのときの板は<b>オーク</b>。飾り気のない<b>いちばん素直な形</b>に組んで、<b>塗りはかけませんでした</b>。木を裸のままにしておくのが、いちばん美しい日もあるのです」"
   },
   {
     id: "chest", name: "プティチェスト", icon: "🗄️", art: "chest", photo: null,
@@ -902,7 +958,7 @@ const FURNITURE = [
       { label: "検品する",       icon: "🔍", msg: "引き出しの奥まで、ていねいに拭きあげた。" }
     ],
     story: "小さな引き出しの奥には、誰かの大切なものがしまわれる。指輪か、手紙か、それとも言えなかった一言か。",
-    letter: "引き出しの奥に、三枚目のきれはしが貼りついていた。「わたしはもう、長くはないのでしょう。悔いはありません。ただ、心残りは、たったひとつだけ……」"
+    letter: "引き出しの奥に、三枚目のきれはしが貼りついていた。「わたしはもう、長くはないのでしょう。悔いはありません。ただ、心残りがひとつ。<b>伯爵の椅子</b>のことです。あれに使った<b>ウォールナット</b>の深い色は、いまも目に焼きついております」"
   },
   {
     id: "mitsudan", name: "密談椅子", icon: "🪑", art: "mitsudan", photo: null,
@@ -918,7 +974,7 @@ const FURNITURE = [
       { label: "検品する",       icon: "🔍", msg: "座って耳をすます。……この椅子は、聞き上手だ。" }
     ],
     story: "背の高い椅子は、ひそひそ話がよく似合う。ここで交わされた約束は、なぜかちゃんと守られるのだという。",
-    letter: "座面の裏から、四枚目のきれはし。「あなたに伝えそびれた、大切な言葉があるのです。面と向かうと、どうしても言えませんでした……」"
+    letter: "座面の裏から、四枚目のきれはし。「あなたに伝えそびれた言葉があります。面と向かうと、どうしても言えなかった。……あの伯爵の椅子は、頼まれたよりずっと<b>豪華</b>に作りました。仕上げはわざと<b>古びた色</b>に。新品の顔をした家具は、秘密を預かってくれませんから」"
   },
   {
     id: "dresser", name: "三面鏡ドレッサー", icon: "🪞", art: "dresser", photo: null,
@@ -935,7 +991,7 @@ const FURNITURE = [
       { label: "検品する",   icon: "🔍", msg: "鏡の中の自分と目が合った。ちょっと職人の顔になってきたかも。" }
     ],
     story: "ヘンリーさんは鏡をのぞきこんだ。そこには、今の自分だけでなく、家具に込められた職人の時間まで映っているようだった。",
-    letter: "鏡の裏板から、五枚目のきれはし。「覚えていますか。雨の日の工房で、ふたりで直した三面鏡を。あの日のことを、わたしは何度も思い出します……」"
+    letter: "鏡の裏板から、五枚目のきれはし。「覚えていますか。雨の日の工房で、ふたりで直した三面鏡を。あの夜わたしは、<b>飾り棚</b>の枠を<b>黒く</b>塗っておりました。漆のような黒だけが、窓から入る月の光を集めてくれるのです」"
   },
   {
     id: "jewelry", name: "ジュエリーチェスト", icon: "💍", art: "jewelry", photo: null,
@@ -952,7 +1008,7 @@ const FURNITURE = [
       { label: "検品する",         icon: "🔍", msg: "全部の抽斗を開けて、閉めた。カタリ、と良い音がした。" }
     ],
     story: "いちばん小さな抽斗には、いちばん大きな思い出が入る。ジュエリーチェストとは、そういう家具なのだ。",
-    letter: "鍵付きのいちばん小さな抽斗に、最後のきれはしが入っていた。「——ありがとう。わたしの家具たちを、どうか頼みます。そしてどうか、あなたの毎日が……」"
+    letter: "鍵付きのいちばん小さな抽斗に、最後のきれはしが入っていた。「——ありがとう。わたしの家具たちを、どうか頼みます。あの月夜の飾り棚は、<b>チェリー</b>の赤みを黒の下に隠して、うんと<b>小さく</b>こしらえました。いつか、あなたの手で。そしてどうか、あなたの毎日が……」"
   },
   {
     id: "curio", name: "キュリオケース", icon: "🏺", art: "curio", photo: null,
@@ -1040,24 +1096,191 @@ const FINAL_STORY = {
 const BASE_QUALITY = 50;
 const HOURS_PER_DAY = 8;
 
-const CHOICES = [
-  { id: "teinei", label: "ていねい", icon: "🌸", note: "品質+12<br>⏱3時間", cls: "choice-teinei",
-    time: 750, hours: 3, pts: () => 12,
-    working: "じっくり、じっくり…",
-    henry: ["うむ、木目とじっくり向き合っておるな。", "急がば回れ。それが職人の速さじゃよ。",
-            "その手つき、もう見習いではないのう。"] },
-  { id: "futsuu", label: "ふつう", icon: "🙂", note: "品質+6<br>⏱2時間", cls: "",
-    time: 380, hours: 2, pts: () => 6,
-    working: "こつこつ、こつこつ…",
-    henry: ["よいペースじゃな。", "こつこつが一番じゃよ。", "安定した仕事も、立派な腕前じゃ。"] },
-  { id: "isogu", label: "急ぐ", icon: "💨", note: "品質+1〜10<br>⏱1時間", cls: "",
-    time: 140, hours: 1,
-    pts: () => {
-      if (Math.random() < 0.2) return -(1 + Math.floor(Math.random() * 8));
-      return 1 + Math.floor(Math.random() * 10);
-    },
-    working: "ささっと！",
-    henry: ["おっと、木くずが舞っておるぞ〜。", "はやさも腕のうち…じゃが、ほどほどにな。"] }
+/* ----------------------------------------------------------
+   工程タイプごとの選択肢
+   同じ3ボタンではなく、工程の性質ごとに選べる手が変わる。
+   家具を足すときは STEP_TYPE_OF に工程名を1行足すだけでよい。
+     q      … 品質の増減（関数。毎回抽選するものもある）
+     hours  … 消費する作業時間
+     focus  … 消費する集中力（1日 FOCUS_PER_DAY）
+     flaw   … 「しくじり」が出る確率。検品で取り返せる
+   ---------------------------------------------------------- */
+const STEP_TYPES = {
+  kidori: { name: "木取り", choices: [
+    { id:"a", label:"木目を読む", icon:"👁", cls:"choice-teinei",
+      time:750, hours:3, focus:30, q:()=>14, flaw:0.15,
+      working:"板を光にかざして…",
+      henry:["木の顔をよう見ておるな。","その板は当たりじゃ。","木目を読める職人は伸びるぞ。"] },
+    { id:"b", label:"素直に取る", icon:"🙂", cls:"",
+      time:380, hours:2, focus:12, q:()=>7, flaw:0.05,
+      working:"墨を打って…",
+      henry:["無難でよろしい。","堅実じゃな。"] },
+    { id:"c", label:"歩留まり優先", icon:"💨", cls:"",
+      time:140, hours:1, focus:5, q:()=>2, flaw:0.15, saveMaterial:0.25,
+      working:"さっと木取り！",
+      henry:["材料は浮くがのう…","端材が減るのは良いことじゃ。"] }
+  ]},
+  kumi: { name: "組立", choices: [
+    { id:"a", label:"仕口を締める", icon:"🔨", cls:"choice-teinei",
+      time:750, hours:3, focus:30, q:()=>14, flaw:0.05,
+      working:"こつ、こつ、こつ…",
+      henry:["がたつき一つない。見事じゃ。","そこを締めておくと十年もつぞ。"] },
+    { id:"b", label:"手順どおり", icon:"🙂", cls:"",
+      time:380, hours:2, focus:12, q:()=>7, flaw:0.08,
+      working:"順番に組んで…",
+      henry:["よいペースじゃ。","手順を守るのも技のうち。"] },
+    { id:"c", label:"早く組む", icon:"💨", cls:"",
+      time:140, hours:1, focus:5, q:()=>1+Math.floor(Math.random()*9), flaw:0.3,
+      working:"ばたばたと！",
+      henry:["おっと、そこは大丈夫かの。","勢いがあるのう。"] }
+  ]},
+  kenma: { name: "研磨", choices: [
+    { id:"a", label:"番手を上げる", icon:"✨", cls:"choice-teinei",
+      time:750, hours:3, focus:30, q:()=>14, flaw:0.02,
+      working:"粗い紙から、細かい紙へ…",
+      henry:["その手ざわり、絹のようじゃ。","順に上げるのが近道じゃよ。"] },
+    { id:"b", label:"ひととおり", icon:"🙂", cls:"",
+      time:380, hours:2, focus:12, q:()=>7, flaw:0.05,
+      working:"しゃっ、しゃっ…",
+      henry:["まずまずじゃ。","悪くない仕上がりじゃな。"] },
+    { id:"c", label:"ざっと当てる", icon:"💨", cls:"",
+      time:140, hours:1, focus:5, q:()=>3, flaw:0.25,
+      working:"ざっ、ざっ！",
+      henry:["塗るときにばれるぞ〜。","うむ、まあ…急ぎならの。"] }
+  ]},
+  hori: { name: "彫刻", choices: [
+    { id:"a", label:"彫り込む", icon:"🗡", cls:"choice-teinei",
+      time:800, hours:3, focus:35, q:()=>16, flaw:0.1,
+      working:"息を止めて、一刀…",
+      henry:["おお、花が咲いたようじゃ。","彫りは工房の看板じゃからのう。"] },
+    { id:"b", label:"控えめに", icon:"🙂", cls:"",
+      time:380, hours:2, focus:14, q:()=>8, flaw:0.08,
+      working:"そっと刃を入れて…",
+      henry:["ひかえめも品があってよい。","上品じゃな。"] },
+    { id:"c", label:"型どおり", icon:"💨", cls:"",
+      time:140, hours:1, focus:6, q:()=>3, flaw:0.2,
+      working:"型をなぞって！",
+      henry:["型も悪くはないがの…","彫りは急ぐと出るぞ。"] }
+  ]},
+  hari: { name: "張り", choices: [
+    { id:"a", label:"しわなく張る", icon:"🪡", cls:"choice-teinei",
+      time:750, hours:3, focus:28, q:()=>14, flaw:0.05,
+      working:"布を引いて、留めて…",
+      henry:["ぴんと張っておる。気持ちがよいのう。","布は正直じゃ。よう張れておる。"] },
+    { id:"b", label:"ふつうに張る", icon:"🙂", cls:"",
+      time:380, hours:2, focus:12, q:()=>7, flaw:0.08,
+      working:"とん、とん…",
+      henry:["よろしい。","きれいに納まったな。"] },
+    { id:"c", label:"留めるだけ", icon:"💨", cls:"",
+      time:140, hours:1, focus:5, q:()=>2, flaw:0.25,
+      working:"ぱぱっと！",
+      henry:["しわが寄っておらぬか？","座ればわかるぞ〜。"] }
+  ]},
+  kanagu: { name: "金具", choices: [
+    { id:"a", label:"面を揃える", icon:"📐", cls:"choice-teinei",
+      time:700, hours:2, focus:24, q:()=>12, flaw:0.03,
+      working:"きっちり、まっすぐ…",
+      henry:["一分の狂いもない。","金具は正面から見られるからのう。"] },
+    { id:"b", label:"取り付ける", icon:"🙂", cls:"",
+      time:380, hours:1, focus:10, q:()=>6, flaw:0.07,
+      working:"ねじを回して…",
+      henry:["問題なしじゃ。","うむ、付いたな。"] },
+    { id:"c", label:"手早く留める", icon:"💨", cls:"",
+      time:140, hours:1, focus:4, q:()=>1+Math.floor(Math.random()*7), flaw:0.3,
+      working:"きゅっきゅっ！",
+      henry:["ねじ山をなめておらぬか。","急ぐと真鍮は傷むぞ。"] }
+  ]},
+  tosou: { name: "塗装", choices: [
+    { id:"a", label:"重ね塗り", icon:"🖌️", cls:"choice-teinei",
+      time:850, hours:4, focus:30, q:()=>16, flaw:0.02,
+      working:"塗って、乾かして、また塗って…",
+      henry:["深い色が出たのう。","塗りは焦らぬ者が勝つ。"] },
+    { id:"b", label:"一度塗り", icon:"🙂", cls:"",
+      time:380, hours:2, focus:12, q:()=>7, flaw:0.06,
+      working:"すうっと伸ばして…",
+      henry:["よい艶じゃ。","素直な仕上がりじゃな。"] },
+    { id:"c", label:"乾かし急ぎ", icon:"💨", cls:"",
+      time:140, hours:1, focus:5, q:()=>1+Math.floor(Math.random()*10), flaw:0.35,
+      working:"扇いで乾かす！",
+      henry:["ムラが出ておらぬか…","塗料は待ってくれんぞ。"] }
+  ]},
+  kenpin: { name: "検品", choices: [
+    { id:"a", label:"隅々まで", icon:"🔍", cls:"choice-teinei",
+      time:700, hours:2, focus:20, q:()=>6, flaw:0, repair:true,
+      working:"裏まで、ひっくり返して…",
+      henry:["最後に見直す者が、良い職人じゃ。","念には念を、じゃな。"] },
+    { id:"b", label:"ざっと見る", icon:"🙂", cls:"",
+      time:380, hours:1, focus:8, q:()=>3, flaw:0,
+      working:"ひととおり眺めて…",
+      henry:["まあ、よかろう。","うむ、問題なさそうじゃ。"] },
+    { id:"c", label:"省く", icon:"💨", cls:"",
+      time:120, hours:0, focus:0, q:()=>-5, flaw:0,
+      working:"そのまま…",
+      henry:["見ないのか…！","なにも起きねばよいがのう。"] }
+  ]}
+};
+
+/* 工程名 → 工程タイプ。家具を足したら、新しい工程名をここに1行足す */
+const STEP_TYPE_OF = {
+  "木材を選ぶ":"kidori",
+  "研磨する":"kenma",
+  "塗装する":"tosou",
+  "検品する":"kenpin",
+  "フレームを組む":"kumi", "枠を組む":"kumi", "扉を作る":"kumi", "引き出しを作る":"kumi",
+  "小さな抽斗を作る":"kumi", "鏡枠を作る":"kumi", "棚板を渡す":"kumi",
+  "背もたれを彫る":"hori", "彫刻する":"hori",
+  "クッションを張る":"hari", "座面を張る":"hari", "内張りを張る":"hari",
+  "金具を付ける":"kanagu", "蝶番を付ける":"kanagu", "鏡を付ける":"kanagu", "ガラスをはめる":"kanagu"
+};
+const stepType = (step) => STEP_TYPES[STEP_TYPE_OF[step.label] || "kumi"];
+const choicesForStep = (step) => stepType(step).choices;
+
+/* 山場工程：家具ごとに1つ、品質の増減が2倍になる工程。
+   一度その家具を作ると図鑑に記録され、次から見えるようになる */
+const CRITICAL_STEP = {
+  stool: 1, couch: 2, chest: 1, mitsudan: 1,
+  dresser: 2, jewelry: 1, curio: 2, wardrobe: 1
+};
+
+/* 集中力：1日ぶん。ていねいな手ほど多く食う */
+const FOCUS_PER_DAY = 100;
+
+/* ----------------------------------------------------------
+   来館者
+   展示した家具を見てひとこと言っていく。
+   ときどき、昔の職人の仕事についてのヒントを落としてくれる。
+   ---------------------------------------------------------- */
+const VISITORS = [
+  { id:"earl", name:"伯爵", icon:"👑",
+    likes:(p)=>p.wood==="walnut"||p.design==="gouka",
+    hit:"「ほう、この深い色。ウォールナットだな。よい目をしている」",
+    miss:"「悪くない。だが、わしの部屋にはもう少し重厚なものが要る」",
+    hint:"「昔この工房に、たいそう豪華な椅子があったと聞く。古びた色に仕上げた、ウォールナットの一脚だそうだ」" },
+  { id:"lady", name:"老婦人", icon:"👵",
+    likes:(p)=>p.finish==="antique",
+    hit:"「まあ……この色。祖母の家にあったものにそっくりだわ」",
+    miss:"「きれいねえ。でも私は、少し古びたくらいのほうが好きなの」",
+    hint:"「昔の職人さんはね、新品の顔をした家具は秘密を預かってくれない、と言っていたそうよ」" },
+  { id:"painter", name:"若い画家", icon:"🎨",
+    likes:(p)=>p.finish==="shikkoku",
+    hit:"「黒だ……いいですね。光の集まり方がまるで違う」",
+    miss:"「ふうん。僕はもっと黒いのが好きだな」",
+    hint:"「漆みたいな黒はね、月の光を集めるんですよ。夜に映える飾り棚を作った職人がいたとか」" },
+  { id:"couple", name:"新婚夫婦", icon:"💑",
+    likes:(p)=>p.design==="kogata"||p.name.indexOf("プティ")>=0,
+    hit:"「小さい！　うちのお部屋にちょうどいいね」",
+    miss:"「すてき。でも、うちにはちょっと大きいかも……」",
+    hint:"「小さい家具って、かえって手間がかかるんですってね。赤みのある木で作ると可愛いとか」" },
+  { id:"scholar", name:"学者", icon:"📚",
+    likes:(p)=>p.name.indexOf("キュリオ")>=0||p.name.indexOf("ケース")>=0,
+    hit:"「ガラスの向こうに物を置くと、途端に標本になる。面白いものだ」",
+    miss:"「ふむ。私はもっぱら、飾り棚を探しておってな」",
+    hint:"「この工房の古い記録に、月夜の飾り棚という一台があってな。小さく、赤みのある木で作られたと」" },
+  { id:"kid", name:"近所の子", icon:"🧒",
+    likes:()=>true,
+    hit:"「これ、さわってもいい？　……あったかい！」",
+    miss:"「なんにもないね。またくるね！」",
+    hint:"「おじいちゃんが言ってた。むかしの職人さんは、手紙に作りかたを書いてたんだって」" }
 ];
 
 const RANKS = {
@@ -1167,6 +1390,7 @@ let state = {
   level: 1,
   day: 1,
   hoursLeft: HOURS_PER_DAY,
+  focus: FOCUS_PER_DAY,           // きょうの残り集中力。ていねいな手ほど食う
   totalVisitors: 0,               // のべ来館者（設計図解放にも使う）
   materials: { walnut: 0, oak: 2, cherry: 0, brass: 0, glass: 0, cloth: 2 },  // 最初の持ち材料
   currentId: null,                // 制作中の家具id
@@ -1174,6 +1398,9 @@ let state = {
   stepIndex: 0,
   quality: 0,
   craftUsed: 0,
+  flaws: 0,                       // 制作中に出たしくじりの数（検品で取り返せる）
+  notebook: [],                   // 職人手帳：試した組み合わせの記録
+  knownCritical: [],              // 山場工程を知っている家具id
   gear: [],                       // 買った設備
   showroom: [],                   // 展示中の家具 [{fid,name,design,wood,finish,score,rank,pop,price}]
   seenBP: [],                     // 解放告知済みの設計図id
@@ -1216,7 +1443,7 @@ function load() {
     if (!Array.isArray(state.gear)) state.gear = [];
     state.craftUsed = state.currentId ? state.stepIndex * 2 : 0;
   }
-  if (savedVer !== 5) {   // 第4章まで: 材料・展示・来館者を補完
+  if (savedVer !== 5 && savedVer !== 6) {   // 第4章まで: 材料・展示・来館者を補完
     Object.values(state.completed).forEach(rec => {
       if (rec && typeof rec === "object") {
         if (rec.bestScore === undefined) rec.bestScore = null;
@@ -1233,7 +1460,19 @@ function load() {
     if (state.currentId && !state.craft) {
       state.craft = { design: "classic", wood: "oak", finish: "natural" };
     }
-    state.ver = 5;
+  }
+  if (savedVer !== 6) {   // 第5章まで: 集中力・手帳・山場の記憶を補完
+    if (typeof state.focus !== "number") state.focus = FOCUS_PER_DAY;
+    if (typeof state.flaws !== "number") state.flaws = 0;
+    if (!Array.isArray(state.notebook)) state.notebook = [];
+    if (!Array.isArray(state.knownCritical)) state.knownCritical = [];
+    /* すでに作ったことのある家具は、山場を知っているものとして引き継ぐ */
+    Object.keys(state.completed).forEach(id => {
+      if (CRITICAL_STEP[id] !== undefined && state.knownCritical.indexOf(id) < 0) {
+        state.knownCritical.push(id);
+      }
+    });
+    state.ver = 6;
   }
 }
 
@@ -1386,6 +1625,9 @@ function renderStatus() {
   $("#st-level").textContent = state.level;
   $("#st-day").textContent = state.day;
   $("#st-hours").textContent = state.hoursLeft;
+  $("#st-focus").textContent = state.focus;
+  /* 集中力が心もとなくなったら赤くする */
+  $("#chip-focus").classList.toggle("focus-low", state.focus < 30);
   $("#st-visitors").textContent = state.totalVisitors.toLocaleString();
 
   const cur = LEVELS[state.level - 1];
@@ -1499,6 +1741,7 @@ function renderPrep() {
     state.craft = { design: prep.design, wood: prep.wood, finish: prep.finish };
     state.stepIndex = 0;
     state.craftUsed = 0;
+    state.flaws = 0;
     /* 品質＝素材50＋設備＋設計・素材・仕上げの補正 */
     state.quality = BASE_QUALITY + gearQualityBonus()
       + designById(prep.design).q + materialById(prep.wood).q + finishById(prep.finish).q;
@@ -1574,10 +1817,15 @@ function renderCraft() {
       </div>
     </div>`;
 
+  /* 山場工程は、その家具を一度作っていれば見える */
+  const critIdx = CRITICAL_STEP[f.id];
+  const critKnown = state.knownCritical.indexOf(f.id) >= 0;
   const chips = `<div class="steps">` + f.steps.map((s, i) => {
-    const cls = i < state.stepIndex ? "done-step" : (i === state.stepIndex ? "current" : "");
+    const isCrit = critKnown && i === critIdx;
+    const cls = (i < state.stepIndex ? "done-step" : (i === state.stepIndex ? "current" : ""))
+      + (isCrit ? " critical" : "");
     const mark = i < state.stepIndex ? "✅ " : `${s.icon} `;
-    return `<span class="step-chip ${cls}">${mark}${s.label}</span>`;
+    return `<span class="step-chip ${cls}">${mark}${s.label}${isCrit ? " 🔥" : ""}</span>`;
   }).join("") + `</div>`;
 
   if (done) {
@@ -1592,19 +1840,27 @@ function renderCraft() {
     $("#btn-deliver").addEventListener("click", () => finishCraft(false));
     $("#btn-exhibit").addEventListener("click", () => { if (slotsFree) finishCraft(true); });
   } else {
+    /* 工程の性質に応じて、選べる手が変わる */
     const step = f.steps[state.stepIndex];
-    $("#steps-area").innerHTML = chips +
-      `<div class="choice-title">${step.icon} 「${step.label}」…どんな仕事ぶりでいく？</div>
+    const isCrit = critKnown && state.stepIndex === critIdx;
+    const flawNote = state.flaws > 0
+      ? `<div class="flaw-note">⚠️ しくじりが ${state.flaws} つ残っている。検品で取り返せる。</div>` : "";
+    $("#steps-area").innerHTML = chips + flawNote +
+      `<div class="choice-title">${step.icon} 「${step.label}」${isCrit ? "<b class=\"crit-tag\">🔥ここが山場</b>" : ""}<br><span class="ct-type">${stepType(step).name}の工程</span></div>
        <div class="choices">` +
-      CHOICES.map(ch =>
-        `<button class="choice-btn ${ch.cls}" data-choice="${ch.id}">
+      choicesForStep(step).map(ch => {
+        const short = state.focus < ch.focus;   // 集中力が足りない手は選べない
+        return `<button class="choice-btn ${ch.cls}" data-choice="${ch.id}" ${short ? "disabled" : ""}>
           <span class="c-icon">${ch.icon}</span>
           <span class="c-label">${ch.label}</span>
-          <span class="c-note">${ch.note.replace(/⏱\d+時間/, "⏱" + effHours(ch) + "時間")}</span>
-        </button>`).join("") +
-      `</div>`;
-    document.querySelectorAll(".choice-btn").forEach(b =>
+          <span class="c-note">${short ? "集中力がたりない" : `⏱${effHours(ch)}h ／ 🕯${ch.focus}`}</span>
+        </button>`;
+      }).join("") +
+      `</div>
+       <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて集中力を戻す）</div>`;
+    document.querySelectorAll(".choice-btn:not([disabled])").forEach(b =>
       b.addEventListener("click", () => doStep(b.dataset.choice)));
+    $("#btn-rest").addEventListener("click", restForToday);
   }
 
   const toBottom = () => { if (state.currentId) window.scrollTo(0, document.documentElement.scrollHeight); };
@@ -1625,31 +1881,58 @@ function render() {
 function doStep(choiceId) {
   const f = furnitureById(state.currentId);
   const step = f.steps[state.stepIndex];
-  const choice = CHOICES.find(ch => ch.id === choiceId) || CHOICES[1];
+  const list = choicesForStep(step);
+  const choice = list.find(ch => ch.id === choiceId) || list[1];
   const hours = effHours(choice);
+  const isCrit = state.stepIndex === CRITICAL_STEP[f.id];
 
   document.querySelectorAll(".choice-btn").forEach(b => b.disabled = true);
   showMessage(`${step.icon} ${step.label}中… ${choice.working}`);
 
   setTimeout(() => {
-    const delta = choice.pts();
+    let delta = choice.q();
+    let note = "";
+
+    /* しくじり判定。急いだ手ほど出やすい */
+    if (choice.flaw && Math.random() < choice.flaw) {
+      delta -= 8;
+      state.flaws++;
+      note = "　……ありゃ、手がすべった。";
+    }
+    /* 検品でしくじりを1つ取り返す（リカバリー） */
+    if (choice.repair && state.flaws > 0) {
+      state.flaws--;
+      delta += 10;
+      note = "　傷を見つけて、そっと直した。";
+    }
+    /* 歩留まり優先：端材から材料が戻ることがある */
+    if (choice.saveMaterial && Math.random() < choice.saveMaterial && state.craft) {
+      const w = state.craft.wood;
+      state.materials[w] = (state.materials[w] || 0) + 1;
+      note += `　端材から${materialById(w).name}が1本とれた！`;
+    }
+    /* 山場工程は品質の増減が2倍になる */
+    if (isCrit) delta *= 2;
+
     state.quality = Math.max(0, Math.min(100, state.quality + delta));
     state.stepIndex++;
+    state.focus = Math.max(0, state.focus - choice.focus);
 
-    /* 時間経過。日付が変わると来館者がやってくる */
+    /* 時間経過。日が変わると集中力が戻り、来館者が来る */
     state.craftUsed += hours;
     state.hoursLeft -= hours;
     let extra = "";
     while (state.hoursLeft <= 0) {
       state.hoursLeft += HOURS_PER_DAY;
       state.day++;
+      state.focus = FOCUS_PER_DAY;
       extra += dailyVisitors();
     }
     save();
 
-    const comment = delta < 0 ? "ありゃ、手がすべったかの…！" : pick(choice.henry);
     const sign = delta >= 0 ? `+${delta}` : `${delta}`;
-    let msg = `${step.icon} ${step.msg}　${comment}（品質${sign}・${hours}時間）${extra}`;
+    let msg = `${step.icon} ${step.msg}${note}　${pick(choice.henry)}`
+      + `（品質${sign}${isCrit ? "・🔥山場" : ""}・${hours}時間・🕯${choice.focus}）${extra}`;
     msg += announceBP();
     showMessage(msg);
     maybeShowTrivia();
@@ -1657,10 +1940,25 @@ function doStep(choiceId) {
     render();
     if (state.stepIndex >= f.steps.length) {
       confetti();
-      const p = currentPiece();
-      showMessage(`🎉 「${p.name}」完成じゃ！ 品質${p.score}点、${RANKS[p.rank].label}${p.onTime ? "　期日内じゃ！" : ""}${p.secret ? "　…おや、これはただの家具ではないぞ…！" : ""}　納品するか、展示するか選ぶのじゃ。`);
+      const pc = currentPiece();
+      showMessage(`🎉 「${pc.name}」完成じゃ！ 品質${pc.score}点、${RANKS[pc.rank].label}`
+        + `${pc.onTime ? "　期日内じゃ！" : ""}${pc.secret ? "　…おや、これはただの家具ではないぞ…！" : ""}`
+        + `　納品するか、展示するか選ぶのじゃ。`);
     }
   }, choice.time);
+}
+
+/* 今日はここまで。残り時間を捨てて翌日へ（集中力が全回復する）
+   集中力が尽きたときの逃げ道であり、納期を削る代償でもある */
+function restForToday() {
+  state.craftUsed += state.hoursLeft;   // 残り時間は納期から差し引かれる
+  state.hoursLeft = HOURS_PER_DAY;
+  state.day++;
+  state.focus = FOCUS_PER_DAY;
+  const extra = dailyVisitors();
+  save();
+  showMessage(`🌙 道具を片づけて、今日はここまで。${extra}　よく休んだ。手が戻っておる。`);
+  render();
 }
 
 /* 日付が変わったときの来館者と売店収入 */
@@ -1678,7 +1976,33 @@ function dailyVisitors() {
   } else {
     text += `来館者${visitors}人（展示があればもっと来るんじゃがのう）。`;
   }
-  return text;
+
+  /* 来館者がひとり、展示を見ていく。3割の確率で昔の仕事の話をしていく */
+  const v = pick(VISITORS);
+  let line;
+  if (!pieces.length) {
+    line = v.miss;
+  } else if (Math.random() < 0.3) {
+    line = v.hint;
+  } else {
+    line = pieces.some(pc => v.likes(pc)) ? v.hit : v.miss;
+  }
+  state.lastVisitor = `${v.icon} ${v.name}　${line}`;
+  return text + `　${state.lastVisitor}`;
+}
+
+/* 隠しレシピに「あと一歩」（3つのうち2つ一致）なら、そのレシピを返す。
+   完全一致でも2つ一致でもない組み合わせでは、何も起きない */
+function nearMissRecipe(baseId, c) {
+  if (!c) return null;
+  return RECIPES.find(r => {
+    if (r.baseId !== baseId) return false;
+    let hit = 0;
+    if (r.combo.design === c.design) hit++;
+    if (r.combo.wood === c.wood) hit++;
+    if (r.combo.finish === c.finish) hit++;
+    return hit === 2;
+  }) || null;
 }
 
 /* 完成品を 納品(即売) または 展示 する。図鑑登録は両方共通 */
@@ -1698,6 +2022,21 @@ function finishCraft(exhibit) {
     state.completed[p.fid] = { count: 1, best: p.rank, bestScore: p.score, bestPop: p.pop };
   }
 
+  /* --- 職人手帳：試した組み合わせは必ず記録する（謎解きの material） --- */
+  const near = nearMissRecipe(f.id, state.craft);
+  const c = state.craft || {};
+  state.notebook.unshift({
+    day: state.day, fid: p.fid, name: p.name, base: f.name,
+    design: c.design, wood: c.wood, finish: c.finish,
+    score: p.score, rank: p.rank, pop: p.pop, price: p.price,
+    secret: p.secret, near: !!near && !p.secret
+  });
+  if (state.notebook.length > 40) state.notebook.length = 40;
+
+  /* --- 一度作れば、その家具の山場工程を覚える --- */
+  const knewCritical = state.knownCritical.indexOf(f.id) >= 0;
+  if (!knewCritical) state.knownCritical.push(f.id);
+
   state.exp += f.exp;
   const newLevel = calcLevel(state.exp);
   const leveledUp = newLevel > state.level;
@@ -1714,6 +2053,14 @@ function finishCraft(exhibit) {
     msg = `🚚 品質${p.rank}（${p.score}点）・${p.onTime ? "期日内✨" : "納期おくれ…"}で納品！ ＋${p.price.toLocaleString()}円　${HENRY_DELIVER[p.rank]}　${sns}`;
   }
 
+  /* はじめて作った家具は、山場がどこだったかを教えてくれる */
+  if (!knewCritical) {
+    msg += `　🔥 この家具は「${f.steps[CRITICAL_STEP[f.id]].label}」が山場じゃったな。覚えておくのじゃぞ。`;
+  }
+  /* あと一歩で隠しレシピ、というときだけ手応えを口にする */
+  if (near && !p.secret) {
+    msg += `　……ふむ。なにか惜しい気がするのう。あと一つ、何かが違う。`;
+  }
   if (leveledUp) {
     msg += `　🏠 工房レベルが ${state.level} に上がったぞ！`;
     confetti();
@@ -1761,7 +2108,9 @@ function closeModal(id) { $("#" + id).classList.remove("open"); }
 function openStoryPop(title, text, badge) {
   $("#pop-badge").textContent = badge || "📜✨";
   $("#pop-title").textContent = title;
-  $("#pop-text").textContent = text;
+  /* 手紙に仕込まれた技術のヒントを太字で見せたいので innerHTML を使う。
+     入るのは自前のゲームデータだけで、プレイヤーの入力は混ざらない */
+  $("#pop-text").innerHTML = text.replace(/\n/g, "<br>");
   openModal("story-pop");
 }
 
@@ -1785,6 +2134,8 @@ function renderDex() {
           <div class="count">🔨 ${rec.count}台　最高品質 ${rec.best ? rankBadge(rec.best) : "—"}${rec.bestScore != null ? ` <b>${rec.bestScore}点</b>` : ""}　💖 人気 ${rec.bestPop != null ? rec.bestPop : "—"}</div></span>
         </div>
         <div class="d-desc">${e.description}</div>
+        ${e.kind === "base" && state.knownCritical.indexOf(e.id) >= 0
+          ? `<span class="dex-crit">🔥 山場は「${e.steps[CRITICAL_STEP[e.id]].label}」</span>` : ""}
         ${story}
       </div>`;
     }
@@ -1801,7 +2152,21 @@ function renderDex() {
     </div>`;
   }).join("");
 
-  /* 手紙のきれはし（図鑑の横で読める短編。副要素） */
+  /* 職人手帳：試した組み合わせの記録。隠しレシピを推理するための材料 */
+  $("#note-list").innerHTML = state.notebook.length
+    ? state.notebook.map(n => {
+        const d = designById(n.design), w = materialById(n.wood), fi = finishById(n.finish);
+        const cls = n.secret ? " hit" : (n.near ? " near" : "");
+        return `<div class="note-item${cls}">
+          <div class="n-head">${n.secret ? "✨ " : ""}${n.name}　${rankBadge(n.rank)} ${n.score}点　💖${n.pop}
+            ${n.near ? '<span class="note-near-tag">惜しい</span>' : ""}</div>
+          <div class="n-combo">${d.icon}${d.name} ／ ${w ? w.icon + w.name : "—"} ／ ${fi.icon}${fi.name}
+            　<span style="color:var(--brown-soft)">${n.day}日目・${n.price.toLocaleString()}円</span></div>
+        </div>`;
+      }).join("")
+    : `<p class="note-empty">まだ何も試していない。<br>作った組み合わせは、ここに全部ひかえておく。<br>「惜しい」と出たら、あと一つだけ変えてみるのじゃ。</p>`;
+
+  /* 手紙のきれはし（図鑑の横で読める短編。隠しレシピのヒントでもある） */
   const withLetters = FURNITURE.filter(f => f.letter);
   const lf = lettersFound();
   let letters = `<p style="text-align:center;font-size:.72rem;color:var(--brown-mid);margin-bottom:10px;">
@@ -1830,7 +2195,8 @@ function renderShow() {
   const bonusMult = SET_BONUSES.reduce((m, b) => m * (b.check(pieces) ? b.mult : 1), 1);
   const estIncome = popSum > 0 ? Math.round(estVisitors * 12 * bonusMult / 10) * 10 : 0;
 
-  let html = `<div class="show-head">
+  let html = state.lastVisitor ? `<div class="visitor-line">${state.lastVisitor}</div>` : "";
+  html += `<div class="show-head">
     展示 <b>${pieces.length} / ${showSlots()}</b> 枠　合計人気 <b>${popSum}</b><br>
     あすの来館予想 👥${estVisitors}人・売店収入 💰${estIncome.toLocaleString()}円/日<br>${bonuses}
   </div>`;
