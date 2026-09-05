@@ -1555,6 +1555,56 @@ function actPoint(svg, e) {
 const actDist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp100 = (n) => Math.max(0, Math.min(100, Math.round(n)));
 
+/* ----------------------------------------------------------
+   彫刻の文様
+   一筆でなぞれる形だけを使う。points() が採点用の通過点、
+   dense() が下絵として描くなめらかな線。
+   文様を足すときは、この2つを返す項目を1つ増やすだけでよい。
+   ---------------------------------------------------------- */
+const CARVE_PATTERNS = {
+
+  /* 唐草：うねって伸び、先で渦を巻く。工房の定番の彫り */
+  vine: {
+    label: "唐草文様 ── つるの根もとから、渦の先まで",
+    curve(t) {
+      if (t < 0.62) {                      // うねりながら右上へ伸びる茎
+        const u = t / 0.62;
+        return { x: 44 + u * 141,
+                 y: 214 - u * 100 - Math.sin(u * Math.PI) * 34 };
+      }
+      const u = (t - 0.62) / 0.38;         // 先端で内へ巻きこむ
+      const a = Math.PI + u * Math.PI * 1.85;
+      const r = 30 - u * 21;
+      return { x: 215 + Math.cos(a) * r, y: 114 + Math.sin(a) * r };
+    },
+    points() { const o = []; for (let i = 0; i <= 15; i++) o.push(this.curve(i / 15)); return o; },
+    dense()  { const o = []; for (let i = 0; i <= 90; i++) o.push(this.curve(i / 90)); return o; },
+    /* 茎に添える葉。なぞる対象ではなく、彫りらしく見せるための飾り */
+    decor: `<path d="M96 176 q-22 -8 -26 -28 q22 3 30 22 Z" fill="#8a5a30" opacity=".3"/>
+            <path d="M140 138 q6 -23 26 -30 q-3 22 -21 32 Z" fill="#8a5a30" opacity=".3"/>
+            <path d="M74 214 q-20 6 -32 -6 q17 -11 33 -1 Z" fill="#8a5a30" opacity=".26"/>`
+  },
+
+  /* 花文様：五弁の花。中心を五度くぐる、彫りごたえのある一筆 */
+  rose: {
+    label: "花文様 ── 中心を通って、花びらを五枚",
+    labelY: 294,
+    curve(t) {
+      const a = t * Math.PI * 4;           // 五弁が閉じるまで
+      const r = 84 * Math.cos(2.5 * a);
+      return { x: 150 + Math.cos(a) * r, y: 152 + Math.sin(a) * r };
+    },
+    points() { const o = []; for (let i = 0; i <= 21; i++) o.push(this.curve(i / 21)); return o; },
+    dense()  { const o = []; for (let i = 0; i <= 160; i++) o.push(this.curve(i / 160)); return o; },
+    decor: `<circle cx="150" cy="152" r="9" fill="#8a5a30" opacity=".3"/>
+            <circle cx="150" cy="152" r="112" fill="none" stroke="#8a5a30"
+              stroke-width="2" opacity=".2" stroke-dasharray="4 7"/>`
+  }
+};
+
+/* どの家具でどの文様を彫るか。彫刻の山場を持つ家具だけ書けばよい */
+const CARVE_PATTERN = { mitsudan: "vine", dresser: "rose" };
+
 const CRAFT_ACTIONS = {
 
   /* ---------- 研磨：木肌をむらなく磨く ---------- */
@@ -1726,75 +1776,93 @@ const CRAFT_ACTIONS = {
     }
   },
 
-  /* ---------- 彫刻：下絵の線をなぞる ---------- */
+  /* ---------- 彫刻：下絵の文様を一筆でなぞる ---------- */
   hori: {
-    name: "彫刻", limit: 20000,
-    tip: "うっすら引いた下絵を、指で<b>なぞって</b>彫っていく。線から外れぬように。",
+    name: "彫刻", limit: 24000,
+    tip: "うっすら引いた下絵を、<b>一筆で</b>なぞって彫る。線から外れぬように。",
     start(svg, ui, done) {
-      const pts = [];
-      for (let i = 0; i <= 11; i++) {
-        const t = i / 11;
-        pts.push({ x: 36 + t * 228, y: 150 + Math.sin(t * Math.PI * 2) * 58, hit: false });
-      }
-      const d = pts.map((p, i) => (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ");
-      let next = 0, miss = 0, devSum = 0, best = 999, touched = false;
+      /* 家具によって文様が変わる。難しい家具ほど込み入った文様になる */
+      const kind = CARVE_PATTERN[state.currentId] || "vine";
+      const pat = CARVE_PATTERNS[kind];
+      const pts = pat.points().map(p => ({ ...p, hit: false }));
+      const R = 34;                                   // 線から離れてよい幅
+      /* 各点について「いちばん近づいた距離」を覚えておく。
+         順番の前後で減点せず、線をどれだけ忠実になぞれたかだけを見る */
+      pts.forEach(p => { p.min = 9999; });
+      let finished = false;
+
+      /* なめらかな下絵の線（採点は点で、見た目は曲線で） */
+      const smooth = (list) => list.map((p, i) =>
+        (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ");
 
       svg.innerHTML =
-        `<rect x="20" y="60" width="260" height="180" rx="14" fill="#b07c4a"/>
-         <path d="${d}" stroke="#8a5a30" stroke-width="9" fill="none"
-           stroke-linecap="round" stroke-linejoin="round" opacity=".35"/>
-         <path id="carved" d="" stroke="#f2cf9d" stroke-width="7" fill="none"
+        `<rect x="14" y="14" width="272" height="272" rx="16" fill="#b07c4a"/>
+         <rect x="24" y="24" width="252" height="252" rx="11" fill="none"
+           stroke="#8a5a30" stroke-width="3" opacity=".55"/>
+         ${pat.decor || ""}
+         <path d="${smooth(pat.dense())}" stroke="#8a5a30" stroke-width="10" fill="none"
+           stroke-linecap="round" stroke-linejoin="round" opacity=".32"/>
+         <path id="carved" d="" stroke="#f2cf9d" stroke-width="7.5" fill="none"
            stroke-linecap="round" stroke-linejoin="round"/>` +
-        pts.map((p, i) => `<circle id="d${i}" cx="${p.x}" cy="${p.y}" r="5"
-          fill="#8a5a30" opacity=".5"/>`).join("") +
-        `<text x="150" y="42" text-anchor="middle" font-size="15" fill="#8a6446">左から順になぞる</text>
-         <text x="150" y="266" text-anchor="middle" font-size="13" fill="#b08a63">ゆっくりで構わぬ</text>`;
+        pts.map((p, i) => `<circle id="d${i}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}"
+          r="4.5" fill="#8a5a30" opacity=".5"/>`).join("") +
+        `<circle id="startdot" cx="${pts[0].x.toFixed(1)}" cy="${pts[0].y.toFixed(1)}" r="13"
+           fill="none" stroke="#7a9c6e" stroke-width="3">
+           <animate attributeName="r" values="10;16;10" dur="1.3s" repeatCount="indefinite"/>
+         </circle>
+         `;
+      ui.setTip(`うっすら引いた下絵を、<b>一筆で</b>なぞって彫る。線から外れぬように。
+        <br><b>${pat.label}</b>`);
 
+      /* 彫れたところは、点を直線でつながず、下絵と同じ曲線で描く。
+         つながって彫れている区間だけを、その区間の曲線として起こす */
       const drawCarved = () => {
-        const on = pts.filter(p => p.hit);
-        svg.querySelector("#carved").setAttribute("d",
-          on.length < 2 ? "" : on.map((p, i) => (i ? "L" : "M") + p.x + " " + p.y).join(" "));
-      };
-      const finish = () => done(
-        clamp100((pts.length - miss) / pts.length * 100 - devSum / pts.length * 1.2),
-        miss ? "何度か刃が逃げたのう。" : "線が生きておる。よい彫りじゃ。");
-      ui.onTimeout = () => {
-        miss += pts.length - next;   // 彫り残しはすべて損ねたものとする
-        finish();
+        const runs = [];
+        let cur = [];
+        pts.forEach((t, i) => {
+          if (t.hit) cur.push(i);
+          else { if (cur.length > 1) runs.push(cur); cur = []; }
+        });
+        if (cur.length > 1) runs.push(cur);
+        const last = pts.length - 1;
+        const d = runs.map(run => {
+          const t0 = run[0] / last, t1 = run[run.length - 1] / last;
+          const sub = [];
+          for (let k = 0; k <= 44; k++) sub.push(pat.curve(t0 + (t1 - t0) * k / 44));
+          return smooth(sub);
+        }).join(" ");
+        svg.querySelector("#carved").setAttribute("d", d);
       };
 
-      /* 近づいた瞬間ではなく、いちばん近づいたところで正確さを測る */
-      ui.onPoint = (p) => {
-        if (next >= pts.length) return;
-        const t = pts[next];
-        const dist = actDist(p, t);
-        if (dist < 34) { touched = true; if (dist < best) best = dist; }
-        if (p.x > t.x + 10) {                   // その点を通り過ぎた
-          if (touched) {
-            t.hit = true; devSum += best;
-            const dot = svg.querySelector("#d" + next);
-            dot.setAttribute("fill", "#f2cf9d"); dot.setAttribute("opacity", "1");
-            drawCarved();
-          } else {
-            miss++;                             // 触れずに追い越した＝彫り損ね
-          }
-          next++; best = 999; touched = false;
-          ui.progress(next / pts.length);
-          if (next === pts.length) setTimeout(finish, 260);
-        }
+      const finish = () => {
+        const hit = pts.filter(p => p.hit);
+        const dev = hit.length ? hit.reduce((a, p) => a + p.min, 0) / hit.length : R;
+        const missed = pts.length - hit.length;
+        done(clamp100(hit.length / pts.length * 100 - dev * 1.2),
+          missed ? `${missed}か所ほど彫り残したのう。`
+            : dev > 14 ? "線から少し逃げておったな。" : "線が生きておる。よい彫りじゃ。");
       };
-      /* 最後の点は通り過ぎようがないので、指を離したところで締める */
-      ui.onUp = () => {
-        if (next !== pts.length - 1) return;
-        const t = pts[next];
-        if (touched) {
-          t.hit = true; devSum += best;
-          const dot = svg.querySelector("#d" + next);
-          dot.setAttribute("fill", "#f2cf9d"); dot.setAttribute("opacity", "1");
-          drawCarved();
-        } else miss++;
-        next++; ui.progress(1);
-        setTimeout(finish, 260);
+      ui.onTimeout = finish;
+
+      ui.onPoint = (p) => {
+        let n = 0;
+        pts.forEach((t, i) => {
+          const d = actDist(p, t);
+          if (d < t.min) {
+            t.min = d;
+            if (d < R && !t.hit) {
+              t.hit = true;
+              const dot = svg.querySelector("#d" + i);
+              dot.setAttribute("fill", "#f2cf9d");
+              dot.setAttribute("opacity", "1");
+              if (i === 0) svg.querySelector("#startdot").style.display = "none";
+              drawCarved();
+            }
+          }
+          if (t.hit) n++;
+        });
+        ui.progress(n / pts.length);
+        if (n === pts.length && !finished) { finished = true; setTimeout(finish, 280); }
       };
     }
   },
@@ -2658,7 +2726,8 @@ function runAction(step) {
   let ended = false, tick = null, down = false;
   const ui = {
     progress: (r) => { $("#act-bar").style.width = Math.min(100, r * 100) + "%"; },
-    say: (t) => { $("#act-say").textContent = t; }
+    say: (t) => { $("#act-say").textContent = t; },
+    setTip: (html) => { $("#act-tip").innerHTML = html; }
   };
 
   const cleanup = () => {
