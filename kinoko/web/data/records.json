@@ -1243,10 +1243,10 @@
       "caution": "",
       "lookalikes": [],
       "rating": 0,
-      "photo": "data/photos/rec-046-2.jpg",
+      "photo": "data/photos/rec-046-1.jpg",
       "photos": [
-        "data/photos/rec-046-2.jpg",
-        "data/photos/rec-046-1.jpg"
+        "data/photos/rec-046-1.jpg",
+        "data/photos/rec-046-2.jpg"
       ]
     },
     {
@@ -2460,10 +2460,10 @@
       "caution": "",
       "lookalikes": [],
       "rating": 0,
-      "photo": "data/photos/rec-091-2.jpg",
+      "photo": "data/photos/rec-091-1.jpg",
       "photos": [
-        "data/photos/rec-091-2.jpg",
-        "data/photos/rec-091-1.jpg"
+        "data/photos/rec-091-1.jpg",
+        "data/photos/rec-091-2.jpg"
       ]
     },
     {
