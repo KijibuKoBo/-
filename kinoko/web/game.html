@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>きのこクイズ ｜ 石原巖のキノコ採集記録</title>
-  <meta name="description" content="石原巖が長岡で採集した本物のキノコ写真で挑戦する、名前あて・食毒あてクイズ。" />
+  <meta name="description" content="石原巖が長岡で採集した本物のキノコ写真で挑戦する、名前あて・食毒あて・神経衰弱・タイムアタック。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -18,68 +18,72 @@
     *{ box-sizing:border-box; }
     html,body{ margin:0; padding:0; }
     body{ font-family:var(--serif); color:var(--ink); background:var(--cream); line-height:1.7; -webkit-font-smoothing:antialiased; }
-
-    .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between;
-      padding:14px 20px; background:var(--forest-deep); color:#f1ede2; }
+    .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--forest-deep); color:#f1ede2; }
     .topbar__brand{ text-decoration:none; color:#f1ede2; line-height:1.2; }
     .topbar__brand small{ display:block; font-size:.68rem; letter-spacing:.14em; color:var(--gold-soft); }
     .topbar__brand b{ font-size:1.05rem; font-weight:700; letter-spacing:.06em; }
     .topbar__back{ color:var(--gold-soft); text-decoration:none; font-family:var(--sans); font-size:.86rem; }
+    .wrap{ max-width:600px; margin:0 auto; padding:26px 16px 70px; }
 
-    .wrap{ max-width:560px; margin:0 auto; padding:26px 16px 70px; }
-
-    /* start screen */
     .start{ text-align:center; }
     .start__en{ font-family:var(--latin); letter-spacing:.4em; color:var(--gold); font-size:1rem; }
     .start__ja{ font-size:2.1rem; margin:6px 0 4px; font-weight:800; letter-spacing:.05em; }
-    .start__desc{ color:var(--sub); font-size:.92rem; margin:10px 0 26px; }
-    .modes{ display:flex; flex-direction:column; gap:14px; }
-    .mode{ display:block; width:100%; text-align:left; cursor:pointer; border:1px solid var(--line);
-      background:var(--paper); border-radius:14px; padding:18px 20px; transition:.15s; }
+    .start__desc{ color:var(--sub); font-size:.92rem; margin:10px 0 20px; }
+    .diff{ display:inline-flex; gap:0; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-bottom:22px; font-family:var(--sans); }
+    .diff button{ border:none; background:var(--paper); color:var(--sub); font-size:.85rem; font-weight:600; padding:8px 18px; cursor:pointer; }
+    .diff button[aria-pressed="true"]{ background:var(--forest); color:#fff; }
+    .modes{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .mode{ display:block; text-align:left; cursor:pointer; border:1px solid var(--line); background:var(--paper); border-radius:14px; padding:16px; transition:.15s; }
     .mode:hover{ border-color:var(--gold); transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.08); }
-    .mode__t{ font-size:1.2rem; font-weight:700; color:var(--forest); }
-    .mode__t .emoji{ margin-right:8px; }
-    .mode__d{ font-family:var(--sans); font-size:.82rem; color:var(--sub); margin-top:4px; }
-    .mode__best{ font-family:var(--sans); font-size:.74rem; color:var(--gold); margin-top:6px; }
+    .mode__t{ font-size:1.08rem; font-weight:700; color:var(--forest); }
+    .mode__t .emoji{ margin-right:6px; }
+    .mode__d{ font-family:var(--sans); font-size:.76rem; color:var(--sub); margin-top:4px; }
+    .mode__best{ font-family:var(--sans); font-size:.72rem; color:var(--gold); margin-top:6px; min-height:1em; }
 
-    /* quiz screen */
     .hud{ display:flex; align-items:center; justify-content:space-between; font-family:var(--sans); font-size:.85rem; color:var(--sub); margin-bottom:10px; }
-    .hud__score b{ color:var(--forest); font-size:1.05rem; }
+    .hud b{ color:var(--forest); font-size:1.05rem; }
+    .hud__timer.warn b{ color:var(--pois); }
     .bar{ height:6px; background:#e6dfce; border-radius:99px; overflow:hidden; margin-bottom:16px; }
-    .bar__fill{ height:100%; background:var(--gold); width:0; transition:width .3s; }
+    .bar__fill{ height:100%; background:var(--gold); width:0; transition:width .3s linear; }
     .qphoto{ width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:14px; background:#e8e2d4; display:block; box-shadow:0 8px 22px rgba(0,0,0,.12); }
     .qtext{ text-align:center; font-size:1.15rem; font-weight:700; margin:16px 0 14px; }
     .opts{ display:flex; flex-direction:column; gap:10px; }
-    .opt{ font-family:var(--serif); font-size:1.05rem; font-weight:600; cursor:pointer; border:1px solid var(--line);
-      background:var(--paper); color:var(--ink); border-radius:12px; padding:15px 18px; text-align:center; transition:.12s; }
+    .opt{ font-family:var(--serif); font-size:1.05rem; font-weight:600; cursor:pointer; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:12px; padding:15px 18px; text-align:center; transition:.12s; }
     .opt:hover:not(:disabled){ border-color:var(--gold); }
     .opt:disabled{ cursor:default; }
     .opt.correct{ background:var(--food); border-color:var(--food); color:#fff; }
     .opt.wrong{ background:var(--pois); border-color:var(--pois); color:#fff; }
     .opt.dim{ opacity:.5; }
-    .opts--edib .opt{ font-size:1.15rem; }
-
+    .opts--edib .opt{ font-size:1.12rem; }
     .reveal{ margin-top:16px; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:16px; }
     .reveal__judge{ font-family:var(--sans); font-weight:700; font-size:1rem; margin-bottom:8px; }
-    .reveal__judge.ok{ color:var(--food); }
-    .reveal__judge.ng{ color:var(--pois); }
+    .reveal__judge.ok{ color:var(--food); } .reveal__judge.ng{ color:var(--pois); }
     .reveal__name{ font-size:1.25rem; font-weight:800; }
     .reveal__name .badge{ font-family:var(--sans); font-size:.72rem; font-weight:700; color:#fff; padding:2px 10px; border-radius:999px; margin-left:8px; vertical-align:middle; }
     .reveal__meta{ font-family:var(--sans); font-size:.82rem; color:var(--sub); margin-top:6px; line-height:1.7; }
-    .next{ display:block; width:100%; margin-top:14px; font-family:var(--sans); font-weight:700; font-size:1rem;
-      background:var(--forest); color:#fff; border:none; border-radius:12px; padding:15px; cursor:pointer; }
-    .next:hover{ background:#274b3a; }
+    .next{ display:block; width:100%; margin-top:14px; font-family:var(--sans); font-weight:700; font-size:1rem; background:var(--forest); color:#fff; border:none; border-radius:12px; padding:15px; cursor:pointer; }
 
-    /* result */
+    /* memory */
+    .mgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .mcard{ aspect-ratio:3/4; border-radius:10px; cursor:pointer; position:relative; border:none; padding:0; background:transparent; perspective:600px; }
+    .mcard__inner{ position:absolute; inset:0; transition:transform .3s; transform-style:preserve-3d; }
+    .mcard.open .mcard__inner, .mcard.done .mcard__inner{ transform:rotateY(180deg); }
+    .mface{ position:absolute; inset:0; border-radius:10px; backface-visibility:hidden; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .mback{ background:var(--forest); color:var(--gold-soft); font-size:1.4rem; border:1px solid var(--forest-deep); }
+    .mfront{ transform:rotateY(180deg); border:1px solid var(--line); background:var(--paper); }
+    .mfront img{ width:100%; height:100%; object-fit:cover; }
+    .mfront .nm{ font-family:var(--serif); font-weight:700; font-size:.8rem; text-align:center; padding:4px; color:var(--ink); line-height:1.3; }
+    .mcard.done{ opacity:.55; }
+    @media (max-width:420px){ .mfront .nm{ font-size:.7rem; } }
+
     .result{ text-align:center; padding-top:10px; }
     .result__score{ font-family:var(--latin); font-size:4rem; color:var(--forest); font-weight:600; line-height:1; }
-    .result__score span{ font-size:1.6rem; color:var(--sub); }
+    .result__score span{ font-size:1.5rem; color:var(--sub); }
     .result__msg{ font-size:1.2rem; font-weight:700; margin:12px 0; }
     .result__best{ font-family:var(--sans); font-size:.85rem; color:var(--gold); margin-bottom:22px; }
-    .result__btns{ display:flex; flex-direction:column; gap:10px; }
+    .result__btns{ display:flex; flex-direction:column; gap:10px; max-width:360px; margin:0 auto; }
     .btn-primary,.btn-ghost{ font-family:var(--sans); font-weight:700; font-size:1rem; border-radius:12px; padding:14px; cursor:pointer; border:1px solid var(--forest); }
-    .btn-primary{ background:var(--forest); color:#fff; }
-    .btn-ghost{ background:transparent; color:var(--forest); }
+    .btn-primary{ background:var(--forest); color:#fff; } .btn-ghost{ background:transparent; color:var(--forest); }
     .loading{ text-align:center; color:var(--sub); padding:60px; font-family:var(--sans); }
     [hidden]{ display:none !important; }
   </style>
@@ -93,33 +97,46 @@
   <main class="wrap">
     <div id="loading" class="loading">読み込み中…</div>
 
-    <!-- スタート -->
     <section id="start" class="start" hidden>
       <span class="start__en">MUSHROOM QUIZ</span>
       <h1 class="start__ja">きのこクイズ</h1>
-      <p class="start__desc">石原さんが長岡で撮った<b>本物のキノコ写真</b>で挑戦！<br>全10問。モードを選んでください。</p>
+      <p class="start__desc">石原さんが長岡で撮った<b>本物のキノコ写真</b>で挑戦！</p>
+      <div class="diff" id="diff" role="group" aria-label="難易度">
+        <button data-d="easy" aria-pressed="true">やさしい</button>
+        <button data-d="hard" aria-pressed="false">むずかしい</button>
+      </div>
       <div class="modes">
         <button class="mode" data-mode="name">
-          <div class="mode__t"><span class="emoji">🍄</span>名前あてクイズ</div>
-          <div class="mode__d">写真を見て、正しい名前を4つから選ぼう。</div>
+          <div class="mode__t"><span class="emoji">🍄</span>名前あて</div>
+          <div class="mode__d">写真から名前を4択で当てる（全10問）</div>
           <div class="mode__best" id="bestName"></div>
         </button>
         <button class="mode" data-mode="edib">
-          <div class="mode__t"><span class="emoji">⚠️</span>食毒あてクイズ</div>
-          <div class="mode__d">このキノコは食べられる？毒？を当てよう。</div>
+          <div class="mode__t"><span class="emoji">⚠️</span>食毒あて</div>
+          <div class="mode__d">食べられる？毒？を当てる（全10問）</div>
           <div class="mode__best" id="bestEdib"></div>
+        </button>
+        <button class="mode" data-mode="time">
+          <div class="mode__t"><span class="emoji">⏱</span>タイムアタック</div>
+          <div class="mode__d">60秒で何問正解できるか</div>
+          <div class="mode__best" id="bestTime"></div>
+        </button>
+        <button class="mode" data-mode="memory">
+          <div class="mode__t"><span class="emoji">🃏</span>神経衰弱</div>
+          <div class="mode__d">写真と名前のペアを合わせる</div>
+          <div class="mode__best" id="bestMemory"></div>
         </button>
       </div>
       <p class="start__desc" style="margin-top:22px;font-size:.78rem">
-        ※クイズは学習用です。実際の採集では、必ず専門家や図鑑で確認し、少しでも不安なキノコは食べないでください。
+        ※クイズは学習用です。実際の採集では必ず図鑑や専門家で確認し、少しでも不安なキノコは食べないでください。
       </p>
     </section>
 
-    <!-- クイズ -->
     <section id="quiz" hidden>
       <div class="hud">
         <span id="qnum"></span>
-        <span class="hud__score">スコア <b id="score">0</b></span>
+        <span id="qright"><span class="hud__timer" id="timerWrap" hidden>のこり <b id="timer">60</b>秒</span>
+          <span id="scoreWrap">スコア <b id="score">0</b></span></span>
       </div>
       <div class="bar"><div class="bar__fill" id="bar"></div></div>
       <img id="qphoto" class="qphoto" alt="キノコの写真" />
@@ -129,9 +146,13 @@
       <button id="next" class="next" hidden>次へ →</button>
     </section>
 
-    <!-- 結果 -->
+    <section id="memory" hidden>
+      <div class="hud"><span id="mstat"></span><button class="topbar__back" style="color:var(--forest)" id="mquit">やめる</button></div>
+      <div class="mgrid" id="mgrid"></div>
+    </section>
+
     <section id="result" class="result" hidden>
-      <div class="result__score"><span id="rscore">0</span><span>/10</span></div>
+      <div class="result__score"><span id="rscore">0</span><span id="rmax">/10</span></div>
       <div class="result__msg" id="rmsg"></div>
       <div class="result__best" id="rbest"></div>
       <div class="result__btns">
@@ -144,8 +165,8 @@
   <script>
     const $=(s)=>document.querySelector(s);
     const EDCOLOR={ "食用":"var(--food)","毒":"var(--pois)","食不適":"var(--unfit)","不詳":"var(--unknown)" };
-    const N=10;
-    const state={ pool:[], mode:null, order:[], i:0, score:0, answered:false };
+    const N=10, TIME=60;
+    const state={ pool:[], mode:null, diff:"easy", order:[], i:0, score:0, answered:false, timer:null, left:TIME };
 
     init();
     async function init(){
@@ -153,120 +174,170 @@
       try{ data=await fetch("data/records.json",{cache:"no-store"}).then(r=>r.json()); }
       catch{ $("#loading").textContent="データを読み込めませんでした。"; return; }
       state.pool=(data.records||[]).filter(r=>r.photo);
-      $("#loading").hidden=true; $("#start").hidden=false;
-      showBest();
+      $("#loading").hidden=true; $("#start").hidden=false; showBest();
       document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>startGame(b.dataset.mode)));
+      document.querySelectorAll("#diff button").forEach(b=>b.addEventListener("click",()=>{
+        state.diff=b.dataset.d; document.querySelectorAll("#diff button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+      }));
       $("#next").addEventListener("click",nextQ);
       $("#again").addEventListener("click",()=>startGame(state.mode));
       $("#tomodes").addEventListener("click",toStart);
+      $("#mquit").addEventListener("click",toStart);
     }
 
-    function bestKey(m){ return "kinoko_quiz_best_"+m; }
-    function getBest(m){ try{ return Number(localStorage.getItem(bestKey(m))||0); }catch{ return 0; } }
+    const bestKey=(m)=>"kinoko_quiz_best_"+m;
+    const getBest=(m)=>{ try{ return Number(localStorage.getItem(bestKey(m))||0);}catch{return 0;} };
     function showBest(){
-      const bn=getBest("name"), be=getBest("edib");
-      $("#bestName").textContent = bn?`最高スコア ${bn}/10`:"";
-      $("#bestEdib").textContent = be?`最高スコア ${be}/10`:"";
+      const set=(id,m,suf)=>{ const v=getBest(m); $(id).textContent = v?`ベスト ${v}${suf}`:""; };
+      set("#bestName","name_"+state.diff,"/10"); set("#bestEdib","edib","/10");
+      set("#bestTime","time_"+state.diff,"問"); const mm=getBest("memory"); $("#bestMemory").textContent=mm?`最短 ${mm}手`:"";
     }
-
-    function pickPool(){
-      if(state.mode==="edib") return state.pool.filter(r=>["食用","毒","食不適"].includes(r.edibility));
-      return state.pool;
-    }
-    function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
     function startGame(mode){
       state.mode=mode; state.i=0; state.score=0; state.answered=false;
-      const pool=pickPool();
-      state.order=shuffle(pool).slice(0,N);
-      $("#start").hidden=true; $("#result").hidden=true; $("#quiz").hidden=false;
+      $("#start").hidden=true; $("#result").hidden=true; $("#quiz").hidden=true; $("#memory").hidden=true;
+      clearInterval(state.timer);
+      if(mode==="memory"){ startMemory(); return; }
+      $("#quiz").hidden=false;
+      if(mode==="time"){
+        state.left=TIME; $("#timerWrap").hidden=false; $("#scoreWrap").hidden=false;
+        state.order=shuffle(state.pool);
+        $("#timer").textContent=TIME; $("#timerWrap").classList.remove("warn");
+        state.timer=setInterval(tick,1000);
+      }else{
+        $("#timerWrap").hidden=true; $("#scoreWrap").hidden=false;
+        const pool = mode==="edib" ? state.pool.filter(r=>["食用","毒","食不適"].includes(r.edibility)) : state.pool;
+        state.order=shuffle(pool).slice(0,N);
+      }
       renderQ();
     }
-    function toStart(){ $("#quiz").hidden=true; $("#result").hidden=true; $("#start").hidden=false; showBest(); }
+    function toStart(){ clearInterval(state.timer); ["#quiz","#result","#memory"].forEach(s=>$(s).hidden=true); $("#start").hidden=false; showBest(); }
+
+    function tick(){
+      state.left--; $("#timer").textContent=state.left;
+      if(state.left<=10) $("#timerWrap").classList.add("warn");
+      if(state.left<=0){ clearInterval(state.timer); finish(); }
+    }
+
+    function distractors(r, n, forNames){
+      let others=state.pool.filter(x=>x.wamei!==r.wamei);
+      if(state.diff==="hard" && r.family){
+        const same=others.filter(x=>x.family===r.family);
+        others = same.length>=n ? same : others;
+      }
+      const names=[...new Set(others.map(x=>x.wamei))];
+      return shuffle(names).slice(0,n);
+    }
 
     function renderQ(){
       state.answered=false;
-      const r=state.order[state.i];
-      $("#qnum").textContent=`第 ${state.i+1} / ${N} 問`;
+      const r=state.order[state.i]; if(!r){ finish(); return; }
+      const total = state.mode==="time" ? "∞" : N;
+      $("#qnum").textContent = state.mode==="time" ? `正解 ${state.score}` : `第 ${state.i+1} / ${N} 問`;
       $("#score").textContent=state.score;
-      $("#bar").style.width=`${(state.i)/N*100}%`;
+      $("#bar").style.width = state.mode==="time" ? `${state.left/TIME*100}%` : `${state.i/N*100}%`;
       $("#qphoto").src=r.photo;
       $("#reveal").hidden=true; $("#reveal").innerHTML=""; $("#next").hidden=true;
       const opts=$("#opts"); opts.innerHTML="";
-      if(state.mode==="name"){
-        $("#qtext").textContent="このキノコの名前は？";
-        opts.className="opts";
-        const others=shuffle(state.pool.filter(x=>x.wamei!==r.wamei).map(x=>x.wamei)
-          .filter((v,i,a)=>a.indexOf(v)===i)).slice(0,3);
-        const choices=shuffle([r.wamei,...others]);
-        choices.forEach(c=>opts.appendChild(makeOpt(c, c===r.wamei, r)));
-      }else{
-        $("#qtext").innerHTML=`「${esc(r.wamei)}」は…？`;
-        opts.className="opts opts--edib";
+      if(state.mode==="edib"){
+        $("#qtext").innerHTML=`「${esc(r.wamei)}」は…？`; opts.className="opts opts--edib";
         [["食用","🍽 食べられる"],["食不適","😖 食べない方がいい"],["毒","☠️ 毒"]].forEach(([val,label])=>
           opts.appendChild(makeOpt(label, val===r.edibility, r, val)));
+      }else{
+        $("#qtext").textContent="このキノコの名前は？"; opts.className="opts";
+        const choices=shuffle([r.wamei,...distractors(r,3)]);
+        choices.forEach(c=>opts.appendChild(makeOpt(c, c===r.wamei, r)));
       }
     }
-
-    function makeOpt(label, isCorrect, r, edibVal){
-      const b=document.createElement("button");
-      b.className="opt"; b.textContent=label;
-      b.addEventListener("click",()=>answer(b,isCorrect,r,edibVal));
+    function makeOpt(label,isCorrect,r,edibVal){
+      const b=document.createElement("button"); b.className="opt"; b.textContent=label;
+      b.addEventListener("click",()=>answer(b,isCorrect,r));
       return b;
     }
-
-    function answer(btn, isCorrect, r, edibVal){
-      if(state.answered) return;
-      state.answered=true;
+    function answer(btn,isCorrect,r){
+      if(state.answered) return; state.answered=true;
       if(isCorrect) state.score++;
       const opts=[...document.querySelectorAll(".opt")];
-      opts.forEach(o=>{ o.disabled=true;
-        // mark correct one
-        if(state.mode==="name"){ if(o.textContent===r.wamei) o.classList.add("correct"); }
-      });
-      if(state.mode==="edib"){
-        const correctLabel={"食用":"🍽 食べられる","食不適":"😖 食べない方がいい","毒":"☠️ 毒"}[r.edibility];
-        opts.forEach(o=>{ if(o.textContent===correctLabel) o.classList.add("correct"); });
-      }
-      if(!isCorrect){ btn.classList.add("wrong"); }
+      const correctLabel = state.mode==="edib" ? {"食用":"🍽 食べられる","食不適":"😖 食べない方がいい","毒":"☠️ 毒"}[r.edibility] : r.wamei;
+      opts.forEach(o=>{ o.disabled=true; if(o.textContent===correctLabel) o.classList.add("correct"); });
+      if(!isCorrect) btn.classList.add("wrong");
       opts.forEach(o=>{ if(!o.classList.contains("correct")&&!o.classList.contains("wrong")) o.classList.add("dim"); });
-      $("#score").textContent=state.score;
+      $("#score").textContent=state.score; $("#qnum").textContent = state.mode==="time" ? `正解 ${state.score}` : `第 ${state.i+1} / ${N} 問`;
       showReveal(r,isCorrect);
-      $("#next").hidden=false;
-      $("#next").textContent = state.i===N-1 ? "結果を見る →" : "次へ →";
+      if(state.mode==="time"){ setTimeout(()=>{ if(state.left>0){ state.i++; renderQ(); } }, 900); }
+      else{ $("#next").hidden=false; $("#next").textContent = state.i===N-1 ? "結果を見る →" : "次へ →"; }
     }
-
     function showReveal(r,isCorrect){
       const col=EDCOLOR[r.edibility]||"var(--unknown)";
-      const meta=[r.family, r.area, r.date && fmtDate(r.date)].filter(Boolean).join(" ／ ");
-      const cau = r.caution ? `<div style="color:var(--pois);margin-top:4px">⚠ ${esc(r.caution)}</div>` : "";
-      $("#reveal").innerHTML=`
-        <div class="reveal__judge ${isCorrect?'ok':'ng'}">${isCorrect?'⭕ 正解！':'❌ 残念…'}</div>
+      const meta=[r.family,r.area,r.date&&fmtDate(r.date)].filter(Boolean).join(" ／ ");
+      const cau=r.caution?`<div style="color:var(--pois);margin-top:4px">⚠ ${esc(r.caution)}</div>`:"";
+      $("#reveal").innerHTML=`<div class="reveal__judge ${isCorrect?'ok':'ng'}">${isCorrect?'⭕ 正解！':'❌ 残念…'}</div>
         <div class="reveal__name">${esc(r.wamei)}<span class="badge" style="background:${col}">${esc(r.edibility)}</span></div>
         <div class="reveal__meta">${esc(meta)}${cau}</div>`;
       $("#reveal").hidden=false;
     }
-
-    function nextQ(){
-      state.i++;
-      if(state.i>=N){ finish(); return; }
-      renderQ();
-    }
+    function nextQ(){ state.i++; if(state.i>=N){ finish(); return; } renderQ(); }
 
     function finish(){
-      $("#quiz").hidden=true; $("#result").hidden=false;
-      $("#bar").style.width="100%";
+      clearInterval(state.timer);
+      $("#quiz").hidden=true; $("#memory").hidden=true; $("#result").hidden=false;
+      const isTime=state.mode==="time";
+      $("#rmax").textContent = isTime ? "問正解" : "/10";
       $("#rscore").textContent=state.score;
-      const pct=state.score/N;
       let msg;
-      if(pct===1) msg="🏆 全問正解！キノコ博士！";
-      else if(pct>=0.8) msg="🌟 お見事！かなりの通です";
-      else if(pct>=0.5) msg="🍄 なかなか！その調子";
-      else msg="🌱 これから覚えていきましょう";
+      if(isTime){ msg = state.score>=15?"🏆 達人級！":state.score>=10?"🌟 お見事！":state.score>=5?"🍄 いい調子！":"🌱 また挑戦！"; }
+      else{ const p=state.score/N; msg = p===1?"🏆 全問正解！キノコ博士！":p>=0.8?"🌟 お見事！":p>=0.5?"🍄 なかなか！":"🌱 これから覚えていきましょう"; }
       $("#rmsg").textContent=msg;
-      const prev=getBest(state.mode); const best=Math.max(prev,state.score);
-      try{ localStorage.setItem(bestKey(state.mode),best); }catch{}
-      $("#rbest").textContent = state.score>prev ? "自己ベスト更新！ 🎉" : `自己ベスト ${best}/10`;
+      const key = isTime ? "time_"+state.diff : (state.mode==="name"?"name_"+state.diff:state.mode);
+      const prev=getBest(key), best=Math.max(prev,state.score);
+      try{ localStorage.setItem(bestKey(key),best);}catch{}
+      $("#rbest").textContent = state.score>prev ? "自己ベスト更新！ 🎉" : `自己ベスト ${best}${isTime?"問":"/10"}`;
+    }
+
+    /* ---------- 神経衰弱 ---------- */
+    const mem={ cards:[], open:[], moves:0, matched:0, lock:false };
+    function startMemory(){
+      $("#memory").hidden=false;
+      const picks=shuffle(state.pool).slice(0,6);
+      let cards=[];
+      picks.forEach((r,idx)=>{ cards.push({key:idx,type:"photo",r}); cards.push({key:idx,type:"name",r}); });
+      mem.cards=shuffle(cards); mem.open=[]; mem.moves=0; mem.matched=0; mem.lock=false;
+      $("#mstat").innerHTML=`手数 <b>0</b> ／ ${picks.length}ペア`;
+      const g=$("#mgrid"); g.innerHTML="";
+      mem.cards.forEach((c,i)=>{
+        const b=document.createElement("button"); b.className="mcard"; b.dataset.i=i;
+        const front = c.type==="photo" ? `<img src="${c.r.photo}" alt="">` : `<div class="nm">${esc(c.r.wamei)}</div>`;
+        b.innerHTML=`<div class="mcard__inner"><div class="mface mback">🍄</div><div class="mface mfront">${front}</div></div>`;
+        b.addEventListener("click",()=>flip(i,b));
+        g.appendChild(b);
+      });
+    }
+    function flip(i,b){
+      if(mem.lock) return;
+      const c=mem.cards[i];
+      if(b.classList.contains("open")||b.classList.contains("done")) return;
+      b.classList.add("open"); mem.open.push({i,b,c});
+      if(mem.open.length===2){
+        mem.moves++; $("#mstat").querySelector("b").textContent=mem.moves;
+        const [a,d]=mem.open;
+        if(a.c.key===d.c.key){
+          mem.matched++; mem.open=[];
+          setTimeout(()=>{ a.b.classList.add("done"); d.b.classList.add("done"); if(mem.matched===6) memWin(); },350);
+        }else{
+          mem.lock=true;
+          setTimeout(()=>{ a.b.classList.remove("open"); d.b.classList.remove("open"); mem.open=[]; mem.lock=false; },850);
+        }
+      }
+    }
+    function memWin(){
+      $("#memory").hidden=true; $("#result").hidden=false;
+      $("#rscore").textContent=mem.moves; $("#rmax").textContent="手でクリア";
+      $("#rmsg").textContent = mem.moves<=8?"🏆 パーフェクト記憶！":mem.moves<=12?"🌟 お見事！":"🍄 クリア！";
+      const prev=getBest("memory"), best=prev? Math.min(prev,mem.moves):mem.moves;
+      try{ localStorage.setItem(bestKey("memory"),best);}catch{}
+      $("#rbest").textContent = (!prev||mem.moves<prev) ? "最短記録を更新！ 🎉" : `最短 ${best}手`;
+      state.mode="memory";
     }
 
     function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }

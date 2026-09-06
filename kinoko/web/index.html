@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260827-1600" />
+  <link rel="stylesheet" href="style.css?v=20260906-1200" />
 </head>
 <body class="home">
 
@@ -125,6 +125,23 @@
       </div>
     </section>
 
+    <!-- ===== 今日の1問 ===== -->
+    <section class="daily-sec" id="daily" hidden>
+      <div class="section-head">
+        <span class="section-head__en">TODAY'S QUIZ</span>
+        <h2 class="section-head__ja">今日の1問</h2>
+      </div>
+      <div class="daily">
+        <div class="daily__photo ph" id="dailyPhoto" data-label="？"></div>
+        <div class="daily__body">
+          <p class="daily__q">この写真は、何のキノコ？</p>
+          <button class="btn-outline" id="dailyReveal" type="button">答えを見る</button>
+          <div class="daily__ans" id="dailyAns" hidden></div>
+          <a class="daily__play" href="game.html">クイズで遊ぶ <span>→</span></a>
+        </div>
+      </div>
+    </section>
+
     <!-- ===== COLUMN ===== -->
     <section class="column-sec" id="column">
       <div class="section-head">
@@ -171,6 +188,6 @@
     </article>
   </div>
 
-  <script src="app.js?v=20260827-1600"></script>
+  <script src="app.js?v=20260906-1200"></script>
 </body>
 </html>

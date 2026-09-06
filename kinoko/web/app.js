@@ -70,6 +70,37 @@ function renderHome() {
   // ABOUT などHTMLに直接置かれた写真も読み込む
   const about = $(".about");
   if (about) hydratePhotos(about);
+
+  renderDailyQuiz();
+}
+
+/* ---------------- 今日の1問（トップ） ---------------- */
+function renderDailyQuiz() {
+  const sec = $("#daily");
+  if (!sec) return;
+  const withPhoto = state.records.filter((r) => r.photo);
+  if (!withPhoto.length) return;
+  const day = Math.floor(Date.now() / 86400000); // 日替わり
+  const r = withPhoto[day % withPhoto.length];
+
+  const ph = $("#dailyPhoto");
+  const img = new Image();
+  img.onload = () => { ph.style.backgroundImage = `url("${r.photo}")`; ph.setAttribute("data-loaded", "1"); };
+  img.src = r.photo;
+
+  const btn = $("#dailyReveal");
+  const ans = $("#dailyAns");
+  btn.addEventListener("click", () => {
+    const col = EDIBILITY_COLORS[r.edibility] || "#7a7368";
+    ans.innerHTML =
+      `<span class="daily__name">${escapeHTML(r.wamei)}</span>` +
+      `<span class="daily__badge" style="background:${col}">${escapeHTML(r.edibility)}</span>` +
+      (r.family ? `<span class="daily__fam">${escapeHTML(r.family)}</span>` : "");
+    ans.hidden = false;
+    btn.hidden = true;
+  });
+
+  sec.hidden = false;
 }
 
 async function loadColumns() {
