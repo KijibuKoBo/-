@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260906-1200" />
+  <link rel="stylesheet" href="style.css?v=20260914-1000" />
 </head>
 <body class="admin-page">
 
@@ -20,6 +20,7 @@
       <input type="password" id="pinInput" class="adm-input" placeholder="パスワード" autocomplete="off" inputmode="numeric" />
       <button class="btn-primary" id="pinBtn" type="button">ログイン</button>
       <p class="lock__err" id="pinErr" hidden>パスワードが違います</p>
+      <p class="lock__desc" style="margin-top:14px"><a href="guide.pdf" target="_blank" rel="noopener">📖 使い方ガイド（PDF）を見る</a></p>
     </div>
   </div>
 
@@ -34,7 +35,14 @@
     <div class="section-head section-head--center">
       <span class="section-head__en">EDITOR</span>
       <h1 class="section-head__ja">記録の追加・編集</h1>
-      <p class="section-head__desc">入力して「公開」を押すと、HPに反映されます（数分で表示）。</p>
+      <p class="section-head__desc">入力して「公開」を押すと、HPに反映されます（数分で表示）。<br /><a href="guide.pdf" target="_blank" rel="noopener">📖 使い方ガイド（PDF）</a></p>
+    </div>
+
+    <!-- ===== 編集するものを選ぶタブ ===== -->
+    <div class="adm-tabs" role="tablist" aria-label="編集するもの">
+      <button class="adm-tab" data-tab="records" aria-pressed="true" type="button">🍄 キノコ</button>
+      <button class="adm-tab" data-tab="columns" aria-pressed="false" type="button">📝 コラム</button>
+      <button class="adm-tab" data-tab="diary" aria-pressed="false" type="button">📔 日誌</button>
     </div>
 
     <!-- ===== 設定パネル ===== -->
@@ -60,8 +68,8 @@
       <p class="adm-status" id="cfgStatus"></p>
     </section>
 
-    <!-- ===== 入力フォーム ===== -->
-    <section class="adm-panel">
+    <!-- ===== 入力フォーム（キノコ） ===== -->
+    <section class="adm-panel" data-panel="records">
       <div class="adm-editbar">
         <label class="adm-field adm-field--inline"><span>編集する記録</span>
           <select id="editSelect" class="adm-input">
@@ -117,6 +125,61 @@
       <div class="adm-progress" id="progress" hidden></div>
       <p class="adm-status adm-status--big" id="publishStatus"></p>
     </section>
+
+    <!-- ===== コラム編集 ===== -->
+    <section class="adm-panel" data-panel="columns" hidden>
+      <div class="adm-editbar">
+        <label class="adm-field adm-field--inline"><span>編集するコラム</span>
+          <select id="colSelect" class="adm-input">
+            <option value="">＋ 新しいコラムを書く</option>
+          </select>
+        </label>
+        <button class="btn-outline btn-sm" id="colReset" type="button">入力をクリア</button>
+      </div>
+      <div class="adm-grid">
+        <label class="adm-field adm-req adm-wide"><span>タイトル</span><input type="text" id="c_title" class="adm-input" placeholder="雨上がりこそ、山へ" /></label>
+        <label class="adm-field"><span>種類（タグ）</span><input type="text" id="c_tag" class="adm-input" placeholder="エッセイ / 採集のコツ / 安全 / 食べ方" /></label>
+        <label class="adm-field"><span>日付</span><input type="date" id="c_date" class="adm-input" /></label>
+        <label class="adm-field adm-wide"><span>ひとこと（一覧に出る短い紹介）</span><input type="text" id="c_excerpt" class="adm-input" placeholder="キノコが一斉に顔を出すタイミングの読み方。" /></label>
+        <label class="adm-field adm-wide"><span>本文（改行で段落）</span><textarea id="c_body" class="adm-input" rows="8" placeholder="ここに文章を書きます。&#10;&#10;空の行を入れると段落が分かれます。"></textarea></label>
+      </div>
+      <div class="adm-photos">
+        <div class="adm-photos__head">
+          <span>コラムの写真（1枚）</span>
+          <label class="btn-outline btn-sm adm-addphoto">📷 写真を選ぶ
+            <input type="file" id="c_photo" accept="image/*" capture="environment" hidden />
+          </label>
+        </div>
+        <div class="adm-photolist" id="colPhotoBox"></div>
+      </div>
+      <div class="adm-actions adm-actions--main">
+        <button class="btn-outline btn-danger" id="colDelete" type="button" hidden>🗑 このコラムを消す</button>
+        <button class="btn-primary btn-publish" id="colPublish" type="button">📝 公開する</button>
+      </div>
+      <div class="adm-progress" id="colProgress" hidden></div>
+      <p class="adm-status adm-status--big" id="colStatus"></p>
+    </section>
+
+    <!-- ===== 日誌編集 ===== -->
+    <section class="adm-panel" data-panel="diary" hidden>
+      <h2 class="adm-h2">📔 今日の採集を書く</h2>
+      <div class="adm-grid">
+        <label class="adm-field adm-req"><span>日付</span><input type="date" id="d_date" class="adm-input" /></label>
+        <label class="adm-field"><span>天気</span><input type="text" id="d_weather" class="adm-input" placeholder="晴 / 曇 / 雨" /></label>
+        <label class="adm-field adm-req"><span>採集場所</span><input type="text" id="d_place" class="adm-input" placeholder="東山" /></label>
+        <label class="adm-field adm-req"><span>キノコの名前</span><input type="text" id="d_species" class="adm-input" placeholder="ナメコ" /></label>
+        <label class="adm-field"><span>量・状態</span><input type="text" id="d_edib" class="adm-input" placeholder="大量 / 少量 / 最適" /></label>
+        <label class="adm-field adm-wide"><span>メモ</span><input type="text" id="d_note" class="adm-input" placeholder="味噌汁にした など" /></label>
+      </div>
+      <div class="adm-actions adm-actions--main">
+        <button class="btn-primary btn-publish" id="diaryPublish" type="button">📔 日誌に追加して公開</button>
+      </div>
+      <div class="adm-progress" id="diaryProgress" hidden></div>
+      <p class="adm-status adm-status--big" id="diaryStatus"></p>
+
+      <h2 class="adm-h2" style="margin-top:28px">最近の日誌（消したいときは🗑）</h2>
+      <div class="adm-diarylist" id="diaryList"></div>
+    </section>
   </main>
 
   <!-- プレビュー用モーダル（閲覧画面と同じ見た目） -->
@@ -128,6 +191,6 @@
     </article>
   </div>
 
-  <script src="admin.js?v=20260906-1200"></script>
+  <script src="admin.js?v=20260914-1000"></script>
 </body>
 </html>

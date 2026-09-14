@@ -6,6 +6,8 @@
 const ADMIN_PW = "100";               // ログインパスワード（固定）
 const CFG_KEY = "kinoko_admin_cfg";
 const RECORDS_PATH = "kinoko/web/data/records.json";
+const COLUMNS_PATH = "kinoko/web/data/columns.json";
+const DIARY_PATH   = "kinoko/web/data/diary.json";
 const PHOTO_DIR = "kinoko/web/data/photos";
 
 const DEFAULT_CFG = { token: "", owner: "KijibuKoBo", repo: "-", branch: "main" };
@@ -13,6 +15,9 @@ const DEFAULT_CFG = { token: "", owner: "KijibuKoBo", repo: "-", branch: "main" 
 let cfg = loadCfg();
 let records = [];            // 現在のローカル表示用
 let photoItems = [];         // 編集中レコードの写真: {kind:'existing',path} | {kind:'new',b64}
+let columns = [];            // コラム
+let diary = [];              // 日誌
+let colPhoto = null;         // コラム写真 {kind:'existing',path} | {kind:'new',b64} | null
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -98,6 +103,7 @@ function bindUI() {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
   clearForm();
+  bindExtras();
 }
 
 /* ---------------- ローカル記録読み込み ---------------- */
@@ -416,3 +422,230 @@ function fmtDate(iso) {
   const d = new Date(iso);
   return isNaN(d) ? iso : `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
 }
+
+/* =========================================================
+   タブ（キノコ / コラム / 日誌）
+   ========================================================= */
+
+function bindExtras() {
+  $$(".adm-tab").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+
+  // コラム
+  $("#colSelect").addEventListener("change", (e) => {
+    const id = e.target.value;
+    if (!id) { clearColForm(); return; }
+    const c = columns.find((x) => x.id === id);
+    if (c) fillColForm(c);
+  });
+  $("#colReset").addEventListener("click", () => { $("#colSelect").value = ""; clearColForm(); });
+  $("#c_photo").addEventListener("change", onColPhotoSelected);
+  $("#colPhotoBox").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-act='del']");
+    if (b) { colPhoto = null; renderColPhoto(); }
+  });
+  $("#colPublish").addEventListener("click", publishColumn);
+  $("#colDelete").addEventListener("click", deleteColumn);
+
+  // 日誌
+  $("#diaryPublish").addEventListener("click", publishDiary);
+  $("#diaryList").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-del]");
+    if (b) deleteDiary(Number(b.dataset.del));
+  });
+  $("#d_date").value = today();
+
+  clearColForm();
+  loadColumnsLocal();
+  loadDiaryLocal();
+}
+
+function switchTab(tab) {
+  $$(".adm-tab").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tab === tab));
+  $$("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== tab; });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function today() { return new Date().toISOString().slice(0, 10); }
+
+/* ---------------- コラム ---------------- */
+async function loadColumnsLocal() {
+  try {
+    const res = await fetch("data/columns.json", { cache: "no-store" });
+    columns = (await res.json()).columns || [];
+  } catch { columns = []; }
+  refreshColSelect();
+}
+function refreshColSelect() {
+  const sel = $("#colSelect");
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">＋ 新しいコラムを書く</option>`;
+  columns.slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).forEach((c) => {
+    const o = document.createElement("option");
+    o.value = c.id; o.textContent = `${c.title}（${c.date || ""}）`;
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+function fillColForm(c) {
+  $("#c_title").value = c.title || "";
+  $("#c_tag").value = c.tag || "";
+  $("#c_date").value = c.date || "";
+  $("#c_excerpt").value = c.excerpt || "";
+  $("#c_body").value = c.body || "";
+  colPhoto = c.image ? { kind: "existing", path: c.image } : null;
+  renderColPhoto();
+  $("#colDelete").hidden = false;
+  status("#colStatus", "");
+}
+function clearColForm() {
+  ["c_title", "c_tag", "c_excerpt", "c_body"].forEach((id) => { $("#" + id).value = ""; });
+  $("#c_date").value = today();
+  colPhoto = null; renderColPhoto();
+  $("#colDelete").hidden = true;
+  status("#colStatus", "");
+}
+function renderColPhoto() {
+  const box = $("#colPhotoBox");
+  if (!colPhoto) { box.innerHTML = `<p class="adm-note adm-photolist__empty">写真はまだありません（無くてもOK）。</p>`; return; }
+  const src = colPhoto.kind === "new" ? `data:image/jpeg;base64,${colPhoto.b64}` : colPhoto.path;
+  box.innerHTML = `<div class="adm-pcard is-main">
+      <div class="adm-pcard__img" style="background-image:url('${src}')"></div>
+      <div class="adm-pcard__ctrl"><button type="button" data-act="del">🗑 消す</button></div>
+    </div>`;
+}
+async function onColPhotoSelected(e) {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  status("#colStatus", "写真を処理中…");
+  try { colPhoto = { kind: "new", b64: await compressImage(f) }; renderColPhoto(); status("#colStatus", ""); }
+  catch { status("#colStatus", "写真の読み込みに失敗しました", "err"); }
+}
+function nextColId() {
+  let max = 0;
+  columns.forEach((c) => { const m = /(\d+)$/.exec(c.id || ""); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+  return "c" + String(max + 1).padStart(3, "0");
+}
+async function publishColumn() {
+  if (!cfg.token) { openSettings(); status("#colStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
+  const title = $("#c_title").value.trim();
+  if (!title) { status("#colStatus", "タイトルを入力してください", "err"); return; }
+  const editingId = $("#colSelect").value;
+  const id = editingId || nextColId();
+  setBusy2("#colPublish", "#colProgress", true);
+  try {
+    progress2("#colProgress", "最新データを取得中…");
+    const file = await ghGet(COLUMNS_PATH);
+    if (!file) throw new Error("columns.json が見つかりません");
+    const json = JSON.parse(b64decode(file.content));
+    json.columns = json.columns || [];
+
+    let image = (colPhoto && colPhoto.kind === "existing") ? colPhoto.path : "";
+    if (colPhoto && colPhoto.kind === "new") {
+      progress2("#colProgress", "写真をアップロード中…");
+      const fname = `col-${id}-${Date.now()}.jpg`;
+      await ghPut(`${PHOTO_DIR}/${fname}`, colPhoto.b64, `コラム写真: ${title}`);
+      image = `data/photos/${fname}`;
+    }
+    const rec = {
+      id, title,
+      tag: $("#c_tag").value.trim() || "コラム",
+      date: $("#c_date").value || today(),
+      excerpt: $("#c_excerpt").value.trim(),
+      image,
+      body: $("#c_body").value.trim(),
+    };
+    const ex = json.columns.find((x) => x.id === id);
+    if (ex) Object.assign(ex, rec); else json.columns.unshift(rec);
+
+    progress2("#colProgress", "保存中…");
+    await ghPut(COLUMNS_PATH, b64encode(JSON.stringify(json, null, 2) + "\n"), `コラム: ${title} を${ex ? "更新" : "追加"}`, file.sha);
+    columns = json.columns; refreshColSelect(); $("#colSelect").value = id; fillColForm(rec);
+    setBusy2("#colPublish", "#colProgress", false);
+    status("#colStatus", `✅ 「${title}」を公開しました。1〜2分でHPに出ます。`, "ok");
+  } catch (e) {
+    setBusy2("#colPublish", "#colProgress", false);
+    status("#colStatus", "✗ 公開に失敗：" + e.message, "err");
+  }
+}
+async function deleteColumn() {
+  const id = $("#colSelect").value; if (!id) return;
+  const c = columns.find((x) => x.id === id);
+  if (!confirm(`「${c ? c.title : id}」を消しますか？`)) return;
+  setBusy2("#colPublish", "#colProgress", true);
+  try {
+    const file = await ghGet(COLUMNS_PATH);
+    const json = JSON.parse(b64decode(file.content));
+    json.columns = (json.columns || []).filter((x) => x.id !== id);
+    await ghPut(COLUMNS_PATH, b64encode(JSON.stringify(json, null, 2) + "\n"), `コラム削除: ${id}`, file.sha);
+    columns = json.columns; refreshColSelect(); $("#colSelect").value = ""; clearColForm();
+    setBusy2("#colPublish", "#colProgress", false);
+    status("#colStatus", "🗑 消しました。1〜2分でHPに反映されます。", "ok");
+  } catch (e) {
+    setBusy2("#colPublish", "#colProgress", false);
+    status("#colStatus", "✗ 削除に失敗：" + e.message, "err");
+  }
+}
+
+/* ---------------- 日誌 ---------------- */
+async function loadDiaryLocal() {
+  try {
+    const res = await fetch("data/diary.json", { cache: "no-store" });
+    diary = (await res.json()).entries || [];
+  } catch { diary = []; }
+  renderDiaryList();
+}
+function dkey(e) { return (e.year || 0) * 10000 + (e.month || 0) * 100 + (e.day || 0); }
+function renderDiaryList() {
+  const box = $("#diaryList");
+  const rows = diary.map((e, i) => ({ e, i })).sort((a, b) => dkey(b.e) - dkey(a.e)).slice(0, 15);
+  if (!rows.length) { box.innerHTML = `<p class="adm-note">まだ日誌がありません。</p>`; return; }
+  box.innerHTML = rows.map(({ e, i }) => `
+    <div class="adm-dcard">
+      <div class="adm-dcard__d">${e.year}/${e.month}/${e.day || "?"}</div>
+      <div class="adm-dcard__m">
+        <b>${esc(e.species)}</b>${e.place ? ` <span>📍${esc(e.place)}</span>` : ""}${e.edib ? ` <span class="adm-dcard__tag">${esc(e.edib)}</span>` : ""}
+        ${e.note ? `<div class="adm-dcard__n">${esc(e.note)}</div>` : ""}
+      </div>
+      <button type="button" data-del="${i}" title="消す">🗑</button>
+    </div>`).join("");
+}
+async function publishDiary() {
+  if (!cfg.token) { openSettings(); status("#diaryStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
+  const date = $("#d_date").value, place = $("#d_place").value.trim(), sp = $("#d_species").value.trim();
+  if (!date || !place || !sp) { status("#diaryStatus", "日付・採集場所・キノコの名前は必須です", "err"); return; }
+  const [y, m, d] = date.split("-").map(Number);
+  const entry = { year: y, month: m, day: d, place, species: sp,
+    edib: $("#d_edib").value.trim(), weather: $("#d_weather").value.trim(), note: $("#d_note").value.trim() };
+  setBusy2("#diaryPublish", "#diaryProgress", true);
+  try {
+    progress2("#diaryProgress", "保存中…");
+    const file = await ghGet(DIARY_PATH);
+    if (!file) throw new Error("diary.json が見つかりません");
+    const json = JSON.parse(b64decode(file.content));
+    json.entries = json.entries || []; json.entries.push(entry);
+    await ghPut(DIARY_PATH, b64encode(JSON.stringify(json, null, 1) + "\n"), `日誌: ${date} ${sp}`, file.sha);
+    diary = json.entries; renderDiaryList();
+    ["d_place", "d_species", "d_edib", "d_note"].forEach((id) => { $("#" + id).value = ""; });
+    setBusy2("#diaryPublish", "#diaryProgress", false);
+    status("#diaryStatus", `✅ ${date} の「${sp}」を日誌に追加しました。1〜2分でHPに出ます。`, "ok");
+  } catch (e) {
+    setBusy2("#diaryPublish", "#diaryProgress", false);
+    status("#diaryStatus", "✗ 保存に失敗：" + e.message, "err");
+  }
+}
+async function deleteDiary(i) {
+  const e = diary[i]; if (!e) return;
+  if (!confirm(`${e.year}/${e.month}/${e.day || "?"} の「${e.species}」を消しますか？`)) return;
+  try {
+    const file = await ghGet(DIARY_PATH);
+    const json = JSON.parse(b64decode(file.content));
+    json.entries = json.entries || [];
+    const k = json.entries.findIndex((x) => x.year === e.year && x.month === e.month && x.day === e.day && x.species === e.species && x.place === e.place && (x.note || "") === (e.note || ""));
+    if (k >= 0) json.entries.splice(k, 1);
+    await ghPut(DIARY_PATH, b64encode(JSON.stringify(json, null, 1) + "\n"), `日誌削除: ${e.year}/${e.month}/${e.day} ${e.species}`, file.sha);
+    diary = json.entries; renderDiaryList();
+    status("#diaryStatus", "🗑 消しました。1〜2分でHPに反映されます。", "ok");
+  } catch (err) { status("#diaryStatus", "✗ 削除に失敗：" + err.message, "err"); }
+}
+
+function setBusy2(btn, prog, b) { $(btn).disabled = b; $(prog).hidden = !b; if (!b) $(prog).textContent = ""; }
+function progress2(prog, msg) { $(prog).hidden = false; $(prog).textContent = "⏳ " + msg; }
