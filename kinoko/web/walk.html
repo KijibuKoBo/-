@@ -130,6 +130,51 @@
     .bgrid img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; border:2px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,.12); }
     .bgrid .nm{ font-size:.62rem; line-height:1.2; margin-top:2px; display:block; }
     .result__sum{ text-align:left; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 14px; font-size:.86rem; margin:0 0 14px; }
+
+    /* 季節 */
+    .scene.spring{ --sky1:#cde9f6; --sky2:#f6efe0; } .scene.summer{ --sky1:#bfe3f5; --sky2:#eef7d8; }
+    .scene.autumn{ --sky1:#dfe6f0; --sky2:#f7e6c9; } .scene.winter{ --sky1:#cfdbe6; --sky2:#f0f3f5; }
+    .scene.winter .sun{ background:#fff3c4; box-shadow:0 0 22px 6px rgba(255,255,255,.6); }
+    .snow{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .snow i{ position:absolute; top:-12px; background:#fff; border-radius:50%; opacity:.9; animation:fall linear infinite; }
+    @keyframes fall{ to{ transform:translateY(300px) translateX(20px) } }
+    .petals i{ background:#f7b6c9 !important; border-radius:50% 0 50% 0 !important; }
+    .leaves i{ background:#d9832f !important; border-radius:50% 0 !important; }
+    /* 上部ツール */
+    .tools{ display:flex; gap:8px; justify-content:center; margin:8px 0 0; flex-wrap:wrap; }
+    .tool{ font-family:var(--sans); font-weight:700; font-size:.82rem; border:1px solid var(--line); background:var(--paper); border-radius:999px; padding:6px 14px; cursor:pointer; }
+    .tool[aria-pressed="true"]{ background:var(--forest); color:#fff; border-color:var(--forest); }
+    .seasons{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:6px 0 10px; }
+    .seasons button{ border:1px solid var(--line); background:var(--paper); border-radius:12px; padding:8px 4px; cursor:pointer; font-family:var(--sans); font-size:.82rem; }
+    .seasons button[aria-pressed="true"]{ background:var(--forest); color:#fff; border-color:var(--forest); }
+    .seasons button b{ display:block; font-size:1.2rem; line-height:1.2; }
+    .modeSel{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:4px 0 10px; }
+    .modeSel button{ border:1px solid var(--line); background:var(--paper); border-radius:12px; padding:10px; cursor:pointer; font-family:var(--sans); font-weight:700; }
+    .modeSel button[aria-pressed="true"]{ background:var(--gold); color:#fff; border-color:var(--gold); }
+    .lbl{ font-size:.78rem; color:var(--sub); font-weight:700; margin:8px 0 2px; text-align:left; }
+    /* 2P HUD */
+    .hud2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 6px; }
+    .pcard{ border:2px solid var(--line); background:var(--paper); border-radius:12px; padding:6px 10px; font-size:.85rem; transition:.2s; }
+    .pcard.active{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(168,133,74,.25); }
+    .pcard.out{ opacity:.45; }
+    .pcard .pn{ font-weight:900; } .pcard .pn.p1{ color:#2f6b3a; } .pcard .pn.p2{ color:#8a4b8a; }
+    .pcard .sc{ font-family:var(--latin); font-size:1.3rem; color:var(--forest); font-weight:600; }
+    .turn{ text-align:center; font-weight:900; font-size:1rem; margin:4px 0 2px; }
+    .turn.p1{ color:#2f6b3a; } .turn.p2{ color:#8a4b8a; }
+    /* 図鑑 */
+    .zk{ text-align:center; }
+    .zk__h{ font-family:var(--serif); font-size:1.6rem; font-weight:800; margin:6px 0 2px; }
+    .zk__p{ font-size:.85rem; color:var(--sub); margin:0 0 10px; }
+    .zk__bar{ height:10px; background:#e2dbc9; border-radius:99px; overflow:hidden; margin:0 0 12px; }
+    .zk__bar i{ display:block; height:100%; background:linear-gradient(90deg,#c9a86a,#a8854a); }
+    .zgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .zc{ border-radius:10px; overflow:hidden; background:var(--paper); border:1px solid var(--line); font-size:.62rem; line-height:1.25; padding-bottom:4px; }
+    .zc img{ width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+    .zc .q{ width:100%; aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:#b9b1a0; background:#ece6d8; }
+    .zc .nm{ display:block; font-weight:700; padding:3px 3px 0; }
+    .zc .st{ color:var(--sub); }
+    .zc .bd{ display:inline-block; color:#fff; padding:0 6px; border-radius:999px; margin-top:2px; font-size:.58rem; }
+    .zc.locked .nm{ color:#b9b1a0; }
     .loading{ text-align:center; color:var(--sub); padding:60px; }
   </style>
 </head>
@@ -150,6 +195,7 @@
         <div class="layer far" id="layerFar"></div>
         <div class="layer mid" id="layerMid"></div>
         <div class="layer near" id="layerNear"></div>
+        <div class="snow" id="fx"></div>
         <div class="bubble" id="bubble">！</div>
         <div class="found-mush" id="foundMush"><img id="foundImg" alt="" /></div>
         <div class="hero" id="hero">
@@ -203,6 +249,23 @@
           <li>山頂（15回の出会い）に着くか、❤️が0になったら終わり</li>
         </ul>
       </div>
+      <div class="tools">
+        <button class="tool" id="soundBtn" type="button" aria-pressed="true">🔊 効果音 ON</button>
+        <button class="tool" id="zukanBtn" type="button">📖 発見図鑑 <span id="zkCount"></span></button>
+      </div>
+      <p class="lbl">あそぶ人数</p>
+      <div class="modeSel" id="modeSel">
+        <button data-m="solo" aria-pressed="true">🧑 ひとりで</button>
+        <button data-m="duo" aria-pressed="false">👥 ふたりで対戦</button>
+      </div>
+      <p class="lbl">季節（景色と出やすいキノコが変わる）</p>
+      <div class="seasons" id="seasons">
+        <button data-s="spring" aria-pressed="false"><b>🌸</b>春</button>
+        <button data-s="summer" aria-pressed="false"><b>☀️</b>夏</button>
+        <button data-s="autumn" aria-pressed="true"><b>🍁</b>秋</button>
+        <button data-s="winter" aria-pressed="false"><b>❄️</b>冬</button>
+      </div>
+      <p class="lbl">むずかしさ</p>
       <div class="diff" id="diff">
         <button data-d="easy" aria-pressed="false"><b>やさしい</b><small>名前つき<br>10秒</small></button>
         <button data-d="normal" aria-pressed="true"><b>ふつう</b><small>写真だけ<br>8秒</small></button>
@@ -215,11 +278,15 @@
 
     <!-- ===== ゲーム ===== -->
     <section id="game" hidden>
-      <div class="hud">
+      <div class="hud" id="hudSolo">
         <div class="lives" id="lives"></div>
         <div class="score">スコア <b id="score">0</b></div>
         <div class="basket">🧺 <span id="basketN">0</span></div>
       </div>
+      <div class="hud2" id="hudDuo" hidden>
+        <div class="pcard" id="pc0"></div><div class="pcard" id="pc1"></div>
+      </div>
+      <div class="turn" id="turnLbl" hidden></div>
       <div class="trail"><div class="trail__fill" id="trailFill"></div><span class="trail__me" id="trailMe">🥾</span><span class="trail__flag">🚩</span></div>
       <div class="trail__lbl"><span>登山口</span><span id="stageLbl">朝</span><span>山頂</span></div>
 
@@ -247,7 +314,16 @@
       <div id="basketTitle" style="font-weight:700;margin-bottom:4px">🧺 カゴの中身</div>
       <div class="bgrid" id="bgrid"></div>
       <button class="btn-primary" id="againBtn">もう一度 山へ</button>
-      <button class="btn-ghost" id="toStartBtn">難易度を変える</button>
+      <button class="btn-ghost" id="toStartBtn">設定を変える</button>
+    </section>
+
+    <!-- ===== 発見図鑑 ===== -->
+    <section id="zukan" class="zk" hidden>
+      <h2 class="zk__h">📖 発見図鑑</h2>
+      <p class="zk__p" id="zkProg"></p>
+      <div class="zk__bar"><i id="zkBar" style="width:0"></i></div>
+      <div class="zgrid" id="zgrid"></div>
+      <button class="btn-ghost" id="zkBack">← もどる</button>
     </section>
   </main>
 
@@ -255,146 +331,228 @@
 
   <script>
     const $=(s)=>document.querySelector(s);
-    const N_ENC=15, LIVES=3;
+    const N_SOLO=15, N_DUO=16, LIVES=3;
     const DIFF={ easy:{time:10, pois:.28, showName:true}, normal:{time:8, pois:.35, showName:false}, hard:{time:5, pois:.45, showName:false} };
     const EDCOL={ "食用":"var(--food)","毒":"var(--pois)","食不適":"var(--unfit)" };
-    const st={ pool:[], diff:"normal", lives:LIVES, score:0, i:0, streak:0, basket:[], log:[], timer:null, tLeft:0, cur:null, busy:false };
+    const SEASON_JA={ spring:"春", summer:"夏", autumn:"秋", winter:"冬" };
+    const st={ pool:[], diff:"normal", mode:"solo", season:"autumn", sound:true,
+               players:[], turn:0, i:0, N:N_SOLO, cur:null, timer:null, tLeft:0, busy:false, stepTimer:null, log:[] };
 
-    /* ---- 背景レイヤー（SVG） ---- */
-    function svgUrl(s){ return `url("data:image/svg+xml;utf8,${encodeURIComponent(s)}")`; }
-    const FAR=`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='120' viewBox='0 0 400 120'><path d='M0 120 L0 70 L60 30 L110 70 L160 40 L220 80 L270 35 L330 75 L400 45 L400 120 Z' fill='#a9c6b4'/><path d='M0 120 L0 92 L50 70 L120 96 L190 66 L250 98 L320 72 L400 94 L400 120 Z' fill='#88aa93'/></svg>`;
-    const MID=`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='120' viewBox='0 0 360 120'>
-      <g fill='#3f6b4a'><path d='M20 120 L45 50 L70 120Z'/><path d='M30 120 L45 30 L60 120Z' fill='#4f8259'/><path d='M120 120 L150 40 L180 120Z'/><path d='M132 120 L150 20 L168 120Z' fill='#4f8259'/><path d='M250 120 L280 55 L310 120Z'/><path d='M260 120 L280 34 L300 120Z' fill='#4f8259'/></g>
-      <g><circle cx='95' cy='85' r='22' fill='#5d8f5a'/><rect x='91' y='95' width='8' height='25' fill='#6b4b2d'/><circle cx='215' cy='80' r='26' fill='#558a54'/><rect x='211' y='95' width='8' height='25' fill='#6b4b2d'/><circle cx='340' cy='88' r='18' fill='#5d8f5a'/><rect x='337' y='98' width='6' height='22' fill='#6b4b2d'/></g></svg>`;
-    const NEAR=`<svg xmlns='http://www.w3.org/2000/svg' width='240' height='64' viewBox='0 0 240 64'>
-      <rect x='0' y='30' width='240' height='34' fill='#7a5a3a'/><rect x='0' y='26' width='240' height='8' fill='#5e8f4e'/>
-      <g fill='#79a95f'><path d='M12 26 l3 -9 l3 9z'/><path d='M40 26 l2 -7 l2 7z'/><path d='M96 26 l3 -10 l3 10z'/><path d='M150 26 l2 -8 l2 8z'/><path d='M200 26 l3 -9 l3 9z'/></g>
+    /* ---- 季節ごとの背景（SVG） ---- */
+    const PAL={
+      spring:{ far:["#b7d4c0","#9bc0a4"], tree:["#5a9a5e","#6fb06f"], round:"#7cbf72", trunk:"#7a5a3a", ground:"#7a5a3a", grass:"#6fb35a", tuft:"#8ccf6e", deco:"blossom", fx:"petals" },
+      summer:{ far:["#a9c6b4","#88aa93"], tree:["#3f6b4a","#4f8259"], round:"#5d8f5a", trunk:"#6b4b2d", ground:"#7a5a3a", grass:"#5e8f4e", tuft:"#79a95f", deco:"", fx:"" },
+      autumn:{ far:["#c2b39a","#a89272"], tree:["#c9612e","#e0842f"], round:"#d9a83a", trunk:"#6b4b2d", ground:"#8a6a44", grass:"#b58a4a", tuft:"#d9a24a", deco:"leaves", fx:"leaves" },
+      winter:{ far:["#dfe7ec","#c2ced8"], tree:["#2f5a45","#3d6e52"], round:"#4a7a5c", trunk:"#5b4432", ground:"#f2f5f8", grass:"#e6edf2", tuft:"#ffffff", deco:"snow", fx:"snow" },
+    };
+    const svgUrl=(s)=>`url("data:image/svg+xml;utf8,${encodeURIComponent(s)}")`;
+    function farSvg(p){ return `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='120' viewBox='0 0 400 120'><path d='M0 120 L0 70 L60 30 L110 70 L160 40 L220 80 L270 35 L330 75 L400 45 L400 120 Z' fill='${p.far[0]}'/>${p.deco==='snow'?`<path d='M48 38 L60 30 L72 38 L66 44 L60 40 L54 44Z' fill='#fff'/><path d='M258 43 L270 35 L282 43 L276 49 L270 45 L264 49Z' fill='#fff'/>`:''}<path d='M0 120 L0 92 L50 70 L120 96 L190 66 L250 98 L320 72 L400 94 L400 120 Z' fill='${p.far[1]}'/></svg>`; }
+    function midSvg(p){
+      const snowcap=(x,y)=> p.deco==='snow' ? `<path d='M${x-9} ${y+6} L${x} ${y-10} L${x+9} ${y+6} Q${x} ${y+10} ${x-9} ${y+6}Z' fill='#fff'/>` : '';
+      const dots=(cx,cy,c)=> p.deco==='blossom' ? `<circle cx='${cx-12}' cy='${cy-6}' r='4' fill='#f7b6c9'/><circle cx='${cx+8}' cy='${cy-12}' r='4' fill='#fbc9d7'/><circle cx='${cx+13}' cy='${cy+4}' r='3.5' fill='#f7b6c9'/>` : (p.deco==='leaves' ? `<circle cx='${cx-10}' cy='${cy-8}' r='4' fill='#e8b04a'/><circle cx='${cx+10}' cy='${cy-4}' r='4' fill='#c9612e'/>` : '');
+      return `<svg xmlns='http://www.w3.org/2000/svg' width='360' height='120' viewBox='0 0 360 120'>
+      <g fill='${p.tree[0]}'><path d='M20 120 L45 50 L70 120Z'/><path d='M30 120 L45 30 L60 120Z' fill='${p.tree[1]}'/>${snowcap(45,44)}<path d='M120 120 L150 40 L180 120Z'/><path d='M132 120 L150 20 L168 120Z' fill='${p.tree[1]}'/>${snowcap(150,34)}<path d='M250 120 L280 55 L310 120Z'/><path d='M260 120 L280 34 L300 120Z' fill='${p.tree[1]}'/>${snowcap(280,48)}</g>
+      <g><circle cx='95' cy='85' r='22' fill='${p.round}'/>${dots(95,85)}<rect x='91' y='95' width='8' height='25' fill='${p.trunk}'/><circle cx='215' cy='80' r='26' fill='${p.round}'/>${dots(215,80)}<rect x='211' y='95' width='8' height='25' fill='${p.trunk}'/><circle cx='340' cy='88' r='18' fill='${p.round}'/>${dots(340,88)}<rect x='337' y='98' width='6' height='22' fill='${p.trunk}'/></g></svg>`;
+    }
+    function nearSvg(p){
+      const leaves = p.deco==='leaves' ? `<g><ellipse cx='50' cy='38' rx='5' ry='2.5' fill='#d9832f'/><ellipse cx='140' cy='36' rx='5' ry='2.5' fill='#c9612e'/><ellipse cx='225' cy='42' rx='5' ry='2.5' fill='#e8b04a'/></g>` : '';
+      return `<svg xmlns='http://www.w3.org/2000/svg' width='240' height='64' viewBox='0 0 240 64'>
+      <rect x='0' y='30' width='240' height='34' fill='${p.ground}'/><rect x='0' y='26' width='240' height='8' fill='${p.grass}'/>
+      <g fill='${p.tuft}'><path d='M12 26 l3 -9 l3 9z'/><path d='M40 26 l2 -7 l2 7z'/><path d='M96 26 l3 -10 l3 10z'/><path d='M150 26 l2 -8 l2 8z'/><path d='M200 26 l3 -9 l3 9z'/></g>
       <g><rect x='66' y='16' width='3' height='10' fill='#f1e6cf'/><ellipse cx='67.5' cy='15' rx='6' ry='4' fill='#d9603b'/><circle cx='65' cy='14' r='1' fill='#fff'/><circle cx='70' cy='15' r='1' fill='#fff'/>
       <rect x='176' y='18' width='3' height='8' fill='#f1e6cf'/><ellipse cx='177.5' cy='17' rx='5' ry='3.5' fill='#c98a3a'/></g>
-      <g fill='#a58a63'><ellipse cx='120' cy='40' rx='6' ry='3'/><ellipse cx='30' cy='50' rx='5' ry='2.5'/><ellipse cx='210' cy='46' rx='7' ry='3'/></g></svg>`;
+      ${leaves}<g fill='${p.deco==='snow'?'#dfe7ec':'#a58a63'}'><ellipse cx='120' cy='40' rx='6' ry='3'/><ellipse cx='30' cy='50' rx='5' ry='2.5'/><ellipse cx='210' cy='46' rx='7' ry='3'/></g></svg>`;
+    }
+    function applySeason(){
+      const p=PAL[st.season]; const sc=$("#scene");
+      ["spring","summer","autumn","winter"].forEach(k=>sc.classList.remove(k)); sc.classList.add(st.season);
+      $("#layerFar").style.backgroundImage=svgUrl(farSvg(p));
+      $("#layerMid").style.backgroundImage=svgUrl(midSvg(p));
+      $("#layerNear").style.backgroundImage=svgUrl(nearSvg(p));
+      const fx=$("#fx"); fx.className="snow "+(p.fx||""); fx.innerHTML="";
+      if(p.fx){ const n = p.fx==="snow"?22:12;
+        for(let k=0;k<n;k++){ const i=document.createElement("i"); const sz=(p.fx==="snow"?3+Math.random()*5:5+Math.random()*4);
+          i.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-duration:${4+Math.random()*5}s;animation-delay:${-Math.random()*8}s;opacity:${.5+Math.random()*.5}`; fx.appendChild(i); } }
+    }
 
+    /* ---- 効果音（Web Audio・外部ファイル不要） ---- */
+    let AC=null;
+    function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch{ return null; } } if(AC&&AC.state==="suspended") AC.resume(); return AC; }
+    function tone(f,dur,type="sine",vol=.12,when=0){ const a=ac(); if(!a) return; const o=a.createOscillator(), g=a.createGain(); o.type=type; o.frequency.value=f;
+      g.gain.setValueAtTime(vol,a.currentTime+when); g.gain.exponentialRampToValueAtTime(.0008,a.currentTime+when+dur); o.connect(g).connect(a.destination); o.start(a.currentTime+when); o.stop(a.currentTime+when+dur+.03); }
+    function sfx(k){ if(!st.sound) return; try{ switch(k){
+      case "step": tone(130,.05,"triangle",.05); break;
+      case "found": tone(660,.12,"sine",.12); tone(990,.2,"sine",.12,.12); break;
+      case "ok": tone(523,.1,"sine",.12); tone(659,.1,"sine",.12,.1); tone(784,.22,"sine",.13,.2); break;
+      case "bad": tone(220,.22,"sawtooth",.1); tone(150,.4,"sawtooth",.1,.2); break;
+      case "meh": tone(330,.18,"triangle",.08); break;
+      case "summit": [523,659,784,1047,1319].forEach((f,i)=>tone(f,.28,"sine",.13,i*.14)); break;
+      case "over": tone(300,.3,"triangle",.1); tone(200,.6,"triangle",.1,.3); break;
+      case "turn": tone(440,.08,"square",.06); tone(660,.1,"square",.06,.09); break;
+    } }catch{} }
+    function setSound(on){ st.sound=on; try{ localStorage.setItem("kinoko_hike_sound",on?"1":"0"); }catch{}
+      $("#soundBtn").textContent = on?"🔊 効果音 ON":"🔇 効果音 OFF"; $("#soundBtn").setAttribute("aria-pressed",on); }
+
+    /* ---- 発見図鑑（端末に保存） ---- */
+    const ZK="kinoko_hike_zukan";
+    const loadZ=()=>{ try{ return JSON.parse(localStorage.getItem(ZK)||"{}"); }catch{ return {}; } };
+    const saveZ=(z)=>{ try{ localStorage.setItem(ZK,JSON.stringify(z)); }catch{} };
+    function noteSeen(r,correct){ const z=loadZ(); const e=z[r.wamei]||{seen:0,ok:0}; e.seen++; if(correct) e.ok++; e.photo=r.photo; e.ed=r.edibility; z[r.wamei]=e; saveZ(z); }
+    function uniqSpecies(){ const m=new Map(); st.pool.forEach(r=>{ if(!m.has(r.wamei)) m.set(r.wamei,r); }); return [...m.values()].sort((a,b)=>a.wamei.localeCompare(b.wamei,"ja")); }
+    function zkCountLbl(){ const z=loadZ(); const all=uniqSpecies(); const n=all.filter(r=>z[r.wamei]).length; $("#zkCount").textContent=`${n}/${all.length}`; }
+    function showZukan(){ const z=loadZ(); const all=uniqSpecies(); const n=all.filter(r=>z[r.wamei]).length;
+      $("#zkProg").textContent=`発見 ${n} ／ 全 ${all.length} 種（山歩きで出会うと登録されます）`; $("#zkBar").style.width=`${all.length?n/all.length*100:0}%`;
+      $("#zgrid").innerHTML=all.map(r=>{ const e=z[r.wamei];
+        if(!e) return `<div class="zc locked"><div class="q">？</div><span class="nm">？？？</span></div>`;
+        return `<div class="zc"><img src="${e.photo||r.photo}" alt=""><span class="nm">${esc(r.wamei)}</span><span class="bd" style="background:${EDCOL[e.ed||r.edibility]}">${esc(e.ed||r.edibility)}</span><br><span class="st">出会い${e.seen}・正解${e.ok}</span></div>`; }).join("");
+      $("#start").hidden=true; $("#result").hidden=true; $("#zukan").hidden=false; }
+
+    /* ---- 初期化 ---- */
     init();
     async function init(){
-      $("#layerFar").style.backgroundImage=svgUrl(FAR);
-      $("#layerMid").style.backgroundImage=svgUrl(MID);
-      $("#layerNear").style.backgroundImage=svgUrl(NEAR);
       let data;
       try{ data=await fetch("data/records.json",{cache:"no-store"}).then(r=>r.json()); }
       catch{ $("#loading").textContent="データを読み込めませんでした。"; return; }
       st.pool=(data.records||[]).filter(r=>r.photo && ["食用","毒","食不適"].includes(r.edibility));
-      $("#loading").hidden=true; $("#sceneWrap").hidden=false; $("#start").hidden=false;
-      showBest();
-      document.querySelectorAll("#diff button").forEach(b=>b.addEventListener("click",()=>{
-        st.diff=b.dataset.d; document.querySelectorAll("#diff button").forEach(x=>x.setAttribute("aria-pressed",x===b)); showBest();
-      }));
-      $("#startBtn").addEventListener("click",startGame);
+      const m=new Date().getMonth()+1; st.season = m<=2||m===12 ? "winter" : m<=5 ? "spring" : m<=8 ? "summer" : "autumn";
+      try{ st.sound = localStorage.getItem("kinoko_hike_sound")!=="0"; }catch{}
+      document.querySelectorAll("#seasons button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===st.season));
+      applySeason(); setSound(st.sound); zkCountLbl();
+      $("#loading").hidden=true; $("#sceneWrap").hidden=false; $("#start").hidden=false; showBest();
+      document.querySelectorAll("#diff button").forEach(b=>b.addEventListener("click",()=>{ st.diff=b.dataset.d; document.querySelectorAll("#diff button").forEach(x=>x.setAttribute("aria-pressed",x===b)); showBest(); }));
+      document.querySelectorAll("#seasons button").forEach(b=>b.addEventListener("click",()=>{ st.season=b.dataset.s; document.querySelectorAll("#seasons button").forEach(x=>x.setAttribute("aria-pressed",x===b)); applySeason(); }));
+      document.querySelectorAll("#modeSel button").forEach(b=>b.addEventListener("click",()=>{ st.mode=b.dataset.m; document.querySelectorAll("#modeSel button").forEach(x=>x.setAttribute("aria-pressed",x===b)); showBest(); }));
+      $("#soundBtn").addEventListener("click",()=>{ setSound(!st.sound); if(st.sound) sfx("found"); });
+      $("#zukanBtn").addEventListener("click",showZukan);
+      $("#zkBack").addEventListener("click",()=>{ $("#zukan").hidden=true; $("#start").hidden=false; zkCountLbl(); });
+      $("#startBtn").addEventListener("click",()=>{ ac(); startGame(); });
       $("#againBtn").addEventListener("click",startGame);
-      $("#toStartBtn").addEventListener("click",()=>{ $("#result").hidden=true; $("#start").hidden=false; setWalking(false); showBest(); });
+      $("#toStartBtn").addEventListener("click",()=>{ $("#result").hidden=true; $("#start").hidden=false; setWalking(false); showBest(); zkCountLbl(); });
       $("#btnTake").addEventListener("click",()=>decide(true));
       $("#btnLeave").addEventListener("click",()=>decide(false));
-      // 待機中もゆっくり歩かせる（デモ）
       setWalking(true);
     }
     const bestKey=()=>"kinoko_hike_best_"+st.diff;
     const getBest=()=>{ try{ return Number(localStorage.getItem(bestKey())||0);}catch{return 0;} };
-    function showBest(){ const b=getBest(); $("#bestLbl").textContent=b?`この難易度の自己ベスト：${b}点`:""; }
+    function showBest(){ const b=getBest(); $("#bestLbl").textContent = st.mode==="duo" ? "ふたり対戦：交代でキノコを判断。スコアが高いほうの勝ち！" : (b?`この難易度の自己ベスト：${b}点`:""); }
     const rnd=(a)=>a[Math.floor(Math.random()*a.length)];
-    function setWalking(on){ $("#scene").classList.toggle("walking",on); $("#hero").classList.toggle("found",!on); $("#walkNote").hidden=!on; }
+    function setWalking(on){
+      $("#scene").classList.toggle("walking",on); $("#hero").classList.toggle("found",!on); $("#walkNote").hidden=!on;
+      clearInterval(st.stepTimer);
+      if(on && st.players.length && !$("#game").hidden) st.stepTimer=setInterval(()=>sfx("step"),460);
+    }
     function setStage(){
-      const p=st.i/N_ENC; const sc=$("#scene"); sc.classList.remove("noon","evening");
+      const p=st.i/st.N; const sc=$("#scene"); sc.classList.remove("noon","evening");
       let lbl="朝"; if(p>=.66){ sc.classList.add("evening"); lbl="夕方"; } else if(p>=.33){ sc.classList.add("noon"); lbl="昼"; }
-      $("#stageLbl").textContent=lbl;
+      $("#stageLbl").textContent=`${SEASON_JA[st.season]}・${lbl}`;
       $("#trailFill").style.width=`${p*100}%`; $("#trailMe").style.left=`calc(${p*100}% - 8px)`;
     }
-    function renderLives(){ $("#lives").innerHTML=Array.from({length:LIVES},(_,k)=>`<span class="${k<st.lives?'':'lost'}">❤️</span>`).join(""); }
-
+    const cp=()=>st.players[st.turn];
+    function renderHud(){
+      if(st.mode==="solo"){ const p=st.players[0];
+        $("#lives").innerHTML=Array.from({length:LIVES},(_,k)=>`<span class="${k<p.lives?'':'lost'}">❤️</span>`).join("");
+        $("#score").textContent=p.score; $("#basketN").textContent=p.basket.length; return; }
+      st.players.forEach((p,k)=>{ const el=$("#pc"+k);
+        el.className="pcard"+(k===st.turn?" active":"")+(p.lives<=0?" out":"");
+        el.innerHTML=`<span class="pn p${k+1}">${p.name}</span> <span class="sc">${p.score}</span><br>${Array.from({length:LIVES},(_,j)=>`<span style="${j<p.lives?'':'opacity:.22;filter:grayscale(1)'}">❤️</span>`).join("")} 🧺${p.basket.length}`; });
+      const t=$("#turnLbl"); t.className="turn p"+(st.turn+1); t.textContent=`▶ ${cp().name} の番！`;
+    }
     function startGame(){
-      Object.assign(st,{lives:LIVES,score:0,i:0,streak:0,basket:[],log:[],cur:null,busy:false});
-      $("#start").hidden=true; $("#result").hidden=true; $("#game").hidden=false; $("#enc").hidden=true;
-      $("#score").textContent=0; $("#basketN").textContent=0; renderLives(); setStage();
+      st.players = st.mode==="duo"
+        ? [{name:"1P",score:0,lives:LIVES,basket:[],streak:0},{name:"2P",score:0,lives:LIVES,basket:[],streak:0}]
+        : [{name:"あなた",score:0,lives:LIVES,basket:[],streak:0}];
+      st.N = st.mode==="duo" ? N_DUO : N_SOLO;
+      Object.assign(st,{turn:0,i:0,cur:null,busy:false,log:[]});
+      $("#hudSolo").hidden = st.mode!=="solo"; $("#hudDuo").hidden = st.mode!=="duo"; $("#turnLbl").hidden = st.mode!=="duo";
+      $("#start").hidden=true; $("#result").hidden=true; $("#zukan").hidden=true; $("#game").hidden=false; $("#enc").hidden=true;
+      renderHud(); setStage(); applySeason();
       walkThen(nextEncounter, 1600);
     }
-    function walkThen(fn, ms){
-      setWalking(true); $("#bubble").classList.remove("show"); $("#foundMush").classList.remove("show");
-      setTimeout(fn, ms + Math.random()*900);
-    }
+    function walkThen(fn, ms){ setWalking(true); $("#bubble").classList.remove("show"); $("#foundMush").classList.remove("show"); setTimeout(fn, ms + Math.random()*900); }
     function pickRecord(){
-      const d=DIFF[st.diff]; const roll=Math.random();
-      let pool;
+      const d=DIFF[st.diff]; const roll=Math.random(); let pool;
       if(roll<d.pois) pool=st.pool.filter(r=>r.edibility==="毒");
       else if(roll<d.pois+.12) pool=st.pool.filter(r=>r.edibility==="食不適");
       else pool=st.pool.filter(r=>r.edibility==="食用");
       if(!pool.length) pool=st.pool;
-      // 直前と同じ種は避ける
-      let r=rnd(pool), tries=0; while(st.cur && r.wamei===st.cur.wamei && tries++<5) r=rnd(pool);
+      // 季節に合うキノコを3倍出やすく
+      const sj=SEASON_JA[st.season]; const weighted=[]; pool.forEach(r=>{ weighted.push(r); if(r.season===sj){ weighted.push(r,r); } });
+      let r=rnd(weighted), tries=0; while(st.cur && r.wamei===st.cur.wamei && tries++<6) r=rnd(weighted);
       return r;
     }
+    function nextTurn(){ // 2P: 生きている次の人へ
+      if(st.mode!=="duo") return;
+      for(let k=1;k<=2;k++){ const t=(st.turn+k)%2; if(st.players[t].lives>0){ st.turn=t; return; } }
+    }
     function nextEncounter(){
-      if(st.i>=N_ENC){ finish(true); return; }
+      if(st.i>=st.N){ finish(true); return; }
+      if(st.mode==="duo" && !st.players.some(p=>p.lives>0)){ finish(false); return; }
+      if(st.mode==="duo" && cp().lives<=0) nextTurn();
       const r=pickRecord(); st.cur=r; st.busy=false;
-      setWalking(false);
-      $("#bubble").classList.add("show");
-      $("#foundImg").src=r.photo; $("#foundMush").classList.add("show");
+      setWalking(false); sfx("found"); if(st.mode==="duo") sfx("turn");
+      renderHud();
+      $("#bubble").classList.add("show"); $("#foundImg").src=r.photo; $("#foundMush").classList.add("show");
       $("#encPhoto").src=r.photo;
       const d=DIFF[st.diff];
       $("#encName").textContent=d.showName ? r.wamei : "？？？";
-      $("#encHint").textContent=d.showName ? "このキノコ、食べられる？" : "名前はナイショ。写真で見きわめて！";
+      $("#encHint").textContent=(st.mode==="duo"?`${cp().name}が判断：`:"")+(d.showName ? "このキノコ、食べられる？" : "名前はナイショ。写真で見きわめて！");
       $("#enc").hidden=false;
-      // timer
       clearInterval(st.timer); st.tLeft=d.time*1000; const total=st.tLeft;
       const bar=$("#tbar"); bar.style.width="100%"; bar.classList.remove("hurry");
-      st.timer=setInterval(()=>{
-        st.tLeft-=100; const p=Math.max(0,st.tLeft/total); bar.style.width=`${p*100}%`;
-        if(p<.3) bar.classList.add("hurry");
-        if(st.tLeft<=0){ clearInterval(st.timer); decide(false,true); }
-      },100);
+      st.timer=setInterval(()=>{ st.tLeft-=100; const p=Math.max(0,st.tLeft/total); bar.style.width=`${p*100}%`; if(p<.3) bar.classList.add("hurry"); if(st.tLeft<=0){ clearInterval(st.timer); decide(false,true); } },100);
     }
     function decide(take, timeout=false){
       if(st.busy) return; st.busy=true; clearInterval(st.timer);
-      const r=st.cur; const e=r.edibility; let big="",kind="",pts=0,msg="";
+      const r=st.cur, e=r.edibility, p=cp(); let big="",kind="",pts=0, correct=false;
       if(take){
-        if(e==="食用"){ st.streak++; pts=10+Math.min(st.streak-1,5)*2; big="⭕ 食べられる！"; kind="ok"; st.basket.push(r); }
-        else if(e==="毒"){ st.streak=0; st.lives--; pts=0; big="☠️ 毒キノコだった！"; kind="bad"; $("#game").classList.add("shake"); setTimeout(()=>$("#game").classList.remove("shake"),600); }
-        else { st.streak=0; pts=-3; big="😖 まずい…食べられない"; kind="meh"; }
+        if(e==="食用"){ p.streak++; pts=10+Math.min(p.streak-1,5)*2; big="⭕ 食べられる！"; kind="ok"; p.basket.push(r); correct=true; }
+        else if(e==="毒"){ p.streak=0; p.lives--; big="☠️ 毒キノコだった！"; kind="bad"; $("#game").classList.add("shake"); setTimeout(()=>$("#game").classList.remove("shake"),600); }
+        else { p.streak=0; pts=-3; big="😖 まずい…食べられない"; kind="meh"; }
       }else{
-        if(e==="毒"){ st.streak=0; pts=5; big=timeout?"⏱ 時間切れ…でも毒！セーフ":"👀 毒を見抜いた！"; kind="ok"; }
-        else if(e==="食用"){ st.streak=0; pts=0; big=timeout?"⏱ 時間切れ…":"🍃 もったいない…食べられた"; kind="meh"; }
-        else { st.streak=0; pts=2; big="🍃 正解。食べないキノコ"; kind="ok"; }
+        if(e==="毒"){ p.streak=0; pts=5; big=timeout?"⏱ 時間切れ…でも毒！セーフ":"👀 毒を見抜いた！"; kind="ok"; correct=true; }
+        else if(e==="食用"){ p.streak=0; pts=0; big=timeout?"⏱ 時間切れ…":"🍃 もったいない…食べられた"; kind="meh"; }
+        else { p.streak=0; pts=2; big="🍃 正解。食べないキノコ"; kind="ok"; correct=true; }
       }
-      st.score=Math.max(0,st.score+pts);
-      st.log.push({r,take,pts,e});
-      $("#score").textContent=st.score; $("#basketN").textContent=st.basket.length; renderLives();
-      toast(kind,big,r,pts);
+      p.score=Math.max(0,p.score+pts);
+      st.log.push({r,take,pts,e,who:p.name}); noteSeen(r,correct);
+      sfx(kind==="ok"?"ok":kind==="bad"?"bad":"meh");
+      renderHud(); toast(kind,(st.mode==="duo"?`${p.name}：`:"")+big,r,pts);
       $("#enc").hidden=true; $("#bubble").classList.remove("show");
       st.i++; setStage();
-      if(st.lives<=0){ setTimeout(()=>finish(false),1400); return; }
+      if(st.mode==="solo" && p.lives<=0){ setTimeout(()=>finish(false),1400); return; }
+      if(st.mode==="duo"){ if(!st.players.some(x=>x.lives>0)){ setTimeout(()=>finish(false),1400); return; } nextTurn(); }
       walkThen(nextEncounter, 1900);
     }
     function toast(kind,big,r,pts){
-      const t=$("#toast"); t.className="toast "+kind;
-      $("#tBig").textContent=big;
+      const t=$("#toast"); t.className="toast "+kind; $("#tBig").textContent=big;
       $("#tNm").innerHTML=`${esc(r.wamei)}<span class="bd" style="background:${EDCOL[r.edibility]}">${esc(r.edibility)}</span>`;
       $("#tPt").textContent= pts>0?`+${pts}`:(pts<0?`${pts}`:"");
-      requestAnimationFrame(()=>t.classList.add("show"));
-      clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1500);
+      requestAnimationFrame(()=>t.classList.add("show")); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1500);
     }
+    function rankOf(score,pois,summit){ let rank = score>=150?"🏆 きのこ名人": score>=100?"🌟 山の達人": score>=60?"🍄 一人前": score>=30?"🌱 見習い":"🐣 はじめの一歩"; if(pois===0&&summit) rank+="・無傷"; return rank; }
     function finish(summit){
-      setWalking(false); $("#game").hidden=true; $("#enc").hidden=true; $("#result").hidden=false;
-      $("#resultArt").textContent= summit?"⛰️🚩":"🏥";
-      $("#resultH").textContent= summit?"山頂に着いた！":"体力がなくなった…";
-      $("#rscore").textContent=st.score;
-      const ate=st.basket.length, pois=st.log.filter(l=>l.take&&l.e==="毒").length, saw=st.log.filter(l=>!l.take&&l.e==="毒").length;
-      let rank = st.score>=150?"🏆 きのこ名人": st.score>=100?"🌟 山の達人": st.score>=60?"🍄 一人前": st.score>=30?"🌱 見習い":"🐣 はじめの一歩";
-      if(pois===0 && summit) rank+="・無傷";
-      $("#rrank").textContent=rank;
-      $("#rsum").innerHTML=`🧺 採った食用キノコ：<b>${ate}</b>種　／　👀 見抜いた毒：<b>${saw}</b>回　／　☠️ 毒を採った：<b>${pois}</b>回<br>歩いた出会い：${st.i}／${N_ENC}`;
-      const prev=getBest(), best=Math.max(prev,st.score);
-      try{ localStorage.setItem(bestKey(),best);}catch{}
-      $("#rbest").textContent= st.score>prev ? "自己ベスト更新！ 🎉" : `自己ベスト ${best}点`;
-      const seen=new Set(); const items=st.basket.filter(r=>!seen.has(r.wamei)&&seen.add(r.wamei));
-      $("#basketTitle").hidden=!items.length;
-      $("#bgrid").innerHTML=items.map(r=>`<div><img src="${r.photo}" alt=""><span class="nm">${esc(r.wamei)}</span></div>`).join("");
+      setWalking(false); clearInterval(st.timer); $("#game").hidden=true; $("#enc").hidden=true; $("#result").hidden=false;
+      sfx(summit?"summit":"over");
+      if(st.mode==="solo"){
+        const p=st.players[0]; const pois=st.log.filter(l=>l.take&&l.e==="毒").length, saw=st.log.filter(l=>!l.take&&l.e==="毒").length;
+        $("#resultArt").textContent= summit?"⛰️🚩":"🏥"; $("#resultH").textContent= summit?"山頂に着いた！":"体力がなくなった…";
+        $("#rscore").textContent=p.score; $("#rrank").textContent=rankOf(p.score,pois,summit);
+        $("#rsum").innerHTML=`🧺 採った食用キノコ：<b>${p.basket.length}</b>種　／　👀 見抜いた毒：<b>${saw}</b>回　／　☠️ 毒を採った：<b>${pois}</b>回<br>歩いた出会い：${st.i}／${st.N}（${SEASON_JA[st.season]}の山）`;
+        const prev=getBest(), best=Math.max(prev,p.score); try{ localStorage.setItem(bestKey(),best);}catch{}
+        $("#rbest").textContent= p.score>prev ? "自己ベスト更新！ 🎉" : `自己ベスト ${best}点`;
+        renderBasket(p.basket);
+      }else{
+        const [a,b]=st.players; const win = a.score===b.score ? null : (a.score>b.score?a:b);
+        $("#resultArt").textContent= win?"🏆":"🤝"; $("#resultH").textContent= win?`${win.name} の勝ち！`:"引き分け！";
+        $("#rscore").innerHTML=`<span style="color:#2f6b3a">${a.score}</span> <span style="font-size:1.6rem;color:var(--sub)">vs</span> <span style="color:#8a4b8a">${b.score}</span>`;
+        $("#rrank").textContent= summit?"山頂に到着":"どちらも体力切れ";
+        const line=(p)=>{ const pl=st.log.filter(l=>l.who===p.name); const pois=pl.filter(l=>l.take&&l.e==="毒").length, saw=pl.filter(l=>!l.take&&l.e==="毒").length; return `<b>${p.name}</b>：🧺${p.basket.length}種 ／ 👀毒を見抜いた${saw} ／ ☠️毒を採った${pois} ／ ❤️残り${Math.max(0,p.lives)}`; };
+        $("#rsum").innerHTML=line(a)+"<br>"+line(b); $("#rbest").textContent="";
+        renderBasket([...a.basket,...b.basket]);
+      }
     }
+    function renderBasket(basket){ const seen=new Set(); const items=basket.filter(r=>!seen.has(r.wamei)&&seen.add(r.wamei));
+      $("#basketTitle").hidden=!items.length; $("#bgrid").innerHTML=items.map(r=>`<div><img src="${r.photo}" alt=""><span class="nm">${esc(r.wamei)}</span></div>`).join(""); }
     function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
   </script>
 </body>
