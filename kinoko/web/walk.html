@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>きのこ山歩き ｜ イワオトキノコ</title>
+  <meta name="description" content="巖さんと山を歩いてキノコを採る採集アドベンチャー。本物の写真を見て「採る／採らない」を判断しよう。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --forest:#1f3a2e; --forest-deep:#16271f; --gold:#a8854a; --gold-soft:#c9a86a;
+      --cream:#f4efe4; --paper:#fbf8f1; --ink:#2b2a25; --sub:#6f6a5c; --line:#ddd5c4;
+      --food:#2f6b3a; --pois:#b03a2e; --unfit:#9a8f73;
+      --serif:"Shippori Mincho", serif; --sans:"Noto Sans JP", sans-serif; --latin:"Cormorant Garamond", serif;
+      --sky1:#bfe3f5; --sky2:#eef7d8;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{ margin:0; padding:0; }
+    body{ font-family:var(--sans); color:var(--ink); background:var(--cream); line-height:1.6; -webkit-font-smoothing:antialiased; overscroll-behavior:none; }
+    .topbar{ position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between; padding:12px 18px; background:var(--forest-deep); color:#f1ede2; }
+    .topbar__brand{ text-decoration:none; color:#f1ede2; font-family:var(--serif); font-weight:700; letter-spacing:.06em; }
+    .topbar__back{ color:var(--gold-soft); text-decoration:none; font-size:.86rem; }
+    .wrap{ max-width:560px; margin:0 auto; padding:16px 14px 60px; }
+    [hidden]{ display:none !important; }
+
+    /* ===== 山の景色 ===== */
+    .scene{ position:relative; height:260px; border-radius:18px; overflow:hidden; box-shadow:0 10px 26px rgba(0,0,0,.16);
+      background:linear-gradient(180deg,var(--sky1) 0%, var(--sky2) 100%); transition:background 2s; }
+    .scene.noon{ --sky1:#8fd0f2; --sky2:#f4f7da; }
+    .scene.evening{ --sky1:#f5b27a; --sky2:#f9e0b3; }
+    .sun{ position:absolute; left:14%; top:26px; width:44px; height:44px; border-radius:50%; background:#ffe27a; box-shadow:0 0 30px 8px rgba(255,226,122,.55); transition:all 2s; }
+    .scene.noon .sun{ left:48%; top:12px; }
+    .scene.evening .sun{ left:80%; top:60px; background:#ff9d5c; box-shadow:0 0 30px 8px rgba(255,157,92,.5); }
+    .cloud{ position:absolute; top:40px; width:70px; height:24px; background:#fff; border-radius:20px; opacity:.85; }
+    .cloud::before,.cloud::after{ content:""; position:absolute; background:#fff; border-radius:50%; }
+    .cloud::before{ width:34px; height:34px; left:10px; top:-16px; } .cloud::after{ width:26px; height:26px; left:36px; top:-10px; }
+    .cloud.c1{ left:60%; animation:drift 40s linear infinite; } .cloud.c2{ left:20%; top:70px; transform:scale(.7); animation:drift 55s linear infinite; }
+    @keyframes drift{ from{ transform:translateX(0) } to{ transform:translateX(-420px) } }
+    .layer{ position:absolute; left:0; right:0; background-repeat:repeat-x; animation-timing-function:linear; animation-iteration-count:infinite; animation-play-state:paused; }
+    .scene.walking .layer{ animation-play-state:running; }
+    .layer.far{ top:70px; height:120px; background-size:auto 120px; background-position:bottom; animation-name:scrollFar; animation-duration:36s; }
+    .layer.mid{ top:100px; height:120px; background-size:auto 120px; background-position:bottom; animation-name:scrollMid; animation-duration:14s; }
+    .layer.near{ bottom:0; height:64px; background-size:auto 64px; background-position:bottom; animation-name:scrollNear; animation-duration:6s; }
+    @keyframes scrollFar{ from{ background-position-x:0 } to{ background-position-x:-400px } }
+    @keyframes scrollMid{ from{ background-position-x:0 } to{ background-position-x:-360px } }
+    @keyframes scrollNear{ from{ background-position-x:0 } to{ background-position-x:-240px } }
+
+    /* 巖さん */
+    .hero{ position:absolute; left:14%; bottom:22px; width:96px; height:128px; }
+    .hero svg{ width:100%; height:100%; overflow:visible; }
+    .scene.walking #body{ animation:bob .46s ease-in-out infinite alternate; }
+    .scene.walking #legL{ animation:stepA .46s ease-in-out infinite alternate; }
+    .scene.walking #legR{ animation:stepB .46s ease-in-out infinite alternate; }
+    .scene.walking #armStick{ animation:swing .46s ease-in-out infinite alternate; }
+    #legL,#legR{ transform-origin:60px 118px; } #armStick{ transform-origin:84px 70px; }
+    @keyframes bob{ from{ transform:translateY(0) } to{ transform:translateY(-3px) } }
+    @keyframes stepA{ from{ transform:rotate(-20deg) } to{ transform:rotate(20deg) } }
+    @keyframes stepB{ from{ transform:rotate(20deg) } to{ transform:rotate(-20deg) } }
+    @keyframes swing{ from{ transform:rotate(-9deg) } to{ transform:rotate(9deg) } }
+    .hero.found #body{ animation:none; } .hero.found #armStick{ animation:none; transform:rotate(-30deg); }
+    .bubble{ position:absolute; left:calc(14% + 78px); bottom:150px; background:#fff; border-radius:14px; padding:4px 12px; font-weight:900; font-size:1.1rem; color:var(--pois);
+      box-shadow:0 4px 12px rgba(0,0,0,.15); opacity:0; transform:scale(.6); transition:.25s; }
+    .bubble::after{ content:""; position:absolute; left:10px; bottom:-8px; border:8px solid transparent; border-top-color:#fff; border-bottom:0; }
+    .bubble.show{ opacity:1; transform:scale(1); }
+    .found-mush{ position:absolute; left:calc(14% + 108px); bottom:26px; width:46px; height:46px; opacity:0; transform:translateY(10px); transition:.3s; }
+    .found-mush.show{ opacity:1; transform:translateY(0); }
+    .found-mush img{ width:46px; height:46px; object-fit:cover; border-radius:50%; border:3px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,.2); }
+    .walk-note{ position:absolute; right:14px; top:12px; font-family:var(--serif); font-size:.82rem; color:rgba(0,0,0,.55); background:rgba(255,255,255,.55); padding:2px 10px; border-radius:999px; }
+
+    /* ===== HUD ===== */
+    .hud{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:12px 0 6px; font-weight:700; }
+    .lives span{ font-size:1.2rem; letter-spacing:.05em; } .lives .lost{ opacity:.22; filter:grayscale(1); }
+    .score b{ font-family:var(--latin); font-size:1.5rem; color:var(--forest); }
+    .basket{ display:inline-flex; align-items:center; gap:4px; background:var(--paper); border:1px solid var(--line); border-radius:999px; padding:3px 12px; font-size:.9rem; }
+    .trail{ position:relative; height:10px; background:#e2dbc9; border-radius:99px; margin:8px 0 2px; }
+    .trail__fill{ height:100%; background:linear-gradient(90deg,#7a9560,#2f6b3a); border-radius:99px; width:0; transition:width .6s; }
+    .trail__flag{ position:absolute; right:-4px; top:-14px; font-size:1.1rem; }
+    .trail__me{ position:absolute; top:-9px; left:0; font-size:1rem; transition:left .6s; }
+    .trail__lbl{ display:flex; justify-content:space-between; font-size:.72rem; color:var(--sub); }
+
+    /* ===== 出会いカード ===== */
+    .enc{ position:relative; margin-top:12px; background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 10px 28px rgba(0,0,0,.12); }
+    .enc__title{ text-align:center; font-family:var(--serif); font-weight:800; font-size:1.25rem; margin:0 0 8px; }
+    .enc__photo{ width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; display:block; background:#e8e2d4; }
+    .enc__name{ text-align:center; font-family:var(--serif); font-weight:700; font-size:1.05rem; margin:8px 0 0; min-height:1.4em; }
+    .enc__hint{ text-align:center; font-size:.8rem; color:var(--sub); margin:2px 0 8px; }
+    .tbar{ height:8px; background:#e6dfce; border-radius:99px; overflow:hidden; margin:8px 0 12px; }
+    .tbar__fill{ height:100%; background:var(--gold); width:100%; transition:width .1s linear; }
+    .tbar__fill.hurry{ background:var(--pois); }
+    .choices{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .choice{ font-family:var(--sans); font-weight:900; font-size:1.05rem; border:none; border-radius:14px; padding:16px 8px; cursor:pointer; color:#fff; transition:.12s; }
+    .choice:active{ transform:scale(.97); }
+    .choice.take{ background:var(--food); } .choice.leave{ background:#6b7d63; }
+    .choice small{ display:block; font-weight:500; font-size:.72rem; opacity:.9; margin-top:2px; }
+
+    /* 結果トースト */
+    .toast{ position:fixed; left:50%; top:18%; transform:translate(-50%,-10px); z-index:60; background:#fff; border-radius:16px; padding:16px 22px; text-align:center;
+      box-shadow:0 14px 40px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:.25s; min-width:240px; }
+    .toast.show{ opacity:1; transform:translate(-50%,0); }
+    .toast__big{ font-size:1.5rem; font-weight:900; } .toast.ok .toast__big{ color:var(--food); } .toast.bad .toast__big{ color:var(--pois); } .toast.meh .toast__big{ color:#7a6f52; }
+    .toast__nm{ font-family:var(--serif); font-weight:700; margin-top:4px; }
+    .toast__nm .bd{ font-size:.7rem; color:#fff; padding:1px 8px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+    .toast__pt{ font-family:var(--latin); font-size:1.2rem; color:var(--gold); margin-top:2px; }
+    .shake{ animation:shake .5s; } @keyframes shake{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+
+    /* ===== スタート / 結果 ===== */
+    .start{ text-align:center; }
+    .start__en{ font-family:var(--latin); letter-spacing:.4em; color:var(--gold); font-size:1rem; }
+    .start__ja{ font-family:var(--serif); font-size:2.1rem; margin:4px 0 2px; font-weight:800; letter-spacing:.05em; }
+    .start__desc{ color:var(--sub); font-size:.92rem; margin:8px 0 14px; }
+    .rules{ text-align:left; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px 16px; font-size:.88rem; margin:12px 0 16px; }
+    .rules b{ color:var(--forest); }
+    .rules li{ margin:3px 0; }
+    .diff{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:10px 0 14px; }
+    .diff button{ border:1px solid var(--line); background:var(--paper); border-radius:14px; padding:10px 6px; cursor:pointer; font-family:var(--sans); }
+    .diff button[aria-pressed="true"]{ background:var(--forest); color:#fff; border-color:var(--forest); }
+    .diff b{ display:block; font-size:1rem; } .diff small{ font-size:.7rem; opacity:.85; line-height:1.3; display:block; }
+    .btn-primary,.btn-ghost{ font-family:var(--sans); font-weight:900; font-size:1.05rem; border-radius:14px; padding:15px; cursor:pointer; border:1px solid var(--forest); width:100%; }
+    .btn-primary{ background:var(--forest); color:#fff; } .btn-ghost{ background:transparent; color:var(--forest); margin-top:10px; }
+    .best{ font-size:.82rem; color:var(--gold); margin:8px 0 0; min-height:1.2em; }
+
+    .result{ text-align:center; }
+    .result__h{ font-family:var(--serif); font-size:1.9rem; font-weight:800; margin:8px 0 0; }
+    .result__score{ font-family:var(--latin); font-size:3.6rem; color:var(--forest); font-weight:600; line-height:1.1; }
+    .result__rank{ display:inline-block; font-weight:900; background:var(--gold); color:#fff; padding:4px 16px; border-radius:999px; margin:6px 0 4px; }
+    .result__best{ font-size:.85rem; color:var(--gold); margin-bottom:12px; }
+    .bgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:8px 0 14px; }
+    .bgrid img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; border:2px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,.12); }
+    .bgrid .nm{ font-size:.62rem; line-height:1.2; margin-top:2px; display:block; }
+    .result__sum{ text-align:left; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:10px 14px; font-size:.86rem; margin:0 0 14px; }
+    .loading{ text-align:center; color:var(--sub); padding:60px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="topbar__brand" href="index.html">イワオトキノコ</a>
+    <a class="topbar__back" href="game.html">← クイズへ</a>
+  </header>
+
+  <main class="wrap">
+    <div id="loading" class="loading">山のデータを読み込んでいます…</div>
+
+    <!-- ===== 景色（共通） ===== -->
+    <section id="sceneWrap" hidden>
+      <div class="scene" id="scene">
+        <div class="sun"></div>
+        <div class="cloud c1"></div><div class="cloud c2"></div>
+        <div class="layer far" id="layerFar"></div>
+        <div class="layer mid" id="layerMid"></div>
+        <div class="layer near" id="layerNear"></div>
+        <div class="bubble" id="bubble">！</div>
+        <div class="found-mush" id="foundMush"><img id="foundImg" alt="" /></div>
+        <div class="hero" id="hero">
+          <svg viewBox="0 0 120 130" aria-hidden="true">
+            <!-- 杖を持つ腕（後ろ側） -->
+            <g id="armStick">
+              <rect x="97" y="34" width="5" height="92" rx="2.5" fill="#3b6ea8"/>
+              <rect x="80" y="62" width="24" height="10" rx="5" fill="#556071"/>
+              <circle cx="102" cy="68" r="6" fill="#f2d3b5"/>
+            </g>
+            <!-- リュック -->
+            <rect x="18" y="52" width="30" height="46" rx="10" fill="#6f7d55"/>
+            <rect x="24" y="60" width="18" height="12" rx="4" fill="#5b6845"/>
+            <!-- 体 -->
+            <g id="body">
+              <rect x="34" y="46" width="50" height="58" rx="14" fill="#4e5a6a"/>
+              <rect x="34" y="46" width="50" height="14" rx="7" fill="#5e6b7d"/>
+              <!-- 顔 -->
+              <circle cx="62" cy="30" r="19" fill="#f2d3b5"/>
+              <path d="M54 37 q8 6 16 0" stroke="#8a5a3a" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <circle cx="55" cy="31" r="4.6" fill="none" stroke="#333" stroke-width="1.8"/>
+              <circle cx="69" cy="31" r="4.6" fill="none" stroke="#333" stroke-width="1.8"/>
+              <line x1="59.6" y1="31" x2="64.4" y2="31" stroke="#333" stroke-width="1.8"/>
+              <circle cx="55" cy="31" r="1.4" fill="#333"/><circle cx="69" cy="31" r="1.4" fill="#333"/>
+              <!-- 帽子 -->
+              <path d="M42 26 q20 -22 40 0 z" fill="#e6dcc6"/>
+              <rect x="40" y="22" width="44" height="7" rx="3.5" fill="#e6dcc6"/>
+              <rect x="70" y="23" width="26" height="6" rx="3" fill="#d6cbb2"/>
+              <circle cx="56" cy="14" r="1.6" fill="#b9ad92"/>
+            </g>
+            <!-- 脚 -->
+            <g id="legL"><rect x="46" y="100" width="14" height="24" rx="6" fill="#3f4650"/><rect x="43" y="120" width="20" height="8" rx="4" fill="#2b2f36"/></g>
+            <g id="legR"><rect x="64" y="100" width="14" height="24" rx="6" fill="#3f4650"/><rect x="61" y="120" width="20" height="8" rx="4" fill="#2b2f36"/></g>
+          </svg>
+        </div>
+        <div class="walk-note" id="walkNote">山道を歩いています…</div>
+      </div>
+    </section>
+
+    <!-- ===== スタート ===== -->
+    <section id="start" class="start" hidden>
+      <span class="start__en">MUSHROOM HIKE</span>
+      <h1 class="start__ja">きのこ山歩き</h1>
+      <p class="start__desc">巖さんと山を歩いて、キノコを採ろう。<br><b>写真だけ</b>を見て「採る？採らない？」を判断。毒を採ると体力が減るよ。</p>
+      <div class="rules">
+        <b>あそびかた</b>
+        <ul style="margin:4px 0 0;padding-left:18px">
+          <li>山道でキノコを<b>見つけたら</b>、時間内に <b>🧺 カゴに入れる</b> か <b>🍃 そっとしておく</b> を選ぶ</li>
+          <li>食べられるキノコを採ると <b>+10点</b>（連続で採るとボーナス）</li>
+          <li>毒キノコを採ると <b>❤️ が1つ減る</b>。毒を見抜いて残せば <b>+5点</b></li>
+          <li>山頂（15回の出会い）に着くか、❤️が0になったら終わり</li>
+        </ul>
+      </div>
+      <div class="diff" id="diff">
+        <button data-d="easy" aria-pressed="false"><b>やさしい</b><small>名前つき<br>10秒</small></button>
+        <button data-d="normal" aria-pressed="true"><b>ふつう</b><small>写真だけ<br>8秒</small></button>
+        <button data-d="hard" aria-pressed="false"><b>むずかしい</b><small>写真だけ・5秒<br>毒が多い</small></button>
+      </div>
+      <button class="btn-primary" id="startBtn">🥾 山へ出発！</button>
+      <p class="best" id="bestLbl"></p>
+      <p class="start__desc" style="font-size:.74rem;margin-top:14px">※ゲームは学習用です。実際の採集では必ず図鑑・専門家で確認してください。</p>
+    </section>
+
+    <!-- ===== ゲーム ===== -->
+    <section id="game" hidden>
+      <div class="hud">
+        <div class="lives" id="lives"></div>
+        <div class="score">スコア <b id="score">0</b></div>
+        <div class="basket">🧺 <span id="basketN">0</span></div>
+      </div>
+      <div class="trail"><div class="trail__fill" id="trailFill"></div><span class="trail__me" id="trailMe">🥾</span><span class="trail__flag">🚩</span></div>
+      <div class="trail__lbl"><span>登山口</span><span id="stageLbl">朝</span><span>山頂</span></div>
+
+      <div class="enc" id="enc" hidden>
+        <p class="enc__title">🍄 キノコを見つけた！</p>
+        <img class="enc__photo" id="encPhoto" alt="見つけたキノコ" />
+        <p class="enc__name" id="encName"></p>
+        <p class="enc__hint" id="encHint">このキノコ、採る？</p>
+        <div class="tbar"><div class="tbar__fill" id="tbar"></div></div>
+        <div class="choices">
+          <button class="choice take" id="btnTake">🧺 カゴに入れる<small>食べられると思う</small></button>
+          <button class="choice leave" id="btnLeave">🍃 そっとしておく<small>あやしい・毒かも</small></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 結果 ===== -->
+    <section id="result" class="result" hidden>
+      <div id="resultArt" style="font-size:3rem;line-height:1"></div>
+      <h2 class="result__h" id="resultH"></h2>
+      <div class="result__score" id="rscore">0</div>
+      <div class="result__rank" id="rrank"></div>
+      <div class="result__best" id="rbest"></div>
+      <div class="result__sum" id="rsum"></div>
+      <div id="basketTitle" style="font-weight:700;margin-bottom:4px">🧺 カゴの中身</div>
+      <div class="bgrid" id="bgrid"></div>
+      <button class="btn-primary" id="againBtn">もう一度 山へ</button>
+      <button class="btn-ghost" id="toStartBtn">難易度を変える</button>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"><div class="toast__big" id="tBig"></div><div class="toast__nm" id="tNm"></div><div class="toast__pt" id="tPt"></div></div>
+
+  <script>
+    const $=(s)=>document.querySelector(s);
+    const N_ENC=15, LIVES=3;
+    const DIFF={ easy:{time:10, pois:.28, showName:true}, normal:{time:8, pois:.35, showName:false}, hard:{time:5, pois:.45, showName:false} };
+    const EDCOL={ "食用":"var(--food)","毒":"var(--pois)","食不適":"var(--unfit)" };
+    const st={ pool:[], diff:"normal", lives:LIVES, score:0, i:0, streak:0, basket:[], log:[], timer:null, tLeft:0, cur:null, busy:false };
+
+    /* ---- 背景レイヤー（SVG） ---- */
+    function svgUrl(s){ return `url("data:image/svg+xml;utf8,${encodeURIComponent(s)}")`; }
+    const FAR=`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='120' viewBox='0 0 400 120'><path d='M0 120 L0 70 L60 30 L110 70 L160 40 L220 80 L270 35 L330 75 L400 45 L400 120 Z' fill='#a9c6b4'/><path d='M0 120 L0 92 L50 70 L120 96 L190 66 L250 98 L320 72 L400 94 L400 120 Z' fill='#88aa93'/></svg>`;
+    const MID=`<svg xmlns='http://www.w3.org/2000/svg' width='360' height='120' viewBox='0 0 360 120'>
+      <g fill='#3f6b4a'><path d='M20 120 L45 50 L70 120Z'/><path d='M30 120 L45 30 L60 120Z' fill='#4f8259'/><path d='M120 120 L150 40 L180 120Z'/><path d='M132 120 L150 20 L168 120Z' fill='#4f8259'/><path d='M250 120 L280 55 L310 120Z'/><path d='M260 120 L280 34 L300 120Z' fill='#4f8259'/></g>
+      <g><circle cx='95' cy='85' r='22' fill='#5d8f5a'/><rect x='91' y='95' width='8' height='25' fill='#6b4b2d'/><circle cx='215' cy='80' r='26' fill='#558a54'/><rect x='211' y='95' width='8' height='25' fill='#6b4b2d'/><circle cx='340' cy='88' r='18' fill='#5d8f5a'/><rect x='337' y='98' width='6' height='22' fill='#6b4b2d'/></g></svg>`;
+    const NEAR=`<svg xmlns='http://www.w3.org/2000/svg' width='240' height='64' viewBox='0 0 240 64'>
+      <rect x='0' y='30' width='240' height='34' fill='#7a5a3a'/><rect x='0' y='26' width='240' height='8' fill='#5e8f4e'/>
+      <g fill='#79a95f'><path d='M12 26 l3 -9 l3 9z'/><path d='M40 26 l2 -7 l2 7z'/><path d='M96 26 l3 -10 l3 10z'/><path d='M150 26 l2 -8 l2 8z'/><path d='M200 26 l3 -9 l3 9z'/></g>
+      <g><rect x='66' y='16' width='3' height='10' fill='#f1e6cf'/><ellipse cx='67.5' cy='15' rx='6' ry='4' fill='#d9603b'/><circle cx='65' cy='14' r='1' fill='#fff'/><circle cx='70' cy='15' r='1' fill='#fff'/>
+      <rect x='176' y='18' width='3' height='8' fill='#f1e6cf'/><ellipse cx='177.5' cy='17' rx='5' ry='3.5' fill='#c98a3a'/></g>
+      <g fill='#a58a63'><ellipse cx='120' cy='40' rx='6' ry='3'/><ellipse cx='30' cy='50' rx='5' ry='2.5'/><ellipse cx='210' cy='46' rx='7' ry='3'/></g></svg>`;
+
+    init();
+    async function init(){
+      $("#layerFar").style.backgroundImage=svgUrl(FAR);
+      $("#layerMid").style.backgroundImage=svgUrl(MID);
+      $("#layerNear").style.backgroundImage=svgUrl(NEAR);
+      let data;
+      try{ data=await fetch("data/records.json",{cache:"no-store"}).then(r=>r.json()); }
+      catch{ $("#loading").textContent="データを読み込めませんでした。"; return; }
+      st.pool=(data.records||[]).filter(r=>r.photo && ["食用","毒","食不適"].includes(r.edibility));
+      $("#loading").hidden=true; $("#sceneWrap").hidden=false; $("#start").hidden=false;
+      showBest();
+      document.querySelectorAll("#diff button").forEach(b=>b.addEventListener("click",()=>{
+        st.diff=b.dataset.d; document.querySelectorAll("#diff button").forEach(x=>x.setAttribute("aria-pressed",x===b)); showBest();
+      }));
+      $("#startBtn").addEventListener("click",startGame);
+      $("#againBtn").addEventListener("click",startGame);
+      $("#toStartBtn").addEventListener("click",()=>{ $("#result").hidden=true; $("#start").hidden=false; setWalking(false); showBest(); });
+      $("#btnTake").addEventListener("click",()=>decide(true));
+      $("#btnLeave").addEventListener("click",()=>decide(false));
+      // 待機中もゆっくり歩かせる（デモ）
+      setWalking(true);
+    }
+    const bestKey=()=>"kinoko_hike_best_"+st.diff;
+    const getBest=()=>{ try{ return Number(localStorage.getItem(bestKey())||0);}catch{return 0;} };
+    function showBest(){ const b=getBest(); $("#bestLbl").textContent=b?`この難易度の自己ベスト：${b}点`:""; }
+    const rnd=(a)=>a[Math.floor(Math.random()*a.length)];
+    function setWalking(on){ $("#scene").classList.toggle("walking",on); $("#hero").classList.toggle("found",!on); $("#walkNote").hidden=!on; }
+    function setStage(){
+      const p=st.i/N_ENC; const sc=$("#scene"); sc.classList.remove("noon","evening");
+      let lbl="朝"; if(p>=.66){ sc.classList.add("evening"); lbl="夕方"; } else if(p>=.33){ sc.classList.add("noon"); lbl="昼"; }
+      $("#stageLbl").textContent=lbl;
+      $("#trailFill").style.width=`${p*100}%`; $("#trailMe").style.left=`calc(${p*100}% - 8px)`;
+    }
+    function renderLives(){ $("#lives").innerHTML=Array.from({length:LIVES},(_,k)=>`<span class="${k<st.lives?'':'lost'}">❤️</span>`).join(""); }
+
+    function startGame(){
+      Object.assign(st,{lives:LIVES,score:0,i:0,streak:0,basket:[],log:[],cur:null,busy:false});
+      $("#start").hidden=true; $("#result").hidden=true; $("#game").hidden=false; $("#enc").hidden=true;
+      $("#score").textContent=0; $("#basketN").textContent=0; renderLives(); setStage();
+      walkThen(nextEncounter, 1600);
+    }
+    function walkThen(fn, ms){
+      setWalking(true); $("#bubble").classList.remove("show"); $("#foundMush").classList.remove("show");
+      setTimeout(fn, ms + Math.random()*900);
+    }
+    function pickRecord(){
+      const d=DIFF[st.diff]; const roll=Math.random();
+      let pool;
+      if(roll<d.pois) pool=st.pool.filter(r=>r.edibility==="毒");
+      else if(roll<d.pois+.12) pool=st.pool.filter(r=>r.edibility==="食不適");
+      else pool=st.pool.filter(r=>r.edibility==="食用");
+      if(!pool.length) pool=st.pool;
+      // 直前と同じ種は避ける
+      let r=rnd(pool), tries=0; while(st.cur && r.wamei===st.cur.wamei && tries++<5) r=rnd(pool);
+      return r;
+    }
+    function nextEncounter(){
+      if(st.i>=N_ENC){ finish(true); return; }
+      const r=pickRecord(); st.cur=r; st.busy=false;
+      setWalking(false);
+      $("#bubble").classList.add("show");
+      $("#foundImg").src=r.photo; $("#foundMush").classList.add("show");
+      $("#encPhoto").src=r.photo;
+      const d=DIFF[st.diff];
+      $("#encName").textContent=d.showName ? r.wamei : "？？？";
+      $("#encHint").textContent=d.showName ? "このキノコ、食べられる？" : "名前はナイショ。写真で見きわめて！";
+      $("#enc").hidden=false;
+      // timer
+      clearInterval(st.timer); st.tLeft=d.time*1000; const total=st.tLeft;
+      const bar=$("#tbar"); bar.style.width="100%"; bar.classList.remove("hurry");
+      st.timer=setInterval(()=>{
+        st.tLeft-=100; const p=Math.max(0,st.tLeft/total); bar.style.width=`${p*100}%`;
+        if(p<.3) bar.classList.add("hurry");
+        if(st.tLeft<=0){ clearInterval(st.timer); decide(false,true); }
+      },100);
+    }
+    function decide(take, timeout=false){
+      if(st.busy) return; st.busy=true; clearInterval(st.timer);
+      const r=st.cur; const e=r.edibility; let big="",kind="",pts=0,msg="";
+      if(take){
+        if(e==="食用"){ st.streak++; pts=10+Math.min(st.streak-1,5)*2; big="⭕ 食べられる！"; kind="ok"; st.basket.push(r); }
+        else if(e==="毒"){ st.streak=0; st.lives--; pts=0; big="☠️ 毒キノコだった！"; kind="bad"; $("#game").classList.add("shake"); setTimeout(()=>$("#game").classList.remove("shake"),600); }
+        else { st.streak=0; pts=-3; big="😖 まずい…食べられない"; kind="meh"; }
+      }else{
+        if(e==="毒"){ st.streak=0; pts=5; big=timeout?"⏱ 時間切れ…でも毒！セーフ":"👀 毒を見抜いた！"; kind="ok"; }
+        else if(e==="食用"){ st.streak=0; pts=0; big=timeout?"⏱ 時間切れ…":"🍃 もったいない…食べられた"; kind="meh"; }
+        else { st.streak=0; pts=2; big="🍃 正解。食べないキノコ"; kind="ok"; }
+      }
+      st.score=Math.max(0,st.score+pts);
+      st.log.push({r,take,pts,e});
+      $("#score").textContent=st.score; $("#basketN").textContent=st.basket.length; renderLives();
+      toast(kind,big,r,pts);
+      $("#enc").hidden=true; $("#bubble").classList.remove("show");
+      st.i++; setStage();
+      if(st.lives<=0){ setTimeout(()=>finish(false),1400); return; }
+      walkThen(nextEncounter, 1900);
+    }
+    function toast(kind,big,r,pts){
+      const t=$("#toast"); t.className="toast "+kind;
+      $("#tBig").textContent=big;
+      $("#tNm").innerHTML=`${esc(r.wamei)}<span class="bd" style="background:${EDCOL[r.edibility]}">${esc(r.edibility)}</span>`;
+      $("#tPt").textContent= pts>0?`+${pts}`:(pts<0?`${pts}`:"");
+      requestAnimationFrame(()=>t.classList.add("show"));
+      clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1500);
+    }
+    function finish(summit){
+      setWalking(false); $("#game").hidden=true; $("#enc").hidden=true; $("#result").hidden=false;
+      $("#resultArt").textContent= summit?"⛰️🚩":"🏥";
+      $("#resultH").textContent= summit?"山頂に着いた！":"体力がなくなった…";
+      $("#rscore").textContent=st.score;
+      const ate=st.basket.length, pois=st.log.filter(l=>l.take&&l.e==="毒").length, saw=st.log.filter(l=>!l.take&&l.e==="毒").length;
+      let rank = st.score>=150?"🏆 きのこ名人": st.score>=100?"🌟 山の達人": st.score>=60?"🍄 一人前": st.score>=30?"🌱 見習い":"🐣 はじめの一歩";
+      if(pois===0 && summit) rank+="・無傷";
+      $("#rrank").textContent=rank;
+      $("#rsum").innerHTML=`🧺 採った食用キノコ：<b>${ate}</b>種　／　👀 見抜いた毒：<b>${saw}</b>回　／　☠️ 毒を採った：<b>${pois}</b>回<br>歩いた出会い：${st.i}／${N_ENC}`;
+      const prev=getBest(), best=Math.max(prev,st.score);
+      try{ localStorage.setItem(bestKey(),best);}catch{}
+      $("#rbest").textContent= st.score>prev ? "自己ベスト更新！ 🎉" : `自己ベスト ${best}点`;
+      const seen=new Set(); const items=st.basket.filter(r=>!seen.has(r.wamei)&&seen.add(r.wamei));
+      $("#basketTitle").hidden=!items.length;
+      $("#bgrid").innerHTML=items.map(r=>`<div><img src="${r.photo}" alt=""><span class="nm">${esc(r.wamei)}</span></div>`).join("");
+    }
+    function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+  </script>
+</body>
+</html>
