@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260919-2203" />
+  <link rel="stylesheet" href="style.css?v=20260919-2252" />
+  <script src="kinoko-api.js?v=20260919-2252"></script>
 </head>
 <body class="admin-page">
 
@@ -43,6 +44,7 @@
       <button class="adm-tab" data-tab="records" aria-pressed="true" type="button">🍄 キノコ</button>
       <button class="adm-tab" data-tab="columns" aria-pressed="false" type="button">📝 コラム</button>
       <button class="adm-tab" data-tab="diary" aria-pressed="false" type="button">📔 日誌</button>
+      <button class="adm-tab" data-tab="visits" aria-pressed="false" type="button">📊 みんなの記録</button>
     </div>
 
     <!-- ===== 設定パネル ===== -->
@@ -69,6 +71,36 @@
     </section>
 
     <!-- ===== 入力フォーム（キノコ） ===== -->
+    <!-- ===== みんなの記録（訪問数・ランキング） ===== -->
+    <section class="adm-panel" data-panel="visits" hidden>
+      <h2 class="adm-h2">📊 みんなの記録</h2>
+      <p class="adm-note" id="visOff" hidden>
+        まだ準備ができていません。<br />
+        <code>kinoko/docs/ranking-setup.md</code> の手順で Google スプレッドシートをつないでください。
+      </p>
+
+      <div id="visBox" hidden>
+        <div class="adm-stats">
+          <div><span>これまでの表示回数</span><b id="visTotal">—</b></div>
+          <div><span>だいたいの人数</span><b id="visPeople">—</b></div>
+          <div><span>今日</span><b id="visToday">—</b></div>
+          <div><span>この7日間</span><b id="visWeek">—</b></div>
+        </div>
+        <p class="adm-note">この数字は、この管理画面でしか見られません。サイトには出していません。</p>
+
+        <h3 class="adm-h3">日ごと（直近30日）</h3>
+        <div class="adm-bars" id="visDays"></div>
+
+        <h3 class="adm-h3">ページごと</h3>
+        <div class="adm-bars" id="visPages"></div>
+
+        <h3 class="adm-h3">ゲームのランキング</h3>
+        <p class="adm-note">ふさわしくない名前は「消す」で取り除けます。</p>
+        <div id="rankAdmin"></div>
+        <button class="adm-btn-ghost" id="visReload" type="button">🔄 読み込み直す</button>
+      </div>
+    </section>
+
     <section class="adm-panel" data-panel="records">
       <div class="adm-editbar">
         <label class="adm-field adm-field--inline"><span>編集する記録</span>
@@ -191,6 +223,6 @@
     </article>
   </div>
 
-  <script src="admin.js?v=20260914-1000"></script>
+  <script src="admin.js?v=20260919-2252"></script>
 </body>
 </html>

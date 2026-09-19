@@ -68,6 +68,7 @@
     .sound{ background:none; border:1px solid currentColor; color:var(--sub); border-radius:999px;
             font-size:.72rem; padding:4px 10px; cursor:pointer; }
   </style>
+  <script src="kinoko-api.js?v=20260919-2252"></script>
 </head>
 <body>
 
@@ -108,6 +109,19 @@
     <section class="tiers">
       <h3>そだつ順番（小 → 大）</h3>
       <ol id="tierList"></ol>
+    </section>
+
+    <section class="tiers" id="rankSec" hidden>
+      <h3>みんなのベスト5</h3>
+      <ol class="rk" id="rankList"></ol>
+      <form class="rk__form" id="rankForm" hidden>
+        <label for="rankName">なまえ（12文字まで）</label>
+        <div class="rk__in">
+          <input id="rankName" maxlength="12" placeholder="なまえ" autocomplete="off" />
+          <button type="submit">登録する</button>
+        </div>
+        <p class="rk__note" id="rankMsg"></p>
+      </form>
     </section>
 
     <div class="how">
@@ -586,6 +600,7 @@
       $("#overB").textContent = biggest >= 0 ? "いちばん大きく育ったのは " + TIERS[biggest].n : "";
       $("#over").hidden = false;
       sfxOver();
+      if (rank) rank.offer(score);
     }
     $("#again").addEventListener("click", reset);
 
@@ -594,6 +609,7 @@
       bodies = []; parts = []; score = 0; over = false; held = null; chain = 0;
       cool = 0; dropX = W/2; toast = null; flash = 0; shake = 0; jam = 0;
       nextT = pick(); spawn();
+      if (rank) rank.reset();
       $("#over").hidden = true;
     }
 
@@ -613,12 +629,18 @@
       });
     })();
 
+    /* ---------- みんなのランキング ---------- */
+    var rank = (window.Kinoko && window.Kinoko.board) ? window.Kinoko.board("tsumu", {
+      sec: "#rankSec", list: "#rankList", form: "#rankForm", name: "#rankName", msg: "#rankMsg"
+    }) : null;
+    if (rank) rank.show();
+
     $("#best").textContent = best;
     reset();
     tick();
   })();
   </script>
 
-  <script src="i18n.js?v=20260919-2203"></script>
+  <script src="i18n.js?v=20260919-2252"></script>
 </body>
 </html>

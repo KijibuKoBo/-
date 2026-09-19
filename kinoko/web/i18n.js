@@ -620,6 +620,17 @@
     "美しい紫色のキノコ。カラマツ林に多く、食用としても人気があります。":
       "A beautiful violet mushroom, common in larch woods and popular on the table.",
 
+    /* ── みんなのランキング ── */
+    "みんなのベスト5": "Everyone's top 5",
+    "なまえ（12文字まで）": "Your name (up to 12 characters)",
+    "なまえ": "name",
+    "登録する": "Register",
+    "まだ誰も登録していません。いちばんのりになろう！": "Nobody has registered yet — be the first!",
+    "ベスト5に入りました！ 名前を残せます。": "You made the top 5! Leave your name.",
+    "登録しています…": "Registering…",
+    "うまく登録できませんでした。また試してね。": "That didn't go through. Please try again.",
+    "登録しました！": "Registered!",
+
     /* ページタイトル */
     "採集日誌 ｜ イワオトキノコ": "Foraging diary ｜ IWAO to KINOKO",
     "きのこクイズ ｜ イワオトキノコ": "Mushroom quiz ｜ IWAO to KINOKO",
@@ -659,6 +670,7 @@
     [/^(\d+)ペア$/, function (m) { return m[1] + " pairs"; }],
     [/^出会い(\d+)・正解(\d+)$/, function (m) { return "Seen " + m[1] + " · right " + m[2]; }],
     [/^いちばん大きく育ったのは (.+)$/, function (m) { return "Biggest grown: " + tr1(m[1]); }],
+    [/^(\d+)位に登録しました！$/, function (m) { return "Registered at #" + m[1] + "!"; }],
     [/^(.+)が育った！(?:　(\d+)れんさ)?$/, function (m) { return tr1(m[1]) + " grew!" + (m[2] ? "　" + m[2] + " chain" : ""); }],
     [/^はじけた！ 胞子が舞う(?:　(\d+)れんさ)?$/, function (m) { return "Burst! Spores everywhere" + (m[1] ? "　" + m[1] + " chain" : ""); }],
     [/^「(.+)」は…？$/, function (m) { return "Is \u201c" + tr1(m[1]) + "\u201d …?"; }],

@@ -429,6 +429,7 @@ function fmtDate(iso) {
 
 function bindExtras() {
   $$(".adm-tab").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+  $("#visReload")?.addEventListener("click", () => loadVisits(true));
 
   // コラム
   $("#colSelect").addEventListener("change", (e) => {
@@ -462,7 +463,84 @@ function bindExtras() {
 function switchTab(tab) {
   $$(".adm-tab").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tab === tab));
   $$("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== tab; });
+  if (tab === "visits") loadVisits();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ---------------- みんなの記録（訪問数・ランキング） ---------------- */
+const RANK_GAMES = [{ id: "match", n: "きのこマッチパズル" }, { id: "tsumu", n: "きのこつみ" }];
+let visLoaded = false;
+
+function bars(box, rows, max) {
+  box.innerHTML = "";
+  if (!rows.length) { box.textContent = "まだ記録がありません。"; return; }
+  rows.forEach((r) => {
+    const line = document.createElement("div"); line.className = "adm-bar";
+    const k = document.createElement("span"); k.className = "adm-bar__k"; k.textContent = r.k;
+    const v = document.createElement("span"); v.className = "adm-bar__v";
+    const i = document.createElement("i"); i.style.width = Math.round((r.n / max) * 100) + "%";
+    v.appendChild(i);
+    const n = document.createElement("span"); n.className = "adm-bar__n"; n.textContent = r.n;
+    line.appendChild(k); line.appendChild(v); line.appendChild(n);
+    box.appendChild(line);
+  });
+}
+
+async function loadVisits(force) {
+  if (!window.Kinoko) return;
+  const on = await window.Kinoko.enabled();
+  $("#visOff").hidden = on;
+  $("#visBox").hidden = !on;
+  if (!on) return;
+  if (visLoaded && !force) return;
+  visLoaded = true;
+
+  const d = await window.Kinoko.stats(ADMIN_PW);
+  if (!d || !d.ok) { $("#visOff").hidden = false; $("#visOff").textContent = "集計を読み込めませんでした。"; return; }
+
+  $("#visTotal").textContent = d.total.toLocaleString();
+  $("#visPeople").textContent = d.people.toLocaleString();
+  const today = new Date().toISOString().slice(0, 10);
+  const days = d.days || [];
+  const t = days.find((x) => x.d === today);
+  $("#visToday").textContent = t ? t.n : 0;
+  $("#visWeek").textContent = days.slice(-7).reduce((a, x) => a + x.n, 0);
+
+  const dmax = Math.max(1, ...days.map((x) => x.n));
+  bars($("#visDays"), days.map((x) => ({ k: x.d.slice(5), n: x.n })), dmax);
+  const pages = d.pages || [];
+  const pmax = Math.max(1, ...pages.map((x) => x.n));
+  bars($("#visPages"), pages.map((x) => ({ k: x.p, n: x.n })), pmax);
+
+  const box = $("#rankAdmin"); box.innerHTML = "";
+  for (const g of RANK_GAMES) {
+    const wrap = document.createElement("div"); wrap.className = "adm-rk";
+    const h = document.createElement("h4"); h.textContent = g.n; wrap.appendChild(h);
+    const ol = document.createElement("ol"); wrap.appendChild(ol);
+    box.appendChild(wrap);
+    const top = await window.Kinoko.top(g.id);
+    drawAdminRank(ol, g, top || []);
+  }
+}
+
+function drawAdminRank(ol, g, top) {
+  ol.innerHTML = "";
+  if (!top.length) { const li = document.createElement("li"); li.textContent = "まだ登録がありません。"; ol.appendChild(li); return; }
+  top.forEach((r, i) => {
+    const li = document.createElement("li");
+    const n = document.createElement("span"); n.className = "n"; n.textContent = i + 1;
+    const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
+    const sc = document.createElement("span"); sc.className = "sc"; sc.textContent = r.score;
+    const bt = document.createElement("button"); bt.type = "button"; bt.textContent = "消す";
+    bt.addEventListener("click", async () => {
+      if (!confirm(`「${r.name}（${r.score}点）」を消しますか？`)) return;
+      bt.disabled = true;
+      const d = await window.Kinoko.remove(ADMIN_PW, g.id, r.name, r.score);
+      if (d && d.ok) drawAdminRank(ol, g, d.top || []); else bt.disabled = false;
+    });
+    li.appendChild(n); li.appendChild(nm); li.appendChild(sc); li.appendChild(bt);
+    ol.appendChild(li);
+  });
 }
 function today() { return new Date().toISOString().slice(0, 10); }
 
