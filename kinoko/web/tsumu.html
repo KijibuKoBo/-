@@ -397,7 +397,7 @@
       ctx.save();
       if(shake > .3){
         ctx.translate((Math.random()-.5)*shake, (Math.random()-.5)*shake);
-        shake *= .86;
+        shake *= .93;
       }
       // 背景（森の地面）
       const bg = ctx.createLinearGradient(0, 0, 0, H);
@@ -470,7 +470,25 @@
     }
 
     /* ================= ループ ================= */
-    function tick(){
+    /* 画面のリフレッシュレート（60Hz / 120Hz…）に左右されないよう、
+       物理は 1/60 秒の固定ステップで回す */
+    let lastT = 0, acc = 0;
+    function tick(now){
+      now = now || performance.now();
+      const dt = lastT ? Math.min(0.1, (now - lastT) / 1000) : 1/60;
+      lastT = now;
+      acc += dt;
+      let steps = 0;
+      while(acc >= 1/60 && steps < 4){
+        acc -= 1/60; steps++;
+        step();
+      }
+      draw();
+      $("#score").textContent = score;
+      requestAnimationFrame(tick);
+    }
+
+    function step(){
       if(!over){
         physics();
         if(cool > 0) cool--;
@@ -486,13 +504,10 @@
           if(jam > 80) gameOver();
         }
       }
-      for(const p of parts){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.life -= .022; }
+      for(const p of parts){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.life -= .016; }
       parts = parts.filter(p=>p.life > 0);
-      if(toast){ toast.life -= .012; toast.y -= .7; if(toast.life <= 0) toast = null; }
-      if(flash > 0) flash -= .05;
-      draw();
-      $("#score").textContent = score;
-      requestAnimationFrame(tick);
+      if(toast){ toast.life -= .009; toast.y -= .7; if(toast.life <= 0) toast = null; }
+      if(flash > 0) flash -= .035;
     }
 
     /* ================= 操作 ================= */
@@ -575,6 +590,7 @@
     $("#again").addEventListener("click", reset);
 
     function reset(){
+      lastT = 0; acc = 0;
       bodies = []; parts = []; score = 0; over = false; held = null; chain = 0;
       cool = 0; dropX = W/2; toast = null; flash = 0; shake = 0; jam = 0;
       nextT = pick(); spawn();
@@ -603,6 +619,6 @@
   })();
   </script>
 
-  <script src="i18n.js?v=20260919-2106"></script>
+  <script src="i18n.js?v=20260919-2203"></script>
 </body>
 </html>

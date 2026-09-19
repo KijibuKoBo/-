@@ -598,6 +598,7 @@
     "れんさボーナス": "chain bonus",
     "。": ".",
     "出てくるキノコ": "The mushrooms you will meet",
+    "✨ はじける演出を見る": "✨ Watch the burst",
     "スマホは指でなぞって入れかえ、PCはドラッグかクリックで入れかえます。":
       "On a phone, swipe to swap; on a computer, drag or click two neighbours.",
     "森じゅうに胞子が舞った！": "Spores drifted across the whole forest!",
