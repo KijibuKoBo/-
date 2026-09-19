@@ -63,9 +63,16 @@
     try{ await Promise.all([document.fonts.load(JP), document.fonts.load(EN)]); }catch{}
 
     /* ---------- データ ---------- */
-    let pool=[];
+    let pool=[], CROPS={};
     try{ const d=await fetch("data/records.json",{cache:"no-store"}).then(r=>r.json());
       pool=(d.records||[]).filter(r=>r.photo && ["食用","毒","食不適"].includes(r.edibility)); }catch{}
+    try{ CROPS=(await fetch("data/crops.json",{cache:"no-store"}).then(r=>r.json())).crops||{}; }catch{}
+    // 写真からキノコ部分だけを切り出して描く
+    function drawCrop(m,dx,dy,dw,dh){
+      const c=CROPS[m.rec.photo], iw=m.img.naturalWidth||m.img.width, ih=m.img.naturalHeight||m.img.height;
+      if(c && iw && ih) ctx.drawImage(m.img, c[0]*iw, c[1]*ih, c[2]*iw, c[3]*ih, dx,dy,dw,dh);
+      else ctx.drawImage(m.img,dx,dy,dw,dh);
+    }
     const STAGES=[
       {no:"1-1", name:"とざんぐち", sky:"#5c94fc", hill:"#38b040", hill2:"#00a800", ground:"#a06c2c", grass:"#58d854", tree:"#007800", tree2:"#00a800", speed:1.25, pois:.30, fog:0, night:0},
       {no:"1-2", name:"ぶなばやし", sky:"#f8a860", hill:"#8c5c1c", hill2:"#c07c30", ground:"#7c4c1c", grass:"#b8a030", tree:"#a83c00", tree2:"#e06c1c", speed:1.55, pois:.36, fog:0, night:0},
@@ -216,7 +223,10 @@
       if(roll<s.pois) p=pool.filter(r=>r.edibility==="毒"); else if(roll<s.pois+.12) p=pool.filter(r=>r.edibility==="食不適"); else p=pool.filter(r=>r.edibility==="食用");
       if(!p.length) p=pool; const rec=rnd(p);
       const m={x:W+20, rec, cap:"#d82800", img:new Image(), ready:false, judged:false, result:null, t:0};
-      m.img.onload=()=>{ m.ready=true; try{ const oc=document.createElement("canvas"); oc.width=oc.height=8; const c2=oc.getContext("2d"); c2.drawImage(m.img,0,0,8,8); const d=c2.getImageData(2,2,4,4).data; let r=0,g=0,b=0; for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];} const n=d.length/4; m.cap=nearestCap(r/n,g/n,b/n); }catch{} };
+      m.img.onload=()=>{ m.ready=true; try{ const oc=document.createElement("canvas"); oc.width=oc.height=8; const c2=oc.getContext("2d");
+        const cr=CROPS[rec.photo], iw=m.img.naturalWidth||m.img.width, ih=m.img.naturalHeight||m.img.height;
+        if(cr&&iw&&ih) c2.drawImage(m.img, cr[0]*iw, cr[1]*ih, cr[2]*iw, cr[3]*ih, 0,0,8,8); else c2.drawImage(m.img,0,0,8,8);
+        const d=c2.getImageData(2,2,4,4).data; let r=0,g=0,b=0; for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];} const n=d.length/4; m.cap=nearestCap(r/n,g/n,b/n); }catch{} };
       m.img.src=rec.photo; G.mush=m;
     }
 
@@ -313,8 +323,8 @@
       const m=G.mush; const s=stage();
       const pw=s.fog?144:192, ph=s.fog?108:144, px=W-pw-14, py=54;
       ctx.fillStyle="#000"; ctx.fillRect(px-8,py-8,pw+16,ph+16); ctx.fillStyle="#f8f8f8"; ctx.fillRect(px-4,py-4,pw+8,ph+8); ctx.fillStyle="#000"; ctx.fillRect(px,py,pw,ph);
-      if(m && m.ready && !m.judged && m.x<W-40){ ctx.drawImage(m.img,px,py,pw,ph); if(s.night){ ctx.fillStyle="rgba(0,0,40,.25)"; ctx.fillRect(px,py,pw,ph); } text("A=とる B=とばす",W-10,py+ph+8,JP,"#f8f878","right"); }
-      else if(m && m.judged && m.result){ ctx.drawImage(m.img,px,py,pw,ph); }
+      if(m && m.ready && !m.judged && m.x<W-40){ drawCrop(m,px,py,pw,ph); if(s.night){ ctx.fillStyle="rgba(0,0,40,.25)"; ctx.fillRect(px,py,pw,ph); } text("A=とる B=とばす",W-10,py+ph+8,JP,"#f8f878","right"); }
+      else if(m && m.judged && m.result){ drawCrop(m,px,py,pw,ph); }
       else { text("？",px+pw/2,py+ph/2-12,JP,"#666","center"); }
     }
     function drawHUD(){
