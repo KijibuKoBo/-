@@ -311,11 +311,11 @@
     }
     function drawPhotoPanel(){
       const m=G.mush; const s=stage();
-      const pw=s.fog?72:96, ph=s.fog?54:72, px=W-pw-14, py=54;
-      ctx.fillStyle="#000"; ctx.fillRect(px-4,py-4,pw+8,ph+8); ctx.fillStyle="#f8f8f8"; ctx.fillRect(px-2,py-2,pw+4,ph+4); ctx.fillStyle="#000"; ctx.fillRect(px,py,pw,ph);
+      const pw=s.fog?144:192, ph=s.fog?108:144, px=W-pw-14, py=54;
+      ctx.fillStyle="#000"; ctx.fillRect(px-8,py-8,pw+16,ph+16); ctx.fillStyle="#f8f8f8"; ctx.fillRect(px-4,py-4,pw+8,ph+8); ctx.fillStyle="#000"; ctx.fillRect(px,py,pw,ph);
       if(m && m.ready && !m.judged && m.x<W-40){ ctx.drawImage(m.img,px,py,pw,ph); if(s.night){ ctx.fillStyle="rgba(0,0,40,.25)"; ctx.fillRect(px,py,pw,ph); } text("A=とる B=とばす",W-10,py+ph+8,JP,"#f8f878","right"); }
       else if(m && m.judged && m.result){ ctx.drawImage(m.img,px,py,pw,ph); }
-      else { text("？",px+pw/2-8,py+ph/2-10,JP,"#666"); }
+      else { text("？",px+pw/2,py+ph/2-12,JP,"#666","center"); }
     }
     function drawHUD(){
       ctx.fillStyle="#000"; ctx.fillRect(0,0,W,46);
@@ -327,7 +327,7 @@
       if(G.streak>=2) text(`x${1+Math.min(G.streak-1,4)*.5} れんぞく!`,12,52,JP,"#58f858");
     }
     function drawMsg(){ const m=G.msg; if(!m) return; const col=m.kind==="ok"?"#58f858":m.kind==="bad"?"#f83800":m.kind==="info"?"#f8f8f8":"#f8d878";
-      ctx.fillStyle="rgba(0,0,0,.6)"; ctx.fillRect(60,150,W-120,64); text(m.txt,W/2,158,JP,"#fff","center"); text(m.sub,W/2,184,JP,col,"center"); }
+      ctx.fillStyle="rgba(0,0,0,.72)"; ctx.fillRect(40,238,W-80,68); text(m.txt,W/2,246,JP,"#fff","center"); text(m.sub,W/2,274,JP,col,"center"); }
     function drawFly(){ G.fly.forEach(f=>{ const p=f.t/24; const x=f.x+(400-f.x)*p, y=f.y+(18-f.y)*p - Math.sin(p*Math.PI)*60; sprite(MUSH,x,y,{...PAL,c:"#f8d878"},1); }); }
     function drawTitle(){
       ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
