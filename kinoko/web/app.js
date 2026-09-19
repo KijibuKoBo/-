@@ -290,7 +290,8 @@ function openModal(id) {
     <div class="modal__hero"><div class="ph" id="modalHero" ${photoAttr(photos[0] || r.photo)} data-label="${escapeAttr(r.wamei)}"></div></div>
     ${thumbs}
     <div class="modal__content">
-      <h2 class="modal__wamei" id="modalTitle">${escapeHTML(r.wamei)} <span class="modal__kana">（${escapeHTML(r.kana || "")}）</span></h2>
+      <h2 class="modal__wamei" id="modalTitle">${escapeHTML(r.wamei)}${r.kana ? ` <span class="modal__kana">（${escapeHTML(r.kana)}）</span>` : ""}</h2>
+      <p class="modal__jp only-en" data-notr>Japanese name: ${escapeHTML(r.wamei)}${r.kana ? ` (${escapeHTML(r.kana)})` : ""}</p>
       <p class="modal__gakumei">${escapeHTML(r.gakumei || "")}</p>
       <div class="modal__tags">
         <span class="tag tag--${edClass}">${escapeHTML(r.edibility)}</span>

@@ -1,0 +1,1296 @@
+{
+ "note": "和名→ローマ字/学名。学名は確度の高いもののみ。",
+ "species": {
+  "アイカワタケ": {
+   "romaji": "Aikawatake"
+  },
+  "アイセンボンタケ": {
+   "romaji": "Aisenbontake"
+  },
+  "アイゾメクロイグチ": {
+   "romaji": "Aizomekuroiguchi"
+  },
+  "アイタケ": {
+   "romaji": "Aitake"
+  },
+  "アイナメ": {
+   "romaji": "Ainame"
+  },
+  "アイバシロハツ": {
+   "romaji": "Aibashirohatsu"
+  },
+  "アオイヌシメジ": {
+   "romaji": "Aoinushimeji",
+   "sci": "Clitocybe odora"
+  },
+  "アオサ": {
+   "romaji": "Aosa"
+  },
+  "アカアザタケ": {
+   "romaji": "Akaazatake"
+  },
+  "アカイボカサタケ": {
+   "romaji": "Akaibokasatake",
+   "sci": "Entoloma quadratum"
+  },
+  "アカカバイロタケ": {
+   "romaji": "Akakabairotake"
+  },
+  "アカジコウ": {
+   "romaji": "Akajikou",
+   "sci": "Boletus speciosus"
+  },
+  "アカダマスッポンタケ": {
+   "romaji": "Akadamasuppontake"
+  },
+  "アカチャカレバタケ": {
+   "romaji": "Akachakarebatake",
+   "sci": "Gymnopus dryophilus"
+  },
+  "アカハツ": {
+   "romaji": "Akahatsu"
+  },
+  "アカヤマトリ": {
+   "romaji": "Akayamatori"
+  },
+  "アカヤマドリ": {
+   "romaji": "Akayamadori",
+   "sci": "Leccinum extremiorientale"
+  },
+  "アケボノオシロイタケ": {
+   "romaji": "Akebonooshiroitake"
+  },
+  "アケボノカサタケ": {
+   "romaji": "Akebonokasatake"
+  },
+  "アシナガイグチ": {
+   "romaji": "Ashinagaiguchi"
+  },
+  "アシナガタケ": {
+   "romaji": "Ashinagatake",
+   "sci": "Mycena polygramma"
+  },
+  "アマタケ": {
+   "romaji": "Amatake"
+  },
+  "アミスギタケ": {
+   "romaji": "Amisugitake"
+  },
+  "アミタケ": {
+   "romaji": "Amitake",
+   "sci": "Suillus bovinus"
+  },
+  "アミハナイグチ": {
+   "romaji": "Amihanaiguchi"
+  },
+  "アミヒラタケ": {
+   "romaji": "Amihiratake"
+  },
+  "アメリカウラベニイロガワリ": {
+   "romaji": "Amerikaurabeniirogawari"
+  },
+  "アラゲキクラゲ": {
+   "romaji": "Aragekikurage",
+   "sci": "Auricularia cornea"
+  },
+  "アワタケ": {
+   "romaji": "Awatake",
+   "sci": "Xerocomus subtomentosus"
+  },
+  "アンズタケ": {
+   "romaji": "Anzutake"
+  },
+  "イタチタケ": {
+   "romaji": "Itachitake",
+   "sci": "Psathyrella candolleana"
+  },
+  "イボテングタケ": {
+   "romaji": "Ibotengutake"
+  },
+  "イボテングダケ": {
+   "romaji": "Ibotengudake",
+   "sci": "Amanita ibotengutake"
+  },
+  "イロガワリフウセンタケ": {
+   "romaji": "Irogawarifuusentake"
+  },
+  "イロガワリベニタケ": {
+   "romaji": "Irogawaribenitake"
+  },
+  "ウグイスハツ": {
+   "romaji": "Uguisuhatsu"
+  },
+  "ウコンハツ": {
+   "romaji": "Ukonhatsu"
+  },
+  "ウスキモミウラモドキ": {
+   "romaji": "Usukimomiura-modoki"
+  },
+  "ウスズミチチタケ": {
+   "romaji": "Usuzumichichitake"
+  },
+  "ウスヒラタケ": {
+   "romaji": "Usuhiratake",
+   "sci": "Pleurotus pulmonarius"
+  },
+  "ウツロイイグチ": {
+   "romaji": "Utsuroiiguchi"
+  },
+  "ウツロイイロガワリ": {
+   "romaji": "Utsuroiirogawari"
+  },
+  "ウド・ワラビ・タケノコ": {
+   "romaji": "Udo・warabi・takenoko"
+  },
+  "ウミタナゴ": {
+   "romaji": "Umitanago"
+  },
+  "ウラグロニガイグチ": {
+   "romaji": "Uraguronigaiguchi"
+  },
+  "ウラジロウツロイイグチ": {
+   "romaji": "Urajiroutsuroiiguchi"
+  },
+  "ウラベニがサ": {
+   "romaji": "Urabeniがsa"
+  },
+  "ウラベニカサ": {
+   "romaji": "Urabenikasa"
+  },
+  "ウラベニシロアシイグチ": {
+   "romaji": "Urabenishiroashiiguchi"
+  },
+  "ウラベニホテイシメジ": {
+   "romaji": "Urabenihoteishimeji",
+   "sci": "Entoloma sarcopum"
+  },
+  "ウラムラサキ": {
+   "romaji": "Uramurasaki",
+   "sci": "Laccaria amethystina"
+  },
+  "ウルイ": {
+   "romaji": "Urui"
+  },
+  "エセオリミキ": {
+   "romaji": "Eseorimiki"
+  },
+  "エノキタケ": {
+   "romaji": "Enokitake",
+   "sci": "Flammulina velutipes"
+  },
+  "オイカワタケ": {
+   "romaji": "Oikawatake"
+  },
+  "オウギタケ": {
+   "romaji": "Ougitake",
+   "sci": "Gomphidius roseus"
+  },
+  "オウミノクロアワタケ": {
+   "romaji": "Ouminokuroawatake"
+  },
+  "オオイチョウタケ": {
+   "romaji": "Ooichoutake",
+   "sci": "Leucopaxillus giganteus"
+  },
+  "オオイロガワリ": {
+   "romaji": "Ooirogawari"
+  },
+  "オオキツネタケ": {
+   "romaji": "Ookitsunetake",
+   "sci": "Laccaria bicolor"
+  },
+  "オオクロニガイグチ": {
+   "romaji": "Ookuronigaiguchi"
+  },
+  "オオグロニガイグチ": {
+   "romaji": "Ooguronigaiguchi"
+  },
+  "オオヒメノカサ": {
+   "romaji": "Oohimenokasa"
+  },
+  "オオヒメノカサ近縁種": {
+   "romaji": "Oohimenokasa (allied sp.)"
+  },
+  "オオミノクロアワタケ": {
+   "romaji": "Oominokuroawatake"
+  },
+  "オオワライタケ": {
+   "romaji": "Oowaraitake",
+   "sci": "Gymnopilus junonius"
+  },
+  "オキナクサハツ": {
+   "romaji": "Okinakusahatsu"
+  },
+  "オシロイタケ": {
+   "romaji": "Oshiroitake"
+  },
+  "オトメノカサ": {
+   "romaji": "Otomenokasa"
+  },
+  "オニイグチ": {
+   "romaji": "Oniiguchi"
+  },
+  "オニイグチモドキ": {
+   "romaji": "Oniiguchi-modoki"
+  },
+  "カエンタケ": {
+   "romaji": "Kaentake"
+  },
+  "カオリツムタケ": {
+   "romaji": "Kaoritsumutake"
+  },
+  "カキシメジ": {
+   "romaji": "Kakishimeji",
+   "sci": "Tricholoma ustale"
+  },
+  "カクミノシメジ": {
+   "romaji": "Kakuminoshimeji"
+  },
+  "カサゴ": {
+   "romaji": "Kasago"
+  },
+  "カシタケ": {
+   "romaji": "Kashitake"
+  },
+  "カジカ": {
+   "romaji": "Kajika"
+  },
+  "カッパツルタケ": {
+   "romaji": "Kappatsurutake"
+  },
+  "カノタケ": {
+   "romaji": "Kanotake"
+  },
+  "カバイロツルタケ": {
+   "romaji": "Kabairotsurutake",
+   "sci": "Amanita fulva"
+  },
+  "カブラテングタケ": {
+   "romaji": "Kaburatengutake"
+  },
+  "カラカサタケ": {
+   "romaji": "Karakasatake",
+   "sci": "Macrolepiota procera"
+  },
+  "カラマツオトメノカサ": {
+   "romaji": "Karamatsuotomenokasa"
+  },
+  "カラマツシメジ": {
+   "romaji": "Karamatsushimeji"
+  },
+  "カレバキツネタケ": {
+   "romaji": "Karebakitsunetake",
+   "sci": "Laccaria vinaceoavellanea"
+  },
+  "カレバキツルタケ": {
+   "romaji": "Karebakitsurutake"
+  },
+  "カレバタケ": {
+   "romaji": "Karebatake"
+  },
+  "カワウソタケ": {
+   "romaji": "Kawausotake"
+  },
+  "カワムラフウセンタケ": {
+   "romaji": "Kawamurafuusentake",
+   "sci": "Cortinarius purpurascens"
+  },
+  "カワリハツ": {
+   "romaji": "Kawarihatsu"
+  },
+  "カンタケ": {
+   "romaji": "Kantake"
+  },
+  "ガンタケ": {
+   "romaji": "Gantake"
+  },
+  "キアシヤマドリ": {
+   "romaji": "Kiashiyamadori"
+  },
+  "キアシヤマドリタケ": {
+   "romaji": "Kiashiyamadoritake"
+  },
+  "キイロアセタケ": {
+   "romaji": "Kiiroasetake"
+  },
+  "キイロイグチ": {
+   "romaji": "Kiiroiguchi",
+   "sci": "Pulveroboletus ravenelii"
+  },
+  "キウロコテングタケ": {
+   "romaji": "Kiurokotengutake"
+  },
+  "キクバナイグチ": {
+   "romaji": "Kikubanaiguchi"
+  },
+  "キクラゲ": {
+   "romaji": "Kikurage",
+   "sci": "Auricularia auricula-judae"
+  },
+  "キチチタケ": {
+   "romaji": "Kichichitake"
+  },
+  "キツネノカラカサ": {
+   "romaji": "Kitsunenokarakasa",
+   "sci": "Lepiota cristata"
+  },
+  "キツネノハナガサ": {
+   "romaji": "Kitsunenohanagasa",
+   "sci": "Leucocoprinus fragilissimus"
+  },
+  "キニガイグチ": {
+   "romaji": "Kinigaiguchi"
+  },
+  "キヌハダトマヤタケ": {
+   "romaji": "Kinuhadatomayatake"
+  },
+  "キノメ": {
+   "romaji": "Kinome"
+  },
+  "キヒダタケ": {
+   "romaji": "Kihidatake",
+   "sci": "Phylloporus bellus"
+  },
+  "キヒラタケ": {
+   "romaji": "Kihiratake",
+   "sci": "Phyllotopsis nidulans"
+  },
+  "キュウセン": {
+   "romaji": "Kyuusen"
+  },
+  "キララタケ": {
+   "romaji": "Kiraratake",
+   "sci": "Coprinellus micaceus"
+  },
+  "キリンタケ": {
+   "romaji": "Kirintake"
+  },
+  "ギンポ": {
+   "romaji": "Ginpo"
+  },
+  "クサイロハツ": {
+   "romaji": "Kusairohatsu"
+  },
+  "クサウラベニタケ": {
+   "romaji": "Kusaurabenitake",
+   "sci": "Entoloma rhodopolium"
+  },
+  "クサハツ": {
+   "romaji": "Kusahatsu"
+  },
+  "クサハツモドキ": {
+   "romaji": "Kusahatsu-modoki"
+  },
+  "クヌギタケ": {
+   "romaji": "Kunugitake",
+   "sci": "Mycena galericulata"
+  },
+  "クマシメジ": {
+   "romaji": "Kumashimeji"
+  },
+  "クリイロイグチモドキ": {
+   "romaji": "Kuriiroiguchi-modoki"
+  },
+  "クリイロニガイグチ": {
+   "romaji": "Kuriironigaiguchi"
+  },
+  "クリカワヤシャイグチ": {
+   "romaji": "Kurikawayashaiguchi"
+  },
+  "クリゲチャヒラタケ": {
+   "romaji": "Kurigechahiratake"
+  },
+  "クリゲノチャヒラタケ": {
+   "romaji": "Kurigenochahiratake"
+  },
+  "クリタケ": {
+   "romaji": "Kuritake",
+   "sci": "Hypholoma lateritium"
+  },
+  "クリフウセンタケ": {
+   "romaji": "Kurifuusentake",
+   "sci": "Cortinarius tenuipes"
+  },
+  "クリフウセンタケの近類種": {
+   "romaji": "Kurifuusentake (allied sp.)",
+   "sci": "Cortinarius tenuipes (allied)"
+  },
+  "クロアザアワタケ": {
+   "romaji": "Kuroazaawatake"
+  },
+  "クロアワタケ": {
+   "romaji": "Kuroawatake"
+  },
+  "クロイグチ": {
+   "romaji": "Kuroiguchi"
+  },
+  "クロゲナラタケ": {
+   "romaji": "Kurogenaratake",
+   "sci": "Armillaria sinapina"
+  },
+  "クロサカズキシメジ": {
+   "romaji": "Kurosakazukishimeji"
+  },
+  "クロチチタケ": {
+   "romaji": "Kurochichitake"
+  },
+  "クロチチダマシ": {
+   "romaji": "Kurochichidamashi"
+  },
+  "クロハツ": {
+   "romaji": "Kurohatsu"
+  },
+  "クロフクロタケ": {
+   "romaji": "Kurofukurotake",
+   "sci": "Volvopluteus gloiocephalus"
+  },
+  "クロホウキタケ": {
+   "romaji": "Kurohoukitake"
+  },
+  "ケショウハツ": {
+   "romaji": "Keshouhatsu"
+  },
+  "ケシロハツ": {
+   "romaji": "Keshirohatsu"
+  },
+  "ケロウジ": {
+   "romaji": "Kerouji"
+  },
+  "コアジ": {
+   "romaji": "Koaji"
+  },
+  "コウジタケ": {
+   "romaji": "Koujitake",
+   "sci": "Boletus fraternus"
+  },
+  "コウモリタケ": {
+   "romaji": "Koumoritake"
+  },
+  "コガネキヌカラカサタケ": {
+   "romaji": "Koganekinukarakasatake",
+   "sci": "Leucocoprinus birnbaumii"
+  },
+  "コガネツムタケ": {
+   "romaji": "Koganetsumutake",
+   "sci": "Gymnopilus liquiritiae"
+  },
+  "コガネヤマドリ": {
+   "romaji": "Koganeyamadori"
+  },
+  "コゲチャニガイグチ": {
+   "romaji": "Kogechanigaiguchi"
+  },
+  "コゴミ": {
+   "romaji": "Kogomi"
+  },
+  "コザラミノシメジ": {
+   "romaji": "Kozaraminoshimeji"
+  },
+  "コシアブラ": {
+   "romaji": "Koshiabura"
+  },
+  "コショウイグチ": {
+   "romaji": "Koshouiguchi",
+   "sci": "Chalciporus piperatus"
+  },
+  "コツブオオワカクサタケ": {
+   "romaji": "Kotsubuoowakakusatake"
+  },
+  "コテングタケモドキ": {
+   "romaji": "Kotengutake-modoki",
+   "sci": "Amanita pseudoporphyria"
+  },
+  "コノハシメジ": {
+   "romaji": "Konohashimeji"
+  },
+  "コビチャイロガワリ": {
+   "romaji": "Kobichairogawari"
+  },
+  "コビチャニガイグチ": {
+   "romaji": "Kobichanigaiguchi"
+  },
+  "コフキサルノコシカケ": {
+   "romaji": "Kofukisarunokoshikake"
+  },
+  "コブアセタケ": {
+   "romaji": "Kobuasetake"
+  },
+  "コムラサキシメジ": {
+   "romaji": "Komurasakishimeji",
+   "sci": "Lepista sordida"
+  },
+  "コレラタケ": {
+   "romaji": "Koreratake",
+   "sci": "Galerina fasciculata"
+  },
+  "サクラタケ": {
+   "romaji": "Sakuratake",
+   "sci": "Mycena pura"
+  },
+  "ササクレシロオニタケ": {
+   "romaji": "Sasakureshiroonitake",
+   "sci": "Amanita cokeri"
+  },
+  "ササナミニセフウセンタケ": {
+   "romaji": "Sasanaminisefuusentake"
+  },
+  "サザエ": {
+   "romaji": "Sazae"
+  },
+  "サザナミツバフウセンタケ": {
+   "romaji": "Sazanamitsubafuusentake"
+  },
+  "サマツモドキ": {
+   "romaji": "Samatsu-modoki",
+   "sci": "Tricholomopsis rutilans"
+  },
+  "サヨリ": {
+   "romaji": "Sayori"
+  },
+  "ザラエノハラタケ": {
+   "romaji": "Zaraenoharatake"
+  },
+  "シイタケ": {
+   "romaji": "Shiitake",
+   "sci": "Lentinula edodes"
+  },
+  "シモコシ": {
+   "romaji": "Shimokoshi",
+   "sci": "Tricholoma auratum"
+  },
+  "シモフリシメジ": {
+   "romaji": "Shimofurishimeji",
+   "sci": "Tricholoma portentosum"
+  },
+  "シャカシメジ": {
+   "romaji": "Shakashimeji",
+   "sci": "Lyophyllum fumosum"
+  },
+  "シュイロガサ": {
+   "romaji": "Shuirogasa"
+  },
+  "シラゲアセタケ": {
+   "romaji": "Shirageasetake"
+  },
+  "シロイボカサタケ": {
+   "romaji": "Shiroibokasatake",
+   "sci": "Entoloma murranum"
+  },
+  "シロウツロイイグチ": {
+   "romaji": "Shiroutsuroiiguchi"
+  },
+  "シロオオハラタケ": {
+   "romaji": "Shiroooharatake",
+   "sci": "Agaricus arvensis"
+  },
+  "シロオニタケ": {
+   "romaji": "Shiroonitake",
+   "sci": "Amanita virgineoides"
+  },
+  "シロカイメンタケ": {
+   "romaji": "Shirokaimentake"
+  },
+  "シロカノシタ": {
+   "romaji": "Shirokanoshita"
+  },
+  "シロカバイロシメジ": {
+   "romaji": "Shirokabairoshimeji"
+  },
+  "シロカレバシメジ": {
+   "romaji": "Shirokarebashimeji"
+  },
+  "シロソウメンタケ": {
+   "romaji": "Shirosoumentake"
+  },
+  "シロタマゴテングタケ": {
+   "romaji": "Shirotamagotengutake",
+   "sci": "Amanita verna"
+  },
+  "シロテングタケ": {
+   "romaji": "Shirotengutake"
+  },
+  "シロテングタケ幼菌": {
+   "romaji": "Shirotengutake (young)"
+  },
+  "シロヌメリイクジ": {
+   "romaji": "Shironumeriikuji"
+  },
+  "シロヌメリイグチ": {
+   "romaji": "Shironumeriiguchi",
+   "sci": "Suillus placidus"
+  },
+  "シロハツ": {
+   "romaji": "Shirohatsu"
+  },
+  "シロヒメホウキタケ": {
+   "romaji": "Shirohimehoukitake"
+  },
+  "シロマイタケ": {
+   "romaji": "Shiromaitake"
+  },
+  "スエヒロタケ": {
+   "romaji": "Suehirotake",
+   "sci": "Schizophyllum commune"
+  },
+  "スギエダタケ": {
+   "romaji": "Sugiedatake",
+   "sci": "Strobilurus ohshimae"
+  },
+  "スギタケ": {
+   "romaji": "Sugitake"
+  },
+  "スギヒラタケ": {
+   "romaji": "Sugihiratake",
+   "sci": "Pleurocybella porrigens"
+  },
+  "ススケヤマドリ": {
+   "romaji": "Susukeyamadori"
+  },
+  "ススケヤマドリタケ": {
+   "romaji": "Susukeyamadoritake"
+  },
+  "スッポンタケ": {
+   "romaji": "Suppontake"
+  },
+  "セイタカイグチ": {
+   "romaji": "Seitakaiguchi"
+  },
+  "ソライロタケ": {
+   "romaji": "Sorairotake",
+   "sci": "Entoloma virescens"
+  },
+  "タケノコ": {
+   "romaji": "Takenoko"
+  },
+  "タヌキノチャブクロ": {
+   "romaji": "Tanukinochabukuro"
+  },
+  "タマアセタケ": {
+   "romaji": "Tamaasetake"
+  },
+  "タマキクラゲ": {
+   "romaji": "Tamakikurage"
+  },
+  "タマゴタケ": {
+   "romaji": "Tamagotake",
+   "sci": "Amanita caesareoides"
+  },
+  "タマゴテングタケモドキ": {
+   "romaji": "Tamagotengutake-modoki",
+   "sci": "Amanita longistriata"
+  },
+  "タマネギモドキ": {
+   "romaji": "Tamanegi-modoki"
+  },
+  "タモギタケ": {
+   "romaji": "Tamogitake",
+   "sci": "Pleurotus cornucopiae"
+  },
+  "タラノメ": {
+   "romaji": "Taranome"
+  },
+  "タラノメ・コシアブラ": {
+   "romaji": "Taranome・koshiabura"
+  },
+  "チギリハツ": {
+   "romaji": "Chigirihatsu"
+  },
+  "チギリハツタケ": {
+   "romaji": "Chigirihatsutake"
+  },
+  "チギレハツ": {
+   "romaji": "Chigirehatsu"
+  },
+  "チチアワタケ": {
+   "romaji": "Chichiawatake",
+   "sci": "Suillus granulatus"
+  },
+  "チチタケ": {
+   "romaji": "Chichitake",
+   "sci": "Lactarius volemus"
+  },
+  "チャツムタケ": {
+   "romaji": "Chatsumutake",
+   "sci": "Gymnopilus penetrans"
+  },
+  "チャナムツムタケ": {
+   "romaji": "Chanamutsumutake"
+  },
+  "チャニガイクジ": {
+   "romaji": "Chanigaikuji"
+  },
+  "チャニガイグチ": {
+   "romaji": "Chanigaiguchi"
+  },
+  "チャホウキタケ": {
+   "romaji": "Chahoukitake"
+  },
+  "チャホウキタケモドキ": {
+   "romaji": "Chahoukitake-modoki"
+  },
+  "ツエタケ": {
+   "romaji": "Tsuetake",
+   "sci": "Hymenopellis radicata"
+  },
+  "ツキヨタケ": {
+   "romaji": "Tsukiyotake",
+   "sci": "Omphalotus japonicus"
+  },
+  "ツチカブリ": {
+   "romaji": "Tsuchikaburi"
+  },
+  "ツチスギタケ": {
+   "romaji": "Tsuchisugitake",
+   "sci": "Pholiota highlandensis"
+  },
+  "ツチナメコ": {
+   "romaji": "Tsuchinameko"
+  },
+  "ツバフウセンタケ": {
+   "romaji": "Tsubafuusentake"
+  },
+  "ツブエノウラベニイグチ": {
+   "romaji": "Tsubuenourabeniiguchi"
+  },
+  "ツブカラカサタケ": {
+   "romaji": "Tsubukarakasatake",
+   "sci": "Cystolepiota seminuda"
+  },
+  "ツリガネタケ": {
+   "romaji": "Tsuriganetake"
+  },
+  "ツルタケ": {
+   "romaji": "Tsurutake",
+   "sci": "Amanita vaginata"
+  },
+  "ツルタケダマシ": {
+   "romaji": "Tsurutakedamashi",
+   "sci": "Amanita spreta"
+  },
+  "ツルタケモドキ": {
+   "romaji": "Tsurutake-modoki",
+   "sci": "Amanita vaginata (allied)"
+  },
+  "テングタケ": {
+   "romaji": "Tengutake",
+   "sci": "Amanita pantherina"
+  },
+  "テングダケモドキ": {
+   "romaji": "Tengudake-modoki"
+  },
+  "テングツルタケ": {
+   "romaji": "Tengutsurutake"
+  },
+  "トガリベニヤマタケ": {
+   "romaji": "Togaribeniyamatake"
+  },
+  "トキイロヒラタケ": {
+   "romaji": "Tokiirohiratake",
+   "sci": "Pleurotus salmoneostramineus"
+  },
+  "ドクべニタケ": {
+   "romaji": "Dokuべnitake"
+  },
+  "ドクカラカサタケ": {
+   "romaji": "Dokukarakasatake",
+   "sci": "Chlorophyllum molybdites"
+  },
+  "ドクカレバタケ": {
+   "romaji": "Dokukarebatake",
+   "sci": "Rhodocollybia butyracea"
+  },
+  "ドクツルタケ": {
+   "romaji": "Dokutsurutake",
+   "sci": "Amanita virosa"
+  },
+  "ナカグロモリノカサ": {
+   "romaji": "Nakaguromorinokasa",
+   "sci": "Agaricus praeclaresquamosus"
+  },
+  "ナガエノウラベニイグチ": {
+   "romaji": "Nagaenourabeniiguchi"
+  },
+  "ナギナタタケ": {
+   "romaji": "Naginatatake"
+  },
+  "ナツノカワムラフウセンタケ": {
+   "romaji": "Natsunokawamurafuusentake"
+  },
+  "ナメコ": {
+   "romaji": "Nameko",
+   "sci": "Pholiota microspora"
+  },
+  "ナメコ・ヒラタケ": {
+   "romaji": "Nameko・hiratake"
+  },
+  "ナヨタケ": {
+   "romaji": "Nayotake",
+   "sci": "Psathyrella corrugis"
+  },
+  "ナラタケ": {
+   "romaji": "Naratake",
+   "sci": "Armillaria mellea"
+  },
+  "ナラタケモドキ": {
+   "romaji": "Naratake-modoki",
+   "sci": "Desarmillaria tabescens"
+  },
+  "ニオイコベニ": {
+   "romaji": "Nioikobeni"
+  },
+  "ニオイコベニタケ": {
+   "romaji": "Nioikobenitake"
+  },
+  "ニオイバライロイグチ": {
+   "romaji": "Nioibarairoiguchi"
+  },
+  "ニオイワチチタケ": {
+   "romaji": "Nioiwachichitake"
+  },
+  "ニカワハリタケ": {
+   "romaji": "Nikawaharitake"
+  },
+  "ニガイグチ": {
+   "romaji": "Nigaiguchi"
+  },
+  "ニガイグチモドキ": {
+   "romaji": "Nigaiguchi-modoki",
+   "sci": "Tylopilus neofelleus"
+  },
+  "ニガクリタケ": {
+   "romaji": "Nigakuritake",
+   "sci": "Hypholoma fasciculare"
+  },
+  "ニクウチワタケ": {
+   "romaji": "Nikuuchiwatake"
+  },
+  "ニセアシイグチベニ": {
+   "romaji": "Niseashiiguchibeni"
+  },
+  "ニセアシベニイグチ": {
+   "romaji": "Niseashibeniiguchi"
+  },
+  "ニセアブラシメジ": {
+   "romaji": "Niseaburashimeji"
+  },
+  "ニセクロハツ": {
+   "romaji": "Nisekurohatsu"
+  },
+  "ニセチチタケ": {
+   "romaji": "Nisechichitake"
+  },
+  "ニワタケ": {
+   "romaji": "Niwatake",
+   "sci": "Phaeolus schweinitzii"
+  },
+  "ニンギョウタケ": {
+   "romaji": "Ningyoutake"
+  },
+  "ニンギョタケ": {
+   "romaji": "Ningyotake"
+  },
+  "ヌメリイクジ": {
+   "romaji": "Numeriikuji"
+  },
+  "ヌメリイグチ": {
+   "romaji": "Numeriiguchi",
+   "sci": "Suillus luteus"
+  },
+  "ヌメリコウジタケ": {
+   "romaji": "Numerikoujitake"
+  },
+  "ヌメリスギタケ": {
+   "romaji": "Numerisugitake",
+   "sci": "Pholiota adiposa"
+  },
+  "ヌメリスギタケモドキ": {
+   "romaji": "Numerisugitake-modoki",
+   "sci": "Pholiota aurivella"
+  },
+  "ヌメリニガイグチ": {
+   "romaji": "Numerinigaiguchi"
+  },
+  "ノボリリュウ": {
+   "romaji": "Noboriryuu"
+  },
+  "ハイイロシメジ": {
+   "romaji": "Haiiroshimeji",
+   "sci": "Clitocybe nebularis"
+  },
+  "ハイカグラテングタケ": {
+   "romaji": "Haikaguratengutake"
+  },
+  "ハイカグラテングダケ": {
+   "romaji": "Haikaguratengudake"
+  },
+  "ハイムラサキフウセンタケ": {
+   "romaji": "Haimurasakifuusentake"
+  },
+  "ハタケシメジ": {
+   "romaji": "Hatakeshimeji",
+   "sci": "Lyophyllum decastes"
+  },
+  "ハダイロニガシメジ": {
+   "romaji": "Hadaironigashimeji"
+  },
+  "ハツタケ": {
+   "romaji": "Hatsutake",
+   "sci": "Lactarius hatsudake"
+  },
+  "ハツタケ・コノハシメジ": {
+   "romaji": "Hatsutake・konohashimeji"
+  },
+  "ハナイク゛チ": {
+   "romaji": "Hanaiku゛chi"
+  },
+  "ハナイクジ": {
+   "romaji": "Hanaikuji"
+  },
+  "ハナイグチ": {
+   "romaji": "Hanaiguchi",
+   "sci": "Suillus grevillei"
+  },
+  "ハナオチバタケ": {
+   "romaji": "Hanaochibatake",
+   "sci": "Marasmius pulcherripes"
+  },
+  "ハナガサイグチ": {
+   "romaji": "Hanagasaiguchi"
+  },
+  "ハナビラニカワタケ": {
+   "romaji": "Hanabiranikawatake"
+  },
+  "ハナホウキタケ": {
+   "romaji": "Hanahoukitake"
+  },
+  "ハラタケ": {
+   "romaji": "Haratake",
+   "sci": "Agaricus campestris"
+  },
+  "ハラタケモドキ": {
+   "romaji": "Haratake-modoki",
+   "sci": "Agaricus campestris (allied)"
+  },
+  "ハリキリ": {
+   "romaji": "Harikiri"
+  },
+  "ハンノキイグチ": {
+   "romaji": "Hannokiiguchi"
+  },
+  "ヒイロカサ": {
+   "romaji": "Hiirokasa"
+  },
+  "ヒイロガサ": {
+   "romaji": "Hiirogasa",
+   "sci": "Hygrocybe punicea"
+  },
+  "ヒイロタケ": {
+   "romaji": "Hiirotake"
+  },
+  "ヒダハタケ": {
+   "romaji": "Hidahatake",
+   "sci": "Paxillus involutus"
+  },
+  "ヒトヨタケ": {
+   "romaji": "Hitoyotake",
+   "sci": "Coprinopsis atramentaria"
+  },
+  "ヒメカバイロタケ": {
+   "romaji": "Himekabairotake",
+   "sci": "Xeromphalina campanella"
+  },
+  "ヒメカワムラフウセンタケ": {
+   "romaji": "Himekawamurafuusentake"
+  },
+  "ヒメキクラゲ": {
+   "romaji": "Himekikurage"
+  },
+  "ヒメキシメジ": {
+   "romaji": "Himekishimeji"
+  },
+  "ヒメコガサ": {
+   "romaji": "Himekogasa",
+   "sci": "Galerina helvoliceps"
+  },
+  "ヒメコナカブリツルタケ": {
+   "romaji": "Himekonakaburitsurutake"
+  },
+  "ヒメコンイロウラベニタケ": {
+   "romaji": "Himekon'irourabenitake"
+  },
+  "ヒメヌメリイグチ": {
+   "romaji": "Himenumeriiguchi"
+  },
+  "ヒラタケ": {
+   "romaji": "Hiratake",
+   "sci": "Pleurotus ostreatus"
+  },
+  "ヒラフスベ": {
+   "romaji": "Hirafusube"
+  },
+  "ヒロハウスズチチタケ": {
+   "romaji": "Hirohausuzuchichitake"
+  },
+  "ヒロハスズミチチタケ": {
+   "romaji": "Hirohasuzumichichitake"
+  },
+  "フウセンタケモドキ": {
+   "romaji": "Fuusentake-modoki"
+  },
+  "フキノトウ": {
+   "romaji": "Fukinotou"
+  },
+  "フクロツチガキ": {
+   "romaji": "Fukurotsuchigaki"
+  },
+  "フクロツルタケ": {
+   "romaji": "Fukurotsurutake",
+   "sci": "Amanita volvata"
+  },
+  "フタイロフウセンタケ": {
+   "romaji": "Futairofuusentake",
+   "sci": "Cortinarius bicolor"
+  },
+  "フユヤマタケ": {
+   "romaji": "Fuyuyamatake",
+   "sci": "Hygrophorus hypothejus"
+  },
+  "ブドウタケ": {
+   "romaji": "Budoutake"
+  },
+  "ブナシメジ": {
+   "romaji": "Bunashimeji",
+   "sci": "Hypsizygus marmoreus"
+  },
+  "ヘビキノコモドキ": {
+   "romaji": "Hebikinoko-modoki",
+   "sci": "Amanita spissacea"
+  },
+  "ベニイクジ": {
+   "romaji": "Beniikuji"
+  },
+  "ベニイグチ": {
+   "romaji": "Beniiguchi"
+  },
+  "ベニウスタケ": {
+   "romaji": "Beniusutake"
+  },
+  "ベニヒガサ": {
+   "romaji": "Benihigasa",
+   "sci": "Hygrocybe miniata"
+  },
+  "ベニヒダタケ": {
+   "romaji": "Benihidatake",
+   "sci": "Pluteus aurantiorugosus"
+  },
+  "ホウベニシロアシイグチ": {
+   "romaji": "Houbenishiroashiiguchi"
+  },
+  "ホウロクタケ": {
+   "romaji": "Hourokutake"
+  },
+  "ホオベニシロアシイグチ": {
+   "romaji": "Hoobenishiroashiiguchi",
+   "sci": "Boletellus obscurecoccineus"
+  },
+  "ホコリタケ": {
+   "romaji": "Hokoritake",
+   "sci": "Lycoperdon perlatum"
+  },
+  "ホテイイロカワリ": {
+   "romaji": "Hoteiirokawari"
+  },
+  "ホテイイロガワリ": {
+   "romaji": "Hoteiirogawari"
+  },
+  "ボ゜タンイボタケ": {
+   "romaji": "Bo゜tan'ibotake"
+  },
+  "ボタンイボタケ": {
+   "romaji": "Botan'ibotake"
+  },
+  "マイタケ": {
+   "romaji": "Maitake",
+   "sci": "Grifola frondosa"
+  },
+  "マスタケ": {
+   "romaji": "Masutake",
+   "sci": "Laetiporus sulphureus"
+  },
+  "マツオウジ": {
+   "romaji": "Matsuouji",
+   "sci": "Neolentinus lepideus"
+  },
+  "マツオジウ": {
+   "romaji": "Matsuojiu"
+  },
+  "マツタケ": {
+   "romaji": "Matsutake",
+   "sci": "Tricholoma matsutake"
+  },
+  "マメアジ": {
+   "romaji": "Mameaji"
+  },
+  "マメザヤタケ": {
+   "romaji": "Mamezayatake"
+  },
+  "マントカラカサタケ": {
+   "romaji": "Mantokarakasatake"
+  },
+  "マンネンタケ": {
+   "romaji": "Mannentake"
+  },
+  "ミイノモミウラモドキ": {
+   "romaji": "Miinomomiura-modoki"
+  },
+  "ミイロアミタケ": {
+   "romaji": "Miiroamitake"
+  },
+  "ミキイロウスタケ": {
+   "romaji": "Mikiirousutake"
+  },
+  "ミツバ": {
+   "romaji": "Mitsuba"
+  },
+  "ミドリスギタケ": {
+   "romaji": "Midorisugitake",
+   "sci": "Gymnopilus aeruginosus"
+  },
+  "ミドリニガイグチ": {
+   "romaji": "Midorinigaiguchi"
+  },
+  "ミネアカゲシメジ": {
+   "romaji": "Mineakageshimeji"
+  },
+  "ミネアカネシメジ": {
+   "romaji": "Mineakaneshimeji"
+  },
+  "ミネシメジ": {
+   "romaji": "Mineshimeji",
+   "sci": "Tricholoma saponaceum"
+  },
+  "ミヤマイタチタケ": {
+   "romaji": "Miyamaitachitake"
+  },
+  "ムキタケ": {
+   "romaji": "Mukitake",
+   "sci": "Sarcomyxa serotina"
+  },
+  "ムササビタケ": {
+   "romaji": "Musasabitake",
+   "sci": "Psathyrella piluliformis"
+  },
+  "ムジナタケ": {
+   "romaji": "Mujinatake"
+  },
+  "ムラサキアブラシメジ": {
+   "romaji": "Murasakiaburashimeji"
+  },
+  "ムラサキアブラシメジモドキ": {
+   "romaji": "Murasakiaburashimeji-modoki",
+   "sci": "Cortinarius salor"
+  },
+  "ムラサキヤマドリ": {
+   "romaji": "Murasakiyamadori"
+  },
+  "ムラサキヤマドリタケ": {
+   "romaji": "Murasakiyamadoritake"
+  },
+  "ムレオオイチョウタケ": {
+   "romaji": "Mureooichoutake"
+  },
+  "メシマコブ": {
+   "romaji": "Meshimakobu"
+  },
+  "メジナ": {
+   "romaji": "Mejina"
+  },
+  "メバル": {
+   "romaji": "Mebaru"
+  },
+  "モエギタケ": {
+   "romaji": "Moegitake"
+  },
+  "モミタケ": {
+   "romaji": "Momitake",
+   "sci": "Catathelasma ventricosum"
+  },
+  "モリノカレバタケ": {
+   "romaji": "Morinokarebatake"
+  },
+  "モリノカレバタケ属": {
+   "romaji": "Morinokarebatake sp.",
+   "sci": "Gymnopus sp."
+  },
+  "モリノハダイロカサ": {
+   "romaji": "Morinohadairokasa"
+  },
+  "モリノハダイロガサ": {
+   "romaji": "Morinohadairogasa"
+  },
+  "モリノフジイロタケ": {
+   "romaji": "Morinofujiirotake",
+   "sci": "Cortinarius salor"
+  },
+  "ヤグラタケ": {
+   "romaji": "Yaguratake"
+  },
+  "ヤシャイグチ": {
+   "romaji": "Yashaiguchi"
+  },
+  "ヤブレベニタケ": {
+   "romaji": "Yaburebenitake"
+  },
+  "ヤマイグチ": {
+   "romaji": "Yamaiguchi"
+  },
+  "ヤマドリタケモドキ": {
+   "romaji": "Yamadoritake-modoki",
+   "sci": "Boletus reticulatus"
+  },
+  "ヤマドリダケモドキ": {
+   "romaji": "Yamadoridake-modoki"
+  },
+  "ヤマヒガサタケ": {
+   "romaji": "Yamahigasatake"
+  },
+  "ヤマブキフウセンタケ": {
+   "romaji": "Yamabukifuusentake"
+  },
+  "ヤマブシタケ": {
+   "romaji": "Yamabushitake",
+   "sci": "Hericium erinaceus"
+  },
+  "ワカクサタケ": {
+   "romaji": "Wakakusatake",
+   "sci": "Gliophorus psittacinus"
+  },
+  "ワラビ": {
+   "romaji": "Warabi"
+  }
+ },
+ "family": {
+  "キシメジ科": "Tricholomataceae",
+  "イグチ科": "Boletaceae",
+  "テングタケ科": "Amanitaceae",
+  "フウセンタケ科": "Cortinariaceae",
+  "モエギタケ科": "Strophariaceae",
+  "ヒラタケ科": "Pleurotaceae",
+  "ハラタケ科": "Agaricaceae",
+  "イッポンシメジ科": "Entolomataceae",
+  "イッポンメジ科": "Entolomataceae",
+  "ヌメリガサ科": "Hygrophoraceae",
+  "ヌメリカサ科": "Hygrophoraceae",
+  "ウラベニガサ科": "Pluteaceae",
+  "ウラベニカサ科": "Pluteaceae",
+  "ヒトヨタケ科": "Psathyrellaceae",
+  "シメジ科": "Lyophyllaceae",
+  "イロガワリ科": "Boletaceae",
+  "ナヨタケ科": "Psathyrellaceae",
+  "ヒダハタケ科": "Paxillaceae",
+  "チャヒラタケ科": "Crepidotaceae",
+  "ツキヨタケ科": "Omphalotaceae",
+  "オキナタケ科": "Bolbitiaceae",
+  "オウギタケ科": "Gomphidiaceae"
+ }
+}

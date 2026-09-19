@@ -20,7 +20,7 @@
   --edible: #5a7d4a;
   --poison: #b03a2e;
   --unfit: #9a8f73;
-  --hero-photo: url("data/photos/hero-new.jpg");
+  --hero-photo: url("data/photos/hero-clean.jpg");
 
   --rail: 96px;
   --maxw: 1180px;
@@ -509,3 +509,45 @@ textarea.adm-input { resize: vertical; line-height: 1.7; }
 /* 写真が読み込めたらプレースホルダの文字を消す（後勝ち対策） */
 .ph[data-loaded="1"][data-label]::after,
 .ph[data-loaded="1"]::before { content: none !important; }
+
+/* ====== 言語切り替え（日本語 / EN） ====== */
+.langbtn {
+  font-family: var(--display), sans-serif;
+  font-size: 0.7rem; letter-spacing: 0.12em;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  background: transparent; color: inherit;
+  border: 1px solid currentColor; opacity: 0.72;
+  transition: opacity .2s, background .2s, color .2s;
+  white-space: nowrap; line-height: 1.6;
+}
+.langbtn:hover { opacity: 1; }
+.langbtn__sep { opacity: .45; }
+.langbtn__ja, .langbtn__en { opacity: .45; font-weight: 400; }
+.langbtn[data-lang="ja"] .langbtn__ja,
+.langbtn[data-lang="en"] .langbtn__en { opacity: 1; font-weight: 700; }
+.langbtn--rail { writing-mode: horizontal-tb; margin-bottom: 14px; font-size: 0.62rem; padding: 5px 8px; }
+.langbtn--bar { margin-left: 8px; }
+.topbar, .topbar--solid { gap: 10px; }
+.only-en { display: none; }
+html[data-lang="en"] .only-en { display: block; }
+.modal__jp { font-size: .82rem; letter-spacing: .06em; color: var(--ink-soft); margin: -4px 0 10px; }
+.langbtn--drawer { margin-top: 10px; font-size: 0.9rem; padding: 9px 20px; }
+.langbtn--float {
+  position: fixed; top: 12px; right: 14px; z-index: 200;
+  background: rgba(243,239,230,0.92); color: #25241f; border-color: rgba(37,36,31,.35);
+  backdrop-filter: blur(6px);
+}
+@media (max-width: 900px) { .langbtn--float { top: 10px; right: 10px; } }
+html[data-lang="en"] .rail__nav a,
+html[data-lang="en"] .footer__nav a { letter-spacing: .18em; }
+
+/* 言語ボタンが増えた分、スマホのトップバーを詰める */
+.topbar--solid .topbar__brand-main,
+.topbar--solid .topbar__back { white-space: nowrap; }
+@media (max-width: 620px) {
+  .topbar--solid { padding-left: 14px; padding-right: 14px; gap: 6px; }
+  .topbar--solid .topbar__brand-main { font-size: 0.82rem; }
+  .topbar--solid .topbar__back { font-size: 0.74rem; }
+  .langbtn--bar { font-size: 0.58rem; padding: 4px 7px; gap: 3px; margin-left: 4px; }
+}
