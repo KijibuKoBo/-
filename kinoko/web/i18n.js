@@ -570,6 +570,55 @@
     "もう一度": "Play again",
     "左へ": "Left", "右へ": "Right",
 
+    /* ── きのこマッチパズル ── */
+    "きのこマッチパズル": "Mushroom Match",
+    "きのこマッチパズル ｜ イワオトキノコ": "Mushroom Match ｜ IWAO to KINOKO",
+    "MATCH ― きのこマッチパズル": "MATCH ― Mushroom Match",
+    "同じキノコを3つつなげて、キノコを育てよう。": "Line up three of a kind and grow your mushrooms.",
+    "大きくなったキノコがはじけると、森に胞子が舞う。": "When a grown mushroom bursts, spores drift through the forest.",
+    "同じキノコを3つつなげて育てよう。大きくなったキノコをさらに3つつなげると、はじけて森に胞子が舞う。30手でどこまで伸ばせるか。":
+      "Line up three of a kind to grow them. Line up three grown ones and they burst, scattering spores. How far can you get in 30 moves?",
+    "同じキノコを3つつなげて育てよう。大きくなったキノコがはじけると、森に胞子が舞う。":
+      "Line up three of a kind to grow them; when a grown mushroom bursts, spores drift through the forest.",
+    "キノコを用意しています…": "Getting the mushrooms ready…",
+    "のこり手数": "Moves left",
+    "ゲームの流れ": "How it works",
+    "となりどうしを入れかえて、": "Swap two neighbours to ",
+    "同じキノコを3つつなげる": "line up three of a kind",
+    "と…": "…",
+    "キノコが": "and the mushroom",
+    "1段階大きくなる！": "grows one size bigger!",
+    "大きいキノコを": "Line up",
+    "さらに3つつなげる": "three grown ones",
+    "と、はじけて": "and they burst,",
+    "まわりごと消える！": "clearing everything around them!",
+    "すきまに": "Mushrooms",
+    "キノコが落ちてくる": "fall in to fill the gaps",
+    "。つながって消えると": ". Clearing again right away earns a",
+    "れんさボーナス": "chain bonus",
+    "。": ".",
+    "出てくるキノコ": "The mushrooms you will meet",
+    "スマホは指でなぞって入れかえ、PCはドラッグかクリックで入れかえます。":
+      "On a phone, swipe to swap; on a computer, drag or click two neighbours.",
+    "森じゅうに胞子が舞った！": "Spores drifted across the whole forest!",
+    "よく育てたね": "Nicely grown",
+    "また森へおいで": "Come back to the forest",
+    "手がないのでまぜ直すよ": "No moves left — shuffling",
+    "ベニテングタケ": "Amanita muscaria",
+    "ヤマドリタケモドキ": "Boletus reticulatus",
+    "マツタケ": "Tricholoma matsutake",
+    "カラマツタケ": "Karamatsutake",
+    "毒キノコの代表格。鮮やかな赤い傘と白いイボが特徴。森の中でとても目立ちます。":
+      "The classic poisonous mushroom — a brilliant red cap with white warts. Hard to miss in the woods.",
+    "秋の森に現れる美しいキノコ。傘の裏はひだではなく、スポンジ状の管孔です。":
+      "A handsome autumn species. Under the cap are sponge-like pores rather than gills.",
+    "香り高く、秋の味覚の王様。松の木の根元に生える希少なキノコです。":
+      "Wonderfully fragrant, the king of autumn flavours. A rare find at the foot of pine trees.",
+    "ぬめりのある傘が特徴。主に広葉樹の倒木などに群生します。":
+      "Known for its slippery cap. It grows in clusters, mostly on fallen broadleaf trees.",
+    "美しい紫色のキノコ。カラマツ林に多く、食用としても人気があります。":
+      "A beautiful violet mushroom, common in larch woods and popular on the table.",
+
     /* ページタイトル */
     "採集日誌 ｜ イワオトキノコ": "Foraging diary ｜ IWAO to KINOKO",
     "きのこクイズ ｜ イワオトキノコ": "Mushroom quiz ｜ IWAO to KINOKO",
@@ -609,6 +658,8 @@
     [/^(\d+)ペア$/, function (m) { return m[1] + " pairs"; }],
     [/^出会い(\d+)・正解(\d+)$/, function (m) { return "Seen " + m[1] + " · right " + m[2]; }],
     [/^いちばん大きく育ったのは (.+)$/, function (m) { return "Biggest grown: " + tr1(m[1]); }],
+    [/^(.+)が育った！(?:　(\d+)れんさ)?$/, function (m) { return tr1(m[1]) + " grew!" + (m[2] ? "　" + m[2] + " chain" : ""); }],
+    [/^はじけた！ 胞子が舞う(?:　(\d+)れんさ)?$/, function (m) { return "Burst! Spores everywhere" + (m[1] ? "　" + m[1] + " chain" : ""); }],
     [/^「(.+)」は…？$/, function (m) { return "Is \u201c" + tr1(m[1]) + "\u201d …?"; }],
     /* 「10月1日～11月5日」などの適期 */
     [/^(\d{1,2})月\s*(\d{1,2})日\s*[～~]\s*(\d{1,2})月\s*(\d{1,2})日$/, function (m) {
