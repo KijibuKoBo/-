@@ -110,7 +110,9 @@ async function loadColumns() {
     const res = await fetch("data/columns.json", { cache: "no-store" });
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    state.columns = data.columns || [];
+    state.columns = (data.columns || []).slice().sort((x, y) =>
+      (y.pinned ? 1 : 0) - (x.pinned ? 1 : 0) || String(y.date || "").localeCompare(String(x.date || ""))
+    );
   } catch (err) {
     console.warn("columns.json を読み込めませんでした:", err);
     grid.closest(".column-sec")?.style.setProperty("display", "none");
@@ -231,6 +233,7 @@ function columnCardHTML(c) {
     <div class="col-card__tag">${escapeHTML(c.tag || "コラム")}<span class="col-card__date">${formatDate(c.date)}</span></div>
     <h3 class="col-card__title">${escapeHTML(c.title)}</h3>
     <p class="col-card__excerpt">${escapeHTML(c.excerpt || "")}</p>
+    ${c.author ? `<p class="col-card__author">― ${escapeHTML(c.author)}</p>` : ""}
   </article>`;
 }
 
@@ -326,7 +329,7 @@ function openColumn(id) {
     <div class="modal__content">
       <div class="modal__tags"><span class="tag">${escapeHTML(c.tag || "コラム")}</span><span class="tag">${formatDate(c.date)}</span></div>
       <h2 class="modal__wamei" id="modalTitle">${escapeHTML(c.title)}</h2>
-      <div class="modal__section col-body">${body}</div>
+      <div class="modal__section col-body">${body}${c.author ? `<p class="col-body__author">― ${escapeHTML(c.author)}</p>` : ""}</div>
     </div>`;
   hydratePhotos($("#modalBody"));
   openModalShell();

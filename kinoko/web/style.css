@@ -501,3 +501,11 @@ textarea.adm-input { resize: vertical; line-height: 1.7; }
 .adm-dcard__n { font-family: var(--sans); font-size: 0.78rem; color: var(--ink-soft); margin-top: 2px; }
 .adm-dcard button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
 .adm-dcard button:hover { background: #fbeeea; border-color: #b03a2e; }
+
+/* コラム 署名 */
+.col-card__author { margin: .5rem 0 0; font-size: .78rem; letter-spacing: .04em; color: var(--ink-soft); opacity: .85; }
+.col-body__author { margin-top: 1.4rem; text-align: right; font-size: .9rem; letter-spacing: .06em; color: var(--ink-soft); }
+
+/* 写真が読み込めたらプレースホルダの文字を消す（後勝ち対策） */
+.ph[data-loaded="1"][data-label]::after,
+.ph[data-loaded="1"]::before { content: none !important; }
