@@ -538,6 +538,38 @@
     "・無傷": " · unhurt",
     " ／ ": " / ",
 
+    /* ── きのこつみ ── */
+    "きのこつみ": "Mushroom Stack",
+    "きのこつみ ｜ イワオトキノコ": "Mushroom Stack ｜ IWAO to KINOKO",
+    "STACK ― きのこつみ": "STACK ― Mushroom Stack",
+    "落ちてきたキノコが自然に積み重なる。同じキノコが3つくっつくとポンッと大きく育つ。モミタケまで育てられるかな？":
+      "Mushrooms tumble down and pile up. Three of a kind touching pop into something bigger. Can you grow one all the way to a momitake?",
+    "落ちてきたキノコが自然に積み重なる。同じキノコが3つくっつくと、ポンッと大きなキノコに育つ落ちものゲーム。":
+      "A falling-block game where mushrooms pile up naturally and three of a kind pop into a bigger one.",
+    "落ちてきたキノコが、自然に積み重なる。": "Mushrooms tumble down and pile up, just as they fall.",
+    "同じキノコが3つくっつくと、ポンッと大きく育ちます。": "Three of a kind touching pop into something bigger.",
+    "つぎ": "Next", "ベスト": "Best", "おとす": "Drop",
+    "そだつ順番（小 → 大）": "How they grow (small → large)",
+    "左右に動かして": "Move left and right, then",
+    "。キノコは山の斜面のように自然に転がって積もります。": ". They roll and settle like mushrooms on a slope.",
+    "同じキノコが": "When",
+    "3つくっつく": "three of a kind touch",
+    "と、ポンッと1つ上のキノコに育ちます。": ", they pop into the next mushroom up.",
+    "続けて育つと": "Keep them going for a",
+    "れんさボーナス": "chain bonus",
+    "。大きいほど点が高い。": ". The bigger the mushroom, the more points.",
+    "いちばん大きな": "Get",
+    "モミタケが3つ": "three momitake",
+    "つながると": "together for a",
+    "大爆発": "huge explosion",
+    "！ まわりごと消えて大量得点。": "! Everything nearby is cleared for a big score.",
+    "赤い線より上にキノコが積もったままになると終わりです。": "If mushrooms come to rest above the red line, the game ends.",
+    "キーボード：← → で移動、スペース／↓ でおとす": "Keyboard: ← → to move, Space / ↓ to drop",
+    "おしまい": "Game over",
+    "自己ベスト！": "Personal best!",
+    "もう一度": "Play again",
+    "左へ": "Left", "右へ": "Right",
+
     /* ページタイトル */
     "採集日誌 ｜ イワオトキノコ": "Foraging diary ｜ IWAO to KINOKO",
     "きのこクイズ ｜ イワオトキノコ": "Mushroom quiz ｜ IWAO to KINOKO",
@@ -576,6 +608,7 @@
     [/^自己ベスト\s*(.+)$/, function (m) { return "Personal best " + m[1]; }],
     [/^(\d+)ペア$/, function (m) { return m[1] + " pairs"; }],
     [/^出会い(\d+)・正解(\d+)$/, function (m) { return "Seen " + m[1] + " · right " + m[2]; }],
+    [/^いちばん大きく育ったのは (.+)$/, function (m) { return "Biggest grown: " + tr1(m[1]); }],
     [/^「(.+)」は…？$/, function (m) { return "Is \u201c" + tr1(m[1]) + "\u201d …?"; }],
     /* 「10月1日～11月5日」などの適期 */
     [/^(\d{1,2})月\s*(\d{1,2})日\s*[～~]\s*(\d{1,2})月\s*(\d{1,2})日$/, function (m) {
