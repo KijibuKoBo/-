@@ -4,14 +4,6 @@
   "note": "売上の一部は、記録を続けるための道具代にあてさせていただきます。",
   "items": [
     {
-      "id": "tenugui",
-      "name": "手ぬぐい",
-      "price": "",
-      "design": "data/goods/design-9.jpg",
-      "desc": "首にも、カゴの敷物にも。採ったキノコを包むのにも。",
-      "url": ""
-    },
-    {
       "id": "mug",
       "name": "マグカップ",
       "price": "",
