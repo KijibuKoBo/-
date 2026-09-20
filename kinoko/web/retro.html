@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>キノコハンター IWAO ｜ イワオトキノコ</title>
-  <meta name="description" content="8ビット風アクション。ドット絵の巖さんと山道を奥へ進み、十字キーでよけて A=とる B=ジャンプ。" />
+  <meta name="description" content="8ビット風アクション。山道を奥へ進み、たおれ木・いし・ヘビ・スズメバチをよけながら A=とる B=ジャンプ。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -44,8 +44,8 @@
     .tools button{ font-family:"DotGothic16"; font-size:13px; background:#222; color:#ddd; border:1px solid #444; border-radius:8px; padding:6px 12px; cursor:pointer; }
     @media (max-width:380px){ .ab button{ width:58px; height:58px; } .dpad{ width:88px; height:88px; } .dpad i.h{ top:30px; width:88px; height:28px; } .dpad i.v{ left:30px; width:28px; height:88px; } .dpad b{ left:36px; top:36px; } .dpad .dk--l{ top:24px; width:38px; height:40px; } .dpad .dk--r{ left:50px; top:24px; width:38px; height:40px; } }
   </style>
-  <script src="kinoko-api.js?v=20260920-1320"></script>
-  <script src="kinoko-bgm.js?v=20260920-1400"></script>
+  <script src="kinoko-api.js?v=20260920-1520"></script>
+  <script src="kinoko-bgm.js?v=20260920-1520"></script>
 </head>
 <body>
   <header class="topbar"><a href="index.html">◀ イワオトキノコ</a><a href="walk.html">山歩きへ ▶</a></header>
@@ -86,10 +86,10 @@
       else ctx.drawImage(m.img,dx,dy,dw,dh);
     }
     const STAGES=[
-      {no:"1-1", name:"とざんぐち", sky:"#5c94fc", hill:"#38b040", hill2:"#00a800", ground:"#2c8c34", path:"#c09050", path2:"#a87c40", tree:"#007800", tree2:"#00a800", speed:.0068, gap:78, pois:.30, obst:.16, fog:0, night:0},
-      {no:"1-2", name:"ぶなばやし", sky:"#f8a860", hill:"#8c5c1c", hill2:"#c07c30", ground:"#7c6c24", path:"#a87c3c", path2:"#8c6430", tree:"#a83c00", tree2:"#e06c1c", speed:.0086, gap:66, pois:.36, obst:.22, fog:0, night:0},
-      {no:"1-3", name:"きりのおね", sky:"#b8b8b8", hill:"#7c7c7c", hill2:"#989898", ground:"#6c7c6c", path:"#8c8c84", path2:"#74746c", tree:"#485848", tree2:"#5c6c5c", speed:.0104, gap:58, pois:.42, obst:.26, fog:1, night:0},
-      {no:"1-4", name:"さんちょう", sky:"#000058", hill:"#003820", hill2:"#005830", ground:"#1c4420", path:"#5c4c34", path2:"#463a28", tree:"#003820", tree2:"#005830", speed:.0124, gap:50, pois:.48, obst:.30, fog:0, night:1},
+      {no:"1-1", name:"とざんぐち", sky:"#5c94fc", hill:"#38b040", hill2:"#00a800", ground:"#2c8c34", path:"#c09050", path2:"#a87c40", tree:"#007800", tree2:"#00a800", speed:.0068, gap:78, pois:.30, haz:.18, mix:[.34,.46,.20,.00], fog:0, night:0},
+      {no:"1-2", name:"ぶなばやし", sky:"#f8a860", hill:"#8c5c1c", hill2:"#c07c30", ground:"#7c6c24", path:"#a87c3c", path2:"#8c6430", tree:"#a83c00", tree2:"#e06c1c", speed:.0086, gap:66, pois:.36, haz:.24, mix:[.30,.30,.25,.15], fog:0, night:0},
+      {no:"1-3", name:"きりのおね", sky:"#b8b8b8", hill:"#7c7c7c", hill2:"#989898", ground:"#6c7c6c", path:"#8c8c84", path2:"#74746c", tree:"#485848", tree2:"#5c6c5c", speed:.0104, gap:58, pois:.42, haz:.30, mix:[.27,.22,.26,.25], fog:1, night:0},
+      {no:"1-4", name:"さんちょう", sky:"#000058", hill:"#003820", hill2:"#005830", ground:"#1c4420", path:"#5c4c34", path2:"#463a28", tree:"#003820", tree2:"#005830", speed:.0124, gap:50, pois:.48, haz:.34, mix:[.24,.20,.26,.30], fog:0, night:1},
     ];
     const PER_STAGE=10, LIVES=3;
     const STAGE_BGM=["hunter","buna","kiri","yoru"];
@@ -97,7 +97,7 @@
     const NESCAP=["#d82800","#f83800","#f8b800","#e45c10","#b8b8b8","#f8f8f8","#a8e4b8","#8c5c1c","#fc9838","#f8d878","#7c2c00","#c86c4c","#503000","#e0e0a0","#6c3c9c"];
 
     /* ---------- ドット絵 ---------- */
-    const PAL={ ".":null, k:"#000000", h:"#f0e0c0", s:"#f8c890", g:"#202020", w:"#ffffff", j:"#3050a8", J:"#4870d0", b:"#6c7c40", p:"#303848", o:"#181818", l:"#48a0f8", e:"#f8e8c8", E:"#d8c8a0", r:"#f83800", c:"#d82800" };
+    const PAL={ ".":null, k:"#000000", h:"#f0e0c0", s:"#f8c890", g:"#202020", w:"#ffffff", j:"#3050a8", J:"#4870d0", b:"#6c7c40", p:"#303848", o:"#181818", l:"#48a0f8", e:"#f8e8c8", E:"#d8c8a0", r:"#f83800", c:"#d82800", W:"#f0f8ff", Y:"#f8b800", a:"#181818" };
     /* 後ろ姿（背負いカゴ）14×20 */
     const BACK=[
      [ // 歩き1
@@ -198,6 +198,22 @@
       "....EeeE....",
       "...eeeeee...",
     ];
+    const BEE=[
+     [ // 羽 上
+      "....WW...WW..",
+      "...WWWW.WWWW.",
+      "kkkYYkkYYkkY.",
+      "kkkYYkkYYkkYr",
+      ".kkYYkkYYkkY.",
+      "..a.......a.."],
+     [ // 羽 ひらき
+      ".............",
+      "..WWWW.WWWW..",
+      "kkkYYkkYYkkY.",
+      "kkkYYkkYYkkYr",
+      ".kkYYkkYYkkY.",
+      ".WW.......WW."],
+    ];
     const HEART=["..rr.rr..",".rrrrrrr.",".rrrrrrr.","..rrrrr..","...rrr...","....r...."];
     const BASKET=["..EEEEEE..",".E......E.","EEEEEEEEEE",".EEEEEEEE.",".EEEEEEEE.","..EEEEEE.."];
     function sprite(map,x,y,pal,s=PX){ for(let r=0;r<map.length;r++){ const row=map[r]; for(let c=0;c<row.length;c++){ const col=pal[row[c]]; if(!col) continue; ctx.fillStyle=col; ctx.fillRect(Math.round(x+c*s),Math.round(y+r*s),Math.ceil(s),Math.ceil(s)); } } }
@@ -217,6 +233,8 @@
       bad:()=>beep([[300,.08],[240,.12]],"square",.07),
       good:()=>beep([[659,.06],[784,.06],[1047,.12]]),
       swish:()=>beep([[520,.05],[380,.05]],"triangle",.05),
+      buzz:()=>beep([[150,.07],[130,.07],[150,.07],[130,.09]],"sawtooth",.05),
+      hiss:()=>beep([[900,.05],[760,.05],[640,.07]],"sawtooth",.04),
       clear:()=>beep([[523,.12],[659,.12],[784,.12],[1047,.28]]),
       over:()=>beep([[440,.16],[349,.16],[262,.16],[196,.4]],"triangle",.1),
       start:()=>beep([[659,.08],[659,.08],[0,.06],[659,.08],[0,.06],[523,.08],[659,.08],[784,.2]]),
@@ -255,9 +273,18 @@
       const s=stage();
       const near=G.objs.length?G.objs[G.objs.length-1]:null;
       const avoid=near&&near.z>FAR-0.34?near.lane:99;
-      if(Math.random()<s.obst){
-        const log=Math.random()<.45;
-        G.objs.push({kind:log?"log":"rock", z:FAR, lane:log?(Math.random()*.5-.25):laneAwayFrom(avoid,.5), judged:false});
+      if(Math.random()<s.haz){
+        const mix=s.mix; let r=Math.random(), kind="rock";
+        if((r-=mix[0])<0) kind="log";
+        else if((r-=mix[1])<0) kind="rock";
+        else if((r-=mix[2])<0) kind="snake";
+        else kind="bee";
+        const o={kind, z:FAR, judged:false, phase:Math.random()*6.28,
+                 lane: kind==="log" ? (Math.random()*.5-.25) : laneAwayFrom(avoid,.5)};
+        o.base=o.lane;
+        if(kind==="bee") SFX.buzz();
+        if(kind==="snake") SFX.hiss();
+        G.objs.push(o);
         return;
       }
       const roll=Math.random(); let p;
@@ -272,6 +299,15 @@
       m.img.src=rec.photo;
       G.objs.push(m);
     }
+
+    /* ---------- 障害物・いきもの ----------
+       jumpable=false は「ジャンプではよけられない」＝横にどくしかない。 */
+    const HAZ={
+      log:  {name:"たおれ木", w:0.62, jumpable:true,  pts:30, hit:"たおれ木に ぶつかった!", mark:"Ｂ！", col:"#f8d878"},
+      rock: {name:"いし",     w:0.30, jumpable:true,  pts:20, hit:"いしに つまずいた!",     mark:"！",   col:"#f8f8f8"},
+      snake:{name:"ヘビ",     w:0.30, jumpable:true,  pts:40, hit:"ヘビに かまれた!",       mark:"！",   col:"#a8e4b8"},
+      bee:  {name:"スズメバチ",w:0.34, jumpable:false, pts:50, hit:"ハチに さされた!",       mark:"よけろ!", col:"#f83800"},
+    };
 
     /* ---------- 判定 ---------- */
     function hurt(txt){
@@ -399,13 +435,18 @@
             const safe = i.jump || Math.abs(m.lane-i.lane)>0.42;
             judge(m, safe?"dodge":"walk");
           }
-        }else{ // 倒木・岩
-          const halfW = m.kind==="log"?0.62:0.30;
+        }else{ // 障害物・いきもの
+          // ヘビとハチは近づきながら左右に揺れる
+          if(m.kind==="snake") m.lane = m.base + Math.sin((FAR-m.z)*3.4 + m.phase)*0.52;
+          if(m.kind==="bee")   m.lane = m.base + Math.sin((FAR-m.z)*2.6 + m.phase)*0.40;
           if(m.z<=0.05){
             m.judged=true;
-            if(!i.jump && Math.abs(m.lane-i.lane)<halfW+0.10){
-              hurt(m.kind==="log"?"たおれ木に ぶつかった!":"いしに つまずいた!");
-            }else if(i.jump){ G.score+=30; G.msg={txt:m.kind==="log"?"たおれ木":"いし",sub:"とびこえた! +30",kind:"ok",t:60}; SFX.good(); }
+            const dx=Math.abs(m.lane-i.lane);
+            const H=HAZ[m.kind];
+            const dodged = dx > H.w || (H.jumpable && i.jump);
+            if(!dodged){ hurt(H.hit); }
+            else { const pts=H.pts; G.score+=pts;
+              G.msg={txt:H.name, sub:(H.jumpable&&i.jump?"とびこえた! +":"よけた! +")+pts, kind:"ok", t:56}; SFX.good(); }
           }
         }
       }
@@ -479,12 +520,49 @@
         ctx.fillRect(x-w/2, y-Math.max(1,2*pz(z)), w, Math.max(1,4*pz(z)));
       }
     }
-    function drawShadow(x,y,r){ ctx.fillStyle="rgba(0,0,0,.30)"; ctx.beginPath(); ctx.ellipse(x,y,r,Math.max(1.5,r*0.34),0,0,7); ctx.fill(); }
+    /* 危険マーク（近づくと点滅） */
+    function hazMark(m,x,y){
+      const H=HAZ[m.kind]; if(!H||!H.mark) return;
+      if(m.z > (m.kind==="bee"?1.05:0.92)) return;
+      const fast = (m.kind==="bee"||m.z<0.45) ? 2 : 3;
+      if((frame>>fast)%2) text(H.mark, x-(H.mark.length*7), y-16, JP, H.col);
+    }
+    /* ヘビ：道を横切りながら近づく */
+    function drawSnake(m,x,y,k){
+      const seg=Math.max(2,10*k), n=8, dir=Math.cos((FAR-m.z)*3.4+m.phase)>=0?1:-1;
+      drawShadow(x, y+2, seg*2.6, k);
+      for(let i=n-1;i>=0;i--){
+        const sx = x - dir*i*seg*0.82;
+        const sy = y - Math.max(1,3*k) + Math.sin(frame*0.2 - i*0.8)*seg*0.45;
+        ctx.fillStyle = i%2 ? "#1c6c24" : "#58a83c";
+        ctx.fillRect(sx-seg/2, sy-seg/2, seg, seg);
+        if(i%2===0){ ctx.fillStyle="#f8d878"; ctx.fillRect(sx-seg*0.18, sy-seg*0.5, seg*0.36, Math.max(1,seg*0.22)); }
+      }
+      // 頭
+      const hy=y-Math.max(1,3*k)+Math.sin(frame*0.2)*seg*0.45;
+      ctx.fillStyle="#1c6c24"; ctx.fillRect(x-dir*seg*0.2-seg*0.6, hy-seg*0.6, seg*1.2, seg*1.2);
+      ctx.fillStyle="#f8f8f8"; ctx.fillRect(x+dir*seg*0.1, hy-seg*0.35, Math.max(1,seg*0.22), Math.max(1,seg*0.22));
+      if((frame>>2)%2){ ctx.fillStyle="#f83800"; ctx.fillRect(x+dir*seg*0.6, hy, Math.max(1,seg*0.6), Math.max(1,seg*0.16)); }
+      hazMark(m,x,y-seg*2.2);
+    }
+    /* スズメバチ：宙を飛ぶ。ジャンプではよけられない */
+    function drawBee(m,x,y,k){
+      const sc=Math.max(1,pS(m.z)*1.25);
+      const hover = 46*k + Math.sin(frame*0.26+m.phase)*8*k;
+      const by = y - hover;
+      drawShadow(x, y+2, 6*sc, k);
+      sprite(BEE[(frame>>1)%2], x-6.5*sc, by-3*sc, PAL, sc);
+      hazMark(m, x, by-5*sc);
+    }
+    /* k は遠近係数。遠いものほど影もつぶれる */
+    function drawShadow(x,y,r,k){ k=(k===undefined?1:k);
+      ctx.fillStyle="rgba(0,0,0,.30)"; ctx.beginPath();
+      ctx.ellipse(x,y,r,Math.max(1,r*0.34*k),0,0,7); ctx.fill(); }
     function drawObj(m){
       if(m.z<-0.15||m.z>FAR) return;
       const x=pX(m.lane,m.z), y=pY(m.z), k=pz(m.z), s=pS(m.z);
       if(m.kind==="mush"){
-        drawShadow(x,y+2,5.5*s);
+        drawShadow(x,y+2,5.5*s,k);
         const pal={...PAL, c:m.cap};
         sprite(MUSH, x-6*s, y-11*s, pal, s);
         if(!m.judged && m.z<0.9 && (frame>>3)%2) text("？", x-6, y-13*s-16*k-6, JP, "#f8f878");
@@ -492,17 +570,22 @@
             m.result.kind==="ok"?"#58f858":m.result.kind==="bad"?"#f83800":"#f8d878");
       }else if(m.kind==="log"){
         const w=pHW(m.z)*1.24, h=Math.max(4,22*k);
-        drawShadow(x,y+3,w*0.5);
+        drawShadow(x,y+3,w*0.5,k);
         ctx.fillStyle="#6c3c14"; ctx.fillRect(x-w*0.5,y-h,w,h);
         ctx.fillStyle="#8c5c1c"; ctx.fillRect(x-w*0.5,y-h,w,Math.max(2,h*0.34));
         ctx.fillStyle="#3c2008"; ctx.fillRect(x-w*0.5,y-h,Math.max(2,h*0.5),h); ctx.fillRect(x+w*0.5-Math.max(2,h*0.5),y-h,Math.max(2,h*0.5),h);
-        if(m.z<0.85 && (frame>>3)%2) text("Ｂ！", x-14, y-h-22*k-14, JP, "#f8f878");
-      }else{
+        hazMark(m,x,y-h-22*k);
+      }else if(m.kind==="rock"){
         const w=Math.max(5,46*k), h=Math.max(4,34*k);
-        drawShadow(x,y+2,w*0.6);
+        drawShadow(x,y+2,w*0.6,k);
         ctx.fillStyle="#8c8c8c"; ctx.fillRect(x-w*0.5,y-h,w,h);
         ctx.fillStyle="#b8b8b8"; ctx.fillRect(x-w*0.5,y-h,w*0.55,h*0.4);
         ctx.fillStyle="#585858"; ctx.fillRect(x-w*0.5,y-h*0.25,w,h*0.25);
+        hazMark(m,x,y-h-16*k);
+      }else if(m.kind==="snake"){
+        drawSnake(m,x,y,k);
+      }else{
+        drawBee(m,x,y,k);
       }
     }
     function drawIwao(){
@@ -556,10 +639,11 @@
       text("ファミコンふう キノコさいしゅう アクション",W/2,142,JP,"#000","center");
       sprite(BACK[(frame>>4)%2],244,330,PAL,3);
       sprite(MUSH,150,352,{...PAL,c:"#d82800"},3);
-      ctx.fillStyle="rgba(0,0,0,.72)"; ctx.fillRect(56,196,W-112,74);
-      text("十字キー ← → ： よける",W/2,202,JP,"#fff","center");
-      text("A ： とる　　B ： ジャンプ",W/2,224,JP,"#f8d878","center");
-      text("どくキノコは よけるか とばす！",W/2,246,JP,"#f89898","center");
+      ctx.fillStyle="rgba(0,0,0,.76)"; ctx.fillRect(40,192,W-80,98);
+      text("十字キー ← → ： よける　　A ： とる",W/2,198,JP,"#fff","center");
+      text("B ： ジャンプ（たおれ木は とぶしかない）",W/2,220,JP,"#f8d878","center");
+      text("ハチは ジャンプでは よけられない！",W/2,242,JP,"#f83800","center");
+      text("どくキノコは よけるか とびこえる",W/2,264,JP,"#f89898","center");
       if((frame>>5)%2===0) text("PUSH START",W/2,404,EN,"#f8f8f8","center");
       ctx.fillStyle="#000"; ctx.fillRect(W/2-150,430,300,24);
       text(`HI-SCORE ${String(hi).padStart(7,"0")}`,W/2,434,EN,"#f8f878","center");
@@ -590,7 +674,7 @@
     loop();
   })();
   </script>
-  <script src="i18n.js?v=20260920-1400"></script>
+  <script src="i18n.js?v=20260920-1520"></script>
   <script>if(window.BGM) BGM.attach("hunter", "#bgmBtn");</script>
 </body>
 </html>
