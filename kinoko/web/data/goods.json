@@ -12,14 +12,6 @@
       "url": ""
     },
     {
-      "id": "book",
-      "name": "写真集（準備中）",
-      "price": "",
-      "design": "data/goods/design-book.jpg",
-      "desc": "256件の記録から選んだ一冊。BOOKページの内容を紙に。",
-      "url": ""
-    },
-    {
       "id": "g001",
       "name": "Tシャツ",
       "price": "",
