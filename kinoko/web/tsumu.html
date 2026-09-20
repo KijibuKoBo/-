@@ -68,7 +68,7 @@
     .sound{ background:none; border:1px solid currentColor; color:var(--sub); border-radius:999px;
             font-size:.72rem; padding:4px 10px; cursor:pointer; }
   </style>
-  <script src="kinoko-api.js?v=20260920-0007"></script>
+  <script src="kinoko-api.js?v=20260920-0024"></script>
 </head>
 <body>
 
@@ -133,7 +133,7 @@
         <li>いちばん大きな <b>モミタケが3つ</b> つながると <b>大爆発</b>！ まわりごと消えて大量得点。</li>
         <li>赤い線より上にキノコが積もったままになると終わりです。</li>
       </ul>
-      <p style="margin:10px 0 0"><button class="sound" id="sw">🔊 効果音 ON</button></p>
+      <p style="margin:10px 0 0; display:flex; gap:8px; flex-wrap:wrap"><button class="sound" id="bgmBtn">🎵 音楽 OFF</button><button class="sound" id="sw">🔊 効果音 ON</button></p>
     </div>
 
     <p class="note">キーボード：← → で移動、スペース／↓ でおとす</p>
@@ -652,6 +652,8 @@
   })();
   </script>
 
-  <script src="i18n.js?v=20260920-0007"></script>
+  <script src="kinoko-bgm.js?v=20260920-0024"></script>
+  <script src="i18n.js?v=20260920-0024"></script>
+  <script>if(window.BGM) BGM.attach("mori", "#bgmBtn");</script>
 </body>
 </html>

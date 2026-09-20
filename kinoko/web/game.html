@@ -87,7 +87,7 @@
     .loading{ text-align:center; color:var(--sub); padding:60px; font-family:var(--sans); }
     [hidden]{ display:none !important; }
   </style>
-  <script src="kinoko-api.js?v=20260920-0007"></script>
+  <script src="kinoko-api.js?v=20260920-0024"></script>
 </head>
 <body>
   <header class="topbar">
@@ -360,6 +360,6 @@
     function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
     function fmtDate(iso){ const d=new Date(iso); return isNaN(d)?iso:`${d.getFullYear()}年${d.getMonth()+1}月`; }
   </script>
-  <script src="i18n.js?v=20260920-0007"></script>
+  <script src="i18n.js?v=20260920-0024"></script>
 </body>
 </html>

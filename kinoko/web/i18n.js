@@ -621,6 +621,8 @@
       "A beautiful violet mushroom, common in larch woods and popular on the table.",
 
     /* ── みんなのランキング ── */
+    "🎵 音楽 ON": "🎵 Music ON",
+    "🎵 音楽 OFF": "🎵 Music OFF",
     "みんなのベスト5": "Everyone's top 5",
     "なまえ（12文字まで）": "Your name (up to 12 characters)",
     "なまえ": "name",
