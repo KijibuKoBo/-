@@ -37,8 +37,8 @@
     .tools button{ font-family:"DotGothic16"; font-size:13px; background:#222; color:#ddd; border:1px solid #444; border-radius:8px; padding:6px 12px; cursor:pointer; }
     @media (max-width:380px){ .ab button{ width:58px; height:58px; } .dpad{ width:76px; height:76px; } .dpad i.h{ top:24px; width:76px; height:28px; } .dpad i.v{ left:24px; width:28px; height:76px; } .dpad b{ left:30px; top:30px; } }
   </style>
-  <script src="kinoko-api.js?v=20260920-0024"></script>
-  <script src="kinoko-bgm.js?v=20260920-0210"></script>
+  <script src="kinoko-api.js?v=20260920-0201"></script>
+  <script src="kinoko-bgm.js?v=20260920-0201"></script>
 </head>
 <body>
   <header class="topbar"><a href="index.html">◀ イワオトキノコ</a><a href="walk.html">山歩きへ ▶</a></header>
@@ -196,10 +196,10 @@
     sndBtn.onclick=()=>{ sound=!sound; try{localStorage.setItem("kinoko_retro_snd",sound?"1":"0");}catch{} updSnd(); if(sound) beep([[880,.06],[1320,.08]]); };
     function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch{return null;} } if(AC&&AC.state==="suspended") AC.resume(); return AC; }
     function beep(notes,type="square",vol=.08){ if(!sound) return; const a=ac(); if(!a) return; let t=a.currentTime;
-      notes.forEach(([f,d])=>{ const o=a.createOscillator(), g=a.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0008,t+d); o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+.02); t+=d; }); }
+      notes.forEach(([f,d])=>{ const o=a.createOscillator(), g=a.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(vol*2.6,t); g.gain.exponentialRampToValueAtTime(.0008,t+d); o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+.02); t+=d; }); }
     const SFX={
       coin:()=>beep([[988,.06],[1319,.14]]),
-      jump:()=>{ if(!sound) return; const a=ac(); if(!a) return; const o=a.createOscillator(),g=a.createGain(); o.type="square"; o.frequency.setValueAtTime(220,a.currentTime); o.frequency.exponentialRampToValueAtTime(660,a.currentTime+.12); g.gain.setValueAtTime(.07,a.currentTime); g.gain.exponentialRampToValueAtTime(.0008,a.currentTime+.16); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+.18); },
+      jump:()=>{ if(!sound) return; const a=ac(); if(!a) return; const o=a.createOscillator(),g=a.createGain(); o.type="square"; o.frequency.setValueAtTime(220,a.currentTime); o.frequency.exponentialRampToValueAtTime(660,a.currentTime+.12); g.gain.setValueAtTime(.18,a.currentTime); g.gain.exponentialRampToValueAtTime(.0008,a.currentTime+.16); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+.18); },
       hurt:()=>beep([[180,.1],[120,.14],[80,.22]],"sawtooth",.09),
       bad:()=>beep([[300,.08],[240,.12]],"square",.07),
       good:()=>beep([[659,.06],[784,.06],[1047,.12]]),
@@ -371,7 +371,7 @@
     loop();
   })();
   </script>
-  <script src="i18n.js?v=20260920-0024"></script>
+  <script src="i18n.js?v=20260920-0201"></script>
   <script>if(window.BGM) BGM.attach("hunter", "#bgmBtn");</script>
 </body>
 </html>

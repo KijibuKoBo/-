@@ -177,8 +177,8 @@
     .zc.locked .nm{ color:#b9b1a0; }
     .loading{ text-align:center; color:var(--sub); padding:60px; }
   </style>
-  <script src="kinoko-api.js?v=20260920-0024"></script>
-  <script src="kinoko-bgm.js?v=20260920-0210"></script>
+  <script src="kinoko-api.js?v=20260920-0201"></script>
+  <script src="kinoko-bgm.js?v=20260920-0201"></script>
 </head>
 <body>
   <header class="topbar">
@@ -382,7 +382,7 @@
     let AC=null;
     function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch{ return null; } } if(AC&&AC.state==="suspended") AC.resume(); return AC; }
     function tone(f,dur,type="sine",vol=.12,when=0){ const a=ac(); if(!a) return; const o=a.createOscillator(), g=a.createGain(); o.type=type; o.frequency.value=f;
-      g.gain.setValueAtTime(vol,a.currentTime+when); g.gain.exponentialRampToValueAtTime(.0008,a.currentTime+when+dur); o.connect(g).connect(a.destination); o.start(a.currentTime+when); o.stop(a.currentTime+when+dur+.03); }
+      g.gain.setValueAtTime(vol*2.6,a.currentTime+when); g.gain.exponentialRampToValueAtTime(.0008,a.currentTime+when+dur); o.connect(g).connect(a.destination); o.start(a.currentTime+when); o.stop(a.currentTime+when+dur+.03); }
     function sfx(k){ if(!st.sound) return; try{ switch(k){
       case "step": tone(130,.05,"triangle",.05); break;
       case "found": tone(660,.12,"sine",.12); tone(990,.2,"sine",.12,.12); break;
@@ -558,7 +558,7 @@
       $("#basketTitle").hidden=!items.length; $("#bgrid").innerHTML=items.map(r=>`<div><img src="${r.photo}" alt=""><span class="nm">${esc(r.wamei)}</span></div>`).join(""); }
     function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
   </script>
-  <script src="i18n.js?v=20260920-0024"></script>
+  <script src="i18n.js?v=20260920-0201"></script>
   <script>if(window.BGM) BGM.attach("yamamichi", "#bgmBtn");</script>
 </body>
 </html>

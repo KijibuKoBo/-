@@ -594,3 +594,7 @@ html[data-lang="en"] .footer__nav a { letter-spacing: .18em; }
 .adm-rk .sc { font-family: var(--display), serif; }
 .adm-rk button { font: inherit; font-size: .74rem; padding: 3px 10px; border-radius: 999px;
   border: 1px solid #b03a2e; background: none; color: #b03a2e; cursor: pointer; }
+
+/* 音楽が出ないときの案内 */
+.bgm-tip { display: block; width: 100%; margin: 6px 0 0; font-size: .72rem;
+  line-height: 1.5; color: var(--ink-soft, #6f6a5c); opacity: .9; }
