@@ -178,7 +178,7 @@
     .loading{ text-align:center; color:var(--sub); padding:60px; }
   </style>
   <script src="kinoko-api.js?v=20260920-0201"></script>
-  <script src="kinoko-bgm.js?v=20260920-0213"></script>
+  <script src="kinoko-bgm.js?v=20260920-0236"></script>
 </head>
 <body>
   <header class="topbar">
@@ -338,6 +338,8 @@
     const DIFF={ easy:{time:10, pois:.28, showName:true}, normal:{time:8, pois:.35, showName:false}, hard:{time:5, pois:.45, showName:false} };
     const EDCOL={ "食用":"var(--food)","毒":"var(--pois)","食不適":"var(--unfit)" };
     const SEASON_JA={ spring:"春", summer:"夏", autumn:"秋", winter:"冬" };
+    const SEASON_BGM={ spring:"haru", summer:"natsu", autumn:"yamamichi", winter:"fuyu" };
+    function seasonBGM(){ if(window.BGM) BGM.switchTo(SEASON_BGM[st.season]||"yamamichi"); }
     const st={ pool:[], diff:"normal", mode:"solo", season:"autumn", sound:true,
                players:[], turn:0, i:0, N:N_SOLO, cur:null, timer:null, tLeft:0, busy:false, stepTimer:null, log:[] };
 
@@ -420,10 +422,10 @@
       const m=new Date().getMonth()+1; st.season = m<=2||m===12 ? "winter" : m<=5 ? "spring" : m<=8 ? "summer" : "autumn";
       try{ st.sound = localStorage.getItem("kinoko_hike_sound")!=="0"; }catch{}
       document.querySelectorAll("#seasons button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===st.season));
-      applySeason(); setSound(st.sound); zkCountLbl();
+      applySeason(); seasonBGM(); setSound(st.sound); zkCountLbl();
       $("#loading").hidden=true; $("#sceneWrap").hidden=false; $("#start").hidden=false; showBest();
       document.querySelectorAll("#diff button").forEach(b=>b.addEventListener("click",()=>{ st.diff=b.dataset.d; document.querySelectorAll("#diff button").forEach(x=>x.setAttribute("aria-pressed",x===b)); showBest(); }));
-      document.querySelectorAll("#seasons button").forEach(b=>b.addEventListener("click",()=>{ st.season=b.dataset.s; document.querySelectorAll("#seasons button").forEach(x=>x.setAttribute("aria-pressed",x===b)); applySeason(); }));
+      document.querySelectorAll("#seasons button").forEach(b=>b.addEventListener("click",()=>{ st.season=b.dataset.s; document.querySelectorAll("#seasons button").forEach(x=>x.setAttribute("aria-pressed",x===b)); applySeason(); seasonBGM(); }));
       document.querySelectorAll("#modeSel button").forEach(b=>b.addEventListener("click",()=>{ st.mode=b.dataset.m; document.querySelectorAll("#modeSel button").forEach(x=>x.setAttribute("aria-pressed",x===b)); showBest(); }));
       $("#soundBtn").addEventListener("click",()=>{ setSound(!st.sound); if(st.sound) sfx("found"); });
       $("#zukanBtn").addEventListener("click",showZukan);

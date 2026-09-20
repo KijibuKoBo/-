@@ -440,8 +440,7 @@
       ctx.fillStyle = "rgba(255,255,255,.14)";
       ctx.fillRect(0, 0, WALL, H); ctx.fillRect(W-WALL, 0, WALL, H);
       // 赤い線（越えていると点滅して警告）
-      let danger = false;
-      for(const b of bodies){ if(b.y - b.r < LINE){ danger = true; break; } }
+      const danger = isDanger();
       if(danger){
         const pulse = .35 + .35*Math.sin(performance.now()/160);
         const gg = ctx.createLinearGradient(0, 0, 0, LINE);
@@ -527,6 +526,7 @@
           if(jam > 80) gameOver();
         }
       }
+      if(!over) updateBGM();
       for(const p of parts){ p.vy += .35; p.x += p.vx; p.y += p.vy; p.life -= .016; }
       parts = parts.filter(p=>p.life > 0);
       if(toast){ toast.life -= .009; toast.y -= .7; if(toast.life <= 0) toast = null; }
@@ -618,6 +618,8 @@
       bodies = []; parts = []; score = 0; over = false; held = null; chain = 0;
       cool = 0; dropX = W/2; toast = null; flash = 0; shake = 0; jam = 0;
       nextT = pick(); spawn();
+      dangerHold = 0; bgmHot = false;
+      if(window.BGM) BGM.switchTo("mori");
       if (rank) rank.reset();
       $("#over").hidden = true;
     }
@@ -640,6 +642,20 @@
     }
     drawTiers();
 
+    /* ---------- 積み上がったら曲を変える ---------- */
+    function isDanger(){
+      for(const b of bodies){ if(b.y - b.r < LINE) return true; }
+      return false;
+    }
+    let dangerHold = 0, bgmHot = false;
+    function updateBGM(){
+      const d = isDanger();
+      // 危険は 0.5秒続いたら切り替え、安全は 2.5秒続いてから戻す（ぱたぱたしないように）
+      dangerHold = d ? Math.max(0, dangerHold) + 1 : Math.min(0, dangerHold) - 1;
+      if(!bgmHot && dangerHold > 30){ bgmHot = true; if(window.BGM) BGM.switchTo("tsumiHi"); }
+      else if(bgmHot && dangerHold < -150){ bgmHot = false; if(window.BGM) BGM.switchTo("mori"); }
+    }
+
     /* ---------- みんなのランキング ---------- */
     var rank = (window.Kinoko && window.Kinoko.board) ? window.Kinoko.board("tsumu", {
       sec: "#rankSec", list: "#rankList", form: "#rankForm", name: "#rankName", msg: "#rankMsg"
@@ -652,7 +668,7 @@
   })();
   </script>
 
-  <script src="kinoko-bgm.js?v=20260920-0213"></script>
+  <script src="kinoko-bgm.js?v=20260920-0236"></script>
   <script src="i18n.js?v=20260920-0201"></script>
   <script>if(window.BGM) BGM.attach("mori", "#bgmBtn");</script>
 </body>
