@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260920-0650" />
-  <script src="kinoko-api.js?v=20260920-0650"></script>
+  <link rel="stylesheet" href="style.css?v=20260920-1130" />
+  <script src="kinoko-api.js?v=20260920-1130"></script>
 </head>
 <body class="admin-page">
 
@@ -133,6 +133,11 @@
           <input type="url" id="g_shop" class="adm-input" placeholder="https://suzuri.jp/あなたの名前" /></label>
         <label class="adm-field adm-wide"><span>ページの下に出す一言</span>
           <input type="text" id="g_note" class="adm-input" placeholder="売上の一部は、記録を続けるための道具代にあてさせていただきます。" /></label>
+      </div>
+
+      <div class="adm-goodslist" id="goodsList">
+        <p class="adm-goodslist__head">いま出ている商品</p>
+        <div class="adm-goodslist__body" id="goodsListBody"></div>
       </div>
 
       <div class="adm-editbar">
@@ -300,6 +305,6 @@
     </article>
   </div>
 
-  <script src="admin.js?v=20260920-0650"></script>
+  <script src="admin.js?v=20260920-1130"></script>
 </body>
 </html>

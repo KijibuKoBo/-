@@ -443,7 +443,19 @@ function bindExtras() {
     if (e.target.dataset.act === "del") { goodsPhoto = null; renderGoodsPhoto(); }
   });
   $("#goodsPublish")?.addEventListener("click", publishGoods);
-  $("#goodsDelete")?.addEventListener("click", deleteGoods);
+  $("#goodsDelete")?.addEventListener("click", () => deleteGoods());
+  $("#goodsListBody")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    const id = btn.closest(".adm-grow")?.dataset.id;
+    if (!id) return;
+    if (btn.dataset.act === "del") { deleteGoods(id); return; }
+    const it = (goodsCfg?.items || []).find((x) => x.id === id);
+    if (!it) return;
+    $("#goodsSelect").value = id;
+    fillGoodsForm(it);
+    $("#g_name").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
   $("#goodsFetch")?.addEventListener("click", fetchGoodsMeta);
 
   // コラム
@@ -862,14 +874,54 @@ async function loadGoods(force) {
 
 function refreshGoodsSelect() {
   const sel = $("#goodsSelect"), cur = sel.value;
+  const items = goodsCfg.items || [];
+  const dup = {};
+  items.forEach((it) => { dup[it.name] = (dup[it.name] || 0) + 1; });
   sel.innerHTML = `<option value="">＋ 新しい商品を出す</option>`;
-  (goodsCfg.items || []).forEach((it) => {
+  items.forEach((it, i) => {
     const o = document.createElement("option");
-    o.value = it.id; o.textContent = it.name + (it.price ? `（${it.price}）` : "");
+    o.value = it.id;
+    o.textContent = `${i + 1}. ${goodsLabel(it)}`;
+    if (dup[it.name] > 1) o.textContent += `［${it.id}］`;
     sel.appendChild(o);
   });
   sel.value = cur;
+  renderGoodsList();
 }
+
+function goodsLabel(it) {
+  return (it.name || "（名前なし）") + (it.price ? `（${it.price}）` : "");
+}
+
+/* いま出ている商品を一覧で見せる（ここからも直す・消すができる） */
+function renderGoodsList() {
+  const box = $("#goodsListBody");
+  if (!box) return;
+  const items = goodsCfg.items || [];
+  if (!items.length) {
+    box.innerHTML = `<p class="adm-note">まだ商品がありません。下の欄に入れて「公開する」を押してください。</p>`;
+    return;
+  }
+  box.innerHTML = items.map((it, i) => {
+    const thumb = it.design
+      ? `<span class="adm-grow__img" style="background-image:url('${esc(it.design)}')"></span>`
+      : `<span class="adm-grow__img is-none">写真なし</span>`;
+    const sub = [it.price, it.url ? "リンクあり" : "リンクなし"].filter(Boolean).join(" ・ ");
+    return `<div class="adm-grow" data-id="${esc(it.id)}">
+        <span class="adm-grow__no">${i + 1}</span>
+        ${thumb}
+        <span class="adm-grow__txt">
+          <b>${esc(it.name || "（名前なし）")}</b>
+          <small>${esc(sub)}　<code>${esc(it.id)}</code></small>
+        </span>
+        <span class="adm-grow__btns">
+          <button type="button" class="btn-outline btn-sm" data-act="edit">直す</button>
+          <button type="button" class="btn-outline btn-sm btn-danger" data-act="del">🗑 消す</button>
+        </span>
+      </div>`;
+  }).join("");
+}
+
 
 function fillGoodsForm(it) {
   $("#g_name").value = it.name || "";
@@ -962,20 +1014,25 @@ async function publishGoods() {
   }
 }
 
-async function deleteGoods() {
-  const id = $("#goodsSelect").value;
-  if (!id) return;
+async function deleteGoods(id) {
+  if (typeof id !== "string" || !id) id = $("#goodsSelect").value;
+  if (!id) { status("#goodsStatus", "先に消したい商品をえらんでください", "err"); return; }
+  if (!cfg.token) { openSettings(); status("#goodsStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
   const it = (goodsCfg.items || []).find((x) => x.id === id);
-  if (!confirm(`「${it ? it.name : id}」を消しますか？`)) return;
+  if (!confirm(`「${it ? goodsLabel(it) : id}」を消しますか？\n（もとに戻せません）`)) return;
   setBusy2("#goodsPublish", "#goodsProgress", true);
   try {
+    progress2("#goodsProgress", "最新データを取得中…");
     const file = await ghGet(GOODS_PATH);
+    if (!file) throw new Error("goods.json が見つかりません");
     const json = JSON.parse(b64decode(file.content));
+    if (!(json.items || []).some((x) => x.id === id)) throw new Error("その商品はすでにありません");
+    progress2("#goodsProgress", "保存中…");
     json.items = (json.items || []).filter((x) => x.id !== id);
     await ghPut(GOODS_PATH, b64encode(JSON.stringify(json, null, 2) + "\n"), `グッズ: ${id} を削除`, file.sha);
     goodsCfg = json; refreshGoodsSelect(); $("#goodsSelect").value = ""; clearGoodsForm();
     setBusy2("#goodsPublish", "#goodsProgress", false);
-    status("#goodsStatus", "✅ 消しました。", "ok");
+    status("#goodsStatus", `✅ 「${it ? it.name : id}」を消しました。1〜2分でHPから消えます。`, "ok");
   } catch (e) {
     setBusy2("#goodsPublish", "#goodsProgress", false);
     status("#goodsStatus", "✗ 失敗：" + e.message, "err");

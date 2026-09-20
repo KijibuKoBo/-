@@ -422,6 +422,25 @@ body.admin-page { background: var(--paper); }
 .adm-input:focus { outline: 2px solid var(--leaf); outline-offset: 1px; }
 textarea.adm-input { resize: vertical; line-height: 1.7; }
 
+/* いま出ている商品の一覧（管理ページ 🛍 グッズ） */
+.adm-goodslist { margin: 0 0 20px; }
+.adm-goodslist__head { margin: 0 0 8px; font-weight: 700; font-size: 0.95rem; }
+.adm-goodslist__body { display: flex; flex-direction: column; gap: 8px; }
+.adm-grow { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fbf8f1; }
+.adm-grow__no { flex: 0 0 auto; width: 22px; text-align: center; font-weight: 700; color: #8a8072; }
+.adm-grow__img { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 8px; background: #efe9dc center/cover no-repeat; }
+.adm-grow__img.is-none { display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #9a917f; text-align: center; line-height: 1.2; }
+.adm-grow__txt { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.adm-grow__txt b { font-size: 0.98rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-grow__txt small { font-size: 0.75rem; color: #8a8072; }
+.adm-grow__txt code { font-size: 0.72rem; }
+.adm-grow__btns { flex: 0 0 auto; display: flex; gap: 6px; }
+@media (max-width: 560px) {
+  .adm-grow { flex-wrap: wrap; }
+  .adm-grow__txt { flex-basis: calc(100% - 100px); }
+  .adm-grow__btns { width: 100%; justify-content: flex-end; }
+}
+
 .adm-editbar { display: flex; gap: 16px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .adm-field--inline { flex: 1 1 280px; }
 
