@@ -4,14 +4,6 @@
   "note": "売上の一部は、記録を続けるための道具代にあてさせていただきます。",
   "items": [
     {
-      "id": "mug",
-      "name": "マグカップ",
-      "price": "",
-      "design": "data/goods/design-momi.png",
-      "desc": "いちばん大きなモミタケを一本。朝のコーヒーに。",
-      "url": ""
-    },
-    {
       "id": "g001",
       "name": "Tシャツ",
       "price": "",
