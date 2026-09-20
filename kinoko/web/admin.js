@@ -1058,7 +1058,9 @@ async function deleteGoods(id) {
 /* スズリなどの長いページ名から、商品名だけを取り出す
    例）「イワオトキノコ / イワオトキノコ ( iwaotokinoko )のコットンツイルバケットハット通販 ∞ SUZURI」
        →「コットンツイルバケットハット」 */
-function tidyShopTitle(t) {
+function tidyShopTitle(t, url) {
+  const info = suzuriInfo(url);
+  if (info && info.kind) return info.kind;
   let s = String(t || "").trim();
   s = s.replace(/\s*[∞|｜|]\s*(SUZURI|スズリ|BASE|MINNE|minne)[^]*$/i, "");  // 末尾のサイト名
   s = s.replace(/^[^/]{1,30}\s*\/\s*/, "");                                  // 先頭の「ショップ名 / 」
@@ -1070,11 +1072,88 @@ function tidyShopTitle(t) {
   return s;
 }
 
-/* お店の定型文（クーポン案内など）を落として、説明を読みやすくする */
-function tidyShopDesc(t) {
+/* スズリの商品URLから「何の品物か」を読み取る
+   スズリのページは、どの品物でも説明文が「元になったデザインの名前」で
+   共通になってしまうため、URL の品目部分から自分で組み立てる。
+   例）…/20988482/trad-pocketable-tote-m/m/black → ポケッタブルトート・黒 */
+var SUZURI_ITEMS = [
+  ["heavy-weight-t-shirt", "ヘビーウェイトTシャツ"],
+  ["big-silhouette-t-shirt", "ビッグシルエットTシャツ"],
+  ["oversized-t-shirt", "オーバーサイズTシャツ"],
+  ["long-sleeve-t-shirt", "ロングスリーブTシャツ"],
+  ["one-point-t-shirt", "ワンポイントTシャツ"],
+  ["dry-t-shirt", "ドライTシャツ"],
+  ["t-shirt", "Tシャツ"],
+  ["bucket-hat", "バケットハット"],
+  ["cap", "キャップ"],
+  ["pocketable-tote", "ポケッタブルトート"],
+  ["lunch-tote", "ランチトート"],
+  ["tote-bag", "トートバッグ"],
+  ["tote", "トートバッグ"],
+  ["sacoche", "サコッシュ"],
+  ["shoulder", "ショルダーバッグ"],
+  ["hoodie", "パーカー"],
+  ["pullover", "パーカー"],
+  ["zip", "ジップパーカー"],
+  ["sweat", "スウェット"],
+  ["big-mug", "ビッグマグカップ"],
+  ["mug", "マグカップ"],
+  ["glass", "グラス"],
+  ["bottle", "ボトル"],
+  ["sticker", "ステッカー"],
+  ["towel-handkerchief", "タオルハンカチ"],
+  ["hand-towel", "ハンドタオル"],
+  ["towel", "タオル"],
+  ["acrylic-block", "アクリルブロック"],
+  ["clear-file", "クリアファイル"],
+  ["notebook", "ノート"],
+  ["smartphone-case", "スマホケース"],
+  ["iphone", "スマホケース"],
+  ["apron", "エプロン"],
+  ["cushion", "クッション"],
+  ["blanket", "ブランケット"],
+  ["badge", "缶バッジ"],
+  ["keychain", "キーホルダー"],
+  ["socks", "くつ下"]
+];
+
+var SUZURI_COLORS = {
+  white: "白", black: "黒", navy: "紺", natural: "ナチュラル", beige: "ベージュ",
+  gray: "グレー", grey: "グレー", charcoal: "チャコール", ivory: "アイボリー",
+  sand: "サンド", khaki: "カーキ", olive: "オリーブ", brown: "茶", red: "赤",
+  burgundy: "バーガンディ", pink: "ピンク", purple: "紫", blue: "青", green: "緑",
+  yellow: "黄", mustard: "マスタード", orange: "オレンジ", silver: "シルバー", gold: "ゴールド"
+};
+
+function suzuriInfo(url) {
+  const m = /suzuri\.jp\/[^/]+\/\d+\/([^/?#]+)(?:\/([^/?#]+))?(?:\/([^/?#]+))?/.exec(String(url || ""));
+  if (!m) return null;
+  const slug = m[1].toLowerCase();
+  let kind = "";
+  for (const [k, ja] of SUZURI_ITEMS) { if (slug.indexOf(k) >= 0) { kind = ja; break; } }
+  const size = (m[2] || "").toLowerCase();
+  const last = (m[3] || "").toLowerCase();
+  return { kind: kind, size: size, color: SUZURI_COLORS[last] || "" };
+}
+
+/* お店の定型文（クーポン案内・「◯◯がつくった◯◯」など）は使わない。
+   スズリではどの品物でも同じ文になるので、品目から短い説明を組み立てる。 */
+function tidyShopDesc(t, url) {
+  const info = suzuriInfo(url);
   let s = String(t || "").trim();
+  const boiler = /の購入ページです|がつくった|クーポン|色やサイズも選択可能/.test(s);
+
+  if (info && info.kind && (boiler || !s)) {
+    let d = "イワオトキノコのしるしが入った" + info.kind + "です。";
+    if (info.size && info.size !== "one") {
+      d += info.color ? info.color + "のほか、色やサイズが選べます。" : "色やサイズが選べます。";
+    } else if (info.color) {
+      d += info.color + "のほか、色が選べます。";
+    }
+    return d;
+  }
+  if (boiler) return "";
   s = s.replace(/[^。！!]*(クーポン|セール|送料無料)[^。！!]*[。！!]?/g, "");
-  s = s.replace(/^[^。]*の購入ページです。\s*/, "");
   s = s.replace(/\s+/g, " ").trim();
   return s.slice(0, 120);
 }
@@ -1100,12 +1179,15 @@ async function fetchGoodsMeta() {
     return;
   }
   const got = [];
-  if (d.title) { $("#g_name").value = tidyShopTitle(d.title); got.push("名前"); }
+  if (d.title) { $("#g_name").value = tidyShopTitle(d.title, url); got.push("名前"); }
   if (d.price) { $("#g_price").value = d.price; got.push("値段"); }
-  if (d.desc) { $("#g_desc").value = tidyShopDesc(d.desc); got.push("説明"); }
+  const desc = tidyShopDesc(d.desc, url);
+  $("#g_desc").value = desc;
+  if (desc) got.push("説明");
   if (d.imageB64) { goodsPhoto = { kind: "new", b64: d.imageB64 }; renderGoodsPhoto(); got.push("写真"); }
   else if (d.image) { goodsPhoto = { kind: "existing", path: d.image }; renderGoodsPhoto(); got.push("写真(リンク)"); }
   msg.textContent = got.length
-    ? "読み込みました：" + got.join("・") + "。中身を見て、直したいところは直してください。"
+    ? "読み込みました：" + got.join("・")
+      + "。説明はスズリの文がどの商品も同じなので、こちらで組み立てています。ご自分の言葉に書き直してください。"
     : "このページからは何も読み取れませんでした。手で入力してください。";
 }
