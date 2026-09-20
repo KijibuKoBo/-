@@ -26,6 +26,14 @@
       "url": "https://suzuri.jp/iwaotokinoko/20988357/one-point-t-shirt/l/white",
       "desc": "イワオトキノコ（ワンポイントTシャツ）の購入ページです。イワオトキノコ ( iwaotokinoko )がつくったワンポイントTシャツ。色やサイズも選択可能です。お得なクーポンも配布中！",
       "design": "data/goods/item-g003-1789901767527.jpg"
+    },
+    {
+      "id": "g004",
+      "name": "イワオトキノコ / イワオトキノコ ( iwaotokinoko )のSHAKA WEAR 7.5oz ヘビーウェイトT",
+      "price": "¥4,235",
+      "url": "https://suzuri.jp/iwaotokinoko/20988399/shaka-wear-7-5oz-heavy-weight-t-shirt-for-shop/m/black",
+      "desc": "イワオトキノコ（SHAKA WEAR 7.5oz ヘビーウェイトTシャツ）の購入ページです。イワオトキノコ ( iwaotokinoko )がつくったSHAKA WEAR 7.5oz ヘビーウェイトTシャツ。色やサイズも選択可能です。お得な",
+      "design": "data/goods/item-g004-1789901816173.jpg"
     }
   ]
 }
