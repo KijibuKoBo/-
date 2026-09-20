@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260920-0246" />
+  <link rel="stylesheet" href="style.css?v=20260920-0428" />
   <script src="kinoko-api.js?v=20260920-0246"></script>
 </head>
 <body class="admin-page">
@@ -46,6 +46,7 @@
       <button class="adm-tab" data-tab="diary" aria-pressed="false" type="button">📔 日誌</button>
       <button class="adm-tab" data-tab="visits" aria-pressed="false" type="button">📊 みんなの記録</button>
       <button class="adm-tab" data-tab="posts" aria-pressed="false" type="button">📬 投稿</button>
+      <button class="adm-tab" data-tab="goods" aria-pressed="false" type="button">🛍 グッズ</button>
     </div>
 
     <!-- ===== 設定パネル ===== -->
@@ -117,6 +118,57 @@
         <button class="adm-btn-ghost" id="pstReload" type="button">🔄 読み込み直す</button>
         <div id="pstList"></div>
       </div>
+    </section>
+
+    <!-- ===== グッズ ===== -->
+    <section class="adm-panel" data-panel="goods" hidden>
+      <h2 class="adm-h2">🛍 グッズ</h2>
+      <p class="adm-note">
+        SUZURI（スズリ）などで作った商品を、ここに並べられます。<br />
+        スズリの商品ページを開いて、<b>URL</b> と <b>商品の写真</b> を持ってくるだけです。
+      </p>
+
+      <div class="adm-grid">
+        <label class="adm-field adm-wide"><span>お店のURL（スズリのあなたのページ）</span>
+          <input type="url" id="g_shop" class="adm-input" placeholder="https://suzuri.jp/あなたの名前" /></label>
+        <label class="adm-field adm-wide"><span>ページの下に出す一言</span>
+          <input type="text" id="g_note" class="adm-input" placeholder="売上の一部は、記録を続けるための道具代にあてさせていただきます。" /></label>
+      </div>
+
+      <div class="adm-editbar">
+        <label class="adm-field adm-field--inline"><span>直す商品</span>
+          <select id="goodsSelect" class="adm-input"><option value="">＋ 新しい商品を出す</option></select>
+        </label>
+        <button class="btn-outline btn-sm" id="goodsReset" type="button">入力をクリア</button>
+      </div>
+
+      <div class="adm-grid">
+        <label class="adm-field adm-req"><span>商品名</span>
+          <input type="text" id="g_name" class="adm-input" maxlength="30" placeholder="Tシャツ" /></label>
+        <label class="adm-field"><span>値段（空でもOK）</span>
+          <input type="text" id="g_price" class="adm-input" maxlength="20" placeholder="¥3,200" /></label>
+        <label class="adm-field adm-wide"><span>商品のURL（空のときはお店のURLへ飛びます）</span>
+          <input type="url" id="g_url" class="adm-input" placeholder="https://suzuri.jp/…/12345678/t-shirt/s/white" /></label>
+        <label class="adm-field adm-wide"><span>説明</span>
+          <textarea id="g_desc" class="adm-input" rows="2" maxlength="120" placeholder="9種を一列に。胸に小さく、背に大きく。"></textarea></label>
+      </div>
+
+      <div class="adm-photos">
+        <div class="adm-photos__head">
+          <span>商品の写真（1枚）</span>
+          <label class="btn-outline btn-sm adm-addphoto">📷 写真を選ぶ
+            <input type="file" id="g_photo" accept="image/*" hidden />
+          </label>
+        </div>
+        <div class="adm-photolist" id="goodsPhotoBox"></div>
+      </div>
+
+      <div class="adm-actions adm-actions--main">
+        <button class="btn-outline btn-danger" id="goodsDelete" type="button" hidden>🗑 この商品を消す</button>
+        <button class="btn-primary btn-publish" id="goodsPublish" type="button">🛍 公開する</button>
+      </div>
+      <div class="adm-progress" id="goodsProgress" hidden></div>
+      <p class="adm-status adm-status--big" id="goodsStatus"></p>
     </section>
 
     <section class="adm-panel" data-panel="records">
@@ -241,6 +293,6 @@
     </article>
   </div>
 
-  <script src="admin.js?v=20260920-0246"></script>
+  <script src="admin.js?v=20260920-0428"></script>
 </body>
 </html>
