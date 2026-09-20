@@ -1,5 +1,5 @@
 {
   "_説明": "apiUrl に Google Apps Script のウェブアプリURLを入れると、訪問カウントとランキングが動きます。空のままなら、その機能はお休みします（サイトは普通に動きます）。設定のしかたは kinoko/docs/ranking-setup.md",
-  "apiUrl": "",
+  "apiUrl": "https://script.google.com/macros/s/AKfycbzbG_rv3zKoWdk2yZFbjg2g4b-TLzh3VlmWZ2ExppRA89IztAbaK1cfMDNG34l_yz2H/exec",
   "showVisits": false
 }
