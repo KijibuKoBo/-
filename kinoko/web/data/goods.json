@@ -1,6 +1,6 @@
 {
   "_説明": "shopUrl に SUZURI や BASE などのお店のURLを入れると「購入する」ボタンが出ます。空のあいだは『準備中』と表示され、サイトは普通に動きます。items の url を個別に入れると、その商品だけ直接リンクできます。",
-  "shopUrl": "",
+  "shopUrl": "https://suzuri.jp/iwaotokinoko/20988357/one-point-t-shirt/l/white",
   "note": "売上の一部は、記録を続けるための道具代にあてさせていただきます。",
   "items": [
     {
@@ -50,6 +50,14 @@
       "design": "data/goods/design-book.jpg",
       "desc": "256件の記録から選んだ一冊。BOOKページの内容を紙に。",
       "url": ""
+    },
+    {
+      "id": "g001",
+      "name": "Tシャツ",
+      "price": "",
+      "url": "",
+      "desc": "",
+      "design": ""
     }
   ]
 }
