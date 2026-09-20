@@ -923,7 +923,22 @@ function renderGoodsList() {
 }
 
 
+function setGoodsMode(it) {
+  const m = $("#goodsMode"), btn = $("#goodsPublish");
+  if (!m) return;
+  if (it) {
+    m.hidden = false;
+    m.textContent = `いま「${it.name || it.id}」を直しています。公開するとこの商品が置きかわります。`;
+    if (btn) btn.textContent = "🛍 この商品を直して公開";
+  } else {
+    m.hidden = true;
+    m.textContent = "";
+    if (btn) btn.textContent = "🛍 新しい商品として出す";
+  }
+}
+
 function fillGoodsForm(it) {
+  setGoodsMode(it);
   $("#g_name").value = it.name || "";
   $("#g_price").value = it.price || "";
   $("#g_url").value = it.url || "";
@@ -935,6 +950,7 @@ function fillGoodsForm(it) {
 }
 
 function clearGoodsForm() {
+  setGoodsMode(null);
   ["g_name", "g_price", "g_url", "g_desc"].forEach((id) => { $("#" + id).value = ""; });
   goodsPhoto = null; renderGoodsPhoto();
   $("#goodsDelete").hidden = true;
@@ -1039,6 +1055,30 @@ async function deleteGoods(id) {
   }
 }
 
+/* スズリなどの長いページ名から、商品名だけを取り出す
+   例）「イワオトキノコ / イワオトキノコ ( iwaotokinoko )のコットンツイルバケットハット通販 ∞ SUZURI」
+       →「コットンツイルバケットハット」 */
+function tidyShopTitle(t) {
+  let s = String(t || "").trim();
+  s = s.replace(/\s*[∞|｜|]\s*(SUZURI|スズリ|BASE|MINNE|minne)[^]*$/i, "");  // 末尾のサイト名
+  s = s.replace(/^[^/]{1,30}\s*\/\s*/, "");                                  // 先頭の「ショップ名 / 」
+  s = s.replace(/^.*?\s*\([^)]*\)\s*の/, "");                               // 「〜 ( id )の」
+  s = s.replace(/通販[^]*$/, "");                                              // 「…通販」以降
+  s = s.replace(/[（(]スズリ[）)]?$/, "").trim();
+  s = s.replace(/[・･、。,.\s]+$/, "").trim();
+  if (!s || s.length > 30) s = String(t || "").trim().slice(0, 30);
+  return s;
+}
+
+/* お店の定型文（クーポン案内など）を落として、説明を読みやすくする */
+function tidyShopDesc(t) {
+  let s = String(t || "").trim();
+  s = s.replace(/[^。！!]*(クーポン|セール|送料無料)[^。！!]*[。！!]?/g, "");
+  s = s.replace(/^[^。]*の購入ページです。\s*/, "");
+  s = s.replace(/\s+/g, " ").trim();
+  return s.slice(0, 120);
+}
+
 /* 商品URLから名前・写真・値段を読み込む */
 async function fetchGoodsMeta() {
   const url = $("#g_url").value.trim();
@@ -1060,10 +1100,9 @@ async function fetchGoodsMeta() {
     return;
   }
   const got = [];
-  if (d.title && !$("#g_name").value.trim()) { $("#g_name").value = d.title; got.push("名前"); }
-  else if (d.title) { $("#g_name").value = d.title; got.push("名前"); }
+  if (d.title) { $("#g_name").value = tidyShopTitle(d.title); got.push("名前"); }
   if (d.price) { $("#g_price").value = d.price; got.push("値段"); }
-  if (d.desc && !$("#g_desc").value.trim()) { $("#g_desc").value = d.desc; got.push("説明"); }
+  if (d.desc) { $("#g_desc").value = tidyShopDesc(d.desc); got.push("説明"); }
   if (d.imageB64) { goodsPhoto = { kind: "new", b64: d.imageB64 }; renderGoodsPhoto(); got.push("写真"); }
   else if (d.image) { goodsPhoto = { kind: "existing", path: d.image }; renderGoodsPhoto(); got.push("写真(リンク)"); }
   msg.textContent = got.length

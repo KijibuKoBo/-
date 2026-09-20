@@ -422,6 +422,8 @@ body.admin-page { background: var(--paper); }
 .adm-input:focus { outline: 2px solid var(--leaf); outline-offset: 1px; }
 textarea.adm-input { resize: vertical; line-height: 1.7; }
 
+.adm-editing { margin: -12px 0 18px; padding: 8px 12px; border-radius: 8px; background: #fdf3d8; border: 1px solid #e3d3a4; font-size: 0.85rem; color: #6b5a2a; }
+
 /* いま出ている商品の一覧（管理ページ 🛍 グッズ） */
 .adm-goodslist { margin: 0 0 20px; }
 .adm-goodslist__head { margin: 0 0 8px; font-weight: 700; font-size: 0.95rem; }

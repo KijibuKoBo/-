@@ -262,6 +262,7 @@
     "🥾 山へ出発！": "🥾 Set off!",
     "もう一度 山へ": "Back to the mountain",
     "📖 発見図鑑": "📖 Discoveries",
+    "📖 図鑑": "📖 Field guide",
     "🧺 カゴの中身": "🧺 In the basket",
     "🧺 カゴに入れる": "🧺 Put in the basket",
     "🍃 そっとしておく": "🍃 Leave it be",
@@ -663,6 +664,24 @@
     "グッズ ｜ イワオトキノコ": "Shop ｜ IWAO to KINOKO",
     "長岡の森で出会ったキノコたちを、持ち歩けるかたちに。": "The mushrooms of the Nagaoka woods, in a form you can carry.",
     "絵は、サイトのゲームに出てくる9種をそのまま使っています。": "The artwork is the same nine species that appear in the games on this site.",
+    "長岡の森を歩いてきた記録から生まれた、イワオトキノコのグッズです。":
+      "IWAO to KINOKO goods, born out of years of walking the Nagaoka woods.",
+    "SUZURI（スズリ）でお作りしています。": "Made and shipped through SUZURI.",
+    "絵は、このサイトのしるし「イワオトキノコ」の文字です。 その下に、山でよく出会うキノコを三本ならべました。 大きな一本と、寄りそう小さな二本。木の根もとに出るキノコの姿です。":
+      "The artwork is this site's mark — the words \u0022IWAO to KINOKO\u0022 — with three mushrooms lined up beneath: one large, two small ones nestled beside it, the way they come up at the foot of a tree.",
+    "色は一色刷りにしています。山でも街でも、気負わずに使えるように。":
+      "Printed in a single colour, so it feels at home on the mountain and in town alike.",
+    "本物のキノコの写真は": "Photographs of the real mushrooms are in the",
+    "にあります。 絵とくらべてみると、山で見分ける目が少し育つかもしれません。":
+      ". Comparing them with the drawing may sharpen your eye a little.",
+    "売上の一部は、記録を続けるための道具代にあてさせていただきます。":
+      "Part of the proceeds goes towards the gear that keeps this record going.",
+    "ワンポイントTシャツ": "One-point T-shirt",
+    "コットンツイル バケットハット": "Cotton twill bucket hat",
+    "胸に小さく「イワオトキノコ」。白いシャツに一色刷りです。色とサイズが選べます。":
+      "A small \u0022IWAO to KINOKO\u0022 on the chest, printed in one colour. Choose your colour and size.",
+    "紺地に山吹色のしるし。日よけにも、藪よけにも。山歩きのおともに。":
+      "A golden mark on navy. Good against sun and brush alike — a companion for mountain walks.",
     "ただいま準備中です。": "Not on sale yet.",
     "デザインはできあがっています。お店の準備ができ次第、ここから買えるようになります。":
       "The designs are ready. Once the shop is set up, you will be able to buy from here.",
