@@ -234,6 +234,8 @@
     "キノコハンター IWAO": "Mushroom Hunter IWAO",
     "ファミコン風アクション。ドット絵の巖さんと山を進み、本物の写真を見て A=とる／B=とばす。ステージ制・ハイスコア。":
       "Famicom-style action. Walk the mountain as pixel Iwao; look at the real photo and press A to pick, B to skip. Stages and high scores.",
+    "ファミコン風アクション。手前から奥へ山道を進み、十字キーでよけて A=とる／B=ジャンプ。ステージ制・ハイスコア。":
+      "Famicom-style action. Head up the path into the distance, steer with the D-pad, A to pick, B to jump. Stages and high scores.",
 
     /* 山歩き */
     "巖さんと山を歩いて、キノコを採ろう。": "Walk the mountain with Iwao and gather mushrooms.",
@@ -284,7 +286,10 @@
     "＝A（とる）　": "= A (pick)　",
     "＝B（とばす）　": "= B (skip)　",
     "＝START": "= START",
-    "とる": "pick", "とばす": "skip",
+    "とる": "pick", "とばす": "skip", "ジャンプ": "jump",
+    "＝左右にうごく　": "= move left / right　",
+    "＝B（ジャンプ）　": "= B (jump)　",
+    "ひだりへ": "left", "みぎへ": "right",
     "山歩きへ ▶": "Mountain walk ▶",
 
     /* 採集地 */
@@ -536,6 +541,8 @@
       "A foraging adventure: walk the mountain with Iwao and decide, from a real photo, whether to pick or leave.",
     "8ビット風アクション。ドット絵の巖さんと山を進み、本物のキノコ写真を見て A=とる B=とばす。":
       "8-bit action: advance through the mountain as pixel Iwao and, from a real photo, press A to pick or B to skip.",
+    "8ビット風アクション。ドット絵の巖さんと山道を奥へ進み、十字キーでよけて A=とる B=ジャンプ。":
+      "8-bit action: head up the mountain path as pixel Iwao — steer with the D-pad, A to pick, B to jump.",
     "ファミコンふう キノコさいしゅう アクション": "Famicom-style mushroom-foraging action",
     "A=とる B=とばす": "A = pick, B = skip",
     "♪ おと OFF": "♪ Sound OFF",

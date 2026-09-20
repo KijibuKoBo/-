@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>キノコハンター IWAO ｜ イワオトキノコ</title>
-  <meta name="description" content="8ビット風アクション。ドット絵の巖さんと山を進み、本物のキノコ写真を見て A=とる B=とばす。" />
+  <meta name="description" content="8ビット風アクション。ドット絵の巖さんと山道を奥へ進み、十字キーでよけて A=とる B=ジャンプ。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
@@ -20,10 +20,17 @@
     .scan{ position:absolute; inset:6px; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); border-radius:8px; }
     /* コントローラー */
     .pad{ margin-top:12px; background:#d8d0c8; border-radius:14px; padding:12px 14px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; box-shadow:inset 0 -4px 0 #a89f96; }
-    .dpad{ position:relative; width:92px; height:92px; }
-    .dpad i{ position:absolute; background:#202020; border-radius:5px; }
-    .dpad i.h{ left:0; top:30px; width:92px; height:32px; } .dpad i.v{ left:30px; top:0; width:32px; height:92px; }
-    .dpad b{ position:absolute; left:38px; top:38px; width:16px; height:16px; border-radius:50%; background:#3a3a3a; }
+    .dpad{ position:relative; width:104px; height:104px; touch-action:none; }
+    .dpad i{ position:absolute; background:#202020; border-radius:5px; pointer-events:none; }
+    .dpad i.h{ left:0; top:36px; width:104px; height:32px; } .dpad i.v{ left:36px; top:0; width:32px; height:104px; }
+    .dpad b{ position:absolute; left:44px; top:44px; width:16px; height:16px; border-radius:50%; background:#3a3a3a; pointer-events:none; }
+    .dpad .dk{ position:absolute; border:none; background:transparent; padding:0; cursor:pointer; }
+    .dpad .dk::after{ content:""; position:absolute; left:50%; top:50%; width:0; height:0; transform:translate(-50%,-50%); border:9px solid transparent; }
+    .dpad .dk--l{ left:0; top:30px; width:44px; height:44px; } .dpad .dk--l::after{ border-right-color:#6a6a6a; margin-left:-4px; }
+    .dpad .dk--r{ left:60px; top:30px; width:44px; height:44px; } .dpad .dk--r::after{ border-left-color:#6a6a6a; margin-left:4px; }
+    .dpad .dk--l.is-on::after{ border-right-color:#f8d878; }
+    .dpad .dk--r.is-on::after{ border-left-color:#f8d878; }
+    .dpad .dk.is-on{ background:rgba(255,255,255,.14); border-radius:6px; }
     .mid{ display:flex; flex-direction:column; align-items:center; gap:6px; }
     .mid .lbl{ font-family:"Press Start 2P"; font-size:9px; color:#444; letter-spacing:1px; }
     .mid button{ width:54px; height:18px; border:none; border-radius:9px; background:#3a3a3a; cursor:pointer; }
@@ -35,25 +42,29 @@
     .hint{ text-align:center; color:#888; font-size:12px; margin-top:10px; line-height:1.6; }
     .tools{ display:flex; gap:8px; justify-content:center; margin-top:8px; }
     .tools button{ font-family:"DotGothic16"; font-size:13px; background:#222; color:#ddd; border:1px solid #444; border-radius:8px; padding:6px 12px; cursor:pointer; }
-    @media (max-width:380px){ .ab button{ width:58px; height:58px; } .dpad{ width:76px; height:76px; } .dpad i.h{ top:24px; width:76px; height:28px; } .dpad i.v{ left:24px; width:28px; height:76px; } .dpad b{ left:30px; top:30px; } }
+    @media (max-width:380px){ .ab button{ width:58px; height:58px; } .dpad{ width:88px; height:88px; } .dpad i.h{ top:30px; width:88px; height:28px; } .dpad i.v{ left:30px; width:28px; height:88px; } .dpad b{ left:36px; top:36px; } .dpad .dk--l{ top:24px; width:38px; height:40px; } .dpad .dk--r{ left:50px; top:24px; width:38px; height:40px; } }
   </style>
-  <script src="kinoko-api.js?v=20260920-0650"></script>
-  <script src="kinoko-bgm.js?v=20260920-0246"></script>
+  <script src="kinoko-api.js?v=20260920-1320"></script>
+  <script src="kinoko-bgm.js?v=20260920-1400"></script>
 </head>
 <body>
   <header class="topbar"><a href="index.html">◀ イワオトキノコ</a><a href="walk.html">山歩きへ ▶</a></header>
   <main class="wrap">
     <div class="tv"><canvas id="cv" width="512" height="480"></canvas><div class="scan"></div></div>
     <div class="pad">
-      <div class="dpad"><i class="h"></i><i class="v"></i><b></b></div>
+      <div class="dpad">
+        <i class="h"></i><i class="v"></i><b></b>
+        <button class="dk dk--l" id="btnL" aria-label="ひだりへ"></button>
+        <button class="dk dk--r" id="btnR" aria-label="みぎへ"></button>
+      </div>
       <div class="mid"><span class="lbl">SELECT&nbsp;&nbsp;START</span><button id="btnStart" aria-label="START"></button></div>
       <div class="ab">
-        <div><button id="btnB" aria-label="B">B</button><span>とばす</span></div>
+        <div><button id="btnB" aria-label="B">B</button><span>ジャンプ</span></div>
         <div><button id="btnA" aria-label="A">A</button><span>とる</span></div>
       </div>
     </div>
     <div class="tools"><button id="bgmBtn">🎵 音楽 OFF</button><button id="sndBtn">♪ おと ON</button></div>
-    <p class="hint">キーボード：<b>Z</b>＝A（とる）　<b>X</b>／<b>スペース</b>＝B（とばす）　<b>Enter</b>＝START<br>※あそび用です。本物の採集は図鑑・専門家で確認を。</p>
+    <p class="hint">キーボード：<b>←→</b>＝左右にうごく　<b>Z</b>＝A（とる）　<b>X</b>／<b>スペース</b>＝B（ジャンプ）　<b>Enter</b>＝START<br>※あそび用です。本物の採集は図鑑・専門家で確認を。</p>
   </main>
 
   <script>
@@ -69,104 +80,104 @@
     try{ const d=await fetch("data/records.json",{cache:"no-store"}).then(r=>r.json());
       pool=(d.records||[]).filter(r=>r.photo && ["食用","毒","食不適"].includes(r.edibility)); }catch{}
     try{ CROPS=(await fetch("data/crops.json",{cache:"no-store"}).then(r=>r.json())).crops||{}; }catch{}
-    // 写真からキノコ部分だけを切り出して描く
     function drawCrop(m,dx,dy,dw,dh){
       const c=CROPS[m.rec.photo], iw=m.img.naturalWidth||m.img.width, ih=m.img.naturalHeight||m.img.height;
       if(c && iw && ih) ctx.drawImage(m.img, c[0]*iw, c[1]*ih, c[2]*iw, c[3]*ih, dx,dy,dw,dh);
       else ctx.drawImage(m.img,dx,dy,dw,dh);
     }
     const STAGES=[
-      {no:"1-1", name:"とざんぐち", sky:"#5c94fc", hill:"#38b040", hill2:"#00a800", ground:"#a06c2c", grass:"#58d854", tree:"#007800", tree2:"#00a800", speed:1.25, pois:.30, fog:0, night:0},
-      {no:"1-2", name:"ぶなばやし", sky:"#f8a860", hill:"#8c5c1c", hill2:"#c07c30", ground:"#7c4c1c", grass:"#b8a030", tree:"#a83c00", tree2:"#e06c1c", speed:1.55, pois:.36, fog:0, night:0},
-      {no:"1-3", name:"きりのおね", sky:"#b8b8b8", hill:"#7c7c7c", hill2:"#989898", ground:"#6c6c6c", grass:"#8c9c8c", tree:"#485848", tree2:"#5c6c5c", speed:1.85, pois:.42, fog:1, night:0},
-      {no:"1-4", name:"さんちょう", sky:"#000058", hill:"#003820", hill2:"#005830", ground:"#3c2c1c", grass:"#1c6c2c", tree:"#003820", tree2:"#005830", speed:2.15, pois:.48, fog:0, night:1},
+      {no:"1-1", name:"とざんぐち", sky:"#5c94fc", hill:"#38b040", hill2:"#00a800", ground:"#2c8c34", path:"#c09050", path2:"#a87c40", tree:"#007800", tree2:"#00a800", speed:.0068, gap:78, pois:.30, obst:.16, fog:0, night:0},
+      {no:"1-2", name:"ぶなばやし", sky:"#f8a860", hill:"#8c5c1c", hill2:"#c07c30", ground:"#7c6c24", path:"#a87c3c", path2:"#8c6430", tree:"#a83c00", tree2:"#e06c1c", speed:.0086, gap:66, pois:.36, obst:.22, fog:0, night:0},
+      {no:"1-3", name:"きりのおね", sky:"#b8b8b8", hill:"#7c7c7c", hill2:"#989898", ground:"#6c7c6c", path:"#8c8c84", path2:"#74746c", tree:"#485848", tree2:"#5c6c5c", speed:.0104, gap:58, pois:.42, obst:.26, fog:1, night:0},
+      {no:"1-4", name:"さんちょう", sky:"#000058", hill:"#003820", hill2:"#005830", ground:"#1c4420", path:"#5c4c34", path2:"#463a28", tree:"#003820", tree2:"#005830", speed:.0124, gap:50, pois:.48, obst:.30, fog:0, night:1},
     ];
-    const PER_STAGE=8, LIVES=3;
+    const PER_STAGE=10, LIVES=3;
     const STAGE_BGM=["hunter","buna","kiri","yoru"];
     function stageBGM(){ if(window.BGM) BGM.switchTo(STAGE_BGM[Math.min(G.stage,STAGE_BGM.length-1)]); }
     const NESCAP=["#d82800","#f83800","#f8b800","#e45c10","#b8b8b8","#f8f8f8","#a8e4b8","#8c5c1c","#fc9838","#f8d878","#7c2c00","#c86c4c","#503000","#e0e0a0","#6c3c9c"];
 
     /* ---------- ドット絵 ---------- */
-    const PAL={ ".":null, k:"#000000", h:"#f0e0c0", s:"#f8c890", g:"#202020", w:"#ffffff", j:"#3050a8", J:"#4870d0", b:"#6c7c40", p:"#303848", o:"#181818", l:"#48a0f8", e:"#f8e8c8", E:"#d8c8a0", r:"#f83800" };
-    const IWAO=[
+    const PAL={ ".":null, k:"#000000", h:"#f0e0c0", s:"#f8c890", g:"#202020", w:"#ffffff", j:"#3050a8", J:"#4870d0", b:"#6c7c40", p:"#303848", o:"#181818", l:"#48a0f8", e:"#f8e8c8", E:"#d8c8a0", r:"#f83800", c:"#d82800" };
+    /* 後ろ姿（背負いカゴ）14×20 */
+    const BACK=[
      [ // 歩き1
       "....hhhhhh....",
       "...hhhhhhhh...",
       "..hhhhhhhhhhhh",
-      "...ssssssss...",
-      "...sgssgsss...",
-      "...sgwsgwss...",
-      "...ssssssss...",
+      "....kkkkkk....",
+      "....kkkkkk....",
       "....ssssss....",
-      ".bbJJJJJJJJ...",
-      ".bbJjjjjjjJl..",
-      ".bbjjjjjjjjl..",
-      ".bbjjjjjjjjl..",
-      ".bbjjjjjjjjl..",
-      "..jjjjjjjjjl..",
-      "...pppppp..l..",
-      "...pppppp..l..",
-      "...pp..pp..l..",
-      "...pp..pp..l..",
-      "...oo..oo..l..",
-      "..ooo..ooo.l.."],
+      "...JJJJJJJJ...",
+      "..JJJJJJJJJJ..",
+      ".bbEEEEEEEEbb.",
+      ".bbEeeeeeeEbb.",
+      ".bbEEEEEEEEbb.",
+      ".bbEeeeeeeEbb.",
+      "..jjjjjjjjjj..",
+      "..jjjjjjjjjj..",
+      "...pppppp.....",
+      "...pppppp.....",
+      "...pp..pp.....",
+      "...pp..pp.....",
+      "...oo..oo.....",
+      "..ooo..ooo...."],
      [ // 歩き2
       "....hhhhhh....",
       "...hhhhhhhh...",
       "..hhhhhhhhhhhh",
-      "...ssssssss...",
-      "...sgssgsss...",
-      "...sgwsgwss...",
-      "...ssssssss...",
+      "....kkkkkk....",
+      "....kkkkkk....",
       "....ssssss....",
-      ".bbJJJJJJJJ...",
-      ".bbJjjjjjjJ.l.",
-      ".bbjjjjjjjj.l.",
-      ".bbjjjjjjjj.l.",
-      ".bbjjjjjjjj.l.",
-      "..jjjjjjjjj.l.",
-      "...pppppp...l.",
-      "..pppppppp..l.",
-      "..pp....pp..l.",
-      ".pp......pp.l.",
-      ".oo......oo.l.",
-      "ooo......ooo.l"],
+      "...JJJJJJJJ...",
+      "..JJJJJJJJJJ..",
+      ".bbEEEEEEEEbb.",
+      ".bbEeeeeeeEbb.",
+      ".bbEEEEEEEEbb.",
+      ".bbEeeeeeeEbb.",
+      "..jjjjjjjjjj..",
+      "..jjjjjjjjjj..",
+      "....pppppp....",
+      "...pppppppp...",
+      "...pp....pp...",
+      "..pp......pp..",
+      "..oo......oo..",
+      ".ooo......ooo."],
      [ // ジャンプ
       "....hhhhhh....",
       "...hhhhhhhh...",
       "..hhhhhhhhhhhh",
-      "...ssssssss...",
-      "...sgssgsss...",
-      "...sgwsgwss...",
-      "...ssssssss...",
+      "....kkkkkk....",
+      "....kkkkkk....",
       "....ssssss....",
-      ".bbJJJJJJJJl..",
-      ".bbJjjjjjjJl..",
-      ".bbjjjjjjjjl..",
-      ".bbjjjjjjjjl..",
-      ".bbjjjjjjjjl..",
-      "..jjjjjjjjjl..",
-      "..pppppppp.l..",
-      "..pp....pp.l..",
-      ".pp......ppl..",
-      ".oo......oo...",
+      "l..JJJJJJJJ..l",
+      "l.JJJJJJJJJJ.l",
+      "lbbEEEEEEEEbbl",
+      ".bbEeeeeeeEbb.",
+      ".bbEEEEEEEEbb.",
+      ".bbEeeeeeeEbb.",
+      "..jjjjjjjjjj..",
+      "..pppppppppp..",
+      "..pp......pp..",
+      ".pp........pp.",
+      ".oo........oo.",
+      "..............",
       "..............",
       ".............."],
-     [ // とる（しゃがみ）
+     [ // とる（かがむ）
       "..............",
       "..............",
       "....hhhhhh....",
       "...hhhhhhhh...",
       "..hhhhhhhhhhhh",
-      "...ssssssss...",
-      "...sgssgsss...",
-      "...sgwsgwss...",
-      "...ssssssss...",
-      ".bbJJJJJJJJ...",
-      ".bbJjjjjjjJjjs",
-      ".bbjjjjjjjjjjs",
-      ".bbjjjjjjjj...",
-      "..jjjjjjjjj...",
+      "....kkkkkk....",
+      "....ssssss....",
+      "...JJJJJJJJ...",
+      ".bbEEEEEEEEbb.",
+      ".bbEeeeeeeEbb.",
+      ".bbEEEEEEEEbb.",
+      "..jjjjjjjjjj..",
+      "..jjjjjjjjjj..",
+      "..jjs....sjj..",
       "..pppppppp....",
       "..pppppppp....",
       "..pp....pp....",
@@ -189,7 +200,7 @@
     ];
     const HEART=["..rr.rr..",".rrrrrrr.",".rrrrrrr.","..rrrrr..","...rrr...","....r...."];
     const BASKET=["..EEEEEE..",".E......E.","EEEEEEEEEE",".EEEEEEEE.",".EEEEEEEE.","..EEEEEE.."];
-    function sprite(map,x,y,pal,s=PX){ for(let r=0;r<map.length;r++){ const row=map[r]; for(let c=0;c<row.length;c++){ const col=pal[row[c]]; if(!col) continue; ctx.fillStyle=col; ctx.fillRect(Math.round(x+c*s),Math.round(y+r*s),s,s); } } }
+    function sprite(map,x,y,pal,s=PX){ for(let r=0;r<map.length;r++){ const row=map[r]; for(let c=0;c<row.length;c++){ const col=pal[row[c]]; if(!col) continue; ctx.fillStyle=col; ctx.fillRect(Math.round(x+c*s),Math.round(y+r*s),Math.ceil(s),Math.ceil(s)); } } }
 
     /* ---------- サウンド（矩形波チップチューン） ---------- */
     let AC=null, sound=true;
@@ -205,131 +216,303 @@
       hurt:()=>beep([[180,.1],[120,.14],[80,.22]],"sawtooth",.09),
       bad:()=>beep([[300,.08],[240,.12]],"square",.07),
       good:()=>beep([[659,.06],[784,.06],[1047,.12]]),
+      swish:()=>beep([[520,.05],[380,.05]],"triangle",.05),
       clear:()=>beep([[523,.12],[659,.12],[784,.12],[1047,.28]]),
       over:()=>beep([[440,.16],[349,.16],[262,.16],[196,.4]],"triangle",.1),
       start:()=>beep([[659,.08],[659,.08],[0,.06],[659,.08],[0,.06],[523,.08],[659,.08],[784,.2]]),
       ending:()=>beep([[523,.15],[659,.15],[784,.15],[1047,.15],[784,.15],[1047,.4]]),
     };
 
+    /* ---------- 擬似3D（手前 ⇄ 奥） ----------
+       z=0 が手前（IWAO の足元）、z=1 が地平線。 */
+    const HZ=200, GY=410, FAR=1.18;
+    const pz=(z)=>1/(1+Math.max(z,-0.22)*3.4);
+    const pY=(z)=>HZ+(GY-HZ)*pz(z);
+    const pHW=(z)=>26+196*pz(z);            // 走路の半分の幅（px）
+    const pX=(lane,z)=>W/2+lane*pHW(z);
+    const pS=(z)=>pz(z)*3.1;                // ドットの大きさ
+
     /* ---------- ゲーム状態 ---------- */
     let mode="title", frame=0, hi=0; try{ hi=Number(localStorage.getItem("kinoko_retro_hi")||0);}catch{}
     const G={};
-    function reset(){ Object.assign(G,{stage:0,score:0,lives:LIVES,basket:0,streak:0,handled:0,scroll:0,mush:null,gapTimer:60,iwao:{x:70,y:0,vy:0,jump:false,frame:0,anim:0,pick:0,hurt:0},msg:null,shake:0,flash:0,fly:[],stars:null}); }
+    function reset(){
+      Object.assign(G,{stage:0,score:0,lives:LIVES,basket:0,streak:0,handled:0,scrollZ:0,
+        objs:[],trees:[],gapTimer:40,msg:null,shake:0,flash:0,fly:[],stars:null,
+        iwao:{lane:0,vlane:0,y:0,vy:0,jump:false,frame:0,anim:0,pick:0,hurt:0,inv:0}});
+      for(let k=0;k<14;k++) G.trees.push({lane:(k%2?1:-1)*(1.25+Math.random()*.7), z:k/14*FAR, kind:k%3});
+    }
     reset();
-    const groundY=380; // 地面の上端（px）
     function stage(){ return STAGES[G.stage]; }
 
-    /* ---------- キノコ生成 ---------- */
+    /* ---------- 生成 ---------- */
     const rnd=(a)=>a[Math.floor(Math.random()*a.length)];
     function nearestCap(r,g,b){ let best=NESCAP[0],bd=1e9; NESCAP.forEach(h=>{ const R=parseInt(h.slice(1,3),16),Gg=parseInt(h.slice(3,5),16),B=parseInt(h.slice(5,7),16); const d=(R-r)**2+(Gg-g)**2+(B-b)**2; if(d<bd){bd=d;best=h;} }); return best; }
+    function laneAwayFrom(lane,minGap){ // 既存と重ならない位置
+      for(let k=0;k<12;k++){ const L=-0.82+Math.random()*1.64; if(Math.abs(L-lane)>minGap) return L; }
+      return lane>0?-0.7:0.7;
+    }
     function spawn(){
-      const s=stage(); const roll=Math.random(); let p;
+      const s=stage();
+      const near=G.objs.length?G.objs[G.objs.length-1]:null;
+      const avoid=near&&near.z>FAR-0.34?near.lane:99;
+      if(Math.random()<s.obst){
+        const log=Math.random()<.45;
+        G.objs.push({kind:log?"log":"rock", z:FAR, lane:log?(Math.random()*.5-.25):laneAwayFrom(avoid,.5), judged:false});
+        return;
+      }
+      const roll=Math.random(); let p;
       if(roll<s.pois) p=pool.filter(r=>r.edibility==="毒"); else if(roll<s.pois+.12) p=pool.filter(r=>r.edibility==="食不適"); else p=pool.filter(r=>r.edibility==="食用");
-      if(!p.length) p=pool; const rec=rnd(p);
-      const m={x:W+20, rec, cap:"#d82800", img:new Image(), ready:false, judged:false, result:null, t:0};
+      if(!p.length) p=pool; if(!p.length) return;
+      const rec=rnd(p);
+      const m={kind:"mush", z:FAR, lane:laneAwayFrom(avoid,.5), rec, cap:"#d82800", img:new Image(), ready:false, judged:false, result:null};
       m.img.onload=()=>{ m.ready=true; try{ const oc=document.createElement("canvas"); oc.width=oc.height=8; const c2=oc.getContext("2d");
         const cr=CROPS[rec.photo], iw=m.img.naturalWidth||m.img.width, ih=m.img.naturalHeight||m.img.height;
         if(cr&&iw&&ih) c2.drawImage(m.img, cr[0]*iw, cr[1]*ih, cr[2]*iw, cr[3]*ih, 0,0,8,8); else c2.drawImage(m.img,0,0,8,8);
         const d=c2.getImageData(2,2,4,4).data; let r=0,g=0,b=0; for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];} const n=d.length/4; m.cap=nearestCap(r/n,g/n,b/n); }catch{} };
-      m.img.src=rec.photo; G.mush=m;
+      m.img.src=rec.photo;
+      G.objs.push(m);
     }
 
     /* ---------- 判定 ---------- */
-    function judge(action){ // action: 'pick' | 'jump' | 'walk'
-      const m=G.mush; if(!m||m.judged) return; m.judged=true; const e=m.rec.edibility; let pts=0, txt="", kind="ok";
+    function hurt(txt){
+      const i=G.iwao;
+      if(i.inv>0) return;
+      G.streak=0; G.lives--; i.hurt=70; i.inv=80; G.shake=16; G.flash=8; SFX.hurt();
+      G.msg={txt:txt,sub:`のこり ${Math.max(0,G.lives)}`,kind:"bad",t:80};
+      if(G.lives<=0){ setTimeout(()=>{ if(mode==="play"){ mode="gameover"; SFX.over(); saveHi(); } },600); }
+    }
+    function judge(m,action){ // action: 'pick' | 'dodge' | 'walk'
+      if(m.judged) return; m.judged=true;
+      const e=m.rec.edibility; let pts=0, txt="", kind="ok";
       if(action==="pick"){
-        if(e==="食用"){ G.streak++; pts=100+Math.min(G.streak-1,4)*50; txt=`たべられる! +${pts}`; G.basket++; SFX.coin(); G.fly.push({x:m.x,y:groundY-22*PX,t:0}); }
-        else if(e==="毒"){ G.streak=0; G.lives--; txt="どく!! -1"; kind="bad"; SFX.hurt(); G.iwao.hurt=70; G.shake=16; G.flash=8; }
+        if(e==="食用"){ G.streak++; pts=100+Math.min(G.streak-1,4)*50; txt=`たべられる! +${pts}`; G.basket++; SFX.coin(); G.fly.push({x:pX(m.lane,m.z),y:pY(m.z)-20,t:0}); }
+        else if(e==="毒"){ m.result={txt:"どく!!",kind:"bad"}; G.handled++; hurt("どくキノコを とった!!");
+          G.msg={txt:`${m.rec.wamei}（毒）`,sub:"とっては だめ！ -1",kind:"bad",t:90}; checkClear(); return; }
         else { G.streak=0; pts=-50; txt="まずい… -50"; kind="meh"; SFX.bad(); }
-      }else if(action==="jump"){
+      }else if(action==="dodge"){
         if(e==="毒"){ pts=50; txt="どくを みぬいた! +50"; SFX.good(); }
         else if(e==="食用"){ G.streak=0; txt="もったいない…"; kind="meh"; }
         else { pts=20; txt="たべない キノコ +20"; SFX.good(); }
-      }else{ // walk（無入力で通過）
-        if(e==="毒"){ G.streak=0; G.lives--; txt="どくを ふんだ!! -1"; kind="bad"; SFX.hurt(); G.iwao.hurt=70; G.shake=16; G.flash=8; }
+      }else{ // ふんだ
+        if(e==="毒"){ m.result={txt:"どく!!",kind:"bad"}; G.handled++; hurt("どくキノコを ふんだ!!");
+          G.msg={txt:`${m.rec.wamei}（毒）`,sub:"ふんでしまった -1",kind:"bad",t:90}; checkClear(); return; }
         else if(e==="食用"){ G.streak=0; txt="みのがした…"; kind="meh"; }
         else { txt="…"; kind="meh"; }
       }
-      G.score=Math.max(0,G.score+pts); m.result={txt,kind,name:m.rec.wamei,e}; G.msg={txt:`${m.rec.wamei}（${e}）`,sub:txt,kind,t:90};
+      G.score=Math.max(0,G.score+pts); m.result={txt,kind};
+      G.msg={txt:`${m.rec.wamei}（${e}）`,sub:txt,kind,t:90};
       G.handled++;
-      if(G.lives<=0){ setTimeout(()=>{ mode="gameover"; SFX.over(); saveHi(); },500); }
+      checkClear();
+    }
+    function checkClear(){
+      if(G.lives<=0 || G.handled<PER_STAGE || mode!=="play") return;
+      if(G.stage>=STAGES.length-1){ mode="ending"; SFX.ending(); saveHi(); return; }
+      mode="clear"; SFX.clear();
+      setTimeout(()=>{ if(mode!=="clear") return; G.stage++; G.handled=0; G.objs=[]; G.gapTimer=50; mode="play"; stageBGM();
+        G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; },2200);
     }
     function saveHi(){ if(G.score>hi){ hi=G.score; try{localStorage.setItem("kinoko_retro_hi",hi);}catch{} } }
 
     /* ---------- 入力 ---------- */
-    function pressA(){ if(mode==="title"){ start(); return; } if(mode!=="play") return; const i=G.iwao; if(i.jump||i.pick) return; i.pick=18; const m=G.mush; if(m&&!m.judged&&m.x<W-40) judge("pick"); }
-    function pressB(){ if(mode==="title"){ start(); return; } if(mode!=="play") return; const i=G.iwao; if(i.jump) return; i.jump=true; i.vy=-7.2; SFX.jump(); const m=G.mush; if(m&&!m.judged&&m.x<W-40) judge("jump"); }
+    const held={l:false,r:false};
+    function pressA(){
+      if(mode==="title"){ start(); return; }
+      if(mode!=="play") return;
+      const i=G.iwao; if(i.jump||i.pick>0) return;
+      i.pick=16;
+      let got=null;
+      for(const m of G.objs){ if(m.kind!=="mush"||m.judged) continue;
+        if(m.z<0.30 && Math.abs(m.lane-i.lane)<0.34){ got=m; break; } }
+      if(got) judge(got,"pick"); else SFX.swish();
+    }
+    function pressB(){
+      if(mode==="title"){ start(); return; }
+      if(mode!=="play") return;
+      const i=G.iwao; if(i.jump) return;
+      i.jump=true; i.vy=-7.6; SFX.jump();
+    }
     function pressStart(){ ac(); if(mode==="title"||mode==="gameover"||mode==="ending") start(); }
     function start(){ reset(); mode="play"; SFX.start(); stageBGM(); G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; }
+
+    const dkEl={};
+    function setHold(dir,v){ held[dir]=v; if(dkEl[dir]) dkEl[dir].classList.toggle("is-on",v); }
+    function hold(el,dir){
+      dkEl[dir]=el;
+      el.addEventListener("pointerdown",e=>{ e.preventDefault(); ac();
+        setHold(dir==="l"?"r":"l",false); setHold(dir,true); });
+      el.addEventListener("contextmenu",e=>e.preventDefault());
+    }
+    hold(document.getElementById("btnL"),"l");
+    hold(document.getElementById("btnR"),"r");
+    ["pointerup","pointercancel"].forEach(ev=>window.addEventListener(ev,()=>{ setHold("l",false); setHold("r",false); }));
     document.getElementById("btnA").addEventListener("pointerdown",e=>{e.preventDefault(); ac(); pressA();});
     document.getElementById("btnB").addEventListener("pointerdown",e=>{e.preventDefault(); ac(); pressB();});
     document.getElementById("btnStart").addEventListener("pointerdown",e=>{e.preventDefault(); pressStart();});
     cv.addEventListener("pointerdown",()=>{ ac(); if(mode!=="play") pressStart(); });
-    window.addEventListener("keydown",e=>{ if(e.repeat) return; const k=e.key.toLowerCase(); if(k==="z"||k==="arrowup"){ ac(); pressA(); } else if(k==="x"||k===" "){ e.preventDefault(); ac(); pressB(); } else if(k==="enter"){ pressStart(); } });
+    window.addEventListener("keydown",e=>{
+      const k=e.key.toLowerCase();
+      if(k==="arrowleft"){ e.preventDefault(); held.l=true; return; }
+      if(k==="arrowright"){ e.preventDefault(); held.r=true; return; }
+      if(e.repeat) return;
+      if(k==="z"||k==="arrowup"){ e.preventDefault(); ac(); pressA(); }
+      else if(k==="x"||k===" "||k==="arrowdown"){ e.preventDefault(); ac(); pressB(); }
+      else if(k==="enter"){ pressStart(); }
+    });
+    window.addEventListener("keyup",e=>{ const k=e.key.toLowerCase(); if(k==="arrowleft") held.l=false; if(k==="arrowright") held.r=false; });
+    window.addEventListener("blur",()=>{ setHold("l",false); setHold("r",false); });
 
     /* ---------- 更新 ---------- */
     function update(){
       frame++;
       if(mode!=="play") return;
-      const s=stage(); const sp=s.speed*PX;
-      G.scroll+=sp;
-      const i=G.iwao;
-      if(i.jump){ i.y+=i.vy; i.vy+=.42; if(i.y>=0){ i.y=0; i.jump=false; i.vy=0; } }
-      if(i.pick>0) i.pick--; if(i.hurt>0) i.hurt--;
-      if(!i.jump && !i.pick){ i.anim++; if(i.anim%9===0) i.frame=1-i.frame; }
+      const s=stage(), i=G.iwao;
+
+      /* 左右移動（十字キー） */
+      const acc=(held.r?1:0)-(held.l?1:0);
+      i.vlane += acc*0.0042;
+      i.vlane *= 0.84;
+      i.lane  += i.vlane;
+      if(i.lane<-0.92){ i.lane=-0.92; i.vlane=0; }
+      if(i.lane> 0.92){ i.lane= 0.92; i.vlane=0; }
+
+      /* ジャンプ・しゃがみ */
+      if(i.jump){ i.y+=i.vy; i.vy+=.40; if(i.y>=0){ i.y=0; i.jump=false; i.vy=0; } }
+      if(i.pick>0) i.pick--;
+      if(i.hurt>0) i.hurt--;
+      if(i.inv>0) i.inv--;
+      if(!i.jump && i.pick<=0){ i.anim++; if(i.anim%8===0) i.frame=1-i.frame; }
       if(G.shake>0) G.shake--; if(G.flash>0) G.flash--;
       if(G.msg){ G.msg.t--; if(G.msg.t<=0) G.msg=null; }
       G.fly.forEach(f=>f.t++); G.fly=G.fly.filter(f=>f.t<24);
-      // キノコ
-      if(G.mush){ const m=G.mush; m.x-=sp; m.t++;
-        if(!m.judged && m.x<=i.x+10*PX) judge("walk");
-        if(m.x<-40){ G.mush=null; G.gapTimer=Math.floor(45+Math.random()*50);
-          if(G.handled>=PER_STAGE){ // ステージクリア
-            if(G.stage>=STAGES.length-1){ mode="ending"; SFX.ending(); saveHi(); }
-            else { mode="clear"; SFX.clear(); setTimeout(()=>{ G.stage++; G.handled=0; mode="play"; stageBGM(); G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; },2200); }
-          } }
-      }else{ if(G.gapTimer-- <= 0) spawn(); }
+
+      /* 道と木の流れ */
+      const dz=s.speed;
+      G.scrollZ+=dz;
+      G.trees.forEach(t=>{ t.z-=dz; if(t.z<-0.12){ t.z+=FAR+0.12; t.lane=(Math.random()<.5?-1:1)*(1.25+Math.random()*.7); t.kind=Math.floor(Math.random()*3); } });
+
+      /* 出現物 */
+      for(const m of G.objs){
+        m.z-=dz;
+        if(m.judged) continue;
+        if(m.kind==="mush"){
+          if(m.z<=0){ // 足元を通過
+            const safe = i.jump || Math.abs(m.lane-i.lane)>0.42;
+            judge(m, safe?"dodge":"walk");
+          }
+        }else{ // 倒木・岩
+          const halfW = m.kind==="log"?0.62:0.30;
+          if(m.z<=0.05){
+            m.judged=true;
+            if(!i.jump && Math.abs(m.lane-i.lane)<halfW+0.10){
+              hurt(m.kind==="log"?"たおれ木に ぶつかった!":"いしに つまずいた!");
+            }else if(i.jump){ G.score+=30; G.msg={txt:m.kind==="log"?"たおれ木":"いし",sub:"とびこえた! +30",kind:"ok",t:60}; SFX.good(); }
+          }
+        }
+      }
+      G.objs=G.objs.filter(m=>m.z>-0.20);
+
+      if(G.gapTimer-- <= 0){ spawn(); G.gapTimer=Math.floor(s.gap*(0.72+Math.random()*0.6)); }
     }
 
     /* ---------- 描画 ---------- */
     function text(str,x,y,font=JP,col="#fff",align="left"){ ctx.font=font; ctx.textAlign=align; ctx.textBaseline="top"; ctx.fillStyle="#000"; ctx.fillText(str,x+2,y+2); ctx.fillStyle=col; ctx.fillText(str,x,y); }
-    function drawBG(s){
-      ctx.fillStyle=s.sky; ctx.fillRect(0,0,W,H);
-      if(s.night){ if(!G.stars){ G.stars=Array.from({length:40},()=>({x:Math.random()*W,y:40+Math.random()*200})); } ctx.fillStyle="#fff"; G.stars.forEach((st,k)=>{ if((frame>>4)%3!==k%3) ctx.fillRect(st.x,st.y,2,2); }); ctx.fillStyle="#f8f8d8"; ctx.beginPath(); ctx.arc(420,90,22,0,7); ctx.fill(); }
-      else { ctx.fillStyle="#fff"; for(let k=0;k<3;k++){ const cx=((k*210 - G.scroll*.15)%(W+120)+W+120)%(W+120)-60; const cy=70+k*38; ctx.fillRect(cx,cy,56,14); ctx.fillRect(cx+12,cy-10,28,12); ctx.fillRect(cx+8,cy+8,40,10); } ctx.fillStyle="#f8f878"; if(!s.fog){ ctx.fillRect(400,56,28,28); ctx.fillRect(408,48,12,8); ctx.fillRect(408,84,12,8); ctx.fillRect(392,64,8,12); ctx.fillRect(428,64,8,12);} }
-      // 遠景の山
-      ctx.fillStyle=s.hill; for(let k=-1;k<5;k++){ const bx=((k*220 - G.scroll*.25)%(W+220)+W+220)%(W+220)-220; ctx.beginPath(); ctx.moveTo(bx,groundY-60); ctx.lineTo(bx+110,groundY-190); ctx.lineTo(bx+220,groundY-60); ctx.fill(); }
-      ctx.fillStyle=s.hill2; ctx.fillRect(0,groundY-60,W,60);
-      // 木
-      for(let k=-1;k<6;k++){ const tx=((k*130 - G.scroll*.6)%(W+130)+W+130)%(W+130)-70; const base=groundY-4; const h=110+(k%3)*18;
-        const leafBottom=base-h+76;
-        ctx.fillStyle="#6c3c14"; ctx.fillRect(tx+18,leafBottom-6,12,(base+2)-(leafBottom-6));
-        ctx.fillStyle=s.tree; ctx.fillRect(tx,base-h+50,48,26); ctx.fillRect(tx+6,base-h+30,36,24); ctx.fillRect(tx+12,base-h+12,24,22); ctx.fillRect(tx+20,base-h,8,14);
-        ctx.fillStyle=s.tree2; ctx.fillRect(tx+6,base-h+50,20,8); ctx.fillRect(tx+12,base-h+30,14,8); }
-      // 地面
-      ctx.fillStyle=s.grass; ctx.fillRect(0,groundY-4,W,10);
-      ctx.fillStyle=s.ground; ctx.fillRect(0,groundY+6,W,H-groundY-6);
-      ctx.fillStyle="#000"; for(let k=0;k<9;k++){ const gx=((k*64 - G.scroll)%(W+64)+W+64)%(W+64)-32; ctx.fillRect(gx,groundY+22,20,4); ctx.fillRect(gx+36,groundY+40,12,4); }
-      if(s.fog){ ctx.fillStyle="rgba(220,220,220,.35)"; ctx.fillRect(0,0,W,H); ctx.fillStyle="rgba(240,240,240,.5)"; for(let k=0;k<4;k++){ const fx=((k*300 - G.scroll*.4)%(W+300)+W+300)%(W+300)-150; ctx.fillRect(fx,200+k*40,220,26);} }
-      if(s.night){ ctx.fillStyle="rgba(0,0,40,.35)"; ctx.fillRect(0,0,W,H); }
+    function band(z0,z1,col,hw){
+      ctx.fillStyle=col; ctx.beginPath();
+      ctx.moveTo(pX(-hw,z1),pY(z1)); ctx.lineTo(pX(hw,z1),pY(z1));
+      ctx.lineTo(pX(hw,z0),pY(z0)); ctx.lineTo(pX(-hw,z0),pY(z0));
+      ctx.closePath(); ctx.fill();
+    }
+    function drawSky(s){
+      ctx.fillStyle=s.sky; ctx.fillRect(0,0,W,HZ+2);
+      if(s.night){ if(!G.stars){ G.stars=Array.from({length:40},()=>({x:Math.random()*W,y:36+Math.random()*130})); }
+        ctx.fillStyle="#fff"; G.stars.forEach((st,k)=>{ if((frame>>4)%3!==k%3) ctx.fillRect(st.x,st.y,2,2); });
+        ctx.fillStyle="#f8f8d8"; ctx.beginPath(); ctx.arc(420,80,22,0,7); ctx.fill(); }
+      else{ ctx.fillStyle="#fff"; for(let k=0;k<3;k++){ const cx=((k*210 - frame*.18)%(W+120)+W+120)%(W+120)-60, cy=52+k*30;
+          ctx.fillRect(cx,cy,56,14); ctx.fillRect(cx+12,cy-10,28,12); ctx.fillRect(cx+8,cy+8,40,10); }
+        if(!s.fog){ ctx.fillStyle="#f8f878"; ctx.fillRect(400,44,28,28); ctx.fillRect(408,36,12,8); ctx.fillRect(408,72,12,8); ctx.fillRect(392,52,8,12); ctx.fillRect(428,52,8,12); } }
+      // 遠くの山なみ
+      ctx.fillStyle=s.hill;
+      for(let k=-1;k<5;k++){ const bx=k*150-30; ctx.beginPath(); ctx.moveTo(bx,HZ+2); ctx.lineTo(bx+75,HZ-72); ctx.lineTo(bx+150,HZ+2); ctx.fill(); }
+      ctx.fillStyle=s.hill2; ctx.fillRect(0,HZ-6,W,10);
+    }
+    function drawGround(s){
+      ctx.fillStyle=s.ground; ctx.fillRect(0,HZ,W,H-HZ);
+      const SEG=0.075, off=G.scrollZ%(SEG*2);
+      for(let k=20;k>=-5;k--){
+        const z0=k*SEG-off, z1=z0+SEG;
+        if(z1<-0.215||z0>FAR+0.1) continue;
+        const a=Math.max(z0,-0.215), b=Math.min(z1,FAR+0.1);
+        if(b<=a) continue;
+        const light=(k%2===0);
+        band(a,b, light?"#000000":"#000000", 1.30);          // 土手の影
+        band(a,b, light?s.path:s.path2, 1.22);
+      }
+      // 道ばたの草
+      const SEG2=0.15, off2=G.scrollZ%(SEG2*2);
+      for(let k=16;k>=0;k--){
+        const z0=k*SEG2-off2, z1=z0+SEG2*0.5;
+        if(z1<-0.2||z0>FAR) continue;
+        ctx.fillStyle=s.tree2;
+        const y=pY(Math.max(z0,-0.15)), hw=pHW(Math.max(z0,-0.15));
+        const hgt=Math.max(2,6*pz(Math.max(z0,0)));
+        ctx.fillRect(W/2-hw*1.24,y-hgt,hw*0.10,hgt);
+        ctx.fillRect(W/2+hw*1.14,y-hgt,hw*0.10,hgt);
+      }
+    }
+    function drawTree(t,s){
+      if(t.z<-0.1||t.z>FAR) return;
+      const x=pX(t.lane,t.z), y=pY(t.z), k=pz(t.z);
+      const h=(150+t.kind*26)*k, w=Math.max(3,26*k);
+      ctx.fillStyle="#6c3c14"; ctx.fillRect(x-w*0.22,y-h*0.55,Math.max(2,w*0.44),h*0.55);
+      ctx.fillStyle=s.tree;
+      ctx.fillRect(x-w,      y-h*0.62, w*2,   h*0.22);
+      ctx.fillRect(x-w*0.76, y-h*0.80, w*1.52,h*0.22);
+      ctx.fillRect(x-w*0.48, y-h*0.97, w*0.96,h*0.22);
+      ctx.fillStyle=s.tree2;
+      ctx.fillRect(x-w*0.7,  y-h*0.60, w*0.5, h*0.08);
+      ctx.fillRect(x-w*0.4,  y-h*0.78, w*0.34,h*0.07);
+    }
+    function drawAim(lane){
+      for(let k=1;k<=7;k++){
+        const z=k*0.14, y=pY(z), x=pX(lane,z), w=Math.max(2,11*pz(z));
+        ctx.fillStyle=`rgba(255,255,255,${0.46-k*0.05})`;
+        ctx.fillRect(x-w/2, y-Math.max(1,2*pz(z)), w, Math.max(1,4*pz(z)));
+      }
+    }
+    function drawShadow(x,y,r){ ctx.fillStyle="rgba(0,0,0,.30)"; ctx.beginPath(); ctx.ellipse(x,y,r,Math.max(1.5,r*0.34),0,0,7); ctx.fill(); }
+    function drawObj(m){
+      if(m.z<-0.15||m.z>FAR) return;
+      const x=pX(m.lane,m.z), y=pY(m.z), k=pz(m.z), s=pS(m.z);
+      if(m.kind==="mush"){
+        drawShadow(x,y+2,5.5*s);
+        const pal={...PAL, c:m.cap};
+        sprite(MUSH, x-6*s, y-11*s, pal, s);
+        if(!m.judged && m.z<0.9 && (frame>>3)%2) text("？", x-6, y-13*s-16*k-6, JP, "#f8f878");
+        if(m.judged && m.result) text(m.result.kind==="ok"?"○":m.result.kind==="bad"?"×":"△", x-8, y-13*s-20, JP,
+            m.result.kind==="ok"?"#58f858":m.result.kind==="bad"?"#f83800":"#f8d878");
+      }else if(m.kind==="log"){
+        const w=pHW(m.z)*1.24, h=Math.max(4,22*k);
+        drawShadow(x,y+3,w*0.5);
+        ctx.fillStyle="#6c3c14"; ctx.fillRect(x-w*0.5,y-h,w,h);
+        ctx.fillStyle="#8c5c1c"; ctx.fillRect(x-w*0.5,y-h,w,Math.max(2,h*0.34));
+        ctx.fillStyle="#3c2008"; ctx.fillRect(x-w*0.5,y-h,Math.max(2,h*0.5),h); ctx.fillRect(x+w*0.5-Math.max(2,h*0.5),y-h,Math.max(2,h*0.5),h);
+        if(m.z<0.85 && (frame>>3)%2) text("Ｂ！", x-14, y-h-22*k-14, JP, "#f8f878");
+      }else{
+        const w=Math.max(5,46*k), h=Math.max(4,34*k);
+        drawShadow(x,y+2,w*0.6);
+        ctx.fillStyle="#8c8c8c"; ctx.fillRect(x-w*0.5,y-h,w,h);
+        ctx.fillStyle="#b8b8b8"; ctx.fillRect(x-w*0.5,y-h,w*0.55,h*0.4);
+        ctx.fillStyle="#585858"; ctx.fillRect(x-w*0.5,y-h*0.25,w,h*0.25);
+      }
     }
     function drawIwao(){
-      const i=G.iwao; const x=i.x, y=groundY-20*PX+i.y; let map=IWAO[i.frame]; if(i.jump) map=IWAO[2]; else if(i.pick) map=IWAO[3];
-      if(i.hurt>0 && (frame>>2)%2===0) return; // 点滅
-      sprite(map,x,y,PAL);
-    }
-    function drawMush(){
-      const m=G.mush; if(!m) return; const pal={...PAL, c:m.cap, w:"#fff"}; sprite(MUSH,m.x,groundY-11*PX+2,pal);
-      if(!m.judged && m.x<W-40){ const t=(frame>>3)%2; if(t){ text("？",m.x+6,groundY-11*PX-22,JP,"#f8f878"); } }
-      if(m.judged && m.result){ /* 判定後：足元にマーク */ const r=m.result; text(r.kind==="ok"?"○":r.kind==="bad"?"×":"△", m.x+6, groundY-11*PX-24, JP, r.kind==="ok"?"#58f858":r.kind==="bad"?"#f83800":"#f8d878"); }
-    }
-    function drawPhotoPanel(){
-      const m=G.mush; const s=stage();
-      const pw=s.fog?144:192, ph=s.fog?108:144, px=W-pw-14, py=54;
-      ctx.fillStyle="#000"; ctx.fillRect(px-8,py-8,pw+16,ph+16); ctx.fillStyle="#f8f8f8"; ctx.fillRect(px-4,py-4,pw+8,ph+8); ctx.fillStyle="#000"; ctx.fillRect(px,py,pw,ph);
-      if(m && m.ready && !m.judged && m.x<W-40){ drawCrop(m,px,py,pw,ph); if(s.night){ ctx.fillStyle="rgba(0,0,40,.25)"; ctx.fillRect(px,py,pw,ph); } text("A=とる B=とばす",W-10,py+ph+8,JP,"#f8f878","right"); }
-      else if(m && m.judged && m.result){ drawCrop(m,px,py,pw,ph); }
-      else { text("？",px+pw/2,py+ph/2-12,JP,"#666","center"); }
+      const i=G.iwao, k=pz(0), s=pS(0);
+      const x=pX(i.lane,0)-7*s, y=GY-20*s+i.y;
+      drawShadow(pX(i.lane,0), GY+3, i.jump?5.2*s:7.2*s);
+      if(i.hurt>0 && (frame>>2)%2===0) return;
+      let map=BACK[i.frame];
+      if(i.jump) map=BACK[2]; else if(i.pick>0) map=BACK[3];
+      sprite(map,x,y,PAL,s);
     }
     function drawHUD(){
       ctx.fillStyle="#000"; ctx.fillRect(0,0,W,46);
@@ -338,31 +521,65 @@
       for(let k=0;k<LIVES;k++){ sprite(HEART,300+k*24,14,{...PAL,r:k<G.lives?"#f83800":"#404040"}); }
       sprite(BASKET,392,14,PAL); text("x"+G.basket,418,16,EN8,"#f8f878");
       text(stage().no,462,10,EN,"#f8f8f8");
-      if(G.streak>=2) text(`x${1+Math.min(G.streak-1,4)*.5} れんぞく!`,12,52,JP,"#58f858");
+      text(`${G.handled}/${PER_STAGE}`,462,30,EN8,"#a8e4b8");
+      if(G.streak>=2) text(`x${1+Math.min(G.streak-1,4)*.5} れんぞく!`,12,50,JP,"#58f858");
     }
-    function drawMsg(){ const m=G.msg; if(!m) return; const col=m.kind==="ok"?"#58f858":m.kind==="bad"?"#f83800":m.kind==="info"?"#f8f8f8":"#f8d878";
-      ctx.fillStyle="rgba(0,0,0,.72)"; ctx.fillRect(40,238,W-80,68); text(m.txt,W/2,246,JP,"#fff","center"); text(m.sub,W/2,274,JP,col,"center"); }
-    function drawFly(){ G.fly.forEach(f=>{ const p=f.t/24; const x=f.x+(400-f.x)*p, y=f.y+(18-f.y)*p - Math.sin(p*Math.PI)*60; sprite(MUSH,x,y,{...PAL,c:"#f8d878"},1); }); }
+    function nextMush(){ let best=null; for(const m of G.objs){ if(m.kind==="mush"&&!m.judged&&(!best||m.z<best.z)) best=m; } return best; }
+    function drawPhotoPanel(){
+      const s=stage(), m=nextMush();
+      const pw=s.fog?116:150, ph=s.fog?87:112, px=W-pw-12, py=54;
+      ctx.fillStyle="#000"; ctx.fillRect(px-8,py-8,pw+16,ph+16); ctx.fillStyle="#f8f8f8"; ctx.fillRect(px-4,py-4,pw+8,ph+8); ctx.fillStyle="#000"; ctx.fillRect(px,py,pw,ph);
+      if(m && m.ready){ drawCrop(m,px,py,pw,ph);
+        if(s.night){ ctx.fillStyle="rgba(0,0,40,.25)"; ctx.fillRect(px,py,pw,ph); }
+        // 近づくほどバーがのびる
+        const t=Math.max(0,Math.min(1,1-m.z/FAR));
+        ctx.fillStyle="#000"; ctx.fillRect(px-2,py+ph+12,pw+4,10);
+        ctx.fillStyle="#303030"; ctx.fillRect(px,py+ph+14,pw,6);
+        ctx.fillStyle=t>.72?"#f8d878":"#58a8f8"; ctx.fillRect(px,py+ph+14,pw*t,6);
+        text("A=とる",W-12,py+ph+24,JP,"#f8f878","right");
+      } else { text("？",px+pw/2,py+ph/2-12,JP,"#666","center"); }
+    }
+    function drawMsg(){ const m=G.msg; if(!m) return;
+      const col=m.kind==="ok"?"#58f858":m.kind==="bad"?"#f83800":m.kind==="info"?"#f8f8f8":"#f8d878";
+      const bw=322, bx=10, by=76;
+      ctx.fillStyle="rgba(0,0,0,.78)"; ctx.fillRect(bx,by,bw,62);
+      ctx.fillStyle="#f8f8f8"; ctx.fillRect(bx,by,bw,2); ctx.fillRect(bx,by+60,bw,2);
+      text(m.txt,bx+bw/2,by+8,JP,"#fff","center"); text(m.sub,bx+bw/2,by+34,JP,col,"center"); }
+    function drawFly(){ G.fly.forEach(f=>{ const p=f.t/24; const x=f.x+(400-f.x)*p, y=f.y+(18-f.y)*p - Math.sin(p*Math.PI)*70; sprite(MUSH,x,y,{...PAL,c:"#f8d878"},1); }); }
     function drawTitle(){
-      ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
-      ctx.fillStyle="#5c94fc"; ctx.fillRect(0,0,W,300); ctx.fillStyle="#38b040"; ctx.fillRect(0,300,W,180);
-      for(let k=0;k<6;k++){ const tx=k*90+10; ctx.fillStyle="#007800"; ctx.fillRect(tx,240,48,26); ctx.fillRect(tx+6,220,36,24); ctx.fillRect(tx+12,202,24,22); ctx.fillStyle="#6c3c14"; ctx.fillRect(tx+18,262,12,42); }
-      ctx.fillStyle="#000"; ctx.fillRect(40,60,W-80,120);
-      ctx.fillStyle="#f8f878"; ctx.fillRect(48,68,W-96,104);
-      text("KINOKO",W/2,78,EN,"#d02020","center"); text("HUNTER",W/2,100,EN,"#d02020","center"); text("IWAO",W/2,124,EN,"#3050a8","center"); text("ファミコンふう キノコさいしゅう アクション",W/2,150,JP,"#000","center");
-      sprite(IWAO[(frame>>4)%2],228,330,PAL,3);
-      const mx=340; sprite(MUSH,mx,364,{...PAL,c:"#d82800"},3);
-      if((frame>>5)%2===0) text("PUSH START",W/2,400,EN,"#f8f8f8","center");
-      ctx.fillStyle="#000"; ctx.fillRect(W/2-150,424,300,26);
-      text(`HI-SCORE ${String(hi).padStart(7,"0")}`,W/2,430,EN,"#f8f878","center");
-      text("© 2026 IWAOTOKINOKO",W/2,458,EN8,"#e0e0e0","center");
+      const s=STAGES[0];
+      drawSky(s); drawGround(s);
+      G.trees.forEach(t=>drawTree(t,s));
+      ctx.fillStyle="#000"; ctx.fillRect(40,52,W-80,120);
+      ctx.fillStyle="#f8f878"; ctx.fillRect(48,60,W-96,104);
+      text("KINOKO",W/2,70,EN,"#d02020","center"); text("HUNTER",W/2,92,EN,"#d02020","center"); text("IWAO",W/2,116,EN,"#3050a8","center");
+      text("ファミコンふう キノコさいしゅう アクション",W/2,142,JP,"#000","center");
+      sprite(BACK[(frame>>4)%2],244,330,PAL,3);
+      sprite(MUSH,150,352,{...PAL,c:"#d82800"},3);
+      ctx.fillStyle="rgba(0,0,0,.72)"; ctx.fillRect(56,196,W-112,74);
+      text("十字キー ← → ： よける",W/2,202,JP,"#fff","center");
+      text("A ： とる　　B ： ジャンプ",W/2,224,JP,"#f8d878","center");
+      text("どくキノコは よけるか とばす！",W/2,246,JP,"#f89898","center");
+      if((frame>>5)%2===0) text("PUSH START",W/2,404,EN,"#f8f8f8","center");
+      ctx.fillStyle="#000"; ctx.fillRect(W/2-150,430,300,24);
+      text(`HI-SCORE ${String(hi).padStart(7,"0")}`,W/2,434,EN,"#f8f878","center");
+      text("© 2026 IWAOTOKINOKO",W/2,460,EN8,"#e0e0e0","center");
     }
     function drawOverlayScreen(title,sub,col){ ctx.fillStyle="rgba(0,0,0,.75)"; ctx.fillRect(0,0,W,H); text(title,W/2,180,EN,col,"center"); if(sub) text(sub,W/2,220,JP,"#fff","center"); text(`SCORE ${String(G.score).padStart(7,"0")}`,W/2,262,EN8,"#f8f878","center"); text(`HI ${String(hi).padStart(7,"0")}`,W/2,282,EN8,"#c8c8c8","center"); if((frame>>5)%2===0) text("PUSH START",W/2,330,EN,"#f8f8f8","center"); }
     function draw(){
       ctx.setTransform(1,0,0,1,0,0);
       if(mode==="title"){ drawTitle(); return; }
       if(G.shake>0){ ctx.setTransform(1,0,0,1,(Math.random()-.5)*8,(Math.random()-.5)*8); }
-      const s=stage(); drawBG(s); drawMush(); drawIwao(); drawFly(); drawHUD(); drawPhotoPanel(); drawMsg();
+      const s=stage();
+      drawSky(s); drawGround(s);
+      // 奥のものから順に
+      drawAim(G.iwao.lane);
+      const far=[...G.trees.map(t=>({z:t.z,t})), ...G.objs.map(o=>({z:o.z,o}))].sort((a,b)=>b.z-a.z);
+      far.forEach(e=>{ if(e.t) drawTree(e.t,s); else drawObj(e.o); });
+      drawIwao();
+      if(s.fog){ ctx.fillStyle="rgba(220,220,220,.30)"; ctx.fillRect(0,HZ-40,W,H-HZ+40); }
+      if(s.night){ ctx.fillStyle="rgba(0,0,40,.32)"; ctx.fillRect(0,0,W,H); }
+      drawFly(); drawHUD(); drawPhotoPanel(); drawMsg();
       if(G.flash>0){ ctx.fillStyle="rgba(248,56,0,.35)"; ctx.fillRect(0,0,W,H); }
       ctx.setTransform(1,0,0,1,0,0);
       if(mode==="clear"){ ctx.fillStyle="rgba(0,0,0,.5)"; ctx.fillRect(0,0,W,H); text("STAGE CLEAR!",W/2,200,EN,"#f8f878","center"); text(`つぎは ${STAGES[Math.min(G.stage+1,STAGES.length-1)].name}`,W/2,236,JP,"#fff","center"); }
@@ -373,7 +590,7 @@
     loop();
   })();
   </script>
-  <script src="i18n.js?v=20260920-0246"></script>
+  <script src="i18n.js?v=20260920-1400"></script>
   <script>if(window.BGM) BGM.attach("hunter", "#bgmBtn");</script>
 </body>
 </html>
