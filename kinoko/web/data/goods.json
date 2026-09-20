@@ -50,6 +50,14 @@
       "url": "https://suzuri.jp/iwaotokinoko/20989238/can-badge/75mm/white",
       "desc": "イワオトキノコ（缶バッジ）の購入ページです。イワオトキノコ ( iwaotokinoko )がつくった缶バッジ。色やサイズも選択可能です。お得なクーポンも配布中！",
       "design": "data/goods/item-g006-1789901905715.jpg"
+    },
+    {
+      "id": "g007",
+      "name": "Tシャツ",
+      "price": "¥5,155",
+      "url": "https://suzuri.jp/iwaotokinoko/20991089/organic-cotton-t-shirt/l/sumikuro",
+      "desc": "イワオトキノコのしるしが入ったTシャツです。色やサイズが選べます。",
+      "design": "data/goods/item-g007-1789905303453.jpg"
     }
   ]
 }
