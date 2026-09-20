@@ -38,7 +38,7 @@
     @media (max-width:380px){ .ab button{ width:58px; height:58px; } .dpad{ width:76px; height:76px; } .dpad i.h{ top:24px; width:76px; height:28px; } .dpad i.v{ left:24px; width:28px; height:76px; } .dpad b{ left:30px; top:30px; } }
   </style>
   <script src="kinoko-api.js?v=20260920-0201"></script>
-  <script src="kinoko-bgm.js?v=20260920-0201"></script>
+  <script src="kinoko-bgm.js?v=20260920-0213"></script>
 </head>
 <body>
   <header class="topbar"><a href="index.html">◀ イワオトキノコ</a><a href="walk.html">山歩きへ ▶</a></header>
@@ -82,6 +82,8 @@
       {no:"1-4", name:"さんちょう", sky:"#000058", hill:"#003820", hill2:"#005830", ground:"#3c2c1c", grass:"#1c6c2c", tree:"#003820", tree2:"#005830", speed:2.15, pois:.48, fog:0, night:1},
     ];
     const PER_STAGE=8, LIVES=3;
+    const STAGE_BGM=["hunter","buna","kiri","yoru"];
+    function stageBGM(){ if(window.BGM) BGM.switchTo(STAGE_BGM[Math.min(G.stage,STAGE_BGM.length-1)]); }
     const NESCAP=["#d82800","#f83800","#f8b800","#e45c10","#b8b8b8","#f8f8f8","#a8e4b8","#8c5c1c","#fc9838","#f8d878","#7c2c00","#c86c4c","#503000","#e0e0a0","#6c3c9c"];
 
     /* ---------- ドット絵 ---------- */
@@ -258,7 +260,7 @@
     function pressA(){ if(mode==="title"){ start(); return; } if(mode!=="play") return; const i=G.iwao; if(i.jump||i.pick) return; i.pick=18; const m=G.mush; if(m&&!m.judged&&m.x<W-40) judge("pick"); }
     function pressB(){ if(mode==="title"){ start(); return; } if(mode!=="play") return; const i=G.iwao; if(i.jump) return; i.jump=true; i.vy=-7.2; SFX.jump(); const m=G.mush; if(m&&!m.judged&&m.x<W-40) judge("jump"); }
     function pressStart(){ ac(); if(mode==="title"||mode==="gameover"||mode==="ending") start(); }
-    function start(){ reset(); mode="play"; SFX.start(); G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; }
+    function start(){ reset(); mode="play"; SFX.start(); stageBGM(); G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; }
     document.getElementById("btnA").addEventListener("pointerdown",e=>{e.preventDefault(); ac(); pressA();});
     document.getElementById("btnB").addEventListener("pointerdown",e=>{e.preventDefault(); ac(); pressB();});
     document.getElementById("btnStart").addEventListener("pointerdown",e=>{e.preventDefault(); pressStart();});
@@ -284,7 +286,7 @@
         if(m.x<-40){ G.mush=null; G.gapTimer=Math.floor(45+Math.random()*50);
           if(G.handled>=PER_STAGE){ // ステージクリア
             if(G.stage>=STAGES.length-1){ mode="ending"; SFX.ending(); saveHi(); }
-            else { mode="clear"; SFX.clear(); setTimeout(()=>{ G.stage++; G.handled=0; mode="play"; G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; },2200); }
+            else { mode="clear"; SFX.clear(); setTimeout(()=>{ G.stage++; G.handled=0; mode="play"; stageBGM(); G.msg={txt:`STAGE ${stage().no}`,sub:stage().name,kind:"info",t:110}; },2200); }
           } }
       }else{ if(G.gapTimer-- <= 0) spawn(); }
     }
