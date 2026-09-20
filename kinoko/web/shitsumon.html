@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>このキノコ なに？ ｜ イワオトキノコ</title>
+  <meta name="description" content="見つけたキノコの写真を送ると、長岡で十年以上キノコを採ってきた石原巖がコメントで答えます。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20260920-0246" />
+  <script src="kinoko-api.js?v=20260920-0246"></script>
+</head>
+<body class="zukan-page">
+
+  <header class="topbar topbar--solid">
+    <a class="topbar__brand" href="index.html">
+      <span class="topbar__brand-main">イワオトキノコ</span>
+    </a>
+    <a class="topbar__back" href="index.html">← ホームへ</a>
+    <a class="topbar__back" href="zukan.html">📖 図鑑</a>
+  </header>
+
+  <main class="zukan">
+    <div class="section-head section-head--center">
+      <span class="section-head__en">ASK</span>
+      <h1 class="section-head__ja">このキノコ なに？</h1>
+      <p class="section-head__desc">
+        山で見つけたキノコの写真を送ってください。<br />
+        長岡の山を十年以上歩いてきた石原巖が、分かる範囲でコメントでお答えします。
+      </p>
+    </div>
+
+    <p class="ask-warn">
+      ⚠ ここでの回答は <b>食べてよいという保証ではありません</b>。
+      写真だけで種類を確実に見分けることはできません。<br />
+      食べるかどうかは、必ず図鑑や地元の専門家に直接見てもらったうえで、ご自身で判断してください。
+    </p>
+
+    <section class="ask-off" id="askOff" hidden>
+      <p>投稿の受け付けはまだ準備中です。しばらくお待ちください。</p>
+    </section>
+
+    <section class="ask-box" id="askBox" hidden>
+      <h2 class="ask-h2">写真を送る</h2>
+      <form id="askForm">
+        <label class="ask-drop" for="askPhoto" id="askDrop">
+          <span id="askDropTxt">📷 写真をえらぶ</span>
+          <img id="askPrev" alt="" hidden />
+        </label>
+        <input type="file" id="askPhoto" accept="image/*" hidden />
+
+        <div class="ask-row">
+          <label>なまえ（12文字まで・ニックネームで構いません）
+            <input id="askName" maxlength="12" placeholder="なまえ" autocomplete="off" />
+          </label>
+          <label>見つけた場所（だいたいで結構です）
+            <input id="askPlace" maxlength="30" placeholder="例：長岡市の雑木林" autocomplete="off" />
+          </label>
+        </div>
+
+        <label>気づいたこと・聞きたいこと
+          <textarea id="askText" rows="4" maxlength="400"
+            placeholder="例：倒れたブナに10本くらい重なって生えていました。傘は10cmほどです。"></textarea>
+        </label>
+
+        <div class="ask-send">
+          <button type="submit" id="askBtn">送る</button>
+          <span class="ask-msg" id="askMsg"></span>
+        </div>
+        <p class="ask-note">
+          送った写真は、石原巖が目を通してから公開されます（すぐには表示されません）。<br />
+          撮った場所が分かると困る場合は、場所は空欄のままで大丈夫です。
+        </p>
+      </form>
+    </section>
+
+    <section class="ask-list-sec" id="askListSec" hidden>
+      <h2 class="ask-h2">みんなの質問</h2>
+      <p class="ask-empty" id="askEmpty" hidden>まだ投稿がありません。いちばんのりになりませんか。</p>
+      <div class="ask-list" id="askList"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__mark">
+      <span class="footer__mark-glyph">𓂃 🍄 𓂃</span>
+      <p class="footer__brand">イワオトキノコ</p>
+      <p class="footer__tagline">長岡の森が育む、小さな命の記録。</p>
+    </div>
+    <nav class="footer__nav" aria-label="フッターナビ">
+      <a href="index.html">HOME</a>
+      <a href="zukan.html">ZUKAN</a>
+      <a href="nikki.html">DIARY</a>
+      <a href="game.html">GAME</a>
+      <a href="goods.html">GOODS</a>
+    </nav>
+    <p class="footer__note">
+      食毒の最終判断はご自身の責任で。少しでも不安なキノコは食べないでください。
+    </p>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+    var $ = function (s) { return document.querySelector(s); };
+    var photo = null;
+
+    if (!window.Kinoko) { $("#askOff").hidden = false; return; }
+
+    Kinoko.enabled().then(function (on) {
+      if (!on) { $("#askOff").hidden = false; return; }
+      $("#askBox").hidden = false;
+      $("#askListSec").hidden = false;
+      load();
+    });
+
+    /* ---- 写真をえらぶ ---- */
+    $("#askPhoto").addEventListener("change", function (e) {
+      var f = e.target.files && e.target.files[0];
+      if (!f) return;
+      msg("写真を読み込んでいます…");
+      Kinoko.shrink(f, 1000, 0.72).then(function (b64) {
+        photo = b64;
+        var im = $("#askPrev");
+        im.src = "data:image/jpeg;base64," + b64;
+        im.hidden = false;
+        $("#askDropTxt").textContent = "📷 写真をえらび直す";
+        msg("");
+      }).catch(function () { msg("写真を読み込めませんでした", true); });
+    });
+
+    /* ---- 送る ---- */
+    $("#askForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!photo) { msg("写真をえらんでください", true); return; }
+      var btn = $("#askBtn");
+      btn.disabled = true; msg("送っています…");
+      Kinoko.addPost({
+        name: $("#askName").value, place: $("#askPlace").value,
+        text: $("#askText").value, photo: photo
+      }).then(function (d) {
+        btn.disabled = false;
+        if (!d || !d.ok) {
+          msg(d && d.error === "toobig" ? "写真が大きすぎます" :
+              d && d.error === "limit" ? "今日はこれ以上受け付けられません。明日またどうぞ" :
+              "送れませんでした。もう一度お試しください", true);
+          return;
+        }
+        $("#askForm").reset();
+        photo = null; $("#askPrev").hidden = true; $("#askDropTxt").textContent = "📷 写真をえらぶ";
+        msg("送りました。石原巖が目を通してから載ります。ありがとうございます。");
+      });
+    });
+
+    function msg(t, err) {
+      var m = $("#askMsg");
+      m.textContent = t;
+      m.className = "ask-msg" + (err ? " is-err" : "");
+    }
+
+    /* ---- 一覧 ---- */
+    function load() {
+      Kinoko.posts().then(function (list) {
+        var box = $("#askList");
+        box.innerHTML = "";
+        if (!list || !list.length) { $("#askEmpty").hidden = false; return; }
+        $("#askEmpty").hidden = true;
+        list.forEach(function (p) { box.appendChild(card(p)); });
+      });
+    }
+
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+
+    function card(p) {
+      var c = el("article", "ask-card");
+      var im = el("img", "ask-card__img");
+      im.src = p.photo; im.loading = "lazy"; im.alt = "投稿されたキノコの写真";
+      c.appendChild(im);
+
+      var body = el("div", "ask-card__body");
+      var head = el("p", "ask-card__head");
+      head.appendChild(el("b", null, p.name || "ななし"));
+      if (p.place) head.appendChild(el("span", "ask-card__place", "📍 " + p.place));
+      head.appendChild(el("span", "ask-card__date", p.date));
+      body.appendChild(head);
+      if (p.text) body.appendChild(el("p", "ask-card__text", p.text));
+
+      var cl = el("div", "ask-cmts");
+      (p.comments || []).forEach(function (m) { cl.appendChild(cmt(m)); });
+      body.appendChild(cl);
+
+      /* 返事を書く */
+      var f = el("form", "ask-reply");
+      var n = el("input"); n.maxLength = 12; n.placeholder = "なまえ"; n.className = "ask-reply__n";
+      var t = el("input"); t.maxLength = 400; t.placeholder = "コメントを書く"; t.className = "ask-reply__t";
+      var b = el("button", null, "送る"); b.type = "submit";
+      f.appendChild(n); f.appendChild(t); f.appendChild(b);
+      f.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        if (!t.value.trim()) return;
+        b.disabled = true;
+        Kinoko.addComment({ id: p.id, name: n.value, text: t.value }).then(function (d) {
+          b.disabled = false;
+          if (!d || !d.ok) return;
+          cl.innerHTML = "";
+          (d.comments || []).forEach(function (m) { cl.appendChild(cmt(m)); });
+          t.value = "";
+        });
+      });
+      body.appendChild(f);
+
+      c.appendChild(body);
+      return c;
+    }
+
+    function cmt(m) {
+      var d = el("div", "ask-cmt" + (m.admin ? " is-admin" : ""));
+      var h = el("p", "ask-cmt__head");
+      h.appendChild(el("b", null, m.name || "ななし"));
+      if (m.admin) h.appendChild(el("span", "ask-badge", "採集者"));
+      h.appendChild(el("span", "ask-card__date", m.date));
+      d.appendChild(h);
+      d.appendChild(el("p", "ask-cmt__text", m.text));
+      return d;
+    }
+  })();
+  </script>
+
+  <script src="i18n.js?v=20260920-0246"></script>
+</body>
+</html>

@@ -29,6 +29,10 @@
     .start__en{ font-family:var(--latin); letter-spacing:.4em; color:var(--gold); font-size:1rem; }
     .start__ja{ font-size:2.1rem; margin:6px 0 4px; font-weight:800; letter-spacing:.05em; }
     .start__desc{ color:var(--sub); font-size:.92rem; margin:10px 0 20px; }
+    .grp{ display:flex; align-items:center; gap:10px; margin:26px 0 12px; }
+    .grp::after{ content:""; flex:1; height:1px; background:var(--line); }
+    .grp span{ font-family:var(--serif); font-weight:700; font-size:1.02rem; letter-spacing:.08em; white-space:nowrap; }
+    .grp small{ font-size:.74rem; color:var(--sub); letter-spacing:.04em; white-space:nowrap; }
     .diff{ display:inline-flex; gap:0; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-bottom:22px; font-family:var(--sans); }
     .diff button{ border:none; background:var(--paper); color:var(--sub); font-size:.85rem; font-weight:600; padding:8px 18px; cursor:pointer; }
     .diff button[aria-pressed="true"]{ background:var(--forest); color:#fff; }
@@ -87,8 +91,8 @@
     .loading{ text-align:center; color:var(--sub); padding:60px; font-family:var(--sans); }
     [hidden]{ display:none !important; }
   </style>
-  <script src="kinoko-api.js?v=20260920-0201"></script>
-  <script src="kinoko-bgm.js?v=20260920-0236"></script>
+  <script src="kinoko-api.js?v=20260920-0246"></script>
+  <script src="kinoko-bgm.js?v=20260920-0246"></script>
 </head>
 <body>
   <header class="topbar">
@@ -108,6 +112,7 @@
         <button data-d="hard" aria-pressed="false">むずかしい</button>
       </div>
       <p style="text-align:center;margin:0 0 10px"><button class="topbar__back" style="color:var(--forest);border:1px solid currentColor;border-radius:999px;padding:4px 12px;font-size:.74rem;background:none;cursor:pointer" id="bgmBtn">🎵 音楽 OFF</button></p>
+      <p class="grp"><span>クイズであそぶ</span><small>4つ</small></p>
       <div class="modes">
         <button class="mode" data-mode="name">
           <div class="mode__t"><span class="emoji">🍄</span>名前あて</div>
@@ -130,6 +135,7 @@
           <div class="mode__best" id="bestMemory"></div>
         </button>
       </div>
+      <p class="grp"><span>ゲームであそぶ</span><small>4つ</small></p>
       <a class="mode" href="walk.html" style="grid-column:1 / -1;text-decoration:none;margin-top:4px;background:linear-gradient(135deg,#eef5ec,#fbf8f1);border-color:#7a9560">
         <div class="mode__t"><span class="emoji">🥾</span>きのこ山歩き <span style="font-size:.7rem;background:#2f6b3a;color:#fff;padding:1px 8px;border-radius:999px;vertical-align:middle">NEW</span></div>
         <div class="mode__d">巖さんと山を歩く採集アドベンチャー。写真だけで「採る／採らない」を判断、毒を採ると体力が減る。上級者向け。</div>
@@ -362,7 +368,7 @@
     function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
     function fmtDate(iso){ const d=new Date(iso); return isNaN(d)?iso:`${d.getFullYear()}年${d.getMonth()+1}月`; }
   </script>
-  <script src="i18n.js?v=20260920-0201"></script>
+  <script src="i18n.js?v=20260920-0246"></script>
   <script>if(window.BGM) BGM.attach("tsukue", "#bgmBtn");</script>
 </body>
 </html>

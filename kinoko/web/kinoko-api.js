@@ -169,11 +169,60 @@
     return { show: show, offer: offer, reset: reset };
   }
 
+
+  /* ---------------- 写真の投稿とコメント ---------------- */
+
+  function jpost(body) {
+    return ready.then(function () {
+      if (!url()) return null;
+      return fetch(url(), {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(body)
+      }).then(function (r) { return r.json(); }).catch(function () { return null; });
+    });
+  }
+
+  function posts(key) {
+    return ready.then(function () {
+      if (!url()) return null;
+      return fetch(url() + "?action=posts&t=" + Date.now() + (key ? "&key=" + encodeURIComponent(key) : ""))
+        .then(function (r) { return r.json(); })
+        .then(function (d) { return (d && d.ok) ? d.posts : null; })
+        .catch(function () { return null; });
+    });
+  }
+  function addPost(p)    { return jpost({ action: "post", name: p.name, text: p.text, place: p.place, photo: p.photo }); }
+  function addComment(c) { return jpost({ action: "comment", id: c.id, name: c.name, text: c.text, key: c.key }); }
+  function moderate(m)   { return jpost({ action: "moderate", key: m.key, id: m.id, act: m.act, text: m.text }); }
+
+  /* 写真を小さくして base64 に（そのまま送ると大きすぎるため） */
+  function shrink(file, maxSide, quality) {
+    maxSide = maxSide || 1000; quality = quality || 0.72;
+    return new Promise(function (res, rej) {
+      var img = new Image(), fr = new FileReader();
+      fr.onload = function () { img.src = fr.result; };
+      fr.onerror = function () { rej(new Error("read")); };
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var k = Math.min(1, maxSide / Math.max(w, h));
+        var c = document.createElement("canvas");
+        c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL("image/jpeg", quality).split(",")[1]);
+      };
+      img.onerror = function () { rej(new Error("image")); };
+      fr.readAsDataURL(file);
+    });
+  }
+
   window.Kinoko = {
     ready: ready,
     enabled: enabled,
     hit: hit, top: top, submit: submit, stats: stats, remove: remove,
-    board: board, renderTop: renderTop
+    board: board, renderTop: renderTop,
+    posts: posts, addPost: addPost, addComment: addComment,
+    moderate: moderate, shrink: shrink
   };
 
   /* 自動で1回数える（ページ名はファイル名から） */

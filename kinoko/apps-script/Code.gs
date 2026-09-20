@@ -9,6 +9,11 @@
 
 var SHEET_VISIT = '訪問';
 var SHEET_RANK  = 'ランキング';
+var SHEET_POST  = '投稿';
+var SHEET_CMT   = 'コメント';
+var DRIVE_FOLDER = 'イワオトキノコ 投稿写真';   // 写真の保存先（自動で作られます）
+var POST_MAX = 400;      // 本文の字数
+var CMT_MAX  = 400;
 var TOP_N = 5;     // 表示する順位の数
 var KEEP  = 30;    // 1ゲームあたり保存しておく件数
 var NAME_MAX = 12;
@@ -30,6 +35,7 @@ function doGet(e) {
       case 'hit':     return json_(hit_(p.p, p.n === '1'));
       case 'ranking': return json_({ ok: true, top: ranking_(p.g) });
       case 'stats':   return json_(stats_(p.key));
+      case 'posts':   return json_({ ok: true, posts: posts_(p.key) });
       case 'ping':    return json_({ ok: true, version: 1 });
       default:        return json_({ ok: false, error: 'unknown action' });
     }
@@ -45,6 +51,9 @@ function doPost(e) {
     switch (body.action) {
       case 'score':  return json_(submit_(body.game, body.name, body.score));
       case 'delete': return json_(remove_(body.key, body.game, body.name, body.score));
+      case 'post':    return json_(addPost_(body));
+      case 'comment': return json_(addComment_(body));
+      case 'moderate':return json_(moderate_(body));
       default:       return json_({ ok: false, error: 'unknown action' });
     }
   } catch (err) {
@@ -198,6 +207,147 @@ function remove_(key, game, name, score) {
     }
   }
   return { ok: true, top: ranking_(game) };
+}
+
+
+/* ============================ 写真の投稿 ============================
+ *  だれでも送れますが、載るのは管理画面で「公開」を押したものだけです。
+ *  写真は、あなたの Google ドライブのフォルダに入ります。
+ */
+
+function postSheet_() {
+  return sheet_(SHEET_POST, ['ID', '状態', '日時', 'なまえ', '本文', '場所', '写真URL', 'ファイルID']);
+}
+function cmtSheet_() {
+  return sheet_(SHEET_CMT, ['投稿ID', '日時', 'なまえ', '本文', '管理者']);
+}
+function folder_() {
+  var it = DriveApp.getFoldersByName(DRIVE_FOLDER);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(DRIVE_FOLDER);
+}
+
+function addPost_(b) {
+  var name = cleanName_(b.name);
+  var text = clean_(b.text, POST_MAX);
+  var place = clean_(b.place, 60);
+  if (!b.photo) return { ok: false, error: 'photo' };
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) { return { ok: false, error: 'busy' }; }
+  try {
+    var sh = postSheet_();
+    // 1日あたりの受け入れ上限（いたずら対策）
+    var today = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd');
+    var last = sh.getLastRow(), n = 0;
+    if (last > 1) {
+      var ds = sh.getRange(2, 3, last - 1, 1).getValues();
+      for (var i = 0; i < ds.length; i++) {
+        var d = ds[i][0];
+        if (d instanceof Date) d = Utilities.formatDate(d, 'Asia/Tokyo', 'yyyy-MM-dd');
+        if (String(d).slice(0, 10) === today) n++;
+      }
+    }
+    if (n >= 60) return { ok: false, error: 'limit' };
+
+    var raw = String(b.photo).replace(/^data:image\/\w+;base64,/, '');
+    var bytes = Utilities.base64Decode(raw);
+    if (bytes.length > 3 * 1024 * 1024) return { ok: false, error: 'toobig' };
+    var id = 'p' + Date.now() + Math.floor(Math.random() * 900 + 100);
+    var blob = Utilities.newBlob(bytes, 'image/jpeg', id + '.jpg');
+    var file = folder_().createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    var url = 'https://lh3.googleusercontent.com/d/' + file.getId();
+
+    sh.appendRow([id, '承認待ち', new Date(), name, text, place, url, file.getId()]);
+    return { ok: true, id: id };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+
+function posts_(key) {
+  var admin = String(key || '') === ADMIN_KEY;
+  var sh = postSheet_(), last = sh.getLastRow();
+  if (last < 2) return [];
+  var vals = sh.getRange(2, 1, last - 1, 7).getValues();
+  var cs = comments_();
+  var out = [];
+  for (var i = vals.length - 1; i >= 0; i--) {
+    var v = vals[i], st = String(v[1]);
+    if (!admin && st !== '公開') continue;
+    if (st === '削除') continue;
+    var t = v[2];
+    if (t instanceof Date) t = Utilities.formatDate(t, 'Asia/Tokyo', 'yyyy-MM-dd');
+    out.push({ id: String(v[0]), state: st, date: String(t), name: String(v[3]),
+               text: String(v[4]), place: String(v[5]), photo: String(v[6]),
+               comments: cs[String(v[0])] || [] });
+    if (out.length >= 60) break;
+  }
+  return out;
+}
+
+function comments_() {
+  var sh = cmtSheet_(), last = sh.getLastRow(), map = {};
+  if (last < 2) return map;
+  var vals = sh.getRange(2, 1, last - 1, 5).getValues();
+  vals.forEach(function (v) {
+    var t = v[1];
+    if (t instanceof Date) t = Utilities.formatDate(t, 'Asia/Tokyo', 'yyyy-MM-dd');
+    (map[String(v[0])] = map[String(v[0])] || []).push({
+      date: String(t), name: String(v[2]), text: String(v[3]), admin: !!v[4]
+    });
+  });
+  return map;
+}
+
+function addComment_(b) {
+  var pid = String(b.id || '');
+  if (!pid) return { ok: false, error: 'id' };
+  var isAdmin = String(b.key || '') === ADMIN_KEY;
+  var name = isAdmin ? '石原 巖' : cleanName_(b.name);
+  var text = clean_(b.text, CMT_MAX);
+  if (!text) return { ok: false, error: 'text' };
+  cmtSheet_().appendRow([pid, new Date(), name, text, isAdmin ? 1 : '']);
+  return { ok: true, comments: (comments_()[pid] || []) };
+}
+
+/* 管理画面から：公開する／下げる／消す、コメントを消す */
+function moderate_(b) {
+  if (String(b.key || '') !== ADMIN_KEY) return { ok: false, error: 'key' };
+  var sh = postSheet_(), last = sh.getLastRow();
+  if (last < 2) return { ok: true };
+  var vals = sh.getRange(2, 1, last - 1, 8).getValues();
+  for (var i = 0; i < vals.length; i++) {
+    if (String(vals[i][0]) !== String(b.id)) continue;
+    if (b.act === 'show')  sh.getRange(i + 2, 2).setValue('公開');
+    if (b.act === 'hide')  sh.getRange(i + 2, 2).setValue('承認待ち');
+    if (b.act === 'trash') {
+      sh.getRange(i + 2, 2).setValue('削除');
+      try { DriveApp.getFileById(String(vals[i][7])).setTrashed(true); } catch (e) {}
+    }
+    break;
+  }
+  if (b.act === 'delcmt') {
+    var cs = cmtSheet_(), cl = cs.getLastRow();
+    if (cl > 1) {
+      var cv = cs.getRange(2, 1, cl - 1, 4).getValues();
+      for (var j = cv.length - 1; j >= 0; j--) {
+        if (String(cv[j][0]) === String(b.id) && String(cv[j][3]) === String(b.text)) {
+          cs.deleteRow(j + 2); break;
+        }
+      }
+    }
+  }
+  return { ok: true, posts: posts_(b.key) };
+}
+
+function clean_(s, max) {
+  s = String(s == null ? '' : s)
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
+        .replace(/\r\n?/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+  return s.slice(0, max);
 }
 
 /* ============================ 共通 ============================ */

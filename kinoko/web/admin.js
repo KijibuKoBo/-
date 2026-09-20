@@ -430,6 +430,7 @@ function fmtDate(iso) {
 function bindExtras() {
   $$(".adm-tab").forEach((b) => b.addEventListener("click", () => switchTab(b.dataset.tab)));
   $("#visReload")?.addEventListener("click", () => loadVisits(true));
+  $("#pstReload")?.addEventListener("click", () => loadPosts(true));
 
   // コラム
   $("#colSelect").addEventListener("change", (e) => {
@@ -464,6 +465,7 @@ function switchTab(tab) {
   $$(".adm-tab").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tab === tab));
   $$("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== tab; });
   if (tab === "visits") loadVisits();
+  if (tab === "posts") loadPosts();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -727,3 +729,100 @@ async function deleteDiary(i) {
 
 function setBusy2(btn, prog, b) { $(btn).disabled = b; $(prog).hidden = !b; if (!b) $(prog).textContent = ""; }
 function progress2(prog, msg) { $(prog).hidden = false; $(prog).textContent = "⏳ " + msg; }
+
+/* ---------------- みんなからの写真投稿 ---------------- */
+let pstLoaded = false;
+
+async function loadPosts(force) {
+  if (!window.Kinoko) return;
+  const on = await window.Kinoko.enabled();
+  $("#pstOff").hidden = on;
+  $("#pstBox").hidden = !on;
+  if (!on) return;
+  if (pstLoaded && !force) return;
+  pstLoaded = true;
+  const list = await window.Kinoko.posts(ADMIN_PW);
+  drawPosts(list || []);
+}
+
+function drawPosts(list) {
+  const box = $("#pstList");
+  box.innerHTML = "";
+  if (!list.length) { box.textContent = "まだ投稿がありません。"; return; }
+  list.forEach((p) => box.appendChild(postCard(p)));
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function postCard(p) {
+  const c = el("div", "adm-post" + (p.state === "公開" ? " is-live" : ""));
+  const img = el("img", "adm-post__img");
+  img.src = p.photo; img.loading = "lazy"; img.alt = "";
+  c.appendChild(img);
+
+  const b = el("div", "adm-post__body");
+  const head = el("p", "adm-post__head");
+  head.appendChild(el("b", null, p.name || "ななし"));
+  head.appendChild(el("span", "adm-post__state", p.state));
+  if (p.place) head.appendChild(el("span", "adm-post__place", "📍 " + p.place));
+  head.appendChild(el("span", "adm-post__date", p.date));
+  b.appendChild(head);
+  if (p.text) b.appendChild(el("p", "adm-post__text", p.text));
+
+  const btns = el("div", "adm-post__btns");
+  const mk = (label, act, cls) => {
+    const bt = el("button", cls, label);
+    bt.type = "button";
+    bt.addEventListener("click", async () => {
+      if (act === "trash" && !confirm("この投稿を消しますか？（写真も消えます）")) return;
+      bt.disabled = true;
+      const d = await window.Kinoko.moderate({ key: ADMIN_PW, id: p.id, act });
+      if (d && d.ok) drawPosts(d.posts || []); else bt.disabled = false;
+    });
+    return bt;
+  };
+  btns.appendChild(p.state === "公開" ? mk("↩ 下げる", "hide") : mk("✓ 公開する", "show", "is-go"));
+  btns.appendChild(mk("🗑 消す", "trash", "is-bad"));
+  b.appendChild(btns);
+
+  const cl = el("div", "adm-post__cmts");
+  (p.comments || []).forEach((m) => {
+    const line = el("div", "adm-cmt" + (m.admin ? " is-admin" : ""));
+    line.appendChild(el("b", null, m.name || "ななし"));
+    line.appendChild(el("span", null, m.text));
+    const del = el("button", null, "消す");
+    del.type = "button";
+    del.addEventListener("click", async () => {
+      if (!confirm("このコメントを消しますか？")) return;
+      del.disabled = true;
+      const d = await window.Kinoko.moderate({ key: ADMIN_PW, id: p.id, act: "delcmt", text: m.text });
+      if (d && d.ok) drawPosts(d.posts || []); else del.disabled = false;
+    });
+    line.appendChild(del);
+    cl.appendChild(line);
+  });
+  b.appendChild(cl);
+
+  const f = el("form", "adm-post__reply");
+  const t = document.createElement("input");
+  t.maxLength = 400; t.placeholder = "答えを書く（採集者として載ります）";
+  const sb = el("button", null, "答える"); sb.type = "submit";
+  f.appendChild(t); f.appendChild(sb);
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!t.value.trim()) return;
+    sb.disabled = true;
+    const d = await window.Kinoko.addComment({ id: p.id, text: t.value, key: ADMIN_PW });
+    sb.disabled = false;
+    if (d && d.ok) { t.value = ""; loadPosts(true); }
+  });
+  b.appendChild(f);
+
+  c.appendChild(b);
+  return c;
+}

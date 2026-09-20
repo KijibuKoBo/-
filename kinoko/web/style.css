@@ -598,3 +598,110 @@ html[data-lang="en"] .footer__nav a { letter-spacing: .18em; }
 /* 音楽が出ないときの案内 */
 .bgm-tip { display: block; width: 100%; margin: 6px 0 0; font-size: .72rem;
   line-height: 1.5; color: var(--ink-soft, #6f6a5c); opacity: .9; }
+
+/* ====== このキノコなに？（投稿ページ） ====== */
+.ask-warn { max-width: 720px; margin: 22px auto 0; padding: 14px 18px; font-size: .84rem; line-height: 1.85;
+  background: #fdf3ef; border: 1px solid #e7c4b8; border-radius: 14px; color: #7d3a2b; }
+.ask-warn b { color: #b03a2e; }
+.ask-off { max-width: 720px; margin: 22px auto; padding: 18px; text-align: center;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 14px; color: var(--ink-soft); }
+.ask-h2 { font-family: var(--serif); font-size: 1.1rem; letter-spacing: .06em; margin: 0 0 14px; }
+.ask-box { max-width: 720px; margin: 26px auto 0; padding: 20px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+.ask-box label { display: block; font-size: .8rem; color: var(--ink-soft); margin: 12px 0 0; }
+.ask-box input, .ask-box textarea { width: 100%; font: inherit; font-size: 1rem; margin-top: 5px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: inherit; }
+.ask-box textarea { resize: vertical; }
+.ask-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .ask-row { grid-template-columns: 1fr; } }
+.ask-drop { display: flex; align-items: center; justify-content: center; min-height: 128px; cursor: pointer;
+  border: 2px dashed var(--line); border-radius: 14px; background: #fff; overflow: hidden; margin: 0 !important; }
+.ask-drop:hover { border-color: var(--gold); }
+.ask-drop img { max-height: 280px; width: auto; object-fit: contain; }
+.ask-send { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.ask-send button { font: inherit; font-weight: 700; padding: 11px 28px; border: 0; border-radius: 999px;
+  background: var(--forest, #1f3a2e); color: #f3efe3; cursor: pointer; }
+.ask-send button:disabled { opacity: .5; }
+.ask-msg { font-size: .82rem; color: var(--ink-soft); }
+.ask-msg.is-err { color: #b03a2e; }
+.ask-note { margin: 12px 0 0; font-size: .76rem; color: var(--ink-soft); line-height: 1.8; }
+
+.ask-list-sec { max-width: 720px; margin: 34px auto 0; }
+.ask-empty { color: var(--ink-soft); font-size: .86rem; }
+.ask-list { display: flex; flex-direction: column; gap: 18px; }
+.ask-card { background: var(--card, #faf7f0); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.ask-card__img { width: 100%; max-height: 420px; object-fit: cover; display: block; background: #eee7d6; }
+.ask-card__body { padding: 14px 16px 16px; }
+.ask-card__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 6px; font-size: .86rem; }
+.ask-card__place { color: var(--ink-soft); font-size: .8rem; }
+.ask-card__date { margin-left: auto; color: var(--ink-soft); font-size: .74rem; }
+.ask-card__text { margin: 0 0 12px; font-size: .9rem; line-height: 1.85; white-space: pre-wrap; }
+.ask-cmts { display: flex; flex-direction: column; gap: 8px; }
+.ask-cmt { padding: 9px 12px; border-radius: 10px; background: #f1ece0; }
+.ask-cmt.is-admin { background: #e8f0e4; border: 1px solid #b8cdb0; }
+.ask-cmt__head { display: flex; align-items: center; gap: 8px; margin: 0 0 3px; font-size: .8rem; }
+.ask-cmt__text { margin: 0; font-size: .86rem; line-height: 1.8; white-space: pre-wrap; }
+.ask-badge { font-size: .68rem; padding: 1px 8px; border-radius: 999px; background: #2f6b3a; color: #fff; }
+.ask-reply { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.ask-reply__n { flex: 0 0 8em; }
+.ask-reply__t { flex: 1; min-width: 10em; }
+.ask-reply input { font: inherit; font-size: .92rem; padding: 8px 11px; border: 1px solid var(--line);
+  border-radius: 9px; background: #fff; color: inherit; }
+.ask-reply button { font: inherit; font-size: .86rem; padding: 8px 16px; border: 0; border-radius: 9px;
+  background: var(--gold, #a8854a); color: #fff; cursor: pointer; }
+.ask-reply button:disabled { opacity: .5; }
+
+/* ====== グッズ ====== */
+.goods-soon { max-width: 720px; margin: 22px auto 0; padding: 16px 20px; text-align: center;
+  font-size: .88rem; line-height: 1.9; background: var(--paper); border: 1px solid var(--line);
+  border-radius: 14px; color: var(--ink-soft); }
+.goods-soon b { color: var(--ink); }
+.goods-grid { max-width: var(--maxw); margin: 28px auto 0; display: grid; gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.goods-card { background: var(--card, #faf7f0); border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 22px rgba(28,24,16,.07); }
+.goods-card__media { aspect-ratio: 4 / 3; background: #efe9d9; display: flex; align-items: center; justify-content: center; }
+.goods-card__media img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+.goods-card__body { padding: 14px 16px 16px; display: flex; flex-direction: column; flex: 1; }
+.goods-card__name { font-family: var(--serif); font-size: 1.02rem; margin: 0 0 4px; letter-spacing: .04em; }
+.goods-card__price { margin: 0 0 6px; font-family: var(--display), serif; font-size: 1.05rem; color: var(--gold); }
+.goods-card__desc { margin: 0 0 14px; font-size: .82rem; line-height: 1.8; color: var(--ink-soft); flex: 1; }
+.goods-card__buy { display: inline-block; text-align: center; font-size: .88rem; font-weight: 700;
+  padding: 10px 16px; border-radius: 999px; background: var(--forest, #1f3a2e); color: #f3efe3;
+  text-decoration: none; }
+.goods-card__buy.is-off { background: none; border: 1px dashed var(--line); color: var(--ink-soft); font-weight: 400; }
+.goods-note { max-width: 720px; margin: 24px auto 0; text-align: center; font-size: .8rem; color: var(--ink-soft); }
+.goods-about { max-width: 720px; margin: 36px auto 0; padding: 20px 22px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+.goods-about p { font-size: .88rem; line-height: 1.95; margin: 0 0 10px; }
+.goods-about p:last-child { margin-bottom: 0; }
+.goods-about a { color: var(--gold); text-decoration: underline; }
+
+/* ====== 管理画面：投稿 ====== */
+.adm-post { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.adm-post:first-of-type { border-top: 0; }
+.adm-post.is-live { background: rgba(122,149,96,.08); border-radius: 10px; padding: 12px; }
+.adm-post__img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; flex: none; background: #eee7d6; }
+.adm-post__body { flex: 1; min-width: 0; }
+.adm-post__head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; font-size: .84rem; }
+.adm-post__state { font-size: .68rem; padding: 1px 8px; border-radius: 999px; background: #e0d8c4; color: #5c5442; }
+.adm-post.is-live .adm-post__state { background: #2f6b3a; color: #fff; }
+.adm-post__place, .adm-post__date { font-size: .74rem; color: var(--ink-soft, #6f6a5c); }
+.adm-post__text { margin: 0 0 8px; font-size: .84rem; line-height: 1.8; white-space: pre-wrap; }
+.adm-post__btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.adm-post__btns button { font: inherit; font-size: .76rem; padding: 4px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: #fff; cursor: pointer; }
+.adm-post__btns .is-go { border-color: #2f6b3a; color: #2f6b3a; }
+.adm-post__btns .is-bad { border-color: #b03a2e; color: #b03a2e; }
+.adm-post__cmts { display: flex; flex-direction: column; gap: 5px; }
+.adm-cmt { display: flex; align-items: baseline; gap: 8px; font-size: .8rem; padding: 5px 9px;
+  background: #f1ece0; border-radius: 8px; }
+.adm-cmt.is-admin { background: #e8f0e4; }
+.adm-cmt span { flex: 1; min-width: 0; }
+.adm-cmt button { font: inherit; font-size: .7rem; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid #b03a2e; background: none; color: #b03a2e; cursor: pointer; }
+.adm-post__reply { display: flex; gap: 6px; margin-top: 8px; }
+.adm-post__reply input { flex: 1; min-width: 0; font: inherit; font-size: .86rem; padding: 7px 11px;
+  border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.adm-post__reply button { font: inherit; font-size: .8rem; padding: 7px 16px; border: 0; border-radius: 9px;
+  background: #1f3a2e; color: #f3efe3; cursor: pointer; }
