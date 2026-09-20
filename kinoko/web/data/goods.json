@@ -4,14 +4,6 @@
   "note": "売上の一部は、記録を続けるための道具代にあてさせていただきます。",
   "items": [
     {
-      "id": "tote",
-      "name": "トートバッグ",
-      "price": "",
-      "design": "data/goods/design-pattern.jpg",
-      "desc": "9種が散らばった模様。山にも買い物にも。",
-      "url": ""
-    },
-    {
       "id": "tenugui",
       "name": "手ぬぐい",
       "price": "",
