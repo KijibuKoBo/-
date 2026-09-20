@@ -54,6 +54,7 @@ function doPost(e) {
       case 'post':    return json_(addPost_(body));
       case 'comment': return json_(addComment_(body));
       case 'moderate':return json_(moderate_(body));
+      case 'fetchmeta':return json_(fetchMeta_(body));
       default:       return json_({ ok: false, error: 'unknown action' });
     }
   } catch (err) {
@@ -348,6 +349,91 @@ function clean_(s, max) {
         .replace(/\n{3,}/g, '\n\n')
         .trim();
   return s.slice(0, max);
+}
+
+
+/* ============================ 商品URLから中身を読む ============================
+ *  スズリ・BASE・BOOTH など、たいていの商品ページには
+ *  「OGP」という見出し・写真の情報が埋まっています。それを読みます。
+ *  ブラウザからは他所のページを直接読めないので、ここが代わりに読みに行きます。
+ */
+
+function fetchMeta_(b) {
+  if (String(b.key || '') !== ADMIN_KEY) return { ok: false, error: 'key' };
+  var url = String(b.url || '').trim();
+  if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'url' };
+
+  var html;
+  try {
+    var res = UrlFetchApp.fetch(url, {
+      muteHttpExceptions: true, followRedirects: true,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; IwaotoKinoko/1.0)' }
+    });
+    if (res.getResponseCode() >= 400) return { ok: false, error: 'http' + res.getResponseCode() };
+    html = res.getContentText();
+  } catch (e) {
+    return { ok: false, error: 'fetch' };
+  }
+
+  var out = {
+    ok: true,
+    title: meta_(html, 'og:title') || tag_(html, 'title') || '',
+    desc:  meta_(html, 'og:description') || meta_(html, 'description') || '',
+    image: meta_(html, 'og:image') || meta_(html, 'twitter:image') || '',
+    price: price_(html)
+  };
+  out.title = decode_(out.title).slice(0, 60);
+  out.desc  = decode_(out.desc).replace(/\s+/g, ' ').slice(0, 120);
+
+  // 写真も持ってくる（サイトに取り込むため）
+  if (out.image && b.withImage) {
+    try {
+      var im = UrlFetchApp.fetch(out.image, { muteHttpExceptions: true, followRedirects: true });
+      if (im.getResponseCode() < 400) {
+        var blob = im.getBlob();
+        if (blob.getBytes().length <= 4 * 1024 * 1024) {
+          out.imageB64 = Utilities.base64Encode(blob.getBytes());
+          out.imageType = blob.getContentType();
+        }
+      }
+    } catch (e) {}
+  }
+  return out;
+}
+
+function meta_(html, prop) {
+  var pats = [
+    new RegExp('<meta[^>]+(?:property|name)\\s*=\\s*["\']' + prop + '["\'][^>]*content\\s*=\\s*["\']([^"\']*)["\']', 'i'),
+    new RegExp('<meta[^>]+content\\s*=\\s*["\']([^"\']*)["\'][^>]*(?:property|name)\\s*=\\s*["\']' + prop + '["\']', 'i')
+  ];
+  for (var i = 0; i < pats.length; i++) {
+    var m = html.match(pats[i]);
+    if (m) return m[1];
+  }
+  return '';
+}
+
+function tag_(html, name) {
+  var m = html.match(new RegExp('<' + name + '[^>]*>([\\s\\S]*?)</' + name + '>', 'i'));
+  return m ? m[1].trim() : '';
+}
+
+function price_(html) {
+  var m = meta_(html, 'product:price:amount');
+  if (m) return '¥' + Number(m).toLocaleString();
+  m = html.match(/[¥￥]\s?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{3,6})/);
+  if (m) return '¥' + m[1];
+  m = html.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{3,6})\s?円/);
+  if (m) return '¥' + m[1];
+  return '';
+}
+
+function decode_(s) {
+  return String(s)
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, function (_, n) { return String.fromCharCode(Number(n)); })
+    .trim();
 }
 
 /* ============================ 共通 ============================ */

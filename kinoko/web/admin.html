@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260920-0428" />
-  <script src="kinoko-api.js?v=20260920-0246"></script>
+  <link rel="stylesheet" href="style.css?v=20260920-0650" />
+  <script src="kinoko-api.js?v=20260920-0650"></script>
 </head>
 <body class="admin-page">
 
@@ -149,6 +149,13 @@
           <input type="text" id="g_price" class="adm-input" maxlength="20" placeholder="¥3,200" /></label>
         <label class="adm-field adm-wide"><span>商品のURL（空のときはお店のURLへ飛びます）</span>
           <input type="url" id="g_url" class="adm-input" placeholder="https://suzuri.jp/…/12345678/t-shirt/s/white" /></label>
+        <div class="adm-field adm-wide">
+          <button class="btn-outline btn-sm" id="goodsFetch" type="button">🔎 このURLから名前・写真・値段を読み込む</button>
+          <p class="adm-note" id="goodsFetchMsg">
+            商品のURLを貼って押すと、その商品ページから自動で持ってきます。<br />
+            読み込んだあとに、名前や説明は自由に書き直せます。
+          </p>
+        </div>
         <label class="adm-field adm-wide"><span>説明</span>
           <textarea id="g_desc" class="adm-input" rows="2" maxlength="120" placeholder="9種を一列に。胸に小さく、背に大きく。"></textarea></label>
       </div>
@@ -293,6 +300,6 @@
     </article>
   </div>
 
-  <script src="admin.js?v=20260920-0428"></script>
+  <script src="admin.js?v=20260920-0650"></script>
 </body>
 </html>

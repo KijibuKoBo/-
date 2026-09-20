@@ -195,6 +195,9 @@
   function addPost(p)    { return jpost({ action: "post", name: p.name, text: p.text, place: p.place, photo: p.photo }); }
   function addComment(c) { return jpost({ action: "comment", id: c.id, name: c.name, text: c.text, key: c.key }); }
   function moderate(m)   { return jpost({ action: "moderate", key: m.key, id: m.id, act: m.act, text: m.text }); }
+  function fetchMeta(key, url, withImage) {
+    return jpost({ action: "fetchmeta", key: key, url: url, withImage: !!withImage });
+  }
 
   /* 写真を小さくして base64 に（そのまま送ると大きすぎるため） */
   function shrink(file, maxSide, quality) {
@@ -222,7 +225,7 @@
     hit: hit, top: top, submit: submit, stats: stats, remove: remove,
     board: board, renderTop: renderTop,
     posts: posts, addPost: addPost, addComment: addComment,
-    moderate: moderate, shrink: shrink
+    moderate: moderate, shrink: shrink, fetchMeta: fetchMeta
   };
 
   /* 自動で1回数える（ページ名はファイル名から） */

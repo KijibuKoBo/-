@@ -444,6 +444,7 @@ function bindExtras() {
   });
   $("#goodsPublish")?.addEventListener("click", publishGoods);
   $("#goodsDelete")?.addEventListener("click", deleteGoods);
+  $("#goodsFetch")?.addEventListener("click", fetchGoodsMeta);
 
   // コラム
   $("#colSelect").addEventListener("change", (e) => {
@@ -979,4 +980,36 @@ async function deleteGoods() {
     setBusy2("#goodsPublish", "#goodsProgress", false);
     status("#goodsStatus", "✗ 失敗：" + e.message, "err");
   }
+}
+
+/* 商品URLから名前・写真・値段を読み込む */
+async function fetchGoodsMeta() {
+  const url = $("#g_url").value.trim();
+  const msg = $("#goodsFetchMsg");
+  if (!url) { status("#goodsStatus", "先に商品のURLを貼ってください", "err"); return; }
+  if (!window.Kinoko) { status("#goodsStatus", "読み込みの準備ができていません", "err"); return; }
+  const on = await window.Kinoko.enabled();
+  if (!on) {
+    status("#goodsStatus", "自動読み込みには Google スプレッドシートの接続が必要です（docs/ranking-setup.md）", "err");
+    return;
+  }
+  const btn = $("#goodsFetch");
+  btn.disabled = true;
+  msg.textContent = "商品ページを読んでいます…";
+  const d = await window.Kinoko.fetchMeta(ADMIN_PW, url, true);
+  btn.disabled = false;
+  if (!d || !d.ok) {
+    msg.textContent = "読み込めませんでした（" + ((d && d.error) || "通信エラー") + "）。手で入力してください。";
+    return;
+  }
+  const got = [];
+  if (d.title && !$("#g_name").value.trim()) { $("#g_name").value = d.title; got.push("名前"); }
+  else if (d.title) { $("#g_name").value = d.title; got.push("名前"); }
+  if (d.price) { $("#g_price").value = d.price; got.push("値段"); }
+  if (d.desc && !$("#g_desc").value.trim()) { $("#g_desc").value = d.desc; got.push("説明"); }
+  if (d.imageB64) { goodsPhoto = { kind: "new", b64: d.imageB64 }; renderGoodsPhoto(); got.push("写真"); }
+  else if (d.image) { goodsPhoto = { kind: "existing", path: d.image }; renderGoodsPhoto(); got.push("写真(リンク)"); }
+  msg.textContent = got.length
+    ? "読み込みました：" + got.join("・") + "。中身を見て、直したいところは直してください。"
+    : "このページからは何も読み取れませんでした。手で入力してください。";
 }

@@ -705,3 +705,6 @@ html[data-lang="en"] .footer__nav a { letter-spacing: .18em; }
   border: 1px solid var(--line); border-radius: 9px; background: #fff; }
 .adm-post__reply button { font: inherit; font-size: .8rem; padding: 7px 16px; border: 0; border-radius: 9px;
   background: #1f3a2e; color: #f3efe3; cursor: pointer; }
+
+/* hidden 属性を確実に効かせる（display 指定のある要素で無視されていた） */
+[hidden] { display: none !important; }
