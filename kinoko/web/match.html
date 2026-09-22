@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>きのこマッチパズル ｜ イワオトキノコ</title>
-  <meta name="description" content="同じキノコを3つつなげて育てよう。大きくなったキノコがはじけると、森に胞子が舞う。" />
+  <meta name="description" content="同じキノコを3つつなげて育てよう。ななめ入れかえ・保留・胞子のちから・タイムアタック・みんなのランキング。" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
@@ -63,12 +63,45 @@
     .zk__n{ font-family:var(--serif); font-weight:700; font-size:.94rem; }
     .zk__d{ font-size:.76rem; color:var(--sub); margin:2px 0 0; }
 
+    /* あそびかたをえらぶ */
+    .modebtn{ display:block; width:100%; max-width:300px; text-align:left; font-family:var(--sans);
+              background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:14px;
+              padding:12px 16px; margin:0; cursor:pointer; font-weight:700; font-size:1rem; }
+    .modebtn small{ display:block; font-weight:400; font-size:.76rem; color:var(--sub); margin-top:2px; }
+    .modebtn:active{ transform:translateY(1px); }
+
+    /* 保留と胞子のちから */
+    .tools{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:10px 0 0; }
+    .tool{ display:flex; align-items:center; justify-content:space-between; gap:6px;
+           background:var(--paper); border:1px solid var(--line); border-radius:12px;
+           padding:8px 10px; font-family:var(--sans); font-size:.82rem; font-weight:700;
+           color:var(--ink); cursor:pointer; min-height:52px; }
+    .tool:disabled{ opacity:.42; cursor:default; }
+    .tool.is-arm{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(168,133,74,.34) inset; background:#fdf6e6; }
+    .tool__c{ font-weight:400; font-size:.7rem; color:var(--sub); white-space:nowrap; }
+    .tool--hold{ grid-column:1 / -1; }
+    .tool__slot{ width:38px; height:38px; border-radius:9px; background:#efe9d7; border:1px dashed var(--line);
+                 display:flex; align-items:center; justify-content:center; flex:none; overflow:hidden; }
+    .tool__slot img{ width:100%; height:100%; object-fit:contain; }
+    .tool > span:first-child{ white-space:nowrap; }
+    @media (max-width:380px){
+      .tool{ font-size:.76rem; padding:8px; }
+      .tool__c{ font-size:.64rem; }
+      .tool__slot{ width:34px; height:34px; }
+    }
+
+    /* ランキングの切りかえ */
+    .rtab{ display:flex; gap:6px; margin:0 0 8px; }
+    .rtab button{ flex:1; font-family:var(--sans); font-size:.78rem; font-weight:700; padding:6px 4px;
+                  border:1px solid var(--line); border-radius:999px; background:transparent; color:var(--sub); cursor:pointer; }
+    .rtab button.is-on{ background:var(--forest); color:#f3efe3; border-color:var(--forest); }
+
     .under{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:10px 0 0; }
     .note{ margin-top:14px; font-size:.74rem; color:var(--sub); text-align:center; }
     .sound{ background:none; border:1px solid currentColor; color:var(--sub); border-radius:999px;
             font-size:.72rem; padding:4px 10px; cursor:pointer; }
   </style>
-  <script src="kinoko-api.js?v=20260920-0650"></script>
+  <script src="kinoko-api.js?v=20260922-0900"></script>
 </head>
 <body>
 
@@ -86,19 +119,36 @@
 
     <div class="hud">
       <div><span>スコア</span><b id="score">0</b></div>
-      <div><span>のこり手数</span><b id="moves">30</b></div>
+      <div><span id="leftLabel">のこり手数</span><b id="moves">30</b></div>
+      <div><span>胞子</span><b id="spN">0</b></div>
       <div><span>ベスト</span><b id="best">0</b></div>
     </div>
 
     <div class="stage" id="stage">
       <canvas id="cv" width="600" height="700"></canvas>
       <div class="loading" id="loading">キノコを用意しています…</div>
+      <div class="over" id="start" hidden>
+        <div class="over__t">あそびかたを えらぶ</div>
+        <button class="modebtn" id="mMoves">👣 手数モード<small>30手で どれだけ育てられるか</small></button>
+        <button class="modebtn" id="mTime">⏱ タイムアタック<small>90秒で どれだけ育てられるか</small></button>
+      </div>
       <div class="over" id="over" hidden>
         <div class="over__t" id="overT">おしまい</div>
         <div class="over__s" id="overS">0</div>
         <div class="over__b" id="overB"></div>
         <button id="again">もう一度</button>
       </div>
+    </div>
+
+    <div class="tools">
+      <button class="tool tool--hold" id="holdBtn" type="button">
+        <span>保留（ホールド）</span>
+        <span class="tool__slot" id="holdSlot"></span>
+        <span class="tool__c" id="holdCost">えらんで押すと しまう（1手）</span>
+      </button>
+      <button class="tool" id="pwShuffle" type="button"><span>🌀 まぜ直す</span><span class="tool__c">胞子 5</span></button>
+      <button class="tool" id="pwZap" type="button"><span>✂ 1つ消す</span><span class="tool__c">胞子 8</span></button>
+      <button class="tool" id="pwPlus" type="button" style="grid-column:1 / -1"><span id="pwPlusK">👣 手数を +3</span><span class="tool__c">胞子 12</span></button>
     </div>
 
     <p class="under"><button class="sound" id="demo">✨ はじける演出を見る</button><button class="sound" id="bgmBtn">🎵 音楽 OFF</button><button class="sound" id="sw">🔊 効果音 ON</button></p>
@@ -110,11 +160,18 @@
         <li>キノコが <b>1段階大きくなる！</b></li>
         <li>大きいキノコを <b>さらに3つつなげる</b> と、はじけて <b>まわりごと消える！</b></li>
         <li>すきまに <b>キノコが落ちてくる</b>。つながって消えると <b>れんさボーナス</b>。</li>
+        <li>入れかえは <b>ななめにもできる</b>。ただし そろうのは <b>たて・よこの3つ</b> だけ。</li>
+        <li>1つだけ <b>保留</b> に置いておける。しまうのはタダ、<b>戻すと1手</b>（どこへでも置ける入れかえ）。</li>
+        <li>はじけると <b>胞子</b> がたまる。まぜ直し・1つ消す・おまけ に使える。</li>
       </ol>
     </section>
 
     <section class="zukan" id="rankSec" hidden>
       <h3>みんなのベスト5</h3>
+      <div class="rtab">
+        <button type="button" id="rtM" class="is-on">👣 手数モード</button>
+        <button type="button" id="rtT">⏱ タイムアタック</button>
+      </div>
       <ol class="rk" id="rankList"></ol>
       <form class="rk__form" id="rankForm" hidden>
         <label for="rankName">なまえ（12文字まで）</label>
@@ -131,7 +188,7 @@
       <div id="zkList"></div>
     </section>
 
-    <p class="note">スマホは指でなぞって入れかえ、PCはドラッグかクリックで入れかえます。</p>
+    <p class="note">スマホは指でなぞって入れかえ、PCはドラッグかクリックで入れかえます。<br>ななめにも入れかえられます。</p>
   </main>
 
   <script>
@@ -147,7 +204,9 @@
       { n:"カラマツタケ",       d:"美しい紫色のキノコ。カラマツ林に多く、食用としても人気があります。" }
     ];
 
-    const COLS = 6, ROWS = 7, MOVES0 = 30;
+    const COLS = 6, ROWS = 7, MOVES0 = 30, TIME0 = 90;
+    const COST_HOLD = 1;                       // 保留から盤に「もどす」のにかかる手数
+    const PW = { shuffle:5, zap:8, plus:12 };  // 胞子のちからの値段
     const cv = $("#cv"), ctx = cv.getContext("2d");
     const W = cv.width, H = cv.height;
     const PAD = 10, CELL = Math.floor((W - PAD*2) / COLS);
@@ -158,10 +217,17 @@
     let busy = true, over = false, chain = 0, fx = [], toast = null, sound = true;
     let spores = [], waves = [], flash = 0, shake = 0;
     let last = 0, dt = 1/60;
+    let mode = "moves";                 // "moves" or "time"
+    let timeLeft = TIME0, started = false;
+    let sp = 0;                          // 胞子ポイント
+    let hold = null;                     // 保留しているキノコ（1つだけ）
+    let arm = null;                      // "hold" / "zap" … つぎにマスを押したときの動作
+    const BEST_KEY = ()=> mode === "time" ? "kinoko_match_best_time" : "kinoko_match_best";
 
-    try { best = Number(localStorage.getItem("kinoko_match_best") || 0) || 0; } catch(e){}
+    function loadBest(){ try { best = Number(localStorage.getItem(BEST_KEY()) || 0) || 0; } catch(e){ best = 0; }
+                         $("#best").textContent = best; }
+    loadBest();
     try { sound = localStorage.getItem("kinoko_match_sound") !== "0"; } catch(e){}
-    $("#best").textContent = best;
 
     /* ---------- 効果音 ---------- */
     let AC = null;
@@ -181,6 +247,10 @@
     const sfxGrow  = (c)=>{ beep(460 + c*80, .12, "square", .06); setTimeout(()=>beep(700 + c*90, .1, "square", .045), 70); };
     const sfxBurst = ()=>{ [180,140,110,90].forEach((f,i)=>setTimeout(()=>beep(f,.26,"sawtooth",.075), i*60)); };
     const sfxEnd   = ()=> [392,330,262,196].forEach((f,i)=>setTimeout(()=>beep(f,.24,"triangle",.06), i*140));
+    const sfxHold  = ()=>{ beep(520,.07,"triangle",.05); setTimeout(()=>beep(780,.09,"triangle",.045),70); };
+    const sfxBack  = ()=>{ beep(780,.07,"triangle",.05); setTimeout(()=>beep(520,.09,"triangle",.045),70); };
+    const sfxPower = ()=>{ [660,880,1175].forEach((f,i)=>setTimeout(()=>beep(f,.1,"square",.05), i*60)); };
+    const sfxTick  = ()=> beep(1000,.05,"square",.03);
 
     /* ---------- 画像の読み込み ---------- */
     function load(src){
@@ -200,7 +270,9 @@
       IMG.b  = all.slice(5, 10);
       IMG.fx = all.slice(10, 15);
       $("#loading").hidden = true;
-      reset();
+      $("#start").hidden = false;
+      fill(); settle();                  // うしろで盤面を見せておく
+      updLeft(); updSP(); holdIcon(); holdLabel();
       requestAnimationFrame(tick);
     });
 
@@ -271,8 +343,18 @@
 
     function hasMove(){
       function ok(){ return groups().length > 0; }
+      // 保留のキノコをどこかに置いてそろうなら、まだ手はある
+      if(hold && (mode === "time" || moves > COST_HOLD)){
+        for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+          const keep = board[r][c];
+          board[r][c] = { sp:hold.sp, lv:hold.lv, x:keep.x, y:keep.y, pop:0, born:0 };
+          const good = ok();
+          board[r][c] = keep;
+          if(good) return true;
+        }
+      }
       for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-        for(const d of [[0,1],[1,0]]){
+        for(const d of [[0,1],[1,0],[1,1],[1,-1]]){   // ななめも入れかえられる
           const nr = r+d[0], nc = c+d[1];
           if(nr>=ROWS || nc>=COLS) continue;
           const t = board[r][c]; board[r][c] = board[nr][nc]; board[nr][nc] = t;
@@ -315,21 +397,22 @@
 
         for(const g of gs){
           const lv = board[g[0][0]][g[0][1]].lv;
-          const sp = board[g[0][0]][g[0][1]].sp;
+          const gsp = board[g[0][0]][g[0][1]].sp;
           if(lv === 0){
             // 3つつながった → 1段階大きくなる
             let at = anchor && g.some(function(p){ return p[0]===anchor[0] && p[1]===anchor[1]; })
                    ? anchor : g[(g.length/2)|0];
             for(const [r,c] of g){
-              fx.push({ sp:sp, x:board[r][c].x, y:board[r][c].y, t:0, big:false });
-              spore(board[r][c].x + CELL/2, board[r][c].y + CELL/2, sp, 8);
+              fx.push({ sp:gsp, x:board[r][c].x, y:board[r][c].y, t:0, big:false });
+              spore(board[r][c].x + CELL/2, board[r][c].y + CELL/2, gsp, 8);
               board[r][c] = null;
             }
             flash = Math.max(flash, .3);
-            board[at[0]][at[1]] = mk(sp, 1, at[0], at[1]);
+            board[at[0]][at[1]] = mk(gsp, 1, at[0], at[1]);
             board[at[0]][at[1]].born = 1;
             score += Math.round(30 * g.length * mult);
-            showToast(KINDS[sp].n + "が育った！" + (chain>1 ? "　"+chain+"れんさ" : ""));
+            addSP(1);
+            showToast(KINDS[gsp].n + "が育った！" + (chain>1 ? "　"+chain+"れんさ" : ""));
             sfxGrow(chain);
           }else{
             // 大きいキノコ3つ → はじけて、まわりごと消える
@@ -337,9 +420,9 @@
             flash = 1; shake = 24;
             const kill = new Set();
             for(const [r,c] of g){
-              fx.push({ sp:sp, x:board[r][c].x, y:board[r][c].y, t:0, big:true });
+              fx.push({ sp:gsp, x:board[r][c].x, y:board[r][c].y, t:0, big:true });
               waves.push({ x:board[r][c].x + CELL/2, y:board[r][c].y + CELL/2, t:0 });
-              spore(board[r][c].x + CELL/2, board[r][c].y + CELL/2, sp, 42);
+              spore(board[r][c].x + CELL/2, board[r][c].y + CELL/2, gsp, 42);
               for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
                 const nr = r+dr, nc = c+dc;
                 if(nr>=0 && nc>=0 && nr<ROWS && nc<COLS) kill.add(nr+","+nc);
@@ -358,7 +441,8 @@
               }
             });
             score += Math.round((320 * g.length + 25 * extra) * mult);
-            showToast("はじけた！ 胞子が舞う" + (chain>1 ? "　"+chain+"れんさ" : ""), true);
+            addSP(3 + chain - 1);
+            showToast("はじけた！ 胞子 +" + (3 + chain - 1) + (chain>1 ? "　"+chain+"れんさ" : ""), true);
             sfxBurst();
           }
         }
@@ -389,6 +473,11 @@
     }
 
     /* ---------- 操作 ---------- */
+    /* となり（ななめを含む8方向）かどうか。そろう判定は groups() がたて・よこだけを見る */
+    function adjacent(a, b){
+      const dr = Math.abs(a[0]-b[0]), dc = Math.abs(a[1]-b[1]);
+      return dr<=1 && dc<=1 && (dr+dc)>0;
+    }
     async function trySwap(r, c, nr, nc){
       if(busy || over) return;
       if(nr<0 || nc<0 || nr>=ROWS || nc>=COLS) return;
@@ -403,8 +492,8 @@
         busy = false;
         return;
       }
-      moves--; $("#moves").textContent = moves;
-      updateBGM();
+      if(mode === "moves") moves--;
+      updLeft(); updateBGM();
       await resolve([nr, nc]);
       let guard = 0;
       while(!hasMove() && guard++ < 12){
@@ -412,7 +501,9 @@
         shuffle(); await settle(); await resolve(null);
       }
       busy = false;
-      if(moves <= 0) finish();
+      updSP(); holdLabel();
+      if(mode === "moves" && moves <= 0) finish();
+      if(mode === "time" && timeLeft <= 0) finish();
     }
 
     function shuffle(){
@@ -434,21 +525,22 @@
     }
     let down = null;
     stage.addEventListener("pointerdown", function(e){
-      if(busy || over) return;
-      down = at(e);
-      if(down){
-        if(sel && (Math.abs(sel[0]-down[0]) + Math.abs(sel[1]-down[1])) === 1){
-          const s = sel; const d = down; down = null;
-          trySwap(s[0], s[1], d[0], d[1]);
-        }else sel = down;
-      }
+      if(busy || over || !started) return;
+      const p = at(e);
+      if(!p) return;
+      if(arm){ useArm(p); return; }         // 保留に入れる／1つ消す をねらっているとき
+      down = p;
+      if(sel && adjacent(sel, down)){
+        const a = sel, b = down; down = null;
+        trySwap(a[0], a[1], b[0], b[1]);
+      }else sel = down;
     });
     stage.addEventListener("pointermove", function(e){
-      if(busy || over || !down) return;
+      if(busy || over || !down || arm) return;
       const p = at(e);
-      if(p && (Math.abs(p[0]-down[0]) + Math.abs(p[1]-down[1])) === 1){
-        const s = down; down = null;
-        trySwap(s[0], s[1], p[0], p[1]);
+      if(p && adjacent(down, p)){
+        const a = down; down = null;
+        trySwap(a[0], a[1], p[0], p[1]);
       }
     });
     stage.addEventListener("pointerup", function(){ down = null; });
@@ -467,36 +559,162 @@
 
     function showToast(t, long){ toast = { t:t, life: long ? 1.9 : 1 }; }
 
+    /* ================= 保留（ホールド） ================= */
+    function holdIcon(){
+      const box = $("#holdSlot");
+      box.innerHTML = "";
+      if(!hold){ box.style.borderStyle = "dashed"; return; }
+      box.style.borderStyle = "solid";
+      const img = (hold.lv ? IMG.b : IMG.s)[hold.sp];
+      if(img){ const el = document.createElement("img"); el.src = img.src; el.alt = KINDS[hold.sp].n; box.appendChild(el); }
+      else { box.textContent = "●"; }
+    }
+    function holdLabel(){
+      const free = (mode === "time");
+      $("#holdCost").textContent = hold
+        ? (free ? "もどす場所を おしてね" : "もどす場所を おしてね（" + COST_HOLD + "手）")
+        : "えらんで押すと しまう（タダ）";
+      $("#holdBtn").disabled = over || !started;
+    }
+    function setArm(a){
+      arm = a;
+      $("#holdBtn").classList.toggle("is-arm", arm === "hold");
+      $("#pwZap").classList.toggle("is-arm", arm === "zap");
+      if(arm) sel = null;
+    }
+    /* 保留ボタン：しまう／もどす のねらいを切りかえる */
+    function onHold(){
+      if(busy || over || !started) return;
+      if(arm === "hold"){ setArm(null); showToast("やめた"); return; }
+      if(hold && mode === "moves" && moves <= COST_HOLD){ showToast("手数がたりないよ"); sfxNo(); return; }
+      setArm("hold");
+      showToast(hold ? "もどす場所を おしてね" : "しまうキノコを おしてね");
+    }
+    /* ねらった場所で、保留にしまう／もどす、または1つ消す */
+    async function useArm(p){
+      if(busy || over || !started) return;
+      const [r, c] = p;
+      const a = arm; setArm(null);
+      if(!board[r] || !board[r][c]) return;
+      if(a === "zap"){
+        if(sp < PW.zap){ showToast("胞子がたりないよ"); sfxNo(); return; }
+        sp -= PW.zap; updSP();
+        busy = true;
+        const t = board[r][c];
+        fx.push({ sp:t.sp, x:t.x, y:t.y, t:0, big:false });
+        spore(t.x + CELL/2, t.y + CELL/2, t.sp, 16);
+        board[r][c] = null;
+        sfxPower(); showToast("1つ消した！");
+        await sleep(200); collapse(); await settle(); await resolve(null);
+        await afterAction();
+        return;
+      }
+      if(a !== "hold") return;
+      busy = true;
+      if(!hold){
+        hold = board[r][c];
+        const t = hold;
+        spore(t.x + CELL/2, t.y + CELL/2, t.sp, 10);
+        board[r][c] = null;
+        holdIcon(); holdLabel(); sfxHold(); showToast(KINDS[hold.sp].n + "を 保留にしまった");
+        await sleep(160); collapse(); await settle(); await resolve(null);
+      }else{
+        // しまってあるキノコと、押したマスのキノコを入れかえる（1手）
+        if(mode === "moves"){ moves -= COST_HOLD; updLeft(); updateBGM(); }
+        const outgoing = board[r][c];
+        board[r][c] = mk(hold.sp, hold.lv, r, c);
+        board[r][c].born = 1;
+        hold = { sp: outgoing.sp, lv: outgoing.lv };
+        holdIcon(); holdLabel(); sfxBack();
+        showToast("保留の " + KINDS[board[r][c].sp].n + " を 戻した");
+        await settle(); await resolve([r, c]);
+      }
+      await afterAction();
+    }
+
+    /* ================= 胞子のちから ================= */
+    function updSP(){
+      $("#spN").textContent = sp;
+      $("#pwShuffle").disabled = over || !started || sp < PW.shuffle;
+      $("#pwZap").disabled     = over || !started || sp < PW.zap;
+      $("#pwPlus").disabled    = over || !started || sp < PW.plus;
+      $("#pwPlusK").textContent = mode === "time" ? "⏱ じかんを +15秒" : "👣 手数を +3";
+    }
+    function addSP(n){ sp += n; updSP(); }
+
+    async function pwShuffle(){
+      if(busy || over || !started || sp < PW.shuffle) return;
+      sp -= PW.shuffle; updSP(); setArm(null);
+      busy = true; sfxPower(); showToast("まぜ直した！");
+      let guard = 0;
+      do { shuffle(); await settle(); await resolve(null); } while(!hasMove() && guard++ < 12);
+      await afterAction();
+    }
+    function pwPlus(){
+      if(busy || over || !started || sp < PW.plus) return;
+      sp -= PW.plus; updSP(); setArm(null);
+      if(mode === "time"){ timeLeft += 15; showToast("じかんが 15秒 ふえた！"); }
+      else { moves += 3; showToast("手数が 3 ふえた！"); }
+      updLeft(); updateBGM(); sfxPower();
+    }
+
+    /* 道具を使ったあとの後始末 */
+    async function afterAction(){
+      let guard = 0;
+      while(!hasMove() && guard++ < 12){ showToast("手がないのでまぜ直すよ"); shuffle(); await settle(); await resolve(null); }
+      busy = false;
+      updSP(); holdLabel();
+      if(mode === "moves" && moves <= 0) finish();
+      if(mode === "time" && timeLeft <= 0) finish();
+    }
+
+    /* ================= のこりの表示 ================= */
+    function updLeft(){
+      if(mode === "time"){
+        $("#leftLabel").textContent = "のこり時間";
+        $("#moves").textContent = Math.max(0, Math.ceil(timeLeft)) + "秒";
+      }else{
+        $("#leftLabel").textContent = "のこり手数";
+        $("#moves").textContent = moves;
+      }
+    }
+
     function finish(){
-      over = true;
+      if(over) return;
+      over = true; setArm(null);
       const isBest = score > best;
-      if(isBest){ best = score; try{ localStorage.setItem("kinoko_match_best", String(best)); }catch(e){} }
+      if(isBest){ best = score; try{ localStorage.setItem(BEST_KEY(), String(best)); }catch(e){} }
       $("#best").textContent = best;
       $("#overS").textContent = score;
       $("#overT").textContent = isBest ? "自己ベスト！" : "おしまい";
-      $("#overB").textContent = score >= 6000 ? "森じゅうに胞子が舞った！"
+      $("#overB").textContent = (mode === "time" ? "タイムアタック　" : "手数モード　")
+                              + (score >= 6000 ? "森じゅうに胞子が舞った！"
                               : score >= 3000 ? "よく育てたね"
-                              : "また森へおいで";
+                              : "また森へおいで");
       $("#over").hidden = false;
+      updSP(); holdLabel();
       sfxEnd();
-      if (rank) rank.offer(score);
+      showRank(mode, score);
     }
-    $("#again").addEventListener("click", reset);
+    $("#again").addEventListener("click", function(){ $("#over").hidden = true; $("#start").hidden = false; });
 
     async function reset(){
-      $("#over").hidden = true;
-      if (rank) rank.reset();
-      over = false; busy = true; sel = null; fx = []; toast = null;
+      $("#over").hidden = true; $("#start").hidden = true;
+      if (rankM) rankM.reset();
+      if (rankT) rankT.reset();
+      over = false; busy = true; sel = null; fx = []; toast = null; started = true;
       spores = []; waves = []; flash = 0; shake = 0;
-      score = 0; moves = MOVES0;
+      score = 0; moves = MOVES0; timeLeft = TIME0; sp = 0; hold = null; setArm(null);
+      loadBest(); holdIcon(); holdLabel(); updSP();
       bgmHot = false; if(window.BGM) BGM.switchTo("ponpon");
-      $("#score").textContent = 0; $("#moves").textContent = moves;
+      $("#score").textContent = 0; updLeft();
       fill();
       await settle();
       await resolve(null);
       score = 0; $("#score").textContent = 0;      // 最初のおまけ点は入れない
       while(!hasMove()){ shuffle(); await settle(); await resolve(null); score = 0; }
       $("#score").textContent = 0;
+      sp = 0; updSP();                       // 最初のおまけ胞子も入れない
       busy = false;
     }
 
@@ -520,11 +738,24 @@
       ctx.drawImage(img, cx - size/2, cy - size/2, size, size);
     }
 
+    let tickWarn = -1;
     function tick(now){
       now = now || performance.now();
       dt = last ? Math.min(0.05, (now - last) / 1000) : 1/60;
       last = now;
       const f60 = dt * 60;                       // 60fps 換算の係数
+      /* タイムアタックの残り時間 */
+      if(mode === "time" && started && !over){
+        timeLeft -= dt;
+        const whole = Math.max(0, Math.ceil(timeLeft));
+        if(whole !== tickWarn){
+          tickWarn = whole;
+          updLeft();
+          if(whole <= 5 && whole > 0) sfxTick();
+        }
+        if(timeLeft <= 0){ timeLeft = 0; updLeft(); if(!busy) finish(); }
+        else updateBGM();
+      }
       ctx.clearRect(0, 0, W, H);
       ctx.save();
       if(shake > 0.4){ ctx.translate((Math.random()-.5)*shake, (Math.random()-.5)*shake); shake *= Math.pow(0.90, f60); }
@@ -537,9 +768,18 @@
         ctx.fillStyle = (r+c)%2 ? "rgba(255,255,255,.34)" : "rgba(255,255,255,.16)";
         ctx.fillRect(cellX(c)+2, cellY(r)+2, CELL-4, CELL-4);
       }
-      if(sel){
+      if(sel && !arm){
         ctx.strokeStyle = "rgba(168,133,74,.95)"; ctx.lineWidth = 4;
         ctx.strokeRect(cellX(sel[1])+3, cellY(sel[0])+3, CELL-6, CELL-6);
+      }
+      if(arm){
+        const pulse = 0.5 + 0.5*Math.sin(now/220);
+        ctx.save();
+        ctx.strokeStyle = arm === "zap" ? "rgba(200,70,50," + (0.55+0.35*pulse) + ")"
+                                        : "rgba(168,133,74," + (0.55+0.35*pulse) + ")";
+        ctx.lineWidth = 6;
+        ctx.strokeRect(OX+3, OY+3, CELL*COLS-6, CELL*ROWS-6);
+        ctx.restore();
       }
       // 大きいキノコは重なるので、あとから描く
       const later = [];
@@ -631,25 +871,64 @@
     var bgmHot = false;
     function updateBGM(){
       if(!window.BGM) return;
-      if(!bgmHot && moves <= HOT_AT && moves > 0 && !over){ bgmHot = true; BGM.switchTo("matchHi"); }
-      else if(bgmHot && moves > HOT_AT){ bgmHot = false; BGM.switchTo("ponpon"); }
+      const left = (mode === "time") ? timeLeft : moves;
+      const hot  = (mode === "time") ? 20 : HOT_AT;
+      if(!bgmHot && left <= hot && left > 0 && !over){ bgmHot = true; BGM.switchTo("matchHi"); }
+      else if(bgmHot && left > hot){ bgmHot = false; BGM.switchTo("ponpon"); }
     }
 
-    /* ---------- みんなのランキング ---------- */
-    var rank = (window.Kinoko && window.Kinoko.board) ? window.Kinoko.board("match", {
-      sec: "#rankSec", list: "#rankList", form: "#rankForm", name: "#rankName", msg: "#rankMsg"
-    }) : null;
-    if (rank) rank.show();
+    /* ---------- みんなのランキング（モードごと） ---------- */
+    var RKELS = { sec:"#rankSec", list:"#rankList", form:"#rankForm", name:"#rankName", msg:"#rankMsg" };
+    var hasBoard = !!(window.Kinoko && window.Kinoko.board);
+    var rankM = hasBoard ? window.Kinoko.board("match", RKELS) : null;
+    var rankT = hasBoard ? window.Kinoko.board("match_time", RKELS) : null;
+    var rankTab = "moves";
+
+    function markTab(){
+      $("#rtM").classList.toggle("is-on", rankTab === "moves");
+      $("#rtT").classList.toggle("is-on", rankTab === "time");
+    }
+    /* m = 見せたいモード。score があればその場で登録もうながす */
+    function showRank(m, score){
+      rankTab = m; markTab();
+      if(rankM) rankM.reset();
+      if(rankT) rankT.reset();
+      var b = (m === "time") ? rankT : rankM;
+      if(!b) return;
+      if(score == null) b.show(); else b.offer(score);
+    }
+    $("#rtM").addEventListener("click", function(){ showRank("moves"); });
+    $("#rtT").addEventListener("click", function(){ showRank("time"); });
+    showRank("moves");
+
+    /* ---------- あそびかたをえらぶ ---------- */
+    function startGame(m){
+      mode = m;
+      showRank(m);
+      reset();
+    }
+    $("#mMoves").addEventListener("click", function(){ startGame("moves"); });
+    $("#mTime").addEventListener("click", function(){ startGame("time"); });
+
+    /* ---------- 道具のボタン ---------- */
+    $("#holdBtn").addEventListener("click", onHold);
+    $("#pwShuffle").addEventListener("click", pwShuffle);
+    $("#pwZap").addEventListener("click", function(){
+      if(busy || over || !started || sp < PW.zap) return;
+      if(arm === "zap"){ setArm(null); showToast("やめた"); return; }
+      setArm("zap"); showToast("消したいキノコを おしてね");
+    });
+    $("#pwPlus").addEventListener("click", pwPlus);
 
     $("#demo").addEventListener("click", function(){
-      const sp = (Math.random()*KINDS.length)|0;
+      const dsp = (Math.random()*KINDS.length)|0;
       const cr = 3, cc = [1,2,3];
       flash = 1; shake = 24;
       cc.forEach(function(c){
         const x = cellX(c), y = cellY(cr);
-        fx.push({ sp:sp, x:x, y:y, t:0, big:true });
+        fx.push({ sp:dsp, x:x, y:y, t:0, big:true });
         waves.push({ x:x + CELL/2, y:y + CELL/2, t:0 });
-        spore(x + CELL/2, y + CELL/2, sp, 42);
+        spore(x + CELL/2, y + CELL/2, dsp, 42);
       });
       showToast("はじけた！ 胞子が舞う", true);
       sfxBurst();
@@ -664,8 +943,8 @@
   })();
   </script>
 
-  <script src="kinoko-bgm.js?v=20260920-0246"></script>
-  <script src="i18n.js?v=20260920-0246"></script>
+  <script src="kinoko-bgm.js?v=20260922-0900"></script>
+  <script src="i18n.js?v=20260922-1000"></script>
   <script>if(window.BGM) BGM.attach("ponpon", "#bgmBtn");</script>
 </body>
 </html>
