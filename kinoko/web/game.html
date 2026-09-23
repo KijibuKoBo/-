@@ -20,6 +20,8 @@
     body{ font-family:var(--serif); color:var(--ink); background:var(--cream); line-height:1.7; -webkit-font-smoothing:antialiased; }
     .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:var(--forest-deep); color:#f1ede2; }
     .topbar__brand{ text-decoration:none; color:#f1ede2; line-height:1.2; }
+    .brandlogo{ display:block; width:auto; height:26px; }
+    @media (max-width:520px){ .brandlogo{ height:21px; } }
     .topbar__brand small{ display:block; font-size:.68rem; letter-spacing:.14em; color:var(--gold-soft); }
     .topbar__brand b{ font-size:1.05rem; font-weight:700; letter-spacing:.06em; }
     .topbar__back{ color:var(--gold-soft); text-decoration:none; font-family:var(--sans); font-size:.86rem; }
@@ -96,7 +98,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="topbar__brand" href="index.html"><b>イワオトキノコ</b></a>
+    <a class="topbar__brand" href="index.html"><img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr width="720" height="218" /></a>
     <a class="topbar__back" href="index.html">← ホームへ</a>
   </header>
 

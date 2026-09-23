@@ -67,6 +67,13 @@ a { color: inherit; text-decoration: none; }
 .rail__nav a:hover { opacity: 0.55; }
 .rail__since { font-family: var(--display); writing-mode: vertical-rl; font-size: 0.72rem; letter-spacing: 0.3em; opacity: 0.7; }
 
+
+/* ====== ロゴ（左上） ====== */
+.brandlogo { display:block; width:auto; height:28px; }
+.topbar__brand .brandlogo { height:26px; }
+.rail__brand .brandlogo { width:78px; height:auto; }
+@media (max-width: 620px) { .topbar__brand .brandlogo { height:22px; } }
+
 /* ====== トップバー / ドロワー ====== */
 .topbar { display: none; }
 /* 図鑑ページのトップバーはサイドレールが無いため常時表示 */

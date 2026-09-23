@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20260920-0650" />
+  <link rel="stylesheet" href="style.css?v=20260923-0930" />
   <script src="kinoko-api.js?v=20260920-0650"></script>
 </head>
 <body class="home">
@@ -19,7 +19,8 @@
   <!-- ===== 左サイドレール（PC） ===== -->
   <aside class="rail">
     <a class="rail__brand" href="#top">
-      <span class="rail__brand-main">イワオトキノコ</span>
+      <!-- レールは mix-blend-mode:difference で背景に応じて反転するので白版を使う -->
+      <img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr width="720" height="218" />
     </a>
     <nav class="rail__nav" aria-label="メインナビ">
       <a href="#about">ABOUT</a>
@@ -38,7 +39,7 @@
   <!-- ===== トップバー（スマホ） ===== -->
   <header class="topbar">
     <a class="topbar__brand" href="#top">
-      <span class="topbar__brand-main">イワオトキノコ</span>
+      <img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr width="720" height="218" />
     </a>
     <button class="hamburger" id="hamburger" aria-label="メニュー" aria-expanded="false">
       <span></span><span></span><span></span>
