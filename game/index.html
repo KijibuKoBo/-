@@ -579,6 +579,20 @@ footer{
   border:1.5px dashed var(--gold); text-align:justify;
 }
 
+/* 土台と腕前の内訳 */
+.mult-row{
+  text-align:center; font-size:.68rem; color:var(--brown-mid);
+  margin-top:5px; line-height:1.6;
+}
+.mult-row b{ color:#a97c14; font-size:.78rem; }
+.act-effect{
+  font-size:.82rem; color:var(--brown-mid); line-height:1.8;
+  margin:6px 0 2px; padding:8px 10px;
+  background:var(--cream-deep); border-radius:12px;
+}
+.act-effect b{ color:#a97c14; font-size:1rem; }
+.act-effect .ae-note{ font-size:.68rem; color:var(--brown-soft); margin-top:3px; }
+
 /* 得意・不得意 */
 .skill-row{
   display:flex; align-items:center; gap:8px;
@@ -1950,6 +1964,19 @@ const CRITICAL_STEP = {
 /* 集中力：1日ぶん。ていねいな手ほど多く食う */
 const FOCUS_PER_DAY = 100;
 
+/* 通常工程ぜんぶで積み上げられる品質の枠。
+   工程数がちがう家具でも、判断で伸ばせる幅がそろうようにする */
+const STEP_BUDGET = 35;
+const STEP_STD = 14;        // ていねいな手のおおよその素点
+function stepScale(f) {
+  const normal = Math.max(1, f.steps.length - 1);   // 山場をのぞいた工程数
+  return STEP_BUDGET / (normal * STEP_STD);
+}
+
+/* 山場の出来が、最後に品質そのものを左右する倍率。
+   0点なら0.55倍、100点なら1.10倍。準備が完璧でも、ここで崩れる */
+const skillMult = (score) => 0.55 + Math.max(0, Math.min(100, score)) / 100 * 0.55;
+
 /* ----------------------------------------------------------
    来館者
    展示した家具を見てひとこと言っていく。
@@ -2089,7 +2116,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 8,
+  ver: 9,
   player: { name: "", avatar: { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 } },
   money: 0,
   exp: 0,
@@ -2106,6 +2133,7 @@ let state = {
   craftUsed: 0,
   flaws: 0,                       // 制作中に出たしくじりの数（検品で取り返せる）
   notebook: [],                   // 職人手帳：試した組み合わせの記録
+  actionScore: null,              // いま作っている家具の、山場の出来（0〜100）
   actionBest: {},                 // 家具ごとの職人アクション自己ベスト
   actionStats: {},                // 工程タイプごとの成績（得意・不得意）
   knownCritical: [],              // 山場工程を知っている家具id
@@ -2194,6 +2222,10 @@ function load() {
     if (!state.actionBest || typeof state.actionBest !== "object") state.actionBest = {};
     if (!state.actionStats || typeof state.actionStats !== "object") state.actionStats = {};
     state.ver = 8;
+  }
+  if (savedVer !== 9) {   // 第8章まで: 山場の出来を覚える欄を用意する
+    if (state.actionScore === undefined) state.actionScore = null;
+    state.ver = 9;
   }
 }
 
@@ -2471,7 +2503,9 @@ function renderPrep() {
     state.stepIndex = 0;
     state.craftUsed = 0;
     state.flaws = 0;
-    /* 品質＝素材50＋設備＋設計・素材・仕上げの補正 */
+    state.actionScore = null;
+    /* 土台＝素材50＋設備＋設計・素材・仕上げの補正。
+       ここに通常工程の判断が積み上がり、最後に山場の腕前が掛かる */
     state.quality = BASE_QUALITY + gearQualityBonus()
       + designById(prep.design).q + materialById(prep.wood).q + finishById(prep.finish).q;
     prep = null;
@@ -2494,7 +2528,12 @@ function currentPiece() {
   const f = furnitureById(state.currentId);
   const c = state.craft || { design: "classic", wood: "oak", finish: "natural" };
   const v = matchRecipe();
-  const score = Math.round(state.quality);
+  /* 土台（判断の積み上げ）に、山場の腕前が掛かって品質が決まる。
+     山場をまだ通っていなければ、土台そのままを見せる */
+  const base = Math.round(state.quality);
+  const score = state.actionScore === null
+    ? base
+    : Math.max(0, Math.min(100, Math.round(base * skillMult(state.actionScore))));
   const rank = calcRank(score);
   const onTime = state.craftUsed <= f.deadline;
   const d = designById(c.design), w = materialById(c.wood), fin = finishById(c.finish);
@@ -2522,7 +2561,12 @@ function renderCraft() {
   const total = f.steps.length;
   const done = state.stepIndex >= total;
   const pct = Math.round((state.stepIndex / total) * 100);
-  const score = Math.round(state.quality);
+  /* 土台（判断の積み上げ）と、山場の腕前を分けて見せる */
+  const base = Math.round(state.quality);
+  const hasAct = state.actionScore !== null;
+  const score = hasAct
+    ? Math.max(0, Math.min(100, Math.round(base * skillMult(state.actionScore))))
+    : base;
   const qPct = Math.max(0, Math.min(100, score));
   const rank = calcRank(score);
 
@@ -2543,11 +2587,14 @@ function renderCraft() {
       <div class="progress"><i style="width:${pct}%"></i></div>
       <div class="progress-label">${done ? "🎉 完成！" : `工程 ${state.stepIndex} / ${total}`}</div>
       <div class="quality-row">
-        <span>品質</span>
+        <span>${hasAct ? "品質" : "土台"}</span>
         <div class="quality-bar"><i style="width:${qPct}%"></i></div>
         <span>${score}点</span>
         ${rankBadge(rank)}
       </div>
+      ${hasAct
+        ? `<div class="mult-row">土台 ${base}点 × 🔥腕前 <b>×${skillMult(state.actionScore).toFixed(2)}</b>（山場 ${state.actionScore}点）</div>`
+        : `<div class="mult-row">🔥山場の出来で、この土台に <b>×0.55〜×1.10</b> が掛かる</div>`}
     </div>`;
 
   /* 山場工程は、その家具を一度作っていれば見える */
@@ -2586,11 +2633,11 @@ function renderCraft() {
           <div class="ac-sub">${act.tip}</div>
           ${tired ? `<div class="ac-tired">⚠️ 集中力が足りん。手元が狂うぞ（腕前−15%）</div>` : ""}
           <button class="act-go" id="btn-action">🖐 腕を見せる</button>
-          <div class="act-skip" id="btn-skip-action">ふつうに作る（アクションをとばす）</div>
+          <div class="act-skip" id="btn-skip-action">ふつうに作る（腕前は並・時間が2時間よけいにかかる）</div>
         </div>
         <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて集中力を戻す）</div>`;
       $("#btn-action").addEventListener("click", () => runAction(step));
-      $("#btn-skip-action").addEventListener("click", () => doAction(50, true));
+      $("#btn-skip-action").addEventListener("click", () => doAction(50, true));   // ふつうの出来どまり
       $("#btn-rest").addEventListener("click", restForToday);
       const toBottomA = () => { if (state.currentId) window.scrollTo(0, document.documentElement.scrollHeight); };
       requestAnimationFrame(toBottomA);
@@ -2666,8 +2713,8 @@ function doStep(choiceId) {
       state.materials[w] = (state.materials[w] || 0) + 1;
       note += `　端材から${materialById(w).name}が1本とれた！`;
     }
-    /* 山場工程は品質の増減が2倍になる */
-    if (isCrit) delta *= 2;
+    /* 工程数のちがう家具でも判断の効き目がそろうよう、枠に収める */
+    delta = Math.round(delta * stepScale(f));
 
     state.quality = Math.max(0, Math.min(100, state.quality + delta));
     state.stepIndex++;
@@ -2794,8 +2841,18 @@ function showActionResult(score, comment) {
   $("#act-say").textContent = "";
   const r = $("#act-result");
   r.hidden = false;
+  /* この出来が家具にどう効くのかを、その場で見せる */
+  const base = Math.round(state.quality);
+  const mult = skillMult(score);
+  const proj = Math.max(0, Math.min(100, Math.round(base * mult)));
+  const restSteps = f.steps.length - 1 - state.stepIndex;
+
   r.innerHTML =
     `<div class="act-score">${score}<span class="unit">点</span></div>
+     <div class="act-effect">
+       土台 ${base}点 × <b>×${mult.toFixed(2)}</b> → <b>${proj}点</b> ${rankBadge(calcRank(proj))}
+       ${restSteps > 0 ? `<div class="ae-note">このあと ${restSteps} 工程ぶん、土台はまだ伸びる</div>` : ""}
+     </div>
      ${isBest ? `<div class="act-best">✨ 自己ベスト更新！（これまで ${best}点）</div>`
                : `<div class="act-best" style="color:var(--brown-soft)">自己ベスト ${best}点</div>`}
      <div class="act-henry">${grade}${comment ? " " + comment : ""}</div>
@@ -2816,10 +2873,10 @@ function doAction(rawScore, skipped) {
   const tired = state.focus < 30;
   const score = Math.max(0, Math.min(100, Math.round(tired ? rawScore * 0.85 : rawScore)));
 
-  let delta = Math.round(-3 + score / 100 * 18) * 2;   // 山場は2倍：-6 〜 +30
+  /* 山場の出来は、品質に足すのではなく、最後に土台へ掛ける */
+  state.actionScore = score;
   if (score < 40) state.flaws++;                        // 検品で取り返せる
 
-  state.quality = Math.max(0, Math.min(100, state.quality + delta));
   state.stepIndex++;
   state.focus = Math.max(0, state.focus - 30);
 
@@ -2831,8 +2888,8 @@ function doAction(rawScore, skipped) {
     state.actionStats[type] = st;
   }
 
-  /* 時間経過。日が変わると集中力が戻り、来館者が来る */
-  const hours = Math.max(1, 3 - speedBonus());
+  /* 時間経過。アクションをとばすと、手堅いぶん時間が余計にかかる */
+  const hours = Math.max(1, (skipped ? 5 : 3) - speedBonus());
   state.craftUsed += hours;
   state.hoursLeft -= hours;
   let extra = "";
@@ -2844,10 +2901,10 @@ function doAction(rawScore, skipped) {
   }
   save();
 
-  const sign = delta >= 0 ? `+${delta}` : `${delta}`;
+  const mult = skillMult(score).toFixed(2);
   let msg = skipped
-    ? `${step.icon} ${step.msg}　手なれた手つきで、ふつうに仕上げた。（品質${sign}・${hours}時間）${extra}`
-    : `${step.icon} ${step.msg}　${step.label}は ${score}点。（品質${sign}・🔥山場・${hours}時間）${extra}`;
+    ? `${step.icon} ${step.msg}　手数をかけて、手堅く仕上げた。（腕前 ×${mult}・${hours}時間）${extra}`
+    : `${step.icon} ${step.msg}　${step.label}は ${score}点。（腕前 ×${mult}・🔥山場・${hours}時間）${extra}`;
   if (tired && !skipped) msg += "　……手が疲れておったな。";
   msg += announceBP();
   showMessage(msg);
