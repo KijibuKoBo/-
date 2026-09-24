@@ -1049,6 +1049,22 @@ const SVG_ART = {
     <path d="M20 36 L26 34" stroke="#e6efdb" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
   </svg>`,
 
+  /* 一枚板のベンチ（耳付きの天板が主役） */
+  bench: `<svg viewBox="0 0 120 120" role="img" aria-label="一枚板のベンチ">
+    <ellipse cx="60" cy="108" rx="44" ry="6" fill="rgba(107,74,47,.14)"/>
+    <rect x="24" y="70" width="14" height="36" rx="4" fill="#8a5a30"/>
+    <rect x="82" y="70" width="14" height="36" rx="4" fill="#8a5a30"/>
+    <rect x="34" y="86" width="52" height="8" rx="4" fill="#a9713f"/>
+    <path d="M10 56 q12 -7 24 -4 q15 -6 27 -2 q17 -7 31 -2 q10 3 18 6
+             l0 14 q-9 5 -21 4 q-17 5 -31 1 q-15 5 -27 0 q-12 -2 -21 -6 Z" fill="#c98d54"/>
+    <path d="M10 56 q12 -7 24 -4 q15 -6 27 -2 q17 -7 31 -2 q10 3 18 6
+             l0 5 q-9 4 -20 3 q-16 4 -30 1 q-14 4 -26 0 q-12 -2 -20 -5 Z" fill="#dfa96c"/>
+    <path d="M16 61 q22 -5 44 -3 q22 2 42 5" stroke="#b07c4a" stroke-width="1.6" fill="none"/>
+    <path d="M18 66 q22 -4 42 -2 q20 2 40 4" stroke="#b07c4a" stroke-width="1.3" fill="none"/>
+    <ellipse cx="44" cy="63" rx="5" ry="3" fill="#a9713f" opacity=".6"/>
+    <path d="M22 57 L34 55" stroke="#f2cf9d" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>
+  </svg>`,
+
   chest: `<svg viewBox="0 0 120 120" role="img" aria-label="プティチェスト">
     <ellipse cx="60" cy="108" rx="42" ry="6" fill="rgba(107,74,47,.14)"/>
     <rect x="27" y="97" width="9" height="10" rx="3" fill="#8a5a30"/>
@@ -1248,6 +1264,22 @@ const FURNITURE = [
     ],
     story: "小さなカウチは、ふたりで座るには少しせまい。だからこそ、猫と、本と、ひとりの午後にちょうどよかった。",
     letter: "カウチの張り地の下から、二枚目のきれはし。「あなたが初めてこの工房に来た日、わたしは小さなカウチを張っておりました。あのときの板は<b>オーク</b>。飾り気のない<b>いちばん素直な形</b>に組んで、<b>塗りはかけませんでした</b>。木を裸のままにしておくのが、いちばん美しい日もあるのです」"
+  },
+  {
+    id: "bench", name: "一枚板のベンチ", icon: "🪑", art: "bench", photo: null,
+    description: "板そのものが主役。木目の流れと耳のかたちを、そのまま残して仕上げる。",
+    price: 6500, exp: 45, deadline: 13, basePop: 42,
+    materials: { wood: 3 },
+    unlock: { type: "level", v: 2 },
+    steps: [
+      { label: "木材を選ぶ", icon: "🪵", msg: "何十枚もの板を見比べて、これぞという一枚を選び出した。" },
+      { label: "耳を整える", icon: "🧽", msg: "樹皮を落とし、耳の曲線はそのまま残す。木が育った形だ。" },
+      { label: "脚を組む",   icon: "🔨", msg: "板の表情を邪魔しないよう、脚はできるだけ控えめに。" },
+      { label: "塗装する",   icon: "🖌️", msg: "オイルを入れた瞬間、眠っていた木目が一気に目をさました。" },
+      { label: "検品する",   icon: "🔍", msg: "手のひらで表面をなでる。まっすぐで、あたたかい。" }
+    ],
+    story: "一枚板のベンチは、どこを削るかではなく、どこを残すかで決まる。木が育った形をそのまま座れるようにするのが、職人の仕事なのだ。",
+    letter: null
   },
   {
     id: "chest", name: "プティチェスト", icon: "🗄️", art: "chest", photo: null,
@@ -1534,6 +1566,7 @@ const STEP_TYPE_OF = {
   "フレームを組む":"kumi", "枠を組む":"kumi", "扉を作る":"kumi", "引き出しを作る":"kumi",
   "小さな抽斗を作る":"kumi", "鏡枠を作る":"kumi", "棚板を渡す":"kumi",
   "背もたれを彫る":"hori", "彫刻する":"hori",
+  "耳を整える":"kenma", "脚を組む":"kumi",
   "クッションを張る":"hari", "座面を張る":"hari", "内張りを張る":"hari",
   "金具を付ける":"kanagu", "蝶番を付ける":"kanagu", "鏡を付ける":"kanagu", "ガラスをはめる":"kanagu"
 };
@@ -1787,6 +1820,104 @@ const CRAFT_ACTIONS = {
             wrong ? "順番でだいぶ迷ったな。" : "きっちり組めておる。"), 260);
         }
       };
+    }
+  },
+
+  /* ---------- 木の目利き：落ちてくる板から、良い板だけを受ける ---------- */
+  mekiki: {
+    name: "木の目利き", limit: 0,
+    tip: "製材所から板が降りてくる。<b>節や割れのない板だけ</b>を受け台で受け、悪い板は見送ること。",
+    start(svg, ui, done) {
+      const FLOOR = 250, SPAN = 2600, TOTAL = 11;   // 受け台の高さ・落ちる時間・枚数
+      const boards = [];
+      /* 良い板7枚・悪い板4枚を、順番を混ぜて落とす */
+      const kinds = ["good","good","bad","good","bad","good","good","bad","good","bad","good"];
+      for (let i = 0; i < TOTAL; i++) {
+        boards.push({
+          i, kind: kinds[i],
+          x: 36 + Math.random() * 228,      /* 落ちてくる幅を広げる */
+          t0: 400 + i * 1500,          /* 間をあけて、一枚ずつ見分けられるようにする */
+          caught: false, gone: false
+        });
+      }
+      const goodTotal = boards.filter(b => b.kind === "good").length;
+      let got = 0, wrong = 0, missed = 0, raf = null, start = Date.now(), over = false;
+      let cartX = 150;
+
+      svg.innerHTML =
+        `<rect x="0" y="${FLOOR + 22}" width="300" height="${300 - FLOOR - 22}" fill="#e8cfa5"/>
+         <text x="150" y="30" text-anchor="middle" font-size="14" fill="#8a6446">良い板だけ受ける</text>
+         <g id="boards"></g>
+         <g id="cart">
+           <rect x="${cartX - 34}" y="${FLOOR}" width="68" height="13" rx="4" fill="#8a5a30"/>
+           <rect x="${cartX - 34}" y="${FLOOR - 5}" width="68" height="7" rx="3" fill="#b07c4a"/>
+           <rect x="${cartX - 25}" y="${FLOOR + 13}" width="9" height="16" rx="3" fill="#6e4526"/>
+           <rect x="${cartX + 16}" y="${FLOOR + 13}" width="9" height="16" rx="3" fill="#6e4526"/>
+         </g>`;
+
+      const layer = svg.querySelector("#boards"), cart = svg.querySelector("#cart");
+
+      /* 板の絵。良い板は木目が素直、悪い板は節か割れが入っている */
+      const boardSvg = (b) => {
+        const base = `<rect x="-26" y="-9" width="52" height="18" rx="3"
+          fill="${b.kind === "good" ? "#dfa96c" : "#b08a63"}" stroke="#8a5a30" stroke-width="2"/>
+          <path d="M-22 -3 Q0 -6 22 -3" stroke="#c98d54" stroke-width="1.4" fill="none"/>
+          <path d="M-22 3 Q0 0 22 3" stroke="#c98d54" stroke-width="1.4" fill="none"/>`;
+        const flaw = b.i % 2
+          ? `<ellipse cx="4" cy="0" rx="7" ry="5.5" fill="#6e4526"/>
+             <ellipse cx="4" cy="0" rx="3" ry="2.4" fill="#4a2f18"/>`               /* 節 */
+          : `<path d="M-14 -9 L-6 0 L-12 9" stroke="#4a2f18" stroke-width="2.6" fill="none"/>`; /* 割れ */
+        return `<g id="b${b.i}" opacity="0">${base}${b.kind === "bad" ? flaw : ""}</g>`;
+      };
+      layer.innerHTML = boards.map(boardSvg).join("");
+
+      const moveCart = (x) => {
+        cartX = Math.max(36, Math.min(264, x));
+        cart.setAttribute("transform", `translate(${cartX - 150},0)`);
+      };
+      ui.onDown = (p) => moveCart(p.x);
+      ui.onPoint = (p) => moveCart(p.x);
+
+      const finish = () => {
+        if (over) return;
+        over = true;
+        if (raf) cancelAnimationFrame(raf);
+        done(clamp100(got / goodTotal * 100 - wrong * 10),
+          wrong ? `節のある板を${wrong}枚つかんでしもうたな。`
+            : missed ? `良い板を${missed}枚のがしたのう。` : "どれも素直な板ばかりじゃ。目が利くのう。");
+      };
+      ui.onStop = () => { over = true; if (raf) cancelAnimationFrame(raf); };
+
+      const loop = () => {
+        const now = Date.now() - start;
+        boards.forEach(b => {
+          if (b.caught || b.gone) return;
+          const el = now - b.t0;
+          if (el < 0) return;
+          const g = svg.querySelector("#b" + b.i);
+          const y = -20 + (el / SPAN) * 340;
+          g.setAttribute("opacity", "1");
+          g.setAttribute("transform", `translate(${b.x},${y})`);
+          /* 受け台の高さに来たら、受けたかどうかを見る */
+          if (y >= FLOOR - 14 && y <= FLOOR + 4) {
+            if (Math.abs(b.x - cartX) < 38) {
+              b.caught = true;
+              if (b.kind === "good") { got++; } else { wrong++; }
+              g.setAttribute("opacity", "0");
+              ui.say(b.kind === "good" ? "よい板じゃ" : "……節が入っておるぞ");
+              ui.progress((got + wrong + missed) / TOTAL);
+            }
+          } else if (y > 320) {
+            b.gone = true;
+            if (b.kind === "good") missed++;
+            g.setAttribute("opacity", "0");
+            ui.progress((got + wrong + missed) / TOTAL);
+          }
+        });
+        if (boards.every(b => b.caught || b.gone)) { setTimeout(finish, 300); return; }
+        raf = requestAnimationFrame(loop);
+      };
+      raf = requestAnimationFrame(loop);
     }
   },
 
@@ -2155,6 +2286,7 @@ const CRAFT_ACTIONS = {
    書かなければ、その工程タイプの既定（STEP_TYPE_OF）が使われる。
    同じ「組立」の工程でも、家具によって別の遊びにできる */
 const ACTION_OF = {
+  bench:    "mekiki",    // 木材を選ぶ     → 落ちてくる板から良い板だけ受ける
   chest:    "rhythm",    // 引き出しを作る → ほぞを拍に合わせて打ちこむ
   wardrobe: "kidori"     // 扉を作る       → 一枚板から扉を木取りする
 };
@@ -2167,7 +2299,7 @@ const actionFor = (step) =>
 /* 山場工程：家具ごとに1つ、品質の増減が2倍になる工程。
    一度その家具を作ると図鑑に記録され、次から見えるようになる */
 const CRITICAL_STEP = {
-  stool: 1, couch: 2, chest: 1, mitsudan: 1,
+  stool: 1, couch: 2, bench: 0, chest: 1, mitsudan: 1,
   dresser: 2, jewelry: 1, curio: 2, wardrobe: 1
 };
 
