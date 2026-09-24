@@ -1790,6 +1790,206 @@ const CRAFT_ACTIONS = {
     }
   },
 
+  /* ---------- 木取り：一枚の板から、節をよけて部材を切り出す ---------- */
+  kidori: {
+    name: "木取り", limit: 0,
+    tip: "一枚の板から扉の部材を切り出す。<b>節（ふし）をよけて</b>、四つとも板に納めること。",
+    start(svg, ui, done) {
+      const COLS = 5, ROWS = 4, CELL = 48, OX = 30, OY = 52;
+      const knots = [{ c: 0, r: 0 }, { c: 4, r: 3 }];
+      const parts = [
+        { id: "a", w: 2, h: 3, name: "扉板（左）", fill: "#a9713f" },
+        { id: "b", w: 2, h: 3, name: "扉板（右）", fill: "#9a6435" },
+        { id: "c", w: 1, h: 3, name: "たて框",     fill: "#8a5a30" },
+        { id: "d", w: 2, h: 1, name: "台輪",       fill: "#8a5a30" }
+      ];
+      const cx = (c) => OX + c * CELL, cy = (r) => OY + r * CELL;
+      let bad = 0, placed = 0;
+
+      /* 部材は板の下に並べて置いておく */
+      parts.forEach((p, i) => { p.sx = 24 + i * 68; p.sy = 268; });
+
+      svg.innerHTML =
+        `<rect x="${OX - 8}" y="${OY - 8}" width="${COLS * CELL + 16}" height="${ROWS * CELL + 16}"
+           rx="10" fill="#8a5a30"/>
+         <rect x="${OX}" y="${OY}" width="${COLS * CELL}" height="${ROWS * CELL}" fill="#f0d3a4"/>` +
+        /* 木目 */
+        [...Array(ROWS * 2)].map((_, i) =>
+          `<path d="M${OX} ${OY + i * CELL / 2 + 10} Q${OX + COLS * CELL / 2} ${OY + i * CELL / 2 + 2}
+             ${OX + COLS * CELL} ${OY + i * CELL / 2 + 10}" stroke="#dfae72" stroke-width="1.6" fill="none"/>`).join("") +
+        /* マス目 */
+        [...Array(COLS + 1)].map((_, c) =>
+          `<path d="M${cx(c)} ${OY} L${cx(c)} ${OY + ROWS * CELL}" stroke="#b07c4a" stroke-width="1" opacity=".5"/>`).join("") +
+        [...Array(ROWS + 1)].map((_, r) =>
+          `<path d="M${OX} ${cy(r)} L${OX + COLS * CELL} ${cy(r)}" stroke="#b07c4a" stroke-width="1" opacity=".5"/>`).join("") +
+        /* 節 */
+        knots.map(k => `<g>
+          <ellipse cx="${cx(k.c) + CELL / 2}" cy="${cy(k.r) + CELL / 2}" rx="17" ry="14" fill="#8a5a30"/>
+          <ellipse cx="${cx(k.c) + CELL / 2}" cy="${cy(k.r) + CELL / 2}" rx="10" ry="8" fill="#6e4526"/>
+          <ellipse cx="${cx(k.c) + CELL / 2}" cy="${cy(k.r) + CELL / 2}" rx="4" ry="3" fill="#523venue"/>
+        </g>`).join("").replace("#523venue", "#523318") +
+        /* 部材 */
+        parts.map(p => `<g id="q${p.id}" style="cursor:grab">
+          <rect x="${p.sx}" y="${p.sy}" width="${p.w * CELL / 2}" height="${p.h * CELL / 2}"
+            rx="3" fill="${p.fill}" stroke="#8a5a30" stroke-width="2"/>
+        </g>`).join("") +
+        `<text x="150" y="30" text-anchor="middle" font-size="14" fill="#8a6446">節をよけて、板から取る</text>`;
+
+      /* 部材を板の大きさに合わせて置く（並べているときは半分の大きさ） */
+      const occupied = () => {
+        const used = {};
+        knots.forEach(k => { used[k.c + "," + k.r] = true; });
+        parts.forEach(p => {
+          if (!p.at) return;
+          for (let i = 0; i < p.w; i++) for (let j = 0; j < p.h; j++) used[(p.at.c + i) + "," + (p.at.r + j)] = true;
+        });
+        return used;
+      };
+
+      let held = null, grab = null;
+      ui.onDown = (pt) => {
+        held = parts.filter(p => !p.at).find(p => {
+          const w = p.w * CELL / 2, h = p.h * CELL / 2;
+          return pt.x > p.sx - 10 && pt.x < p.sx + w + 10 && pt.y > p.sy - 10 && pt.y < p.sy + h + 10;
+        });
+        if (held) {
+          grab = { x: pt.x - held.sx, y: pt.y - held.sy };
+          /* つかんだら実寸になる */
+          const rc = svg.querySelector("#q" + held.id + " rect");
+          rc.setAttribute("width", held.w * CELL);
+          rc.setAttribute("height", held.h * CELL);
+        }
+      };
+      ui.onPoint = (pt) => {
+        if (!held) return;
+        svg.querySelector("#q" + held.id).setAttribute("transform",
+          `translate(${pt.x - grab.x - held.sx},${pt.y - grab.y - held.sy})`);
+      };
+      ui.onUp = (pt) => {
+        if (!held) return;
+        const p = held; held = null;
+        const g = svg.querySelector("#q" + p.id), rc = g.querySelector("rect");
+        const at = { x: pt.x - grab.x, y: pt.y - grab.y };
+        const c = Math.round((at.x - OX) / CELL), r = Math.round((at.y - OY) / CELL);
+        const used = occupied();
+        let ok = c >= 0 && r >= 0 && c + p.w <= COLS && r + p.h <= ROWS;
+        if (ok) {
+          for (let i = 0; i < p.w && ok; i++)
+            for (let j = 0; j < p.h && ok; j++)
+              if (used[(c + i) + "," + (r + j)]) ok = false;
+        }
+        if (!ok) {                       /* 板からはみ出す・節にかかる・重なる */
+          bad++;
+          g.removeAttribute("transform");
+          rc.setAttribute("width", p.w * CELL / 2);
+          rc.setAttribute("height", p.h * CELL / 2);
+          ui.say(c >= 0 && r >= 0 && c + p.w <= COLS && r + p.h <= ROWS
+            ? "そこは節じゃ。よけて取るのじゃ。" : "板からはみ出しておるぞ。");
+          return;
+        }
+        p.at = { c, r };
+        placed++;
+        g.setAttribute("transform", `translate(${cx(c) - p.sx},${cy(r) - p.sy})`);
+        rc.setAttribute("stroke", "#523318");
+        rc.setAttribute("stroke-width", "3");
+        ui.say("");
+        ui.progress(placed / parts.length);
+        if (placed === parts.length) {
+          setTimeout(() => done(clamp100(100 - bad * 7),
+            bad ? `${bad}度ほど取り直したな。` : "無駄なく取れておる。見事な木取りじゃ。"), 280);
+        }
+      };
+    }
+  },
+
+  /* ---------- 釘打ち：拍に合わせてほぞを打ちこむ ---------- */
+  rhythm: {
+    name: "釘打ち", limit: 0,
+    tip: "ほぞに釘を打ちこむ。輪がしるしに<b>重なった瞬間</b>に叩く。強すぎても弱すぎても木が割れる。",
+    start(svg, ui, done) {
+      const N = 8, TARGET = 16, R0 = 44, DUR = 820, GAP = 240;
+      const nails = [];
+      for (let i = 0; i < N; i++) nails.push({ x: 42 + i * 31, hit: null });
+      let idx = 0, t0 = Date.now() + 500, phase = "gap", raf = null, sum = 0;
+
+      svg.innerHTML =
+        `<rect x="16" y="150" width="268" height="86" rx="10" fill="#8a5a30"/>
+         <rect x="16" y="140" width="268" height="18" rx="6" fill="#b07c4a"/>` +
+        nails.map((n, i) => `<g id="n${i}">
+          <rect x="${n.x - 3}" y="118" width="6" height="30" rx="2" fill="#b8b8b8"/>
+          <ellipse cx="${n.x}" cy="118" rx="7" ry="3.5" fill="#d8d8d8"/>
+        </g>`).join("") +
+        `<circle id="ring" cx="${nails[0].x}" cy="118" r="${R0}" fill="none"
+           stroke="#7a9c6e" stroke-width="3.5" opacity="0"/>
+         <circle id="mark" cx="${nails[0].x}" cy="118" r="${TARGET}" fill="none"
+           stroke="#c9a24b" stroke-width="3" stroke-dasharray="4 4"/>
+         <text id="hitword" x="150" y="76" text-anchor="middle" font-size="22" fill="#a97c14" opacity="0"></text>
+         <text x="150" y="34" text-anchor="middle" font-size="14" fill="#8a6446">輪が金の印に重なったら叩く</text>
+         <text x="150" y="272" text-anchor="middle" font-size="13" fill="#b08a63">トン……トン……と、同じ拍で</text>`;
+
+      const ring = svg.querySelector("#ring"), mark = svg.querySelector("#mark");
+      const word = svg.querySelector("#hitword");
+
+      const moveTo = (i) => {
+        ring.setAttribute("cx", nails[i].x);
+        mark.setAttribute("cx", nails[i].x);
+      };
+      const say = (t, col) => {
+        word.textContent = t; word.setAttribute("fill", col);
+        word.setAttribute("opacity", "1");
+        setTimeout(() => word.setAttribute("opacity", "0"), 420);
+      };
+
+      /* 打った瞬間の輪の大きさで出来を決める */
+      const judge = (r) => {
+        const off = Math.abs(r - TARGET);
+        let s, t, col;
+        if (off <= 3)      { s = 100; t = "会心！"; col = "#a97c14"; }
+        else if (off <= 8) { s = 78;  t = "よし";   col = "#7a9c6e"; }
+        else if (off <= 15){ s = 48;  t = "あまい"; col = "#8a6446"; }
+        else               { s = 12;  t = "曲がった"; col = "#b8563e"; }
+        nails[idx].hit = s; sum += s;
+        say(t, col);
+        /* 打てたぶんだけ釘が沈む */
+        const g = svg.querySelector("#n" + idx);
+        g.setAttribute("transform", `translate(0,${8 + (100 - s) / 100 * 6})`);
+        if (s <= 12) g.setAttribute("opacity", ".55");
+        ui.progress((idx + 1) / N);
+        idx++;
+        if (idx >= N) {
+          ring.setAttribute("opacity", "0");
+          phase = "done";
+          const avg = sum / N;
+          setTimeout(() => done(clamp100(avg),
+            avg >= 85 ? "小気味のよい音じゃった。" :
+            avg >= 55 ? "まずまずの手さばきじゃ。" : "拍が合っておらんかったのう。"), 420);
+        } else {
+          phase = "gap"; t0 = Date.now();
+          moveTo(idx);
+        }
+      };
+
+      const loop = () => {
+        const el = Date.now() - t0;
+        if (phase === "swing") {
+          const p = Math.min(1, el / DUR);
+          ring.setAttribute("r", (R0 - (R0 - 5) * p).toFixed(1));
+          if (p >= 1) judge(0);          // 叩かずに過ぎた
+        } else if (phase === "gap") {
+          if (el >= GAP) {
+            phase = "swing"; t0 = Date.now();
+            ring.setAttribute("opacity", "1");
+            ring.setAttribute("r", R0);
+          }
+        }
+        if (phase !== "done") raf = requestAnimationFrame(loop);
+      };
+      raf = requestAnimationFrame(loop);
+      ui.onStop = () => { if (raf) cancelAnimationFrame(raf); phase = "done"; };
+      ui.onDown = () => { if (phase === "swing") judge(+ring.getAttribute("r")); };
+    }
+  },
+
   /* ---------- 彫刻：下絵の文様を一筆でなぞる ---------- */
   hori: {
     name: "彫刻", limit: 24000,
@@ -1951,8 +2151,18 @@ const CRAFT_ACTIONS = {
   }
 };
 
+/* 家具ごとに、山場で出すミニゲームを指定する。
+   書かなければ、その工程タイプの既定（STEP_TYPE_OF）が使われる。
+   同じ「組立」の工程でも、家具によって別の遊びにできる */
+const ACTION_OF = {
+  chest:    "rhythm",    // 引き出しを作る → ほぞを拍に合わせて打ちこむ
+  wardrobe: "kidori"     // 扉を作る       → 一枚板から扉を木取りする
+};
+
 /* その工程に職人アクションがあるか */
-const actionFor = (step) => CRAFT_ACTIONS[STEP_TYPE_OF[step.label]] || null;
+const actionFor = (step) =>
+  CRAFT_ACTIONS[ACTION_OF[state.currentId]] ||
+  CRAFT_ACTIONS[STEP_TYPE_OF[step.label]] || null;
 
 /* 山場工程：家具ごとに1つ、品質の増減が2倍になる工程。
    一度その家具を作ると図鑑に記録され、次から見えるようになる */
@@ -2778,6 +2988,7 @@ function runAction(step) {
   };
 
   const cleanup = () => {
+    if (ui.onStop) ui.onStop();          // 動き続けるアクションを止める
     if (tick) clearInterval(tick);
     svg.onpointerdown = svg.onpointermove = svg.onpointerup = svg.onpointercancel = null;
     actRunning = null;
