@@ -3,7 +3,16 @@
    依存ライブラリなし。GitHubトークンはこの端末のブラウザのみに保存。
    ========================================================= */
 
-const ADMIN_PW = "100";               // ログインパスワード（固定）
+/* ---- ログインパスワードと、できることの範囲 ----
+   100 … グッズ以外をぜんぶ編集できる
+   314 … グッズもふくめて ぜんぶ編集できる
+   Apps Script（スプレッドシート）へ送る鍵は、どちらでログインしても
+   これまでどおり "100" のまま。だから再デプロイは要りません。      */
+const PW_BASIC = "100";
+const PW_FULL  = "314";
+const ADMIN_PW = "100";               // Apps Script に送る鍵（サーバー側の ADMIN_KEY と同じ）
+let level = null;                     // "basic" | "full"
+const canGoods = () => level === "full";
 const CFG_KEY = "kinoko_admin_cfg";
 const RECORDS_PATH = "kinoko/web/data/records.json";
 const COLUMNS_PATH = "kinoko/web/data/columns.json";
@@ -35,17 +44,43 @@ function boot() {
 }
 
 function showLock() {
+  level = null;
   $("#lock").hidden = false;
   $("#adminMain").hidden = true;
+  $("#pinInput").value = "";
+  $("#pinErr").hidden = true;
   setTimeout(() => $("#pinInput").focus(), 50);
 }
-function unlock() {
+function unlock(lv) {
+  level = lv;
   $("#lock").hidden = true;
   $("#adminMain").hidden = false;
+  applyLevel();
 }
 function checkPin() {
-  if ($("#pinInput").value.trim() === ADMIN_PW) { $("#pinErr").hidden = true; unlock(); }
+  const v = $("#pinInput").value.trim();
+  if (v === PW_FULL)       { $("#pinErr").hidden = true; unlock("full"); }
+  else if (v === PW_BASIC) { $("#pinErr").hidden = true; unlock("basic"); }
   else { $("#pinErr").hidden = false; $("#pinInput").select(); }
+}
+function logout() {
+  switchTab("records");
+  showLock();
+}
+
+/* できることの範囲を画面に反映する */
+function applyLevel() {
+  const full = canGoods();
+  const tab = $('.adm-tab[data-tab="goods"]');
+  const panel = $('[data-panel="goods"]');
+  if (tab) tab.hidden = !full;
+  if (panel && !full) panel.hidden = true;
+  if (!full && $('.adm-tab[data-tab="goods"]')?.getAttribute("aria-pressed") === "true") switchTab("records");
+  const badge = $("#lvBadge");
+  if (badge) {
+    badge.textContent = full ? "すべて編集できます" : "グッズ以外を編集できます";
+    badge.className = "adm-badge" + (full ? " is-full" : "");
+  }
 }
 
 /* ---------------- 設定 ---------------- */
@@ -81,6 +116,7 @@ function bindUI() {
 
   // パスワード
   $("#pinBtn").addEventListener("click", checkPin);
+  $("#logoutBtn")?.addEventListener("click", logout);
   $("#pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkPin(); });
 
   // 編集対象の切替
@@ -488,6 +524,7 @@ function bindExtras() {
 }
 
 function switchTab(tab) {
+  if (tab === "goods" && !canGoods()) return;     // グッズは 314 でログインしたときだけ
   $$(".adm-tab").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tab === tab));
   $$("[data-panel]").forEach((p) => { p.hidden = p.dataset.panel !== tab; });
   if (tab === "visits") loadVisits();
@@ -990,6 +1027,7 @@ function nextGoodsId() {
 }
 
 async function publishGoods() {
+  if (!canGoods()) { status("#goodsStatus", "グッズを編集するには 314 でログインしてください", "err"); return; }
   if (!cfg.token) { openSettings(); status("#goodsStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
   const name = $("#g_name").value.trim();
   if (!name) { status("#goodsStatus", "商品名を入力してください", "err"); return; }
@@ -1031,6 +1069,7 @@ async function publishGoods() {
 }
 
 async function deleteGoods(id) {
+  if (!canGoods()) { status("#goodsStatus", "グッズを編集するには 314 でログインしてください", "err"); return; }
   if (typeof id !== "string" || !id) id = $("#goodsSelect").value;
   if (!id) { status("#goodsStatus", "先に消したい商品をえらんでください", "err"); return; }
   if (!cfg.token) { openSettings(); status("#goodsStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
@@ -1160,6 +1199,7 @@ function tidyShopDesc(t, url) {
 
 /* 商品URLから名前・写真・値段を読み込む */
 async function fetchGoodsMeta() {
+  if (!canGoods()) { status("#goodsStatus", "グッズを編集するには 314 でログインしてください", "err"); return; }
   const url = $("#g_url").value.trim();
   const msg = $("#goodsFetchMsg");
   if (!url) { status("#goodsStatus", "先に商品のURLを貼ってください", "err"); return; }

@@ -505,6 +505,14 @@ textarea.adm-input { resize: vertical; line-height: 1.7; }
 .lock__card .adm-input { margin-bottom: 16px; text-align: center; }
 .lock__card .btn-primary { width: 100%; }
 .lock__err { color: var(--poison); font-size: 0.85rem; margin: 12px 0 0; }
+.lock__note { color: var(--ink-soft); font-size: 0.78rem; line-height: 1.7; margin: 16px 0 0; text-align: left;
+              background: rgba(0,0,0,.04); border-radius: 10px; padding: 10px 12px; }
+/* 管理ページ：いまの権限のしるし */
+.adm-head-r { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.adm-badge { font-size: 0.68rem; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+             background: #e7e0cf; color: #6f6a5c; border: 1px solid var(--line); }
+.adm-badge.is-full { background: #2f5d3a; color: #f2efe4; border-color: #2f5d3a; }
+@media (max-width: 560px) { .adm-badge { font-size: 0.6rem; padding: 2px 7px; } }
 
 @media (max-width: 640px) {
   .adm-grid { grid-template-columns: 1fr; }

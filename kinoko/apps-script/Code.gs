@@ -18,8 +18,12 @@ var TOP_N = 5;     // 表示する順位の数
 var KEEP  = 30;    // 1ゲームあたり保存しておく件数
 var NAME_MAX = 12;
 
-/* 管理画面（admin.html）から集計を見るときの合言葉。変えても構いません。 */
-var ADMIN_KEY = '100';
+/* 管理画面（admin.html）から集計を見るときの合言葉。変えても構いません。
+   管理画面はどちらのパスワードでログインしても '100' を送るので、
+   このファイルを直さなくても今までどおり動きます（再デプロイ不要）。 */
+var ADMIN_KEY  = '100';
+var ADMIN_KEYS = ['100', '314'];
+function isAdminKey(k){ return ADMIN_KEYS.indexOf(String(k || '')) >= 0; }
 
 var GAMES = {
   match: { name: 'きのこマッチパズル', max: 200000 },
@@ -91,7 +95,7 @@ function hit_(page, isNew) {
 }
 
 function stats_(key) {
-  if (String(key || '') !== ADMIN_KEY) return { ok: false, error: 'key' };
+  if (!isAdminKey(key)) return { ok: false, error: 'key' };
   var sh = sheet_(SHEET_VISIT, ['日付', 'ページ', '表示回数', 'はじめての人']);
   var last = sh.getLastRow();
   if (last < 2) return { ok: true, total: 0, people: 0, days: [], pages: [] };
@@ -194,7 +198,7 @@ function submit_(game, name, score) {
 
 /* 管理画面から、ふさわしくない名前を消すため */
 function remove_(key, game, name, score) {
-  if (String(key || '') !== ADMIN_KEY) return { ok: false, error: 'key' };
+  if (!isAdminKey(key)) return { ok: false, error: 'key' };
   var sh = rankSheet_();
   var last = sh.getLastRow();
   if (last < 2) return { ok: true, top: [] };
@@ -267,7 +271,7 @@ function addPost_(b) {
 }
 
 function posts_(key) {
-  var admin = String(key || '') === ADMIN_KEY;
+  var admin = isAdminKey(key);
   var sh = postSheet_(), last = sh.getLastRow();
   if (last < 2) return [];
   var vals = sh.getRange(2, 1, last - 1, 7).getValues();
@@ -304,7 +308,7 @@ function comments_() {
 function addComment_(b) {
   var pid = String(b.id || '');
   if (!pid) return { ok: false, error: 'id' };
-  var isAdmin = String(b.key || '') === ADMIN_KEY;
+  var isAdmin = isAdminKey(b.key);
   var name = isAdmin ? '石原 巖' : cleanName_(b.name);
   var text = clean_(b.text, CMT_MAX);
   if (!text) return { ok: false, error: 'text' };
@@ -314,7 +318,7 @@ function addComment_(b) {
 
 /* 管理画面から：公開する／下げる／消す、コメントを消す */
 function moderate_(b) {
-  if (String(b.key || '') !== ADMIN_KEY) return { ok: false, error: 'key' };
+  if (!isAdminKey(b.key)) return { ok: false, error: 'key' };
   var sh = postSheet_(), last = sh.getLastRow();
   if (last < 2) return { ok: true };
   var vals = sh.getRange(2, 1, last - 1, 8).getValues();
@@ -359,7 +363,7 @@ function clean_(s, max) {
  */
 
 function fetchMeta_(b) {
-  if (String(b.key || '') !== ADMIN_KEY) return { ok: false, error: 'key' };
+  if (!isAdminKey(b.key)) return { ok: false, error: 'key' };
   var url = String(b.url || '').trim();
   if (!/^https?:\/\//i.test(url)) return { ok: false, error: 'url' };
 
