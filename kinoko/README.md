@@ -32,7 +32,7 @@
 **管理ページ `admin.html`（記録の追加・編集）**
 - 📝 フォームに入力 → 📷 スマホでその場撮影 → 🍄 **「公開」ボタン**でHPに反映
 - GitHub に直接保存するので、サーバー不要・数分で反映・写真もデータも全部リポジトリに残る
-- 使い方は [`docs/admin-guide.md`](docs/admin-guide.md)（最初に1回だけ GitHub トークンの登録が必要）
+- 使い方は [`docs/admin-guide.md`](docs/admin-guide.md)、図入りの説明書は [`web/guide.pdf`](web/guide.pdf)（最初に1回だけ GitHub トークンの登録が必要）
 
 データは [`web/data/records.json`](web/data/records.json)（きのこ）と
 [`web/data/columns.json`](web/data/columns.json)（コラム）に入っています。
