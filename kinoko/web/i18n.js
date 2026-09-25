@@ -306,6 +306,11 @@
     "しまうキノコを おしてね": "Tap the mushroom to stash",
     "消したいキノコを おしてね": "Tap the mushroom to remove",
     "🌀 まぜ直す": "🌀 Reshuffle", "✂ 1つ消す": "✂ Remove one",
+    "📳 ふるえ ON": "📳 Vibration ON", "📳 ふるえ OFF": "📳 Vibration OFF",
+    "ふるえは、はじけた時などに動きます。": "Your phone buzzes when a mushroom bursts.",
+    "※ iPhone・iPad は、ふるえに対応していない場合があります（押して確かめてください）。":
+      "* iPhone and iPad may not support vibration — tap the button to find out.",
+    "※ この端末はふるえに対応していないようです。": "* This device does not seem to support vibration.",
     "👣 手数を +3": "👣 +3 moves", "⏱ じかんを +15秒": "⏱ +15 seconds",
     "胞子 5": "5 spores", "胞子 8": "8 spores", "胞子 12": "12 spores",
     "胞子がたりないよ": "Not enough spores", "手数がたりないよ": "Not enough moves",

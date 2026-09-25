@@ -153,7 +153,8 @@
       <button class="tool" id="pwPlus" type="button" style="grid-column:1 / -1"><span id="pwPlusK">👣 手数を +3</span><span class="tool__c">胞子 12</span></button>
     </div>
 
-    <p class="under"><button class="sound" id="demo">✨ はじける演出を見る</button><button class="sound" id="bgmBtn">🎵 音楽 OFF</button><button class="sound" id="sw">🔊 効果音 ON</button></p>
+    <p class="under"><button class="sound" id="demo">✨ はじける演出を見る</button><button class="sound" id="bgmBtn">🎵 音楽 OFF</button><button class="sound" id="sw">🔊 効果音 ON</button><button class="sound" id="vb">📳 ふるえ ON</button></p>
+    <p class="note" id="vibNote"></p>
 
     <section class="flow">
       <h3>ゲームの流れ</h3>
@@ -230,6 +231,58 @@
                          $("#best").textContent = best; }
     loadBest();
     try { sound = localStorage.getItem("kinoko_match_sound") !== "0"; } catch(e){}
+
+    /* ---------- ふるえ（バイブレーション） ----------
+       Android の Chrome などは navigator.vibrate で震えます。
+       iPhone の Safari はこの機能を持っていないため、
+       iOS 17.4 以降の「スイッチ」の触感を借りる回り道を用意していますが、
+       機種や設定によっては何も起きません。 */
+    let vib = true;
+    try { vib = localStorage.getItem("kinoko_match_vib") !== "0"; } catch(e){}
+    const canVib = typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "")
+               || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    let iosSwitch = null;
+    function iosTap(){
+      try{
+        if(!iosSwitch){
+          const box = document.createElement("div");
+          box.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden";
+          box.innerHTML = '<input type="checkbox" switch id="__hapticSw"><label for="__hapticSw"></label>';
+          document.body.appendChild(box);
+          iosSwitch = box.querySelector("label");
+        }
+        iosSwitch.click();
+      }catch(e){}
+    }
+    function buzz(pattern){
+      if(!vib) return;
+      try{
+        if(canVib) navigator.vibrate(pattern);
+        else if(isIOS) iosTap();
+      }catch(e){}
+    }
+    const BUZZ = {
+      grow:  20,                           // 育った
+      chain: [0,16,40,16],                 // れんさ
+      burst: [0,30,40,60,50,130],          // はじけた
+      end:   [0,60,70,60,70,170],          // おしまい
+    };
+    const vbBtn = $("#vb");
+    function updVib(){
+      vbBtn.textContent = vib ? "📳 ふるえ ON" : "📳 ふるえ OFF";
+      $("#vibNote").textContent = canVib
+        ? "ふるえは、はじけた時などに動きます。"
+        : (isIOS ? "※ iPhone・iPad は、ふるえに対応していない場合があります（押して確かめてください）。"
+                 : "※ この端末はふるえに対応していないようです。");
+    }
+    updVib();
+    vbBtn.addEventListener("click", function(){
+      vib = !vib;
+      try{ localStorage.setItem("kinoko_match_vib", vib ? "1" : "0"); }catch(e){}
+      updVib();
+      if(vib) buzz(BUZZ.burst);          // ONにした時は、ためしに一度ふるわせる
+    });
 
     /* ---------- 効果音 ---------- */
     let AC = null;
@@ -416,6 +469,7 @@
             addSP(1);
             showToast(KINDS[gsp].n + "が育った！" + (chain>1 ? "　"+chain+"れんさ" : ""));
             sfxGrow(chain);
+            buzz(chain > 1 ? BUZZ.chain : BUZZ.grow);
           }else{
             // 大きいキノコ3つ → はじけて、まわりごと消える
             burst = true;
@@ -445,7 +499,7 @@
             score += Math.round((320 * g.length + 25 * extra) * mult);
             addSP(3 + chain - 1);
             showToast("はじけた！ 胞子 +" + (3 + chain - 1) + (chain>1 ? "　"+chain+"れんさ" : ""), true);
-            sfxBurst();
+            sfxBurst(); buzz(BUZZ.burst);
           }
         }
         anchor = null;
@@ -695,7 +749,7 @@
                               : "また森へおいで");
       $("#over").hidden = false;
       updSP(); holdLabel();
-      sfxEnd();
+      sfxEnd(); buzz(BUZZ.end);
       showRank(mode, score);
     }
     $("#again").addEventListener("click", function(){ $("#over").hidden = true; $("#start").hidden = false; });
@@ -933,7 +987,7 @@
         spore(x + CELL/2, y + CELL/2, dsp, 42);
       });
       showToast("はじけた！ 胞子が舞う", true);
-      sfxBurst();
+      sfxBurst(); buzz(BUZZ.burst);
     });
 
     $("#sw").textContent = sound ? "🔊 効果音 ON" : "🔇 効果音 OFF";
@@ -946,7 +1000,7 @@
   </script>
 
   <script src="kinoko-bgm.js?v=20260922-0900"></script>
-  <script src="i18n.js?v=20260922-1000"></script>
+  <script src="i18n.js?v=20260925-0930"></script>
   <script>if(window.BGM) BGM.attach("ponpon", "#bgmBtn");</script>
 </body>
 </html>
