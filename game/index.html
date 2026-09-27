@@ -141,6 +141,8 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .card .art{ width:116px; height:116px; margin:0 auto; display:block;
   filter:drop-shadow(0 4px 4px rgba(107,74,47,.22)); }
 .card .art svg{ width:100%; height:100%; display:block; }
+/* 実物の写真を入れたときも、枠に収める */
+.card .art img{ width:100%; height:100%; object-fit:contain; display:block; }
 .card h2{ text-align:center; font-size:1.06rem; margin-top:2px; letter-spacing:.04em; }
 .card .desc{ font-size:.75rem; color:var(--brown-mid); text-align:center; margin-top:4px; line-height:1.6; }
 .card .meta{ display:flex; justify-content:center; gap:6px; margin-top:8px; font-size:.7rem; flex-wrap:wrap; }
