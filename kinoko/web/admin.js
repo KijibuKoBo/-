@@ -104,12 +104,9 @@ function bindUI() {
   });
 
   $("#saveCfgBtn").addEventListener("click", () => {
-    cfg.token = $("#cfgToken").value.trim();
-    cfg.owner = $("#cfgOwner").value.trim() || DEFAULT_CFG.owner;
-    cfg.repo = $("#cfgRepo").value.trim() || DEFAULT_CFG.repo;
-    cfg.branch = $("#cfgBranch").value.trim() || DEFAULT_CFG.branch;
+    readCfgForm(false);
     saveCfg();
-    status("#cfgStatus", "✓ 設定を保存しました", "ok");
+    status("#cfgStatus", `✓ 設定を保存しました（${cfg.owner} / ${cfg.repo} / ${cfg.branch}）`, "ok");
   });
 
   $("#testBtn").addEventListener("click", testConnection);
@@ -350,32 +347,79 @@ function renderPreview(r, src) {
 function closeModal() { $("#modal").hidden = true; document.body.style.overflow = ""; }
 
 /* ---------------- GitHub API ---------------- */
-function ghHeaders() { return { Authorization: "Bearer " + cfg.token, Accept: "application/vnd.github+json" }; }
+/* 貼り付けたトークンに混ざりがちな、改行・空白・全角スペース・"Bearer " を取り除く。
+   ヘッダに改行が1つでも入ると、ブラウザは通信そのものを拒否して
+   Safari では「Load failed」としか出ないため、ここで必ず掃除する。 */
+function cleanToken(v) {
+  return String(v == null ? "" : v).replace(/[\s\u3000]+/g, "").replace(/^Bearer/i, "");
+}
+/* 「オーナー」「リポジトリ」欄に GitHub のURLや owner/repo 形式を入れられても受け付ける */
+function cleanOwnerRepo(owner, repo) {
+  const strip = (v) => String(v == null ? "" : v).trim()
+    .replace(/^https?:\/\/(www\.)?github\.com\//i, "")   // クローン用のURLごと貼られた場合
+    .replace(/^\/+|\/+$/g, "");                           // 前後のスラッシュ
+  owner = strip(owner); repo = strip(repo);
+  const take = (v) => v.split("/").filter((x) => x !== "");
+  let a = take(repo);
+  if (a.length >= 2) { owner = a[0]; repo = a[1]; }        // 「KijibuKoBo/-」のような入力
+  else if (a.length === 1) { repo = a[0]; }
+  a = take(owner);
+  if (a.length >= 2) { owner = a[0]; if (!repo) repo = a[1]; }
+  else if (a.length === 1) { owner = a[0]; }
+  repo = repo.replace(/\.git$/i, "");                      // 「-.git」のような末尾
+  return { owner: owner || DEFAULT_CFG.owner, repo: repo || DEFAULT_CFG.repo };
+}
+/* 設定欄を読んで整え、画面にも直った値を書き戻す */
+function readCfgForm(keepToken) {
+  const t = cleanToken($("#cfgToken").value);
+  if (t || !keepToken) cfg.token = t || (keepToken ? cfg.token : "");
+  const or = cleanOwnerRepo($("#cfgOwner").value, $("#cfgRepo").value);
+  cfg.owner = or.owner; cfg.repo = or.repo;
+  cfg.branch = String($("#cfgBranch").value || "").trim() || DEFAULT_CFG.branch;
+  $("#cfgOwner").value = cfg.owner;
+  $("#cfgRepo").value = cfg.repo;
+  $("#cfgBranch").value = cfg.branch;
+  if (cfg.token) $("#cfgToken").value = cfg.token;
+}
+function ghHeaders() { return { Authorization: "Bearer " + cleanToken(cfg.token), Accept: "application/vnd.github+json" }; }
 function ghUrl(path) { return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`; }
+/* fetch そのものが失敗したとき（Load failed / Failed to fetch）は、
+   何を見直せばよいかが分かる言葉に置きかえる */
+async function ghFetch(url, opt) {
+  if (!cleanToken(cfg.token)) throw new Error("GitHubトークンが入っていません。⚙設定で貼り付けてください");
+  try {
+    return await fetch(url, opt);
+  } catch (e) {
+    throw new Error("GitHubにつながりませんでした。"
+      + "トークンに改行や空白が混ざっていないか、電波が届いているかを確かめてください");
+  }
+}
 async function ghGet(path) {
-  const res = await fetch(ghUrl(path) + "?ref=" + encodeURIComponent(cfg.branch), { headers: ghHeaders(), cache: "no-store" });
+  const res = await ghFetch(ghUrl(path) + "?ref=" + encodeURIComponent(cfg.branch), { headers: ghHeaders(), cache: "no-store" });
   if (res.status === 404) return null;
+  if (res.status === 401) throw new Error("トークンがちがうか、期限が切れています（401）");
+  if (res.status === 403) throw new Error("このトークンには権限がありません。Contents を「読み書き」にしてください（403）");
   if (!res.ok) throw new Error(`取得失敗 (${res.status}) ${await res.text()}`);
   return res.json();
 }
 async function ghPut(path, contentB64, message, sha) {
   const body = { message, content: contentB64, branch: cfg.branch };
   if (sha) body.sha = sha;
-  const res = await fetch(ghUrl(path), { method: "PUT", headers: ghHeaders(), body: JSON.stringify(body) });
+  const res = await ghFetch(ghUrl(path), { method: "PUT", headers: ghHeaders(), body: JSON.stringify(body) });
+  if (res.status === 401) throw new Error("トークンがちがうか、期限が切れています（401）");
+  if (res.status === 403) throw new Error("このトークンには書き込みの権限がありません。Contents を「読み書き」にしてください（403）");
   if (!res.ok) throw new Error(`保存失敗 (${res.status}) ${await res.text()}`);
   return res.json();
 }
 
 async function testConnection() {
-  cfg.token = $("#cfgToken").value.trim() || cfg.token;
-  cfg.owner = $("#cfgOwner").value.trim() || DEFAULT_CFG.owner;
-  cfg.repo = $("#cfgRepo").value.trim() || DEFAULT_CFG.repo;
-  cfg.branch = $("#cfgBranch").value.trim() || DEFAULT_CFG.branch;
-  status("#cfgStatus", "接続テスト中…");
+  readCfgForm(true);
+  status("#cfgStatus", `接続テスト中… （${cfg.owner} / ${cfg.repo} / ${cfg.branch}）`);
   try {
     const f = await ghGet(RECORDS_PATH);
-    if (!f) throw new Error("records.json が見つかりません（ブランチ/パスを確認）");
-    status("#cfgStatus", "✓ 接続OK。records.json を確認できました。", "ok");
+    if (!f) throw new Error(`${cfg.owner}/${cfg.repo} の ${cfg.branch} に records.json が見つかりません。`
+                          + "オーナー・リポジトリ・ブランチを確かめてください");
+    status("#cfgStatus", `✓ 接続OK。${cfg.owner}/${cfg.repo}（${cfg.branch}）を確認できました。`, "ok");
   } catch (e) { status("#cfgStatus", "✗ " + e.message, "err"); }
 }
 
