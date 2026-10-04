@@ -13,6 +13,13 @@ OUTPDF = sys.argv[2] if len(sys.argv) > 2 else "kinoko/web/guide.pdf"
 EXE = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
 TODAY = datetime.date.today().strftime("%Y年%-m月%-d日")
 
+# ====== ここを直せば、本の中身の「住所」や「合言葉」が変わります ======
+ADMIN_URL = "https://kijibukobo.github.io/-/kinoko/web/admin.html"
+SITE_URL  = "https://kijibukobo.github.io/-/kinoko/web/"
+PASSWORD  = "100"
+SHOW_PASSWORD = True        # False にすると、本には合言葉を印刷せず空欄になります
+# ====================================================================
+
 def img(name):
     p = os.path.join(SHOTS, name + ".png")
     if not os.path.exists(p):
@@ -33,7 +40,7 @@ CSS = """
 @page { size: A4; margin: 16mm 15mm 18mm; }
 * { box-sizing: border-box; }
 body { margin:0; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
-       color:#22201c; font-size:12pt; line-height:1.78; }
+       color:#22201c; font-size:13pt; line-height:1.8; }
 h1,h2,h3 { font-family:"Shippori Mincho","Yu Mincho",serif; }
 .cover { height:247mm; display:flex; flex-direction:column; align-items:center;
          justify-content:center; text-align:center; page-break-after:always; }
@@ -45,16 +52,16 @@ h1,h2,h3 { font-family:"Shippori Mincho","Yu Mincho",serif; }
 .cover .date { margin-top:30px; font-size:10.5pt; color:#7a7565; }
 section { page-break-before:always; }
 section:first-of-type { page-break-before:auto; }
-h2 { font-size:17pt; margin:0 0 4px; padding:0 0 8px; border-bottom:3px solid #2f5d3a; }
+h2 { font-size:18pt; margin:0 0 4px; padding:0 0 8px; border-bottom:3px solid #2f5d3a; }
 h2 .no { display:inline-block; background:#2f5d3a; color:#fff; border-radius:8px;
          padding:1px 12px; margin-right:10px; font-size:14pt; }
-h3 { font-size:13.5pt; margin:20px 0 6px; color:#2f5d3a; }
+h3 { font-size:14.5pt; margin:20px 0 6px; color:#2f5d3a; }
 p { margin:8px 0; }
 ol.steps { margin:10px 0; padding-left:0; list-style:none; counter-reset:st; }
-ol.steps > li { counter-increment:st; position:relative; padding:4px 0 4px 40px; margin:0; }
+ol.steps > li { counter-increment:st; position:relative; padding:5px 0 5px 42px; margin:0; }
 ol.steps > li::before { content:counter(st); position:absolute; left:0; top:6px;
-    width:26px; height:26px; border-radius:50%; background:#2f5d3a; color:#fff;
-    font-size:11pt; display:flex; align-items:center; justify-content:center; }
+    width:28px; height:28px; border-radius:50%; background:#2f5d3a; color:#fff;
+    font-size:12pt; display:flex; align-items:center; justify-content:center; }
 ul.plain { margin:8px 0; padding-left:1.3em; }
 ul.plain li { margin:5px 0; }
 figure { margin:12px 0 6px; page-break-inside:avoid; text-align:center; }
@@ -64,12 +71,13 @@ figure img { display:block; margin:0 auto; max-width:100%; max-height:88mm;
 figcaption { font-size:9.5pt; color:#6f6a5c; margin-top:5px; text-align:left; }
 figure.sm img { max-height:62mm; }
 figure.xs img { max-height:56mm; }
-.box { border-radius:10px; padding:10px 15px; margin:12px 0; font-size:11pt; page-break-inside:avoid; }
+figure.xxs img { max-height:42mm; }
+.box { border-radius:10px; padding:11px 16px; margin:13px 0; font-size:12pt; page-break-inside:avoid; }
 .warn { background:#fdeeea; border-left:6px solid #c0442c; }
 .tip  { background:#eef4ea; border-left:6px solid #2f5d3a; }
 .note { background:#f6f2e6; border-left:6px solid #a8854a; }
 .box b { color:#22201c; }
-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:11pt; }
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:12pt; }
 th,td { border:1px solid #d8d2c2; padding:7px 10px; text-align:left; vertical-align:top; }
 th { background:#efeadd; white-space:nowrap; }
 .kbd { background:#efeadd; border:1px solid #cfc7b4; border-radius:5px; padding:1px 7px;
@@ -77,7 +85,27 @@ th { background:#efeadd; white-space:nowrap; }
 .big { font-size:13pt; font-weight:700; }
 .foot { position:fixed; bottom:-12mm; left:0; right:0; text-align:center;
         font-size:9pt; color:#8a8474; }
+/* 住所・合言葉のカード */
+.card { border:2px solid #2f5d3a; border-radius:14px; padding:14px 18px; margin:14px 0; page-break-inside:avoid; }
+.card h4 { margin:0 0 6px; font-size:12pt; color:#2f5d3a; font-family:"Noto Sans JP",sans-serif; }
+.url { font-family:"DejaVu Sans Mono",monospace; font-size:11.5pt; word-break:break-all;
+       background:#f2efe4; border-radius:8px; padding:8px 11px; line-height:1.6; }
+.pwbig { font-size:30pt; font-weight:700; color:#2f5d3a; letter-spacing:.14em; text-align:center; margin:6px 0; }
+.blank { display:inline-block; border-bottom:2px solid #8a8474; min-width:120px; height:1.5em; }
+/* 「まずこれだけ」 */
+.three { display:flex; gap:10px; margin:16px 0; }
+.three div { flex:1; border:1px solid #d8d2c2; border-radius:12px; padding:12px 10px; text-align:center;
+             background:#f8f5ec; }
+.three .n { display:block; width:30px; height:30px; margin:0 auto 6px; border-radius:50%;
+            background:#2f5d3a; color:#fff; font-size:13pt; line-height:30px; }
+.three b { display:block; font-size:12.5pt; margin-bottom:3px; }
+.three small { font-size:10.5pt; color:#6f6a5c; line-height:1.6; display:block; }
+.memo { border:1px dashed #a8a292; border-radius:12px; padding:14px 18px; margin:16px 0; }
+.memo .line { border-bottom:1px solid #d8d2c2; height:2.2em; }
 """
+
+PW_BLOCK = (f'<div class="pwbig">{PASSWORD}</div>' if SHOW_PASSWORD
+            else '<p style="text-align:center;font-size:12pt">ここに書いてください　<span class="blank"></span></p>')
 
 BODY = f"""
 <div class="cover">
@@ -85,27 +113,104 @@ BODY = f"""
   <h1>イワオトキノコ<br>管理ページの つかいかた</h1>
   <p class="sub">写真と記録を、じぶんでホームページに出すための本</p>
   <div class="pw">
-    この本は <b>パスワード 100</b> でできることの説明です
+    この本のとおりにすれば、<b>ひとりで</b> ホームページを直せます
   </div>
   <p class="date">{TODAY} 版</p>
 </div>
 
 <section>
-  <h2><span class="no">1</span>ひらく／ログインする</h2>
+  <h2><span class="no">0</span>この本のつかいかた</h2>
 
-  <h3>ページをひらく</h3>
-  <p>スマホでもパソコンでも、同じ住所（URL）で開けます。
-     一度ひらいたら <b>ブックマーク（お気に入り）に入れておく</b> と、次からすぐ開けます。</p>
+  <p>この本は、<b>ホームページに あなたが じぶんで書きこむ</b> ための説明書です。
+     わからなくなったら、<b>ページ番号を言って息子に聞いて</b> ください。</p>
 
-  <div class="box warn">
-    ⚠ <b>この住所とパスワードは、人に教えないでください。</b><br>
-    ここを知られると、だれでもホームページを書きかえられてしまいます。
-    人に見せるのは <b>トップページだけ</b> にしてください。
+  <div class="card">
+    <h4>🔑 管理ページの住所（ここを開きます）</h4>
+    <div class="url">{ADMIN_URL}</div>
+    <h4 style="margin-top:14px">🔑 合言葉（パスワード）</h4>
+    {PW_BLOCK}
   </div>
 
-  <h3>ログインする</h3>
+  <div class="box warn">
+    ⚠ <b>この本は、人に見せないでください。</b><br>
+    住所と合言葉を知られると、だれでもホームページを書きかえられてしまいます。
+    家の中の決まった場所に置いておいてください。<br>
+    人に教えてよいのは、下の <b>見るだけの住所</b> です。
+  </div>
+
+  <div class="card" style="border-color:#a8854a">
+    <h4 style="color:#a8854a">👀 人に教えてよい住所（見るだけ）</h4>
+    <div class="url">{SITE_URL}</div>
+  </div>
+
+  <div class="memo">
+    <p style="margin:0 0 8px"><b>こまったときの連絡先</b></p>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="no">1</span>スマホで ひらけるようにする</h2>
+
+  <p>住所を毎回うつのは大変です。<b>はじめに一度だけ</b>、
+     スマホの画面に「ボタン」を作っておきましょう。
+     次からは、そのボタンを押すだけで開きます。</p>
+
+  <h3>iPhone のとき</h3>
   <ol class="steps">
-    <li>まん中の四角に <span class="kbd">100</span> と入れる</li>
+    <li>Safari（コンパスの絵）で、上の住所をひらく</li>
+    <li>画面のいちばん下にある <b>四角から上矢印が出ている絵</b> を押す</li>
+    <li>出てきた一覧を下にすべらせて <b>「ホーム画面に追加」</b> を押す</li>
+    <li>右上の <b>「追加」</b> を押す</li>
+  </ol>
+
+  <h3>Android のとき</h3>
+  <ol class="steps">
+    <li>Chrome（赤青緑の丸）で、上の住所をひらく</li>
+    <li>右上の <b>「︙」</b>（点が3つ）を押す</li>
+    <li><b>「ホーム画面に追加」</b> を押す</li>
+  </ol>
+
+  <div class="box tip">
+    💡 うまくいくと、ホーム画面にキノコの絵のボタンができます。
+    これを押せば、いつでも管理ページが開きます。
+  </div>
+
+  <div class="box note">
+    パソコンで使うときは、住所を開いてから
+    <b>ブックマーク（お気に入り）</b> に入れておくと同じように楽になります。
+  </div>
+</section>
+
+<section>
+  <h2><span class="no">2</span>まず これだけ</h2>
+
+  <p>こまかいことは後からで大丈夫です。
+     <b>いちばんよく使うのは、キノコの記録を足すこと</b>。やることは3つだけです。</p>
+
+  <div class="three">
+    <div><span class="n">1</span><b>ひらく</b><small>ボタンを押して<br>合言葉を入れる</small></div>
+    <div><span class="n">2</span><b>かく</b><small>名前・食毒・日づけ<br>と写真を入れる</small></div>
+    <div><span class="n">3</span><b>公開する</b><small>ボタンを押して<br>「✅」を待つ</small></div>
+  </div>
+
+  <p>これだけで、1〜2分後にはホームページに出ています。
+     くわしいやり方は、このあとの <b>「6 キノコを ついかする」</b> にあります。</p>
+
+  <div class="box warn">
+    ⚠ <b>いちばん大事なこと</b><br>
+    ・公開を押したら <b>「✅ 公開しました」が出るまで待つ</b><br>
+    ・新しく足すときは <b>「＋ 新しい…」</b> をえらんでから書く<br>
+    ・<b>消す前に、名前をよく見る</b>（消したら もどせません）
+  </div>
+</section>
+
+<section>
+  <h2><span class="no">3</span>ログインする</h2>
+
+  <ol class="steps">
+    <li>まん中の四角に、合言葉（この本の2ページ目）を入れる</li>
     <li><b>ログイン</b> を押す</li>
   </ol>
   {fig("01-login", "図1　ログインの画面", "sm")}
@@ -116,16 +221,16 @@ BODY = f"""
   </div>
 
   <p>ログインすると、右上に <b>「グッズ以外を編集できます」</b> と出ます。
-     これが、いま 100 で入っているしるしです。</p>
+     これが、いまの合言葉で入っているしるしです。</p>
   {fig("02-top", "図2　ログインしたあとの右上")}
 
 </section>
 
 <section>
-  <h2><span class="no">2</span>画面の見かた</h2>
+  <h2><span class="no">4</span>画面の見かた</h2>
 
   <p>上にならんでいる <b>タブ</b> で、編集するものを切りかえます。押すと下の中身が変わります。</p>
-  {fig("03-tabs", "図3　タブ（100 でログインしたとき）")}
+  {fig("03-tabs", "図3　タブ（いつもの合言葉で入ったとき）")}
 
   <table>
     <tr><th>🍄 キノコ</th><td>採ったキノコの記録を、追加・修正・削除する（いちばんよく使います）</td></tr>
@@ -141,21 +246,22 @@ BODY = f"""
     となりの <b>🔒 ログアウト</b> を押すと、入力の画面にもどれます。
   </div>
 
-  <h3>さいしょに一度だけ：⚙ 設定</h3>
+</section>
+
+<section>
+  <h2><span class="no">5</span>さいしょに一度だけ：⚙ 設定</h2>
+
   <p>右上の <b>⚙ 設定</b> には、ホームページに書きこむための「鍵」が入っています。
-     <b>すでに入っていれば、さわる必要はありません。</b></p>
+     息子が入れてあるので、<b>すでに入っていれば さわる必要はありません。</b></p>
   {fig("04-settings", "図4　⚙ 設定の画面", "xs")}
 
   <div class="box note">
-    📱 <b>ちがう機械（スマホ・パソコン）で使うときは、そこでもう一度この鍵を入れます。</b><br>
-    鍵はその機械のブラウザの中だけに保存され、どこにも送られません。
-    鍵が入っていないと「公開」を押したときに
-    「先に ⚙設定 で GitHub トークンを登録してください」と出ます。
+    📱 <b>ちがう機械で使うときは、そこでもう一度この鍵を入れます。</b>（くわしくは「12 こまったとき」）
   </div>
 </section>
 
 <section>
-  <h2><span class="no">3</span>キノコを ついかする</h2>
+  <h2><span class="no">6</span>キノコを ついかする</h2>
 
   <ol class="steps">
     <li>タブの <b>🍄 キノコ</b> を押す</li>
@@ -176,7 +282,7 @@ BODY = f"""
 </section>
 
 <section>
-  <h2><span class="no">3</span>キノコを ついかする（つづき）</h2>
+  <h2><span class="no">6</span>キノコを ついかする（つづき）</h2>
 
   <h3>写真をつける</h3>
   <ol class="steps">
@@ -204,14 +310,11 @@ BODY = f"""
     ⚠ <b>公開を押したあと、すぐ画面を閉じないでください。</b>
     「✅ 公開しました」が出るまで待ってください。
   </div>
-  <div class="box tip">
-    💡 ホームページをすぐ見ても変わっていないときは、
-    <b>1〜2分おいて、ページを読み込み直す</b>と出てきます。
-  </div>
+
 </section>
 
 <section>
-  <h2><span class="no">4</span>キノコを なおす・けす</h2>
+  <h2><span class="no">7</span>キノコを なおす・けす</h2>
 
   <h3>なおす</h3>
   <ol class="steps">
@@ -239,7 +342,7 @@ BODY = f"""
 </section>
 
 <section>
-  <h2><span class="no">5</span>コラム（読みもの）</h2>
+  <h2><span class="no">8</span>コラム（読みもの）</h2>
 
   <p>写真1枚と文章で、読みものを足せます。やり方はキノコとほとんど同じです。</p>
   <ol class="steps">
@@ -261,7 +364,7 @@ BODY = f"""
 </section>
 
 <section>
-  <h2><span class="no">6</span>日誌</h2>
+  <h2><span class="no">9</span>日誌</h2>
 
   <p>その日の短い記録を、一行ずつ足していけます。</p>
   <ol class="steps">
@@ -276,7 +379,7 @@ BODY = f"""
 </section>
 
 <section>
-  <h2><span class="no">7</span>みんなの記録（見るだけ）</h2>
+  <h2><span class="no">10</span>みんなの記録（見るだけ）</h2>
 
   <p>ホームページが何回見られたかが分かります。<b>この画面でしか見られません。</b>
      ホームページには出していないので、見に来た人には分かりません。</p>
@@ -284,16 +387,16 @@ BODY = f"""
     この節の図に出ている数字は <b>見本</b> です。実際にはあなたのホームページの数字が出ます。
   </div>
   {fig("11-visits", "図11　だいたいの人数と回数〈見本〉")}
-  {fig("11b-bars", "図12　日ごとの回数〈見本〉")}
+  {fig("11b-bars", "図12　日ごとの回数〈見本〉", "xs")}
 
   <p>下のほうには、ゲームのランキングも出ます。
      ふさわしくない名前が登録されていたら、<b>消す</b> で取りのぞけます。</p>
-  {fig("11c-rank", "図13　ゲームのランキング〈見本〉", "sm")}
+  {fig("11c-rank", "図13　ゲームのランキング〈見本〉", "xxs")}
 
 </section>
 
 <section>
-  <h2><span class="no">8</span>投稿（「このキノコ なに？」）</h2>
+  <h2><span class="no">11</span>投稿（「このキノコ なに？」）</h2>
 
   <p>知らない人が送ってきた写真が、ここに届きます。</p>
 
@@ -318,7 +421,7 @@ BODY = f"""
 </section>
 
 <section>
-  <h2><span class="no">9</span>こまったとき</h2>
+  <h2><span class="no">12</span>こまったとき</h2>
 
   <table>
     <tr><th>おきたこと</th><th>どうするか</th></tr>
