@@ -841,6 +841,7 @@
   /* ---------------- DOM への適用 ---------------- */
   var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1, CANVAS: 1 };
   var NOTR = ".langbtn, [data-notr]";
+  var FIXED = "[data-en]";          // 中身をまるごと置きかえる要素
   var ATTRS = ["placeholder", "aria-label", "title", "alt", "data-label"];
   var busy = false;
   var gen = 0;
@@ -852,7 +853,7 @@
     var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
         var p = n.parentElement;
-        if (!p || SKIP[p.tagName] || p.closest(NOTR)) return NodeFilter.FILTER_REJECT;
+        if (!p || SKIP[p.tagName] || p.closest(NOTR) || p.closest(FIXED)) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       }
     });
@@ -903,11 +904,23 @@
     }
   }
 
+  /* data-en が付いた要素の中身を入れかえる */
+  function applyFixed(el) {
+    var en = el.getAttribute("data-en");
+    if (en == null) return;
+    if (el.__jaFixed == null) el.__jaFixed = el.textContent;
+    var want = (lang === "en") ? en : el.__jaFixed;
+    if (el.textContent !== want) el.textContent = want;
+  }
+
   function apply(root) {
     root = root || document.body;
     if (!root) return;
     busy = true;
     try {
+      if (root.nodeType === 1 && root.hasAttribute && root.hasAttribute("data-en")) applyFixed(root);
+      var fx = root.querySelectorAll ? root.querySelectorAll(FIXED) : [];
+      for (var k = 0; k < fx.length; k++) applyFixed(fx[k]);
       walkText(root, applyNode);
       if (root.nodeType === 1) {
         applyEl(root);
@@ -996,7 +1009,11 @@
           var n = list[i];
           if (!n || !n.isConnected) continue;
           if (n.nodeType === 3) applyNode(n);
-          else { walkText(n, applyNode); applyEl(n);
+          else {
+            if (n.hasAttribute && n.hasAttribute("data-en")) applyFixed(n);
+            var fx = n.querySelectorAll ? n.querySelectorAll(FIXED) : [];
+            for (var f = 0; f < fx.length; f++) applyFixed(fx[f]);
+            walkText(n, applyNode); applyEl(n);
             var els = n.querySelectorAll ? n.querySelectorAll("*") : [];
             for (var j = 0; j < els.length; j++) applyEl(els[j]); }
         }

@@ -63,7 +63,7 @@ a { color: inherit; text-decoration: none; }
 .rail__brand-sub { writing-mode: vertical-rl; font-family: var(--serif); font-size: 0.66rem; letter-spacing: 0.3em; opacity: 0.85; }
 .rail__brand-main { writing-mode: vertical-rl; font-family: var(--serif); font-weight: 700; font-size: 0.96rem; letter-spacing: 0.32em; }
 .rail__nav { display: flex; flex-direction: column; gap: 20px; align-items: center; }
-.rail__nav a { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.22em; writing-mode: horizontal-tb; transition: opacity 0.2s; opacity: 0.9; }
+.rail__nav a { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.06em; writing-mode: horizontal-tb; transition: opacity 0.2s; opacity: 0.9; white-space: nowrap; }
 .rail__nav a:hover { opacity: 0.55; }
 .rail__since { font-family: var(--display); writing-mode: vertical-rl; font-size: 0.72rem; letter-spacing: 0.3em; opacity: 0.7; }
 
@@ -285,7 +285,7 @@ a { color: inherit; text-decoration: none; }
 .footer__brand span { display: block; font-size: 0.66rem; letter-spacing: 0.3em; opacity: 0.8; font-weight: 500; }
 .footer__tagline { font-family: var(--serif); font-size: 0.92rem; color: var(--gold-soft); margin: 0; }
 .footer__nav { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin: 36px 0; }
-.footer__nav a { font-family: var(--display); letter-spacing: 0.2em; font-size: 0.84rem; opacity: 0.85; transition: opacity 0.2s; }
+.footer__nav a { font-family: var(--display); letter-spacing: 0.06em; font-size: 0.84rem; opacity: 0.85; transition: opacity 0.2s; white-space: nowrap; }
 .footer__nav a:hover { opacity: 0.5; }
 .footer__note { font-size: 0.78rem; color: rgba(216,212,198,0.6); line-height: 1.9; margin: 0 0 28px; }
 .footer__copy { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.16em; color: rgba(216,212,198,0.5); margin: 0; }
@@ -575,7 +575,7 @@ html[data-lang="en"] .only-en { display: block; }
   backdrop-filter: blur(6px);
 }
 @media (max-width: 900px) { .langbtn--float { top: 10px; right: 10px; } }
-html[data-lang="en"] .rail__nav a,
+html[data-lang="en"] .rail__nav a { letter-spacing: .20em; }
 html[data-lang="en"] .footer__nav a { letter-spacing: .18em; }
 
 /* 言語ボタンが増えた分、スマホのトップバーを詰める */
