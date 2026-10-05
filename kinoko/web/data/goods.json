@@ -58,6 +58,14 @@
       "url": "https://suzuri.jp/iwaotokinoko/21080143/organic-cotton-t-shirt/l/sumikuro",
       "desc": "イワオトキノコのしるしが入ったTシャツです。色やサイズが選べます。",
       "design": "data/goods/item-g007-1791170431266.jpg"
+    },
+    {
+      "id": "g008",
+      "name": "マグカップ",
+      "price": "¥2,046",
+      "url": "https://suzuri.jp/iwaotokinoko/21082341/mug/m/white",
+      "desc": "イワオトキノコのしるしが入ったマグカップです。",
+      "design": "data/goods/item-g008-1791170618975.jpg"
     }
   ]
 }
