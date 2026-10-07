@@ -31,9 +31,16 @@
 }
 
 *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+img,svg{ max-width:100%; }
 
 /* 高さは固定しない。固定すると、はみ出した分までスクロールが届かなくなる */
-html{ height:auto; }
+html{
+  height:auto;
+  /* iOS Safari は、これが無いと勝手に文字だけを大きくしてしまう。
+     写真はそのままで文字だけ膨らむので、画面からはみ出す */
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
 
 body{
   font-family:"Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic UI","Meiryo",sans-serif;
@@ -46,6 +53,11 @@ body{
   max-width:480px;
   margin:0 auto;
   min-height:100dvh;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  /* ボタンを続けて押したときに、ダブルタップで拡大してしまうのを止める */
+  touch-action:manipulation;
+  overflow-x:hidden;
   display:flex; flex-direction:column;
   user-select:none;
 }
@@ -236,17 +248,19 @@ main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10
 .mat-chip.ng{ color:var(--red); border-color:var(--red); background:#f8ece8; }
 
 /* ----- 制作の設計えらび（設計・素材・仕上げ） ----- */
-.prep-group{ margin-top:10px; }
-.prep-group .g-title{ font-size:.76rem; font-weight:bold; margin-bottom:6px; text-align:center; }
-.opt-row{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+.prep-group{ margin-top:8px; }
+.prep-group .g-title{ font-size:.72rem; font-weight:bold; margin-bottom:4px; text-align:center; }
+/* 3つを横にならべる。折り返すと画面が長くなりすぎる */
+.opt-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
 .opt-chip{
-  font-family:inherit; font-size:.74rem; font-weight:bold; color:var(--brown);
-  padding:9px 12px; border-radius:14px; cursor:pointer;
+  font-family:inherit; font-size:.68rem; font-weight:bold; color:var(--brown);
+  padding:7px 2px; border-radius:13px; cursor:pointer; letter-spacing:-.01em;
   border:2px solid var(--brown-soft);
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
-  min-height:44px;
+  min-height:48px; line-height:1.35;
 }
-.opt-chip .o-note{ display:block; font-size:.58rem; font-weight:normal; color:var(--brown-mid); }
+.opt-chip .o-note{ display:block; font-size:.52rem; font-weight:normal;
+  color:var(--brown-mid); line-height:1.4; margin-top:1px; }
 .opt-chip.selected{
   background:linear-gradient(180deg,#eef5e8,var(--green));
   border-color:var(--green-deep); box-shadow:0 0 0 2px rgba(122,156,110,.3);
