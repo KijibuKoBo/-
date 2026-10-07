@@ -32,7 +32,8 @@
 
 *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-html,body{ height:100%; }
+/* 高さは固定しない。固定すると、はみ出した分までスクロールが届かなくなる */
+html{ height:auto; }
 
 body{
   font-family:"Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic UI","Meiryo",sans-serif;
@@ -51,7 +52,7 @@ body{
 
 /* ---------- ヘッダー ---------- */
 header{
-  padding:12px 14px 10px; text-align:center;
+  padding:8px 12px 7px; text-align:center;
   background:
     repeating-linear-gradient(90deg,
       rgba(107,74,47,.08) 0 3px, transparent 3px 34px),
@@ -61,21 +62,22 @@ header{
   box-shadow:var(--shadow);
 }
 header h1{
-  font-size:1.02rem; letter-spacing:.06em; color:var(--brown);
+  font-size:.94rem; letter-spacing:.04em; color:var(--brown);
   text-shadow:0 1px 0 rgba(255,255,255,.5);
 }
 header h1 .sub{
-  display:block; font-size:.68rem; font-weight:normal;
-  color:#7d5a3c; margin-top:2px; letter-spacing:.02em;
+  display:block; font-size:.6rem; font-weight:normal;
+  color:#7d5a3c; margin-top:1px; letter-spacing:.02em;
 }
-.status{ display:flex; justify-content:center; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.status{ display:flex; justify-content:center; gap:4px; margin-top:6px; flex-wrap:wrap; }
 .status .chip{
-  background:var(--paper); border:2px solid var(--brown-soft);
-  border-radius:999px; padding:3px 10px;
-  font-size:.72rem; font-weight:bold; box-shadow:0 2px 3px rgba(107,74,47,.15);
+  background:var(--paper); border:1.5px solid var(--brown-soft);
+  border-radius:999px; padding:2px 7px;
+  font-size:.64rem; font-weight:bold; box-shadow:0 1px 2px rgba(107,74,47,.15);
+  white-space:nowrap;
 }
 .lvbar{
-  margin:7px auto 0; width:78%; height:8px; border-radius:999px;
+  margin:5px auto 0; width:78%; height:6px; border-radius:999px;
   background:rgba(255,253,245,.7); border:1.5px solid var(--brown-soft); overflow:hidden;
 }
 .lvbar>i{
@@ -83,15 +85,15 @@ header h1 .sub{
   background:linear-gradient(90deg,var(--green),var(--green-deep));
   transition:width .5s ease; border-radius:999px;
 }
-.lvbar-label{ font-size:.62rem; color:#7d5a3c; margin-top:2px; }
+.lvbar-label{ font-size:.58rem; color:#7d5a3c; margin-top:1px; }
 
 /* ---------- メイン ---------- */
-main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12px; }
+main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10px; }
 
 /* ----- ヘンリーさん（案内役・常時表示） ----- */
 #henry-area{ display:flex; align-items:flex-start; gap:10px; }
 #henry-avatar{
-  flex:0 0 62px; width:62px; height:62px;
+  flex:0 0 52px; width:52px; height:52px;
   background:var(--paper); border:2.5px solid var(--brown-soft); border-radius:50%;
   box-shadow:0 2px 5px rgba(107,74,47,.2); overflow:hidden;
   animation:henrySway 4s ease-in-out infinite;
@@ -142,6 +144,8 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .card .art{ width:152px; height:152px; margin:0 auto; display:block;
   filter:drop-shadow(0 4px 4px rgba(107,74,47,.22)); }
 .card .art svg{ width:100%; height:100%; display:block; }
+/* 設計をえらぶ画面は、絵より選択肢を見せたいので絵を小さく */
+.card.prep-card .art{ width:104px; height:104px; }
 /* 実物の写真を入れたときも、枠に収める */
 .card .art img{ width:100%; height:100%; object-fit:contain; display:block; }
 .card h2{ text-align:center; font-size:1.06rem; margin-top:2px; letter-spacing:.04em; }
@@ -262,8 +266,7 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 }
 
 /* ---------- 工程エリア ---------- */
-/* 下に余白を取って、固定フッターの下に大事なボタンが潜りこまないようにする */
-#steps-area{ padding:4px 14px calc(96px + env(safe-area-inset-bottom)); }
+#steps-area{ padding:4px 14px 10px; }
 .steps{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:10px; }
 .step-chip{
   font-size:.7rem; font-weight:bold; color:var(--brown);
@@ -316,6 +319,9 @@ main{ flex:1; padding:14px 14px 8px; display:flex; flex-direction:column; gap:12
 .exhibit-btn:disabled{ background:var(--cream-deep); color:var(--brown-soft); box-shadow:none; animation:none; }
 .deliver-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #5f7d55; }
 .exhibit-btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 1px 0 #a97c14; }
+
+/* 固定フッターの高さぶんの余白。これがないと、いちばん下のボタンが隠れる */
+#bottom-space{ flex:0 0 auto; height:92px; }
 
 /* ---------- 固定フッター ---------- */
 footer{
@@ -615,10 +621,10 @@ footer{
 
 /* 職人（あなた）の顔と名前 */
 .player-row{
-  display:flex; align-items:center; justify-content:center; gap:7px; margin-top:5px;
+  display:flex; align-items:center; justify-content:center; gap:6px; margin-top:3px;
 }
 .player-face{
-  width:32px; height:32px; flex:0 0 32px; cursor:pointer;
+  width:26px; height:26px; flex:0 0 26px; cursor:pointer;
   background:var(--paper); border:2px solid var(--brown-soft); border-radius:50%;
   overflow:hidden; box-shadow:0 1px 3px rgba(107,74,47,.25);
 }
@@ -767,6 +773,9 @@ footer{
 
 <!-- ========== 工程エリア ========== -->
 <div id="steps-area"></div>
+
+<!-- 固定フッターの下に中身が隠れないための余白 -->
+<div id="bottom-space"></div>
 
 <!-- ========== 固定フッター ========== -->
 <footer>
@@ -3368,7 +3377,7 @@ function renderPrep() {
   const woodChip = `<span class="mat-chip${woodOk ? "" : " ng"}">${materialById(prep.wood).icon}${materialById(prep.wood).name} ${state.materials[prep.wood] || 0}/${need.woodCount}</span>`;
 
   $("#card-area").innerHTML = `
-    <div class="card">
+    <div class="card prep-card">
       ${artOf(f, "art")}
       <h2>${f.name}</h2>
       <p class="desc">${f.description}</p>
