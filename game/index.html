@@ -222,6 +222,18 @@ main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10
 
 /* ----- 設計図えらび ----- */
 .select-title{ text-align:center; font-size:.86rem; color:var(--brown-mid); }
+/* 章の見出し */
+.ch-head{
+  margin:14px 0 8px; text-align:center;
+  background:linear-gradient(180deg,#fdf6e6,#f7ecd2);
+  border:2px solid var(--gold); border-radius:14px; padding:8px 10px;
+}
+.ch-head.locked{ border-color:var(--brown-soft); opacity:.75; background:var(--cream-deep); }
+.ch-head .ch-name{ font-size:.88rem; font-weight:bold; letter-spacing:.06em; }
+.ch-head .ch-n{ font-size:.66rem; font-weight:normal; color:var(--brown-mid); }
+.ch-head .ch-sub{ font-size:.68rem; color:var(--brown-mid); margin-top:3px; line-height:1.6; }
+.ch-head .ch-sub b{ color:#a97c14; }
+.ch-head .ch-ace{ display:block; font-size:.62rem; color:var(--brown-soft); margin-top:1px; }
 .select-list{ display:flex; flex-direction:column; gap:10px; }
 .select-item{
   display:flex; align-items:center; gap:12px;
@@ -576,6 +588,20 @@ footer{
   box-shadow:0 0 0 2px rgba(201,162,75,.2);
 }
 .act-call .ac-head{ font-size:.94rem; font-weight:bold; color:#a97c14; }
+.tool-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:9px; }
+.tool-chip{
+  font-family:inherit; font-size:.63rem; font-weight:bold; color:var(--brown);
+  padding:7px 2px; border-radius:12px; cursor:pointer; min-height:50px;
+  border:2px solid var(--brown-soft); line-height:1.3;
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+}
+.tool-chip .t-note{ display:block; font-size:.5rem; font-weight:normal; color:var(--brown-mid); margin-top:2px; }
+.tool-chip.selected{
+  background:linear-gradient(180deg,#eef5e8,var(--green));
+  border-color:var(--green-deep); box-shadow:0 0 0 2px rgba(122,156,110,.3);
+}
+.act-call .ac-game{ font-size:.82rem; font-weight:bold; margin-top:5px; }
+.act-call .ac-lv{ font-size:.68rem; font-weight:normal; color:#a97c14; }
 .act-call .ac-sub{ font-size:.74rem; color:var(--brown-mid); margin-top:4px; line-height:1.7; }
 .act-call .ac-tired{ font-size:.7rem; color:var(--red); margin-top:5px; font-weight:bold; }
 .act-go{
@@ -743,6 +769,13 @@ footer{
   border-radius:999px; padding:1px 7px; margin-left:4px;
 }
 .note-empty{ text-align:center; font-size:.74rem; color:var(--brown-mid); line-height:1.9; }
+
+.dex-ace{
+  display:inline-block; font-size:.66rem; font-weight:bold; color:#a97c14;
+  border:1.5px solid var(--gold); background:#fdf3d5;
+  border-radius:999px; padding:1px 8px; margin:4px 0 0 4px;
+}
+.dex-ace.off{ color:var(--brown-soft); border-color:var(--brown-soft); background:var(--cream-deep); }
 
 /* 図鑑の山場メモ */
 .dex-crit{
@@ -1247,7 +1280,12 @@ const MATERIALS = [
   { id: "glass",  name: "ガラス",        icon: "🪟", price: 400, type: "part",
     desc: "鏡や飾り棚に。割れ物注意" },
   { id: "cloth",  name: "布",            icon: "🧵", price: 300, type: "part",
-    desc: "張り地・内張り用のやさしい布" }
+    desc: "張り地・内張り用のやさしい布" },
+  /* ここから、章が進むと仕入れられるようになる銘木 */
+  { id: "rosewood", name: "ローズウッド", icon: "🟪", price: 900, type: "wood", ch: 2,
+    q: 8, pop: 8, priceMult: 1.1, desc: "紫がかった稀少材。品質+8・人気+8・価格+10%" },
+  { id: "ebony",    name: "黒檀",        icon: "⚫", price: 1600, type: "wood", ch: 3,
+    q: 12, pop: 12, priceMult: 1.25, desc: "石のように重い黒。品質+12・人気+12・価格+25%" }
 ];
 
 /* 設計：家具のかたちの方向性。extraWood は必要木材の増減 */
@@ -1257,7 +1295,9 @@ const DESIGNS = [
   { id: "gouka",   name: "豪華",       icon: "👑", q: 0, pop: 10, priceMult: 1.2, extraWood: 1,
     note: "人気+10 価格+20% 木材+1" },
   { id: "kogata",  name: "小型",       icon: "🐿", q: 0, pop: 5,  priceMult: 0.9, extraWood: 0,
-    note: "人気+5 価格-10% ドール向き" }
+    note: "人気+5 価格-10% ドール向き" },
+  { id: "karakuri", name: "からくり",   icon: "⚙️", q: 0, pop: 15, priceMult: 1.3, extraWood: 1, ch: 3,
+    note: "人気+15 価格+30% 木材+1" }
 ];
 
 /* 仕上げ：塗装・風合い */
@@ -1267,7 +1307,11 @@ const FINISHES = [
   { id: "natural",  name: "ナチュラル",   icon: "🍃", q: 5, pop: 0,  priceMult: 1,
     note: "品質+5" },
   { id: "shikkoku", name: "漆黒",         icon: "🌑", q: 0, pop: 5,  priceMult: 1.15,
-    note: "人気+5 価格+15%" }
+    note: "人気+5 価格+15%" },
+  { id: "kakishibu", name: "柿渋",        icon: "🧡", q: 8, pop: 3,  priceMult: 1.05, ch: 2,
+    note: "品質+8 人気+3 価格+5%" },
+  { id: "kinpaku",   name: "金箔",        icon: "✨", q: 0, pop: 20, priceMult: 1.4,  ch: 3,
+    note: "人気+20 価格+40%" }
 ];
 
 /* ----------------------------------------------------------
@@ -1816,6 +1860,43 @@ const FURNITURE = [
   }
 ];
 
+/* ==========================================================
+   章（ゲームの背骨）
+   ----------------------------------------------------------
+   家具は3つの章に分かれている。次の章は
+   「前の章の家具を◯台、Aランク以上で仕上げる」で開く。
+   作れば開くのではなく、よく作らねば開かない。
+   章が開くと、新しい素材・設計・仕上げも仕入れられるようになる。
+   ========================================================== */
+const CHAPTERS = [
+  { n: 1, name: "序章　工房の定番", short: "序章", need: 0,
+    desc: "まずは工房に代々ある9つの家具から。" },
+  { n: 2, name: "第二章　物語の家具", short: "第二章", need: 5,
+    desc: "序章の家具を5台、会心に仕上げると開く。" },
+  { n: 3, name: "第三章　常識を超えた家具", short: "第三章", need: 6,
+    desc: "第二章の家具を6台、会心に仕上げると開く。" }
+];
+const CHAPTER_OF = {
+  stool: 1, couch: 1, bench: 1, chest: 1, mitsudan: 1,
+  dresser: 1, jewelry: 1, curio: 1, wardrobe: 1,
+  tea_table: 2, trunk_table: 2, wall_clock: 2, balcony_chair: 2, birdcage_stand: 2,
+  ladder_shelf: 2, book_nook: 2, stained_screen: 2, glass_lamp: 2, mantelpiece: 2,
+  greenhouse: 3, rolltop_desk: 3, typewriter: 3, bed_arch: 3, canopy_bed: 3,
+  moon_shelf: 3, airship: 3, clocktower: 3, moon_bed: 3, observatory: 3
+};
+const chapterOf = (f) => CHAPTER_OF[f.id] || 1;
+/* その章で、Aランク以上に仕上げた家具の数 */
+function chapterDone(n) {
+  const ace = (id) => { const c = state.completed[id]; return !!(c && c.ace); };
+  return FURNITURE.filter(f => chapterOf(f) === n)
+    .filter(f => ace(f.id) || RECIPES.some(r => r.baseId === f.id && ace(r.id))).length;
+}
+const chapterOpen = (n) => n <= 1 || (chapterOpen(n - 1) && chapterDone(n - 1) >= CHAPTERS[n - 1].need);
+/* いま開いているいちばん先の章 */
+const topChapter = () => chapterOpen(3) ? 3 : chapterOpen(2) ? 2 : 1;
+/* 素材・設計・仕上げも、章で開く */
+const chOpen = (it) => !it.ch || it.ch <= topChapter();
+
 /* ----------------------------------------------------------
    隠しレシピ（発見要素）
    特定の「設計×素材×仕上げ」の組み合わせで作ると、
@@ -2110,632 +2191,902 @@ const CARVE_PATTERN = {
   birdcage_stand: "vine"   // 真鍮線を編んだ籠
 };
 
+/* ==========================================================
+   ミニゲーム（職人アクション）10種
+   ----------------------------------------------------------
+   どれも、それ一本でも遊べる形にそろえてある。
+     ・1回 25〜40秒
+     ・3つの波。進むほど速く、狭く、多くなる
+     ・連続成功（れんけい）が伸びるほど点が上がる
+     ・しくじっても終わらない。ただし点は減る
+   返すのは 0〜100 点。その点がそのまま品質の「腕前」になる。
+
+   start(svg, ui, done, lv)
+     svg  … 300×300 の盤面
+     ui   … progress(0〜1) / say(文字) / setTip(HTML)
+            onDown・onPoint・onUp に関数を入れると指の操作が届く
+            onStop に後片付けを入れておくこと
+     done … done(点, ひとこと) で終わり
+     lv   … 家具ごとの難度 1〜3
+   ========================================================== */
+
+/* 採点の共通土台。命中率が8割、連続成功が2割、しくじりは引き算 */
+function actScore(total) {
+  let hit = 0, miss = 0, combo = 0, best = 0;
+  return {
+    setTotal(n) { total = Math.max(1, n); },
+    ok(n) { n = n || 1; hit += n; combo += n; if (combo > best) best = combo; },
+    ng(n) { n = n || 1; miss += n; combo = 0; },
+    get combo() { return combo; },
+    get best() { return best; },
+    get hit() { return hit; },
+    get miss() { return miss; },
+    value() {
+      const acc = total > 0 ? hit / total : 0;
+      const run = total > 0 ? best / total : 0;
+      return clamp100(acc * 82 + run * 18 - miss * 3);
+    },
+    word() {
+      if (total > 0 && best >= total * 0.85) return `${best}つ続けて決めおった。手が覚えておるな。`;
+      if (miss === 0) return "ひとつも外さなんだか。";
+      if (miss <= 2) return "ほぼ狙いどおりじゃ。";
+      if (miss <= 5) return `${miss}回しくじったのう。`;
+      return "まだ手が付いてきておらんな。";
+    }
+  };
+}
+
+/* 波の見出し。いま何波目で、何をすればよいかを出しつづける */
+function actBanner(ui, wave, waves, label, sc) {
+  ui.setTip(`<b>第${wave}波 / ${waves}</b>　${label}` +
+    (sc && sc.combo > 1 ? `　<b style="color:#a97c14">${sc.combo}連続！</b>` : ""));
+}
+
+const actRand = (a, b) => a + Math.random() * (b - a);
+/* 難度 1〜3 を 0.85〜1.15 のつらさに直す */
+const actHard = (lv) => 0.85 + (lv - 1) * 0.15;
+
 const CRAFT_ACTIONS = {
 
-  /* ---------- 研磨：木肌をむらなく磨く ---------- */
-  kenma: {
-    name: "研磨", limit: 12000,
-    tip: "木肌を指でなでて、むらなく磨きあげる。<b>同じ場所を磨きすぎると削れてしまう。</b>",
-    start(svg, ui, done) {
-      const COLS = 5, ROWS = 3, N = COLS * ROWS;
-      const ox = 40, oy = 95, cw = 44, ch = 44;
-      const lv = new Array(N).fill(0);          // 0〜3 で磨きあがる
-      let over = 0, last = -1, finished = false;
+  /* ================================================================
+     ① 木の目利き（落ちもの）
+     良い板だけを受け、節のある板はよける。金の銘木は二点ぶん。
+     ================================================================ */
+  mekiki: {
+    name: "木の目利き", limit: 60000,
+    tip: "落ちてくる板を受け台で受ける。<b>節のある板は受けてはならん。</b>",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const WAVES = [
+        { n: 6, sp: 1.5, gap: 1000, bad: .25 },
+        { n: 7, sp: 2.0, gap: 840,  bad: .35 },
+        { n: 8, sp: 2.6, gap: 700,  bad: .45 }
+      ];
+      const GOOD = WAVES.reduce((s, w) => s + w.n, 0);
+      const sc = actScore(GOOD);
+      let cart = 150, wave = 0, spawned = 0, resolved = 0, nextAt = 0, timer = null;
+      let goodSpawned = 0;          // 満点の分母は「良い板の数」
+      const items = [];
 
       svg.innerHTML =
-        `<rect x="28" y="83" width="244" height="146" rx="14" fill="#8a5a30"/>` +
-        lv.map((_, i) => {
-          const c = i % COLS, r = (i / COLS) | 0;
-          return `<rect id="k${i}" x="${ox + c * cw}" y="${oy + r * ch}"
-            width="${cw - 3}" height="${ch - 3}" rx="4" fill="#b07c4a"/>`;
-        }).join("") +
-        `<text x="150" y="62" text-anchor="middle" font-size="15" fill="#8a6446">指でこすって磨く</text>
-         <text x="150" y="262" text-anchor="middle" font-size="13" fill="#b08a63">つやが出たら、そこはもう十分</text>`;
+        `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+         <rect x="0" y="252" width="300" height="48" fill="#e8cfa5"/>
+         <g id="items"></g>
+         <g id="cart"><rect x="-34" y="-11" width="68" height="22" rx="6" fill="#8a5a30"/>
+           <rect x="-34" y="-11" width="68" height="8" rx="4" fill="#a9713f"/></g>`;
+      const gItems = svg.querySelector("#items"), gCart = svg.querySelector("#cart");
+      const drawCart = () => gCart.setAttribute("transform", `translate(${cart},244)`);
+      drawCart();
 
-      const paint = (i) => {
-        const el = svg.querySelector("#k" + i);
-        el.setAttribute("fill",
-          lv[i] < 0 ? "#6e4526" : ["#b07c4a", "#c98d54", "#dfa96c", "#f2cf9d"][Math.min(3, lv[i])]);
+      const spawn = () => {
+        const w = WAVES[wave];
+        const bad = Math.random() < w.bad;
+        const gold = !bad && Math.random() < .12;
+        const x = actRand(40, 260);
+        const el = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        el.innerHTML = bad
+          ? `<rect x="-30" y="-9" width="60" height="18" rx="4" fill="#9a6435"/>
+             <ellipse cx="6" cy="0" rx="7" ry="5" fill="#4a2f18"/>
+             <ellipse cx="-14" cy="1" rx="4" ry="3" fill="#4a2f18"/>`
+          : gold
+            ? `<rect x="-30" y="-9" width="60" height="18" rx="4" fill="#d8b45e"/>
+               <path d="M-24 0 H24" stroke="#a97c14" stroke-width="2"/>`
+            : `<rect x="-30" y="-9" width="60" height="18" rx="4" fill="#dfa96c"/>
+               <path d="M-24 -3 H24 M-24 3 H24" stroke="#c98d54" stroke-width="1.6"/>`;
+        el.setAttribute("transform", `translate(${x},-20)`);
+        gItems.appendChild(el);
+        items.push({ el, x, y: -20, bad, gold, sp: w.sp * h * actRand(.9, 1.15) });
+        spawned++;
+        if (!bad) goodSpawned++;
       };
-      const rub = (p) => {
-        const c = Math.floor((p.x - ox) / cw), r = Math.floor((p.y - oy) / ch);
-        if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
-        const i = r * COLS + c;
-        if (i === last) return;                 // 同じマスの連続はかぞえない
-        last = i;
-        if (lv[i] < 0) return;
-        /* 3回でつやが出る。6回を超えると削りすぎ（往復ぶんは大目に見る） */
-        if (lv[i] >= 6) { lv[i] = -1; over++; }
-        else lv[i]++;
-        paint(i);
-        const ok = lv.filter(v => v >= 3).length;
-        ui.progress(ok / N);
-        if (ok + over === N && !finished) { finished = true; setTimeout(finish, 250); }
+
+      const resolveOne = () => {
+        resolved++;
+        ui.progress(resolved / (GOOD + 6));
+        actBanner(ui, wave + 1, 3, "節のある板は受けるな", sc);
+      };
+
+      const step = () => {
+        const now = Date.now();
+        if (spawned < WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0) && now > nextAt) {
+          spawn(); nextAt = now + WAVES[wave].gap / h;
+        }
+        for (let i = items.length - 1; i >= 0; i--) {
+          const it = items[i];
+          it.y += it.sp;
+          it.el.setAttribute("transform", `translate(${it.x},${it.y})`);
+          const caught = it.y > 230 && it.y < 258 && Math.abs(it.x - cart) < 38;
+          if (caught) {
+            if (it.bad) { sc.ng(); ui.say("⚠️ 節のある板を受けてしまった"); }
+            else { sc.ok(it.gold ? 2 : 1); ui.say(it.gold ? "✨ 銘木！" : "よい板じゃ"); resolveOne(); }
+            it.el.remove(); items.splice(i, 1);
+            continue;
+          }
+          if (it.y > 300) {
+            if (!it.bad) { sc.ng(); ui.say("板を取り落とした"); resolveOne(); }
+            it.el.remove(); items.splice(i, 1);
+          }
+        }
+        const need = WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0);
+        if (spawned >= need && !items.length) {
+          if (wave < 2) { wave++; nextAt = Date.now() + 500; ui.say(`—— 第${wave + 1}波 ——`); }
+          else finish();
+        }
       };
       const finish = () => {
-        const ok = lv.filter(v => v >= 3).length;
-        done(clamp100(ok / N * 100 - over * 6),
-          over ? `${over}か所ほど削りすぎたのう。`
-            : ok / N < 0.6 ? "磨き残しが目立つな。" : "つやが均一じゃ。");
+        if (timer) { clearInterval(timer); timer = null; }
+        sc.setTotal(goodSpawned);
+        done(sc.value(), sc.word());
       };
 
-      ui.onDown = () => { last = -1; };   // 指を置き直したら、そのマスからまた磨ける
-      ui.onPoint = rub;
+      ui.onDown = ui.onPoint = (p) => { cart = Math.max(36, Math.min(264, p.x)); drawCart(); };
+      ui.onStop = () => { if (timer) clearInterval(timer); };
       ui.onTimeout = finish;
+      actBanner(ui, 1, 3, "節のある板は受けるな", sc);
+      nextAt = Date.now() + 400;
+      timer = setInterval(step, 16);
     }
   },
 
-  /* ---------- 張り：布のしわを外へ伸ばす ---------- */
-  hari: {
-    name: "張り", limit: 0,
-    tip: "布のしわを、<b>中心から外へ向かって</b>指で伸ばす。内側へ引くと布が寄ってしまう。",
-    start(svg, ui, done) {
-      const C = { x: 150, y: 152 };
-      const marks = [
-        { x: 78, y: 100 }, { x: 222, y: 100 }, { x: 62, y: 178 },
-        { x: 238, y: 178 }, { x: 150, y: 86 }, { x: 150, y: 222 }
-      ].map((m, i) => ({ ...m, i, done: false }));
-      let bad = 0;
+  /* ================================================================
+     ② 木取り（詰めこみパズル）
+     一枚の板から、節をよけて部材を切り出す。置ける場所を見つける遊び。
+     ================================================================ */
+  kidori: {
+    name: "木取り", limit: 45000,
+    tip: "板から部材を切り出す。<b>節にかかってはならん。</b>部材の形を見て、置ける所を押すのじゃ。",
+    start(svg, ui, done, lv) {
+      const COLS = 8, ROWS = 6, CELL = 30, OX = 30, OY = 48;
+      const SHAPES = [
+        { n: "扉板", w: 2, h: 3 }, { n: "側板", w: 1, h: 4 }, { n: "天板", w: 3, h: 1 },
+        { n: "棚板", w: 3, h: 2 }, { n: "鏡板", w: 2, h: 2 }, { n: "台輪", w: 4, h: 1 }
+      ];
+      const WAVES = [2, 3, 4];
+      const TOTAL = WAVES.reduce((a, b) => a + b, 0);
+      const sc = actScore(TOTAL);
+      let wave = 0, left = 0, cur = null, grid = [], knots = [];
+
+      const newBoard = () => {
+        grid = new Array(COLS * ROWS).fill(0);
+        knots = [];
+        const kn = 2 + wave + Math.round(lv * .8);
+        for (let i = 0; i < kn; i++) {
+          const k = (Math.random() * COLS * ROWS) | 0;
+          if (grid[k] === 0) { grid[k] = -1; knots.push(k); }
+        }
+        left = WAVES[wave];
+        nextShape();
+        draw();
+      };
+      const nextShape = () => {
+        const pool = SHAPES.filter(s => s.w <= COLS && s.h <= ROWS);
+        cur = pool[(Math.random() * pool.length) | 0];
+      };
+      const canPlace = (c, r) => {
+        if (!cur || c < 0 || r < 0 || c + cur.w > COLS || r + cur.h > ROWS) return false;
+        for (let y = 0; y < cur.h; y++) for (let x = 0; x < cur.w; x++)
+          if (grid[(r + y) * COLS + c + x] !== 0) return false;
+        return true;
+      };
+      const draw = () => {
+        let cells = "";
+        for (let i = 0; i < COLS * ROWS; i++) {
+          const c = i % COLS, r = (i / COLS) | 0;
+          const v = grid[i];
+          const fill = v === -1 ? "#6e4526" : v > 0 ? "#9dbb8f" : "#dfa96c";
+          cells += `<rect x="${OX + c * CELL}" y="${OY + r * CELL}" width="${CELL - 2}"
+            height="${CELL - 2}" rx="3" fill="${fill}"/>`;
+          if (v === -1) cells += `<ellipse cx="${OX + c * CELL + 14}" cy="${OY + r * CELL + 14}"
+            rx="8" ry="6" fill="#4a2f18"/>`;
+        }
+        const pw = cur ? cur.w * 26 : 0, ph = cur ? cur.h * 26 : 0;
+        svg.innerHTML =
+          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+           <rect x="${OX - 6}" y="${OY - 6}" width="${COLS * CELL + 8}" height="${ROWS * CELL + 8}"
+             rx="8" fill="#8a5a30"/>${cells}
+           <text x="150" y="36" text-anchor="middle" font-size="15" fill="#8a6446">
+             あと ${left} 枚　きょうの部材 ↓</text>
+           <g transform="translate(${150 - pw / 2},${OY + ROWS * CELL + 14})">
+             ${cur ? Array.from({ length: cur.w * cur.h }, (_, k) =>
+               `<rect x="${(k % cur.w) * 26}" y="${((k / cur.w) | 0) * 26}" width="24" height="24"
+                 rx="3" fill="#c9a24b"/>`).join("") : ""}
+           </g>`;
+      };
+
+      ui.onDown = (p) => {
+        const c = Math.floor((p.x - OX) / CELL), r = Math.floor((p.y - OY) / CELL);
+        if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+        if (!canPlace(c, r)) {
+          sc.ng(); ui.say("そこは取れん（節か、ほかの部材にかかっておる）");
+          draw(); actBanner(ui, wave + 1, 3, "節をよけて部材を取る", sc);
+          return;
+        }
+        for (let y = 0; y < cur.h; y++) for (let x = 0; x < cur.w; x++)
+          grid[(r + y) * COLS + c + x] = 1;
+        sc.ok(); left--;
+        ui.say(`「${cur.n}」を取った`);
+        ui.progress(sc.hit / TOTAL);
+        if (left > 0) { nextShape(); draw(); }
+        else if (wave < 2) { wave++; setTimeout(newBoard, 400); draw(); }
+        else { setTimeout(() => done(sc.value(), sc.word()), 350); }
+        actBanner(ui, wave + 1, 3, "節をよけて部材を取る", sc);
+      };
+      ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
+      actBanner(ui, 1, 3, "節をよけて部材を取る", sc);
+      newBoard();
+    }
+  },
+
+  /* ================================================================
+     ③ 鋸引き（タイミング）
+     鋸が行き来する。緑の帯に入った瞬間に押すと、挽き目がまっすぐ進む。
+     ================================================================ */
+  nokogiri: {
+    name: "鋸引き", limit: 40000,
+    tip: "鋸が行き来する。<b>緑の帯に重なった瞬間</b>に画面を押して挽き進める。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const WAVES = [
+        { n: 6, sp: 1.6, band: 54 },
+        { n: 7, sp: 2.3, band: 40 },
+        { n: 7, sp: 3.1, band: 28 }
+      ];
+      const TOTAL = WAVES.reduce((s, w) => s + w.n, 0);
+      const sc = actScore(TOTAL);
+      let wave = 0, left = WAVES[0].n, x = 60, dir = 1, band = 150, timer = null, cut = 0;
 
       svg.innerHTML =
-        `<rect x="34" y="66" width="232" height="176" rx="16" fill="#8a5a30"/>
-         <rect x="44" y="76" width="212" height="156" rx="12" fill="#b5c9a4"/>` +
-        marks.map(m => `<g id="w${m.i}">
-          <path d="M${m.x - 13} ${m.y} q6 -7 13 0 q7 7 13 0" stroke="#8fa87f"
-            stroke-width="3.4" fill="none" stroke-linecap="round"/>
-          <path d="M${m.x - 13} ${m.y + 8} q6 -7 13 0 q7 7 13 0" stroke="#9cb489"
-            stroke-width="2.6" fill="none" stroke-linecap="round"/>
-        </g>`).join("") +
-        `<text x="150" y="46" text-anchor="middle" font-size="15" fill="#8a6446">しわを外へなでる</text>`;
+        `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+         <rect x="30" y="150" width="240" height="96" rx="10" fill="#b07c4a"/>
+         <rect id="cutline" x="30" y="150" width="0" height="96" fill="#dfa96c"/>
+         <rect id="band" x="0" y="150" width="54" height="96" fill="#9dbb8f" opacity=".55"/>
+         <g id="saw"><rect x="-4" y="60" width="8" height="120" rx="3" fill="#b8b8b8"/>
+           <path d="M-4 180 l8 0 l0 8 l-8 -8z" fill="#8a8a8a"/>
+           <rect x="-16" y="44" width="32" height="18" rx="5" fill="#8a5a30"/></g>
+         <text x="150" y="282" text-anchor="middle" font-size="14" fill="#8a6446">画面を押して挽く</text>`;
+      const gSaw = svg.querySelector("#saw"), gBand = svg.querySelector("#band");
+      const gCut = svg.querySelector("#cutline");
+
+      const place = () => {
+        const w = WAVES[wave].band;
+        band = actRand(50, 250 - w);
+        gBand.setAttribute("x", band); gBand.setAttribute("width", w);
+      };
+      const step = () => {
+        x += dir * WAVES[wave].sp * h;
+        if (x > 268) { x = 268; dir = -1; }
+        if (x < 32) { x = 32; dir = 1; }
+        gSaw.setAttribute("transform", `translate(${x},0)`);
+      };
+      const tap = () => {
+        const w = WAVES[wave].band;
+        const inside = x >= band && x <= band + w;
+        const center = Math.abs(x - (band + w / 2)) < w * .22;
+        if (inside) {
+          sc.ok(); cut += 240 / TOTAL;
+          gCut.setAttribute("width", Math.min(240, cut));
+          ui.say(center ? "✨ ど真ん中じゃ" : "挽けた");
+        } else {
+          sc.ng(); ui.say("⚠️ 刃が逃げた。挽き目が荒れる");
+        }
+        ui.progress(sc.hit / TOTAL);
+        left--;
+        if (left > 0) { place(); }
+        else if (wave < 2) {
+          wave++; left = WAVES[wave].n; place();
+          ui.say(`—— 第${wave + 1}波　帯が狭くなるぞ ——`);
+        } else {
+          if (timer) clearInterval(timer);
+          setTimeout(() => done(sc.value(), sc.word()), 300);
+          return;
+        }
+        actBanner(ui, wave + 1, 3, "帯に重なった瞬間に押す", sc);
+      };
+
+      ui.onDown = tap;
+      ui.onStop = () => { if (timer) clearInterval(timer); };
+      ui.onTimeout = () => {
+        if (timer) { clearInterval(timer); timer = null; }
+        done(sc.value(), "時間切れじゃ。" + sc.word());
+      };
+      actBanner(ui, 1, 3, "帯に重なった瞬間に押す", sc);
+      place();
+      timer = setInterval(step, 16);
+    }
+  },
+
+  /* ================================================================
+     ④ 釘打ち（3列のリズム）
+     三つの列を釘が落ちてくる。線に重なった瞬間に、その列を叩く。
+     ================================================================ */
+  rhythm: {
+    name: "釘打ち", limit: 60000,
+    tip: "釘が線に重なった瞬間に、<b>その列を叩く</b>。拍を外すと曲がって入る。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const LANE = [70, 150, 230], LINE = 232;
+      const WAVES = [
+        { n: 8, sp: 1.7, gap: 700 },
+        { n: 9, sp: 2.3, gap: 560 },
+        { n: 9, sp: 3.0, gap: 460 }
+      ];
+      const TOTAL = WAVES.reduce((s, w) => s + w.n, 0);
+      const sc = actScore(TOTAL);
+      let wave = 0, spawned = 0, nextAt = 0, timer = null;
+      const nails = [];
+
+      svg.innerHTML =
+        `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+         <rect x="24" y="${LINE}" width="252" height="34" rx="8" fill="#b07c4a"/>
+         <line x1="24" y1="${LINE}" x2="276" y2="${LINE}" stroke="#8a5a30" stroke-width="3"/>
+         ${LANE.map((lx, i) => `<rect x="${lx - 38}" y="40" width="76" height="${LINE - 40}"
+            rx="8" fill="#f3e7cd" opacity=".7"/>
+            <rect id="hit${i}" x="${lx - 38}" y="${LINE - 22}" width="76" height="22"
+              fill="#9dbb8f" opacity="0"/>`).join("")}
+         <g id="nails"></g>
+         <text x="150" y="292" text-anchor="middle" font-size="14" fill="#8a6446">列を叩く</text>`;
+      const gN = svg.querySelector("#nails");
+
+      const spawn = () => {
+        const lane = (Math.random() * 3) | 0;
+        const el = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        el.innerHTML = `<rect x="-3" y="-26" width="6" height="26" fill="#9a9a9a"/>
+                        <rect x="-9" y="-32" width="18" height="7" rx="3" fill="#777"/>`;
+        el.setAttribute("transform", `translate(${LANE[lane]},0)`);
+        gN.appendChild(el);
+        nails.push({ el, lane, y: 0, sp: WAVES[wave].sp * h });
+        spawned++;
+      };
+      const step = () => {
+        const now = Date.now();
+        const need = WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0);
+        if (spawned < need && now > nextAt) { spawn(); nextAt = now + WAVES[wave].gap / h; }
+        for (let i = nails.length - 1; i >= 0; i--) {
+          const n = nails[i];
+          n.y += n.sp;
+          n.el.setAttribute("transform", `translate(${LANE[n.lane]},${n.y})`);
+          if (n.y > LINE + 26) {
+            sc.ng(); ui.say("打ちそこねた");
+            n.el.remove(); nails.splice(i, 1);
+            ui.progress((sc.hit + sc.miss) / TOTAL);
+          }
+        }
+        if (spawned >= need && !nails.length) {
+          if (wave < 2) { wave++; nextAt = Date.now() + 600; ui.say(`—— 第${wave + 1}波 ——`); }
+          else { if (timer) clearInterval(timer); setTimeout(() => done(sc.value(), sc.word()), 300); }
+        }
+      };
+      const flash = (i) => {
+        const el = svg.querySelector("#hit" + i);
+        el.setAttribute("opacity", ".8");
+        setTimeout(() => el.setAttribute("opacity", "0"), 90);
+      };
+
+      ui.onDown = (p) => {
+        let lane = 0, bd = 1e9;
+        LANE.forEach((lx, i) => { const d = Math.abs(p.x - lx); if (d < bd) { bd = d; lane = i; } });
+        flash(lane);
+        let idx = -1, best = 1e9;
+        nails.forEach((n, i) => {
+          if (n.lane !== lane) return;
+          const d = Math.abs(n.y - LINE);
+          if (d < best) { best = d; idx = i; }
+        });
+        if (idx >= 0 && best < 26) {
+          sc.ok(); ui.say(best < 9 ? "✨ ぴたり" : "打てた");
+          nails[idx].el.remove(); nails.splice(idx, 1);
+        } else {
+          sc.ng(); ui.say("⚠️ 空打ちじゃ");
+        }
+        ui.progress((sc.hit + sc.miss) / TOTAL);
+        actBanner(ui, wave + 1, 3, "線に重なった瞬間に叩く", sc);
+      };
+      ui.onStop = () => { if (timer) clearInterval(timer); };
+      ui.onTimeout = () => { if (timer) clearInterval(timer); done(sc.value(), sc.word()); };
+      actBanner(ui, 1, 3, "線に重なった瞬間に叩く", sc);
+      nextAt = Date.now() + 700;
+      timer = setInterval(step, 16);
+    }
+  },
+
+  /* ================================================================
+     ⑤ 彫刻（一筆なぞり）
+     下絵を一筆でなぞる。三つの文様を続けて彫る。離すと彫り直し。
+     ================================================================ */
+  hori: {
+    name: "彫刻", limit: 50000,
+    tip: "下絵の線を<b>一筆でなぞる</b>。線から離れると彫りが浅くなる。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const kind = CARVE_PATTERN[state.currentId] || "vine";
+      const pat = CARVE_PATTERNS[kind];
+      const ROUNDS = 3;
+      const sc = actScore(ROUNDS * 22);
+      let round = 0, pts = [], near = [], drawn = [], ok = 0, judging = false, over = false;
+
+      const setup = () => {
+        if (over) return 0;
+        pts = pat.points();
+        near = new Array(pts.length).fill(1e9);
+        drawn = [];
+        const scaleLabel = ["ゆっくりで良い", "少し細い線じゃ", "いちばん細い線じゃ"][round];
+        const tol = [30, 24, 18][round] / h;
+        svg.innerHTML =
+          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+           <rect x="18" y="18" width="264" height="264" rx="16" fill="#c98d54"/>
+           ${pat.decor}
+           <path d="${pat.dense().map((p, i) => (i ? "L" : "M") + p.x + " " + p.y).join(" ")}"
+             stroke="#8a5a30" stroke-width="${tol * .9}" fill="none" opacity=".28"
+             stroke-linecap="round" stroke-linejoin="round"/>
+           <path id="carve" d="" stroke="#f2cf9d" stroke-width="5" fill="none"
+             stroke-linecap="round" stroke-linejoin="round"/>
+           <circle id="tip" cx="-50" cy="-50" r="6" fill="#fffdf5" stroke="#8a5a30" stroke-width="2"/>
+           <text x="150" y="294" text-anchor="middle" font-size="13" fill="#8a6446">${scaleLabel}</text>`;
+        judging = false;
+        actBanner(ui, round + 1, ROUNDS, "下絵を一筆でなぞる", sc);
+        return tol;
+      };
+      let tol = setup();
+
+      const judge = () => {
+        if (judging || round >= ROUNDS) return;   // 1回につき一度だけ採点する
+        judging = true;
+        let good = 0;
+        near.forEach(d => { if (d < tol) good++; });
+        const got = Math.round(good / pts.length * 22);
+        for (let i = 0; i < got; i++) sc.ok();
+        for (let i = got; i < 22; i++) sc.ng(0.35);
+        ok += good / pts.length;
+        ui.progress((round + 1) / ROUNDS);
+        round++;
+        if (round < ROUNDS) { setTimeout(() => { if (!over) tol = setup(); }, 450); ui.say(`${Math.round(good / pts.length * 100)}% 彫れた`); }
+        else setTimeout(() => { if (!over) done(sc.value(),
+          ok / ROUNDS > .85 ? "刃先が迷っておらん。見事じゃ。"
+            : ok / ROUNDS > .6 ? "おおむね下絵のとおりじゃ。" : "線から外れすぎじゃのう。"); }, 400);
+      };
+
+      ui.onDown = (p) => { drawn = [p]; };
+      ui.onPoint = (p) => {
+        svg.querySelector("#tip").setAttribute("cx", p.x);
+        svg.querySelector("#tip").setAttribute("cy", p.y);
+        drawn.push(p);
+        svg.querySelector("#carve").setAttribute("d",
+          drawn.map((q, i) => (i ? "L" : "M") + q.x.toFixed(1) + " " + q.y.toFixed(1)).join(" "));
+        pts.forEach((c, i) => {
+          const d = actDist(p, c);
+          if (d < near[i]) near[i] = d;
+        });
+        let good = 0; near.forEach(d => { if (d < tol) good++; });
+        if (good >= pts.length) judge();
+      };
+      ui.onUp = () => { if (round < ROUNDS) judge(); };
+      ui.onTimeout = () => {
+        judging = false;
+        if (round < ROUNDS) judge();          // いまの回を締める
+        while (round < ROUNDS) {              // 残りの回は未達として締める
+          for (let i = 0; i < 22; i++) sc.ng(0.35);
+          round++;
+        }
+        over = true;
+        done(sc.value(), "時間切れじゃ。" + sc.word());
+      };
+    }
+  },
+
+  /* ================================================================
+     ⑥ 研磨（追いかけ）
+     荒れた所をなでて平らにする。磨きすぎると穴があく。荒れは増えつづける。
+     ================================================================ */
+  kenma: {
+    name: "研磨", limit: 32000,
+    tip: "荒れた所を指でこする。<b>2回で平ら、4回で削りすぎ</b>。荒れはどんどん出てくる。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const COLS = 6, ROWS = 4, N = COLS * ROWS, CELL = 40, OX = 30, OY = 70;
+      const lvl = new Array(N).fill(0);        // 0=平ら 1〜=荒れ -1=穴
+      const TOTAL = 24;
+      const sc = actScore(TOTAL);
+      let last = -1, timer = null, added = 0, wave = 0, smoothed = 0;
+
+      svg.innerHTML =
+        `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+         <rect x="${OX - 8}" y="${OY - 8}" width="${COLS * CELL + 10}" height="${ROWS * CELL + 10}"
+           rx="12" fill="#8a5a30"/>
+         <g id="cells"></g>
+         <text x="150" y="48" text-anchor="middle" font-size="15" fill="#8a6446">荒れた所をこする</text>
+         <text x="150" y="268" text-anchor="middle" font-size="13" fill="#b08a63">つやが出たら、そこはもう十分</text>`;
+      const gC = svg.querySelector("#cells");
+      const paint = () => {
+        gC.innerHTML = lvl.map((v, i) => {
+          const c = i % COLS, r = (i / COLS) | 0;
+          const fill = v === -1 ? "#6e4526" : v === 0 ? "#f2cf9d" : v === 1 ? "#c98d54" : "#a9713f";
+          return `<rect x="${OX + c * CELL}" y="${OY + r * CELL}" width="${CELL - 3}"
+            height="${CELL - 3}" rx="5" fill="${fill}"/>` +
+            (v === -1 ? `<circle cx="${OX + c * CELL + 18}" cy="${OY + r * CELL + 18}" r="7" fill="#4a2f18"/>` : "");
+        }).join("");
+      };
+      const rough = () => {
+        const free = [];
+        lvl.forEach((v, i) => { if (v === 0) free.push(i); });
+        if (!free.length) return;
+        const i = free[(Math.random() * free.length) | 0];
+        lvl[i] = 1 + ((Math.random() * 2) | 0);
+        added++;
+        paint();
+      };
+      for (let i = 0; i < 6; i++) rough();
+      paint();
+
+      const rub = (p) => {
+        const c = Math.floor((p.x - OX) / CELL), r = Math.floor((p.y - OY) / CELL);
+        if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
+        const i = r * COLS + c;
+        if (i === last) return;
+        last = i;
+        if (lvl[i] === -1) return;
+        if (lvl[i] > 0) {
+          lvl[i]--;
+          if (lvl[i] === 0) { sc.ok(); smoothed++; ui.say("つやが出た"); }
+        } else {
+          lvl[i] = -1; sc.ng(); ui.say("⚠️ 削りすぎて穴があいた");
+        }
+        paint();
+        ui.progress(smoothed / TOTAL);
+        actBanner(ui, wave + 1, 3, "荒れを平らに。平らな所は触るな", sc);
+        if (smoothed >= TOTAL) finish();
+      };
+      const finish = () => {
+        if (timer) { clearInterval(timer); timer = null; }
+        done(sc.value(), sc.word());
+      };
+
+      timer = setInterval(() => {
+        wave = smoothed < 8 ? 0 : smoothed < 16 ? 1 : 2;
+        rough();
+        if (wave >= 1) rough();
+      }, 1500 / h);
+
+      ui.onDown = () => { last = -1; };
+      ui.onPoint = rub;
+      ui.onStop = () => { if (timer) clearInterval(timer); };
+      ui.onTimeout = finish;
+      actBanner(ui, 1, 3, "荒れを平らに。平らな所は触るな", sc);
+    }
+  },
+
+  /* ================================================================
+     ⑦ 組立（形合わせ）
+     部材を正しい窪みへ運ぶ。形と大きさで見分ける。
+     ================================================================ */
+  kumi: {
+    name: "組立", limit: 45000,
+    tip: "下の部材を押してから、<b>合う窪みを押す</b>。形と大きさを見て選ぶのじゃ。",
+    start(svg, ui, done, lv) {
+      const WAVES = [3, 4, 5];
+      const TOTAL = WAVES.reduce((a, b) => a + b, 0);
+      const sc = actScore(TOTAL);
+      const FORMS = [
+        { w: 54, h: 30, n: "横框" }, { w: 30, h: 60, n: "たて框" },
+        { w: 44, h: 44, n: "鏡板" }, { w: 70, h: 22, n: "台輪" },
+        { w: 24, h: 24, n: "だぼ" }, { w: 36, h: 52, n: "扉板" }
+      ];
+      let wave = 0, slots = [], picked = -1;
+
+      const build = () => {
+        const n = WAVES[wave];
+        const pool = FORMS.slice().sort(() => Math.random() - .5).slice(0, n);
+        slots = pool.map((f, i) => ({
+          ...f, i, filled: false,
+          sx: 40 + (i % 3) * 78, sy: 60 + ((i / 3) | 0) * 78
+        }));
+        const order = slots.map(s => s.i).sort(() => Math.random() - .5);
+        slots.forEach(s => { s.tray = order.indexOf(s.i); });
+        picked = -1;
+        draw();
+      };
+      const draw = () => {
+        const holes = slots.map(s => `
+          <rect x="${s.sx - s.w / 2}" y="${s.sy - s.h / 2}" width="${s.w}" height="${s.h}" rx="4"
+            fill="${s.filled ? "#a9713f" : "#6e4526"}" stroke="#8a5a30" stroke-width="2"/>`).join("");
+        const tray = slots.filter(s => !s.filled).map(s => {
+          const x = 36 + s.tray * 58;
+          const sel = picked === s.i;
+          return `<g><rect x="${x - s.w * .36}" y="${236 - s.h * .36}" width="${s.w * .72}"
+            height="${s.h * .72}" rx="3" fill="${sel ? "#d8b45e" : "#c9a24b"}"
+            stroke="${sel ? "#a97c14" : "#b08a63"}" stroke-width="${sel ? 3 : 1.6}"/></g>`;
+        }).join("");
+        svg.innerHTML =
+          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+           <rect x="16" y="34" width="268" height="168" rx="12" fill="#8a5a30"/>${holes}
+           <rect x="16" y="208" width="268" height="60" rx="10" fill="#f3e7cd"/>${tray}
+           <text x="150" y="26" text-anchor="middle" font-size="14" fill="#8a6446">窪みに合う部材を入れる</text>`;
+      };
+
+      ui.onDown = (p) => {
+        if (p.y > 206) {
+          const cand = slots.filter(s => !s.filled);
+          let best = -1, bd = 1e9;
+          cand.forEach(s => { const d = Math.abs(p.x - (36 + s.tray * 58)); if (d < bd) { bd = d; best = s.i; } });
+          if (bd < 34) { picked = best; draw(); ui.say(`「${slots.find(s => s.i === picked).n}」を持った`); }
+          return;
+        }
+        if (picked < 0) { ui.say("まず下から部材を選ぶのじゃ"); return; }
+        const hit = slots.find(s => !s.filled &&
+          Math.abs(p.x - s.sx) < s.w / 2 + 12 && Math.abs(p.y - s.sy) < s.h / 2 + 12);
+        if (!hit) { ui.say("窪みを押すのじゃ"); return; }
+        if (hit.i === picked) {
+          hit.filled = true; sc.ok(); picked = -1;
+          ui.say("かちり、と入った");
+          ui.progress(sc.hit / TOTAL);
+          draw();
+          if (slots.every(s => s.filled)) {
+            if (wave < 2) { wave++; setTimeout(build, 450); ui.say(`—— 第${wave + 1}波 ——`); }
+            else setTimeout(() => done(sc.value(), sc.word()), 400);
+          }
+        } else {
+          sc.ng(); picked = -1; draw();
+          ui.say("⚠️ 形が合わん");
+        }
+        actBanner(ui, wave + 1, 3, "部材を選んで窪みへ", sc);
+      };
+      ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
+      actBanner(ui, 1, 3, "部材を選んで窪みへ", sc);
+      build();
+    }
+  },
+
+  /* ================================================================
+     ⑧ 布張り（方向スワイプ）
+     しわが出る。矢印の向きへ指をはらう。放っておくと癖がついてしまう。
+     ================================================================ */
+  hari: {
+    name: "張り", limit: 60000,
+    tip: "しわが出たら、<b>矢印の向きへ指をはらう</b>。放っておくと癖がつくぞ。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const WAVES = [{ n: 6, life: 3400 }, { n: 7, life: 2700 }, { n: 8, life: 2100 }];
+      const TOTAL = WAVES.reduce((s, w) => s + w.n, 0);
+      const sc = actScore(TOTAL);
+      const DIRS = [{ x: 1, y: 0, a: 0 }, { x: -1, y: 0, a: 180 },
+                    { x: 0, y: 1, a: 90 }, { x: 0, y: -1, a: -90 }];
+      let wave = 0, spawned = 0, resolved = 0, timer = null, nextAt = 0;
+      const marks = [];
+
+      svg.innerHTML =
+        `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+         <rect x="24" y="44" width="252" height="212" rx="16" fill="#8a5a30"/>
+         <rect x="34" y="54" width="232" height="192" rx="12" fill="#b5c9a4"/>
+         <g id="marks"></g>
+         <text x="150" y="286" text-anchor="middle" font-size="14" fill="#8a6446">矢印の向きへはらう</text>`;
+      const gM = svg.querySelector("#marks");
+
+      const spawn = () => {
+        const d = DIRS[(Math.random() * 4) | 0];
+        const x = actRand(70, 230), y = actRand(90, 212);
+        const el = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        el.setAttribute("transform", `translate(${x},${y})`);
+        el.innerHTML =
+          `<circle r="26" fill="#9cb489" opacity=".5"/>
+           <circle class="life" r="26" fill="none" stroke="#7a9c6e" stroke-width="4"
+             stroke-dasharray="163" stroke-dashoffset="0"/>
+           <g transform="rotate(${d.a})">
+             <path d="M-13 0 H10 M3 -7 L11 0 L3 7" stroke="#4a5f42" stroke-width="4"
+               fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+        gM.appendChild(el);
+        marks.push({ el, x, y, d, born: Date.now() });
+        spawned++;
+      };
+      const kill = (i) => { marks[i].el.remove(); marks.splice(i, 1); resolved++; ui.progress(resolved / TOTAL); };
+
+      const step = () => {
+        const now = Date.now();
+        const need = WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0);
+        if (spawned < need && now > nextAt) {
+          spawn(); nextAt = now + actRand(500, 950) / h;
+        }
+        const life = WAVES[wave].life / h;
+        for (let i = marks.length - 1; i >= 0; i--) {
+          const m = marks[i];
+          const r = (now - m.born) / life;
+          const ring = m.el.querySelector(".life");
+          if (ring) ring.setAttribute("stroke-dashoffset", Math.min(163, r * 163));
+          if (r >= 1) { sc.ng(); ui.say("しわに癖がついてしまった"); kill(i); }
+        }
+        if (spawned >= need && !marks.length) {
+          if (wave < 2) { wave++; nextAt = Date.now() + 500; ui.say(`—— 第${wave + 1}波 ——`); }
+          else { if (timer) clearInterval(timer); setTimeout(() => done(sc.value(), sc.word()), 300); }
+        }
+      };
 
       let from = null;
       ui.onDown = (p) => { from = p; };
       ui.onUp = (p) => {
         if (!from) return;
-        const start = from; from = null;
-        const m = marks.find(x => !x.done && actDist(start, x) < 42);
-        if (!m) return;
-        const drag = { x: p.x - start.x, y: p.y - start.y };
-        const out = { x: m.x - C.x, y: m.y - C.y };
-        const outward = drag.x * out.x + drag.y * out.y;      // 外向きなら正
-        const len = Math.hypot(drag.x, drag.y);
-        if (len < 26) return;                                  // 動きが小さすぎる
-        if (outward <= 0) {                                    // 内側へ引いた
-          bad++;
-          svg.querySelector("#w" + m.i).setAttribute("stroke", "#b8563e");
-          svg.querySelector("#w" + m.i).style.opacity = ".55";
-          m.done = true;
-        } else {
-          m.done = true;
-          svg.querySelector("#w" + m.i).style.opacity = "0";
-        }
-        const fin = marks.filter(x => x.done).length;
-        ui.progress(fin / marks.length);
-        if (fin === marks.length) {
-          setTimeout(() => done(
-            clamp100((marks.length - bad) / marks.length * 100),
-            bad ? "何度か布を寄せてしもうたな。" : "しわ一つない。見事じゃ。"), 260);
-        }
+        const s = from; from = null;
+        let idx = -1, bd = 1e9;
+        marks.forEach((m, i) => { const d = actDist(s, m); if (d < bd) { bd = d; idx = i; } });
+        if (idx < 0 || bd > 46) return;
+        const m = marks[idx];
+        const dx = p.x - s.x, dy = p.y - s.y;
+        const len = Math.hypot(dx, dy);
+        const dot = len > 0 ? (dx * m.d.x + dy * m.d.y) / len : 0;
+        if (len > 26 && dot > .72) { sc.ok(); ui.say(dot > .95 ? "✨ まっすぐ伸びた" : "しわが消えた"); }
+        else { sc.ng(); ui.say("⚠️ 向きが違う。布が寄った"); }
+        kill(idx);
+        actBanner(ui, wave + 1, 3, "矢印の向きへはらう", sc);
       };
+      ui.onStop = () => { if (timer) clearInterval(timer); };
+      ui.onTimeout = () => { if (timer) clearInterval(timer); done(sc.value(), sc.word()); };
+      actBanner(ui, 1, 3, "矢印の向きへはらう", sc);
+      nextAt = Date.now() + 400;
+      timer = setInterval(step, 16);
     }
   },
 
-  /* ---------- 組立：部材を正しい順に納める ---------- */
-  kumi: {
-    name: "組立", limit: 0,
-    tip: "部材を正しい場所へ運ぶ。<b>組む順番がある</b>ので、あわてぬこと。",
-    start(svg, ui, done) {
-      /* order の小さいものから納めるのが正しい */
-      const parts = [
-        { id:"l", name:"左の側板", order:0, w:26, h:96, sx:44,  sy:250, tx:70,  ty:150 },
-        { id:"r", name:"右の側板", order:1, w:26, h:96, sx:104, sy:250, tx:230, ty:150 },
-        { id:"b", name:"背板",     order:2, w:116, h:82, sx:170, sy:250, tx:150, ty:150 },
-        { id:"t", name:"天板",     order:3, w:172, h:22, sx:150, sy:284, tx:150, ty:92  }
-      ];
-      let next = 0, wrong = 0, offset = 0;
-
-      svg.innerHTML =
-        parts.map(p => `<rect x="${p.tx - p.w/2}" y="${p.ty - p.h/2}" width="${p.w}" height="${p.h}"
-          rx="4" fill="none" stroke="#c9a24b" stroke-width="2.4" stroke-dasharray="6 5" opacity=".85"/>`).join("") +
-        parts.map(p => `<g id="p${p.id}" style="cursor:grab">
-          <rect x="${p.sx - p.w/2}" y="${p.sy - p.h/2}" width="${p.w}" height="${p.h}"
-            rx="4" fill="#dfa96c" stroke="#8a5a30" stroke-width="2.4"/>
-        </g>`).join("") +
-        `<text x="150" y="34" text-anchor="middle" font-size="15" fill="#8a6446">部材を枠へ運ぶ</text>`;
-
-      let held = null, grab = null;
-      ui.onDown = (p) => {
-        held = parts.filter(x => !x.placed)
-          .find(x => Math.abs(p.x - x.sx) < x.w / 2 + 16 && Math.abs(p.y - x.sy) < x.h / 2 + 16);
-        if (held) grab = { x: p.x - held.sx, y: p.y - held.sy };
-      };
-      ui.onPoint = (p) => {
-        if (!held) return;
-        const g = svg.querySelector("#p" + held.id);
-        g.setAttribute("transform",
-          `translate(${p.x - grab.x - held.sx},${p.y - grab.y - held.sy})`);
-      };
-      ui.onUp = (p) => {
-        if (!held) return;
-        const h = held; held = null;
-        const g = svg.querySelector("#p" + h.id);
-        const at = { x: p.x - grab.x, y: p.y - grab.y };
-        const d = actDist(at, { x: h.tx, y: h.ty });
-        if (d > 40) { g.removeAttribute("transform"); return; }   // 枠から遠い
-        if (h.order !== next) {                                    // 順番が違う
-          wrong++;
-          g.removeAttribute("transform");
-          ui.say("待つんじゃ。そこは先に固定してはいかん。");
-          return;
-        }
-        h.placed = true; next++; offset += d;
-        g.setAttribute("transform", `translate(${h.tx - h.sx},${h.ty - h.sy})`);
-        g.querySelector("rect").setAttribute("fill", "#c98d54");
-        ui.progress(next / parts.length);
-        if (next === parts.length) {
-          setTimeout(() => done(
-            clamp100(100 - wrong * 16 - offset / parts.length * 1.1),
-            wrong ? "順番でだいぶ迷ったな。" : "きっちり組めておる。"), 260);
-        }
-      };
-    }
-  },
-
-  /* ---------- 木の目利き：落ちてくる板から、良い板だけを受ける ---------- */
-  mekiki: {
-    name: "木の目利き", limit: 0,
-    tip: "製材所から板が降りてくる。<b>節や割れのない板だけ</b>を受け台で受け、悪い板は見送ること。",
-    start(svg, ui, done) {
-      const FLOOR = 250, SPAN = 2600, TOTAL = 11;   // 受け台の高さ・落ちる時間・枚数
-      const boards = [];
-      /* 良い板7枚・悪い板4枚を、順番を混ぜて落とす */
-      const kinds = ["good","good","bad","good","bad","good","good","bad","good","bad","good"];
-      for (let i = 0; i < TOTAL; i++) {
-        boards.push({
-          i, kind: kinds[i],
-          x: 36 + Math.random() * 228,      /* 落ちてくる幅を広げる */
-          t0: 400 + i * 1500,          /* 間をあけて、一枚ずつ見分けられるようにする */
-          caught: false, gone: false
-        });
-      }
-      const goodTotal = boards.filter(b => b.kind === "good").length;
-      let got = 0, wrong = 0, missed = 0, raf = null, start = Date.now(), over = false;
-      let cartX = 150;
-
-      svg.innerHTML =
-        `<rect x="0" y="${FLOOR + 22}" width="300" height="${300 - FLOOR - 22}" fill="#e8cfa5"/>
-         <text x="150" y="30" text-anchor="middle" font-size="14" fill="#8a6446">良い板だけ受ける</text>
-         <g id="boards"></g>
-         <g id="cart">
-           <rect x="${cartX - 34}" y="${FLOOR}" width="68" height="13" rx="4" fill="#8a5a30"/>
-           <rect x="${cartX - 34}" y="${FLOOR - 5}" width="68" height="7" rx="3" fill="#b07c4a"/>
-           <rect x="${cartX - 25}" y="${FLOOR + 13}" width="9" height="16" rx="3" fill="#6e4526"/>
-           <rect x="${cartX + 16}" y="${FLOOR + 13}" width="9" height="16" rx="3" fill="#6e4526"/>
-         </g>`;
-
-      const layer = svg.querySelector("#boards"), cart = svg.querySelector("#cart");
-
-      /* 板の絵。良い板は木目が素直、悪い板は節か割れが入っている */
-      const boardSvg = (b) => {
-        const base = `<rect x="-26" y="-9" width="52" height="18" rx="3"
-          fill="${b.kind === "good" ? "#dfa96c" : "#b08a63"}" stroke="#8a5a30" stroke-width="2"/>
-          <path d="M-22 -3 Q0 -6 22 -3" stroke="#c98d54" stroke-width="1.4" fill="none"/>
-          <path d="M-22 3 Q0 0 22 3" stroke="#c98d54" stroke-width="1.4" fill="none"/>`;
-        const flaw = b.i % 2
-          ? `<ellipse cx="4" cy="0" rx="7" ry="5.5" fill="#6e4526"/>
-             <ellipse cx="4" cy="0" rx="3" ry="2.4" fill="#4a2f18"/>`               /* 節 */
-          : `<path d="M-14 -9 L-6 0 L-12 9" stroke="#4a2f18" stroke-width="2.6" fill="none"/>`; /* 割れ */
-        return `<g id="b${b.i}" opacity="0">${base}${b.kind === "bad" ? flaw : ""}</g>`;
-      };
-      layer.innerHTML = boards.map(boardSvg).join("");
-
-      const moveCart = (x) => {
-        cartX = Math.max(36, Math.min(264, x));
-        cart.setAttribute("transform", `translate(${cartX - 150},0)`);
-      };
-      ui.onDown = (p) => moveCart(p.x);
-      ui.onPoint = (p) => moveCart(p.x);
-
-      const finish = () => {
-        if (over) return;
-        over = true;
-        if (raf) cancelAnimationFrame(raf);
-        done(clamp100(got / goodTotal * 100 - wrong * 10),
-          wrong ? `節のある板を${wrong}枚つかんでしもうたな。`
-            : missed ? `良い板を${missed}枚のがしたのう。` : "どれも素直な板ばかりじゃ。目が利くのう。");
-      };
-      ui.onStop = () => { over = true; if (raf) cancelAnimationFrame(raf); };
-
-      const loop = () => {
-        const now = Date.now() - start;
-        boards.forEach(b => {
-          if (b.caught || b.gone) return;
-          const el = now - b.t0;
-          if (el < 0) return;
-          const g = svg.querySelector("#b" + b.i);
-          const y = -20 + (el / SPAN) * 340;
-          g.setAttribute("opacity", "1");
-          g.setAttribute("transform", `translate(${b.x},${y})`);
-          /* 受け台の高さに来たら、受けたかどうかを見る */
-          if (y >= FLOOR - 14 && y <= FLOOR + 4) {
-            if (Math.abs(b.x - cartX) < 38) {
-              b.caught = true;
-              if (b.kind === "good") { got++; } else { wrong++; }
-              g.setAttribute("opacity", "0");
-              ui.say(b.kind === "good" ? "よい板じゃ" : "……節が入っておるぞ");
-              ui.progress((got + wrong + missed) / TOTAL);
-            }
-          } else if (y > 320) {
-            b.gone = true;
-            if (b.kind === "good") missed++;
-            g.setAttribute("opacity", "0");
-            ui.progress((got + wrong + missed) / TOTAL);
-          }
-        });
-        if (boards.every(b => b.caught || b.gone)) { setTimeout(finish, 300); return; }
-        raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-    }
-  },
-
-  /* ---------- 木取り：一枚の板から、節をよけて部材を切り出す ---------- */
-  kidori: {
-    name: "木取り", limit: 0,
-    tip: "一枚の板から扉の部材を切り出す。<b>節（ふし）をよけて</b>、四つとも板に納めること。",
-    start(svg, ui, done) {
-      const COLS = 5, ROWS = 4, CELL = 48, OX = 30, OY = 52;
-      const knots = [{ c: 0, r: 0 }, { c: 4, r: 3 }];
-      const parts = [
-        { id: "a", w: 2, h: 3, name: "扉板（左）", fill: "#a9713f" },
-        { id: "b", w: 2, h: 3, name: "扉板（右）", fill: "#9a6435" },
-        { id: "c", w: 1, h: 3, name: "たて框",     fill: "#8a5a30" },
-        { id: "d", w: 2, h: 1, name: "台輪",       fill: "#8a5a30" }
-      ];
-      const cx = (c) => OX + c * CELL, cy = (r) => OY + r * CELL;
-      let bad = 0, placed = 0;
-
-      /* 部材は板の下に並べて置いておく */
-      parts.forEach((p, i) => { p.sx = 24 + i * 68; p.sy = 268; });
-
-      svg.innerHTML =
-        `<rect x="${OX - 8}" y="${OY - 8}" width="${COLS * CELL + 16}" height="${ROWS * CELL + 16}"
-           rx="10" fill="#8a5a30"/>
-         <rect x="${OX}" y="${OY}" width="${COLS * CELL}" height="${ROWS * CELL}" fill="#f0d3a4"/>` +
-        /* 木目 */
-        [...Array(ROWS * 2)].map((_, i) =>
-          `<path d="M${OX} ${OY + i * CELL / 2 + 10} Q${OX + COLS * CELL / 2} ${OY + i * CELL / 2 + 2}
-             ${OX + COLS * CELL} ${OY + i * CELL / 2 + 10}" stroke="#dfae72" stroke-width="1.6" fill="none"/>`).join("") +
-        /* マス目 */
-        [...Array(COLS + 1)].map((_, c) =>
-          `<path d="M${cx(c)} ${OY} L${cx(c)} ${OY + ROWS * CELL}" stroke="#b07c4a" stroke-width="1" opacity=".5"/>`).join("") +
-        [...Array(ROWS + 1)].map((_, r) =>
-          `<path d="M${OX} ${cy(r)} L${OX + COLS * CELL} ${cy(r)}" stroke="#b07c4a" stroke-width="1" opacity=".5"/>`).join("") +
-        /* 節 */
-        knots.map(k => `<g>
-          <ellipse cx="${cx(k.c) + CELL / 2}" cy="${cy(k.r) + CELL / 2}" rx="17" ry="14" fill="#8a5a30"/>
-          <ellipse cx="${cx(k.c) + CELL / 2}" cy="${cy(k.r) + CELL / 2}" rx="10" ry="8" fill="#6e4526"/>
-          <ellipse cx="${cx(k.c) + CELL / 2}" cy="${cy(k.r) + CELL / 2}" rx="4" ry="3" fill="#523venue"/>
-        </g>`).join("").replace("#523venue", "#523318") +
-        /* 部材 */
-        parts.map(p => `<g id="q${p.id}" style="cursor:grab">
-          <rect x="${p.sx}" y="${p.sy}" width="${p.w * CELL / 2}" height="${p.h * CELL / 2}"
-            rx="3" fill="${p.fill}" stroke="#8a5a30" stroke-width="2"/>
-        </g>`).join("") +
-        `<text x="150" y="30" text-anchor="middle" font-size="14" fill="#8a6446">節をよけて、板から取る</text>`;
-
-      /* 部材を板の大きさに合わせて置く（並べているときは半分の大きさ） */
-      const occupied = () => {
-        const used = {};
-        knots.forEach(k => { used[k.c + "," + k.r] = true; });
-        parts.forEach(p => {
-          if (!p.at) return;
-          for (let i = 0; i < p.w; i++) for (let j = 0; j < p.h; j++) used[(p.at.c + i) + "," + (p.at.r + j)] = true;
-        });
-        return used;
-      };
-
-      let held = null, grab = null;
-      ui.onDown = (pt) => {
-        held = parts.filter(p => !p.at).find(p => {
-          const w = p.w * CELL / 2, h = p.h * CELL / 2;
-          return pt.x > p.sx - 10 && pt.x < p.sx + w + 10 && pt.y > p.sy - 10 && pt.y < p.sy + h + 10;
-        });
-        if (held) {
-          grab = { x: pt.x - held.sx, y: pt.y - held.sy };
-          /* つかんだら実寸になる */
-          const rc = svg.querySelector("#q" + held.id + " rect");
-          rc.setAttribute("width", held.w * CELL);
-          rc.setAttribute("height", held.h * CELL);
-        }
-      };
-      ui.onPoint = (pt) => {
-        if (!held) return;
-        svg.querySelector("#q" + held.id).setAttribute("transform",
-          `translate(${pt.x - grab.x - held.sx},${pt.y - grab.y - held.sy})`);
-      };
-      ui.onUp = (pt) => {
-        if (!held) return;
-        const p = held; held = null;
-        const g = svg.querySelector("#q" + p.id), rc = g.querySelector("rect");
-        const at = { x: pt.x - grab.x, y: pt.y - grab.y };
-        const c = Math.round((at.x - OX) / CELL), r = Math.round((at.y - OY) / CELL);
-        const used = occupied();
-        let ok = c >= 0 && r >= 0 && c + p.w <= COLS && r + p.h <= ROWS;
-        if (ok) {
-          for (let i = 0; i < p.w && ok; i++)
-            for (let j = 0; j < p.h && ok; j++)
-              if (used[(c + i) + "," + (r + j)]) ok = false;
-        }
-        if (!ok) {                       /* 板からはみ出す・節にかかる・重なる */
-          bad++;
-          g.removeAttribute("transform");
-          rc.setAttribute("width", p.w * CELL / 2);
-          rc.setAttribute("height", p.h * CELL / 2);
-          ui.say(c >= 0 && r >= 0 && c + p.w <= COLS && r + p.h <= ROWS
-            ? "そこは節じゃ。よけて取るのじゃ。" : "板からはみ出しておるぞ。");
-          return;
-        }
-        p.at = { c, r };
-        placed++;
-        g.setAttribute("transform", `translate(${cx(c) - p.sx},${cy(r) - p.sy})`);
-        rc.setAttribute("stroke", "#523318");
-        rc.setAttribute("stroke-width", "3");
-        ui.say("");
-        ui.progress(placed / parts.length);
-        if (placed === parts.length) {
-          setTimeout(() => done(clamp100(100 - bad * 7),
-            bad ? `${bad}度ほど取り直したな。` : "無駄なく取れておる。見事な木取りじゃ。"), 280);
-        }
-      };
-    }
-  },
-
-  /* ---------- 釘打ち：拍に合わせてほぞを打ちこむ ---------- */
-  rhythm: {
-    name: "釘打ち", limit: 0,
-    tip: "ほぞに釘を打ちこむ。輪がしるしに<b>重なった瞬間</b>に叩く。強すぎても弱すぎても木が割れる。",
-    start(svg, ui, done) {
-      const N = 8, TARGET = 16, R0 = 44, DUR = 820, GAP = 240;
-      const nails = [];
-      for (let i = 0; i < N; i++) nails.push({ x: 42 + i * 31, hit: null });
-      let idx = 0, t0 = Date.now() + 500, phase = "gap", raf = null, sum = 0;
-
-      svg.innerHTML =
-        `<rect x="16" y="150" width="268" height="86" rx="10" fill="#8a5a30"/>
-         <rect x="16" y="140" width="268" height="18" rx="6" fill="#b07c4a"/>` +
-        nails.map((n, i) => `<g id="n${i}">
-          <rect x="${n.x - 3}" y="118" width="6" height="30" rx="2" fill="#b8b8b8"/>
-          <ellipse cx="${n.x}" cy="118" rx="7" ry="3.5" fill="#d8d8d8"/>
-        </g>`).join("") +
-        `<circle id="ring" cx="${nails[0].x}" cy="118" r="${R0}" fill="none"
-           stroke="#7a9c6e" stroke-width="3.5" opacity="0"/>
-         <circle id="mark" cx="${nails[0].x}" cy="118" r="${TARGET}" fill="none"
-           stroke="#c9a24b" stroke-width="3" stroke-dasharray="4 4"/>
-         <text id="hitword" x="150" y="76" text-anchor="middle" font-size="22" fill="#a97c14" opacity="0"></text>
-         <text x="150" y="34" text-anchor="middle" font-size="14" fill="#8a6446">輪が金の印に重なったら叩く</text>
-         <text x="150" y="272" text-anchor="middle" font-size="13" fill="#b08a63">トン……トン……と、同じ拍で</text>`;
-
-      const ring = svg.querySelector("#ring"), mark = svg.querySelector("#mark");
-      const word = svg.querySelector("#hitword");
-
-      const moveTo = (i) => {
-        ring.setAttribute("cx", nails[i].x);
-        mark.setAttribute("cx", nails[i].x);
-      };
-      const say = (t, col) => {
-        word.textContent = t; word.setAttribute("fill", col);
-        word.setAttribute("opacity", "1");
-        setTimeout(() => word.setAttribute("opacity", "0"), 420);
-      };
-
-      /* 打った瞬間の輪の大きさで出来を決める */
-      const judge = (r) => {
-        const off = Math.abs(r - TARGET);
-        let s, t, col;
-        if (off <= 3)      { s = 100; t = "会心！"; col = "#a97c14"; }
-        else if (off <= 8) { s = 78;  t = "よし";   col = "#7a9c6e"; }
-        else if (off <= 15){ s = 48;  t = "あまい"; col = "#8a6446"; }
-        else               { s = 12;  t = "曲がった"; col = "#b8563e"; }
-        nails[idx].hit = s; sum += s;
-        say(t, col);
-        /* 打てたぶんだけ釘が沈む */
-        const g = svg.querySelector("#n" + idx);
-        g.setAttribute("transform", `translate(0,${8 + (100 - s) / 100 * 6})`);
-        if (s <= 12) g.setAttribute("opacity", ".55");
-        ui.progress((idx + 1) / N);
-        idx++;
-        if (idx >= N) {
-          ring.setAttribute("opacity", "0");
-          phase = "done";
-          const avg = sum / N;
-          setTimeout(() => done(clamp100(avg),
-            avg >= 85 ? "小気味のよい音じゃった。" :
-            avg >= 55 ? "まずまずの手さばきじゃ。" : "拍が合っておらんかったのう。"), 420);
-        } else {
-          phase = "gap"; t0 = Date.now();
-          moveTo(idx);
-        }
-      };
-
-      const loop = () => {
-        const el = Date.now() - t0;
-        if (phase === "swing") {
-          const p = Math.min(1, el / DUR);
-          ring.setAttribute("r", (R0 - (R0 - 5) * p).toFixed(1));
-          if (p >= 1) judge(0);          // 叩かずに過ぎた
-        } else if (phase === "gap") {
-          if (el >= GAP) {
-            phase = "swing"; t0 = Date.now();
-            ring.setAttribute("opacity", "1");
-            ring.setAttribute("r", R0);
-          }
-        }
-        if (phase !== "done") raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-      ui.onStop = () => { if (raf) cancelAnimationFrame(raf); phase = "done"; };
-      ui.onDown = () => { if (phase === "swing") judge(+ring.getAttribute("r")); };
-    }
-  },
-
-  /* ---------- 彫刻：下絵の文様を一筆でなぞる ---------- */
-  hori: {
-    name: "彫刻", limit: 24000,
-    tip: "うっすら引いた下絵を、<b>一筆で</b>なぞって彫る。線から外れぬように。",
-    start(svg, ui, done) {
-      /* 家具によって文様が変わる。難しい家具ほど込み入った文様になる */
-      const kind = CARVE_PATTERN[state.currentId] || "vine";
-      const pat = CARVE_PATTERNS[kind];
-      const pts = pat.points().map(p => ({ ...p, hit: false }));
-      const R = 34;                                   // 線から離れてよい幅
-      /* 各点について「いちばん近づいた距離」を覚えておく。
-         順番の前後で減点せず、線をどれだけ忠実になぞれたかだけを見る */
-      pts.forEach(p => { p.min = 9999; });
-      let finished = false;
-
-      /* なめらかな下絵の線（採点は点で、見た目は曲線で） */
-      const smooth = (list) => list.map((p, i) =>
-        (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1)).join(" ");
-
-      svg.innerHTML =
-        `<rect x="14" y="14" width="272" height="272" rx="16" fill="#b07c4a"/>
-         <rect x="24" y="24" width="252" height="252" rx="11" fill="none"
-           stroke="#8a5a30" stroke-width="3" opacity=".55"/>
-         ${pat.decor || ""}
-         <path d="${smooth(pat.dense())}" stroke="#8a5a30" stroke-width="10" fill="none"
-           stroke-linecap="round" stroke-linejoin="round" opacity=".32"/>
-         <path id="carved" d="" stroke="#f2cf9d" stroke-width="7.5" fill="none"
-           stroke-linecap="round" stroke-linejoin="round"/>` +
-        pts.map((p, i) => `<circle id="d${i}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}"
-          r="4.5" fill="#8a5a30" opacity=".5"/>`).join("") +
-        `<circle id="startdot" cx="${pts[0].x.toFixed(1)}" cy="${pts[0].y.toFixed(1)}" r="13"
-           fill="none" stroke="#7a9c6e" stroke-width="3">
-           <animate attributeName="r" values="10;16;10" dur="1.3s" repeatCount="indefinite"/>
-         </circle>
-         `;
-      ui.setTip(`うっすら引いた下絵を、<b>一筆で</b>なぞって彫る。線から外れぬように。
-        <br><b>${pat.label}</b>`);
-
-      /* 彫れたところは、点を直線でつながず、下絵と同じ曲線で描く。
-         つながって彫れている区間だけを、その区間の曲線として起こす */
-      const drawCarved = () => {
-        const runs = [];
-        let cur = [];
-        pts.forEach((t, i) => {
-          if (t.hit) cur.push(i);
-          else { if (cur.length > 1) runs.push(cur); cur = []; }
-        });
-        if (cur.length > 1) runs.push(cur);
-        const last = pts.length - 1;
-        const d = runs.map(run => {
-          const t0 = run[0] / last, t1 = run[run.length - 1] / last;
-          const sub = [];
-          for (let k = 0; k <= 44; k++) sub.push(pat.curve(t0 + (t1 - t0) * k / 44));
-          return smooth(sub);
-        }).join(" ");
-        svg.querySelector("#carved").setAttribute("d", d);
-      };
-
-      const finish = () => {
-        const hit = pts.filter(p => p.hit);
-        const dev = hit.length ? hit.reduce((a, p) => a + p.min, 0) / hit.length : R;
-        const missed = pts.length - hit.length;
-        done(clamp100(hit.length / pts.length * 100 - dev * 1.2),
-          missed ? `${missed}か所ほど彫り残したのう。`
-            : dev > 14 ? "線から少し逃げておったな。" : "線が生きておる。よい彫りじゃ。");
-      };
-      ui.onTimeout = finish;
-
-      ui.onPoint = (p) => {
-        let n = 0;
-        pts.forEach((t, i) => {
-          const d = actDist(p, t);
-          if (d < t.min) {
-            t.min = d;
-            if (d < R && !t.hit) {
-              t.hit = true;
-              const dot = svg.querySelector("#d" + i);
-              dot.setAttribute("fill", "#f2cf9d");
-              dot.setAttribute("opacity", "1");
-              if (i === 0) svg.querySelector("#startdot").style.display = "none";
-              drawCarved();
-            }
-          }
-          if (t.hit) n++;
-        });
-        ui.progress(n / pts.length);
-        if (n === pts.length && !finished) { finished = true; setTimeout(finish, 280); }
-      };
-    }
-  },
-
-  /* ---------- 金具：位置を合わせて留める ---------- */
+  /* ================================================================
+     ⑨ 金具（角度合わせ）
+     ねじの溝を、印と同じ向きにそろえて締める。
+     ================================================================ */
   kanagu: {
-    name: "金具", limit: 0,
-    tip: "金具を<b>印に合わせて</b>置き、ねじ穴をひとつずつ留める。",
-    start(svg, ui, done) {
-      const T = { x: 150, y: 132 };
-      let placed = false, placeScore = 0, screws = 0, screwSum = 0;
-      const holes = [{ x: T.x - 26, y: T.y }, { x: T.x + 26, y: T.y }];
+    name: "金具", limit: 45000,
+    tip: "ねじのまわりを指でなぞって<b>溝を印に合わせ</b>、指を離して締める。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const WAVES = [{ n: 4, tol: 20 }, { n: 4, tol: 14 }, { n: 4, tol: 9 }];
+      const TOTAL = WAVES.reduce((s, w) => s + w.n, 0);
+      const sc = actScore(TOTAL);
+      let wave = 0, left = WAVES[0].n, ang = 0, target = 0, cx = 150, cy = 150;
 
-      svg.innerHTML =
-        `<rect x="30" y="60" width="240" height="180" rx="14" fill="#b07c4a"/>
-         <path d="M${T.x - 16} ${T.y} L${T.x + 16} ${T.y} M${T.x} ${T.y - 16} L${T.x} ${T.y + 16}"
-           stroke="#c9a24b" stroke-width="2.4"/>
-         <circle cx="${T.x}" cy="${T.y}" r="30" fill="none" stroke="#c9a24b"
-           stroke-width="2" stroke-dasharray="5 5"/>
-         <g id="metal" style="cursor:grab">
-           <rect x="${150 - 38}" y="${216 - 9}" width="76" height="18" rx="7"
-             fill="#e8c04b" stroke="#a97c14" stroke-width="2.4"/>
-         </g>
-         <text x="150" y="44" text-anchor="middle" font-size="15" fill="#8a6446">金具を印へ</text>`;
-
-      let held = false, grab = null, pos = { x: 150, y: 216 };
-      ui.onDown = (p) => {
-        if (placed) return;
-        if (Math.abs(p.x - pos.x) < 50 && Math.abs(p.y - pos.y) < 22) {
-          held = true; grab = { x: p.x - pos.x, y: p.y - pos.y };
-        }
+      const draw = () => {
+        const tol = WAVES[wave].tol / h;
+        const near = Math.abs(((ang - target + 540) % 360) - 180) > 180 - tol;
+        svg.innerHTML =
+          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+           <rect x="30" y="56" width="240" height="188" rx="14" fill="#b07c4a"/>
+           <circle cx="${cx}" cy="${cy}" r="62" fill="#8a5a30"/>
+           <circle cx="${cx}" cy="${cy}" r="54" fill="${near ? "#d8b45e" : "#c9a24b"}"/>
+           <g transform="rotate(${target} ${cx} ${cy})">
+             <rect x="${cx - 2}" y="${cy - 78}" width="4" height="18" rx="2" fill="#7a9c6e"/>
+             <rect x="${cx - 2}" y="${cy + 60}" width="4" height="18" rx="2" fill="#7a9c6e"/>
+           </g>
+           <g transform="rotate(${ang} ${cx} ${cy})">
+             <rect x="${cx - 40}" y="${cy - 5}" width="80" height="10" rx="3" fill="#6e4526"/>
+           </g>
+           <text x="150" y="40" text-anchor="middle" font-size="15" fill="#8a6446">
+             あと ${left} 本　（緑の印に溝を合わせる）</text>
+           <text x="150" y="282" text-anchor="middle" font-size="13" fill="#b08a63">
+             ねじのまわりを指でぐるりと</text>`;
       };
+      const place = () => {
+        target = (Math.random() * 180) | 0;
+        ang = (target + 40 + Math.random() * 100) % 180;
+        cx = 150; cy = 150;
+        draw();
+      };
+
       ui.onPoint = (p) => {
-        if (!held) return;
-        const at = { x: p.x - grab.x, y: p.y - grab.y };
-        svg.querySelector("#metal").setAttribute("transform",
-          `translate(${at.x - 150},${at.y - 216})`);
+        const a = Math.atan2(p.y - cy, p.x - cx) * 180 / Math.PI;
+        ang = ((a % 180) + 180) % 180;
+        draw();
       };
-      ui.onUp = (p) => {
-        if (!held) { if (placed) tapScrew(p); return; }
-        held = false;
-        const at = { x: p.x - grab.x, y: p.y - grab.y };
-        const d = actDist(at, T);
-        if (d > 34) { svg.querySelector("#metal").removeAttribute("transform"); return; }
-        placed = true;
-        placeScore = Math.max(0, 100 - d * 2.6);
-        svg.querySelector("#metal").setAttribute("transform",
-          `translate(${T.x - 150},${T.y - 216})`);
-        ui.progress(0.4);
-        ui.say("よし。あとはねじ穴を留めるのじゃ。");
-        svg.insertAdjacentHTML("beforeend", holes.map((h, i) =>
-          `<circle id="h${i}" cx="${h.x}" cy="${h.y}" r="6" fill="#a97c14"
-             stroke="#fff" stroke-width="1.6"/>`).join(""));
+      ui.onUp = () => {
+        const tol = WAVES[wave].tol / h;
+        const diff = Math.min(Math.abs(ang - target), 180 - Math.abs(ang - target));
+        if (diff <= tol) { sc.ok(); ui.say(diff < tol * .3 ? "✨ 寸分の狂いもない" : "締まった"); }
+        else { sc.ng(); ui.say(`⚠️ ${Math.round(diff)}度ずれておる`); }
+        left--; ui.progress((sc.hit + sc.miss) / TOTAL);
+        if (left > 0) place();
+        else if (wave < 2) {
+          wave++; left = WAVES[wave].n; place();
+          ui.say(`—— 第${wave + 1}波　許される狂いが小さくなる ——`);
+        } else { setTimeout(() => done(sc.value(), sc.word()), 350); return; }
+        actBanner(ui, wave + 1, 3, "溝を印に合わせる", sc);
       };
-      function tapScrew(p) {
-        const i = holes.findIndex(h => !h.done && actDist(p, h) < 32);
-        if (i < 0) return;
-        holes[i].done = true;
-        screwSum += Math.max(0, 100 - actDist(p, holes[i]) * 5);
-        screws++;
-        const el = svg.querySelector("#h" + i);
-        el.setAttribute("fill", "#f2cf9d");
-        el.setAttribute("r", "7");
-        ui.progress(0.4 + 0.3 * screws);
-        if (screws === holes.length) {
-          setTimeout(() => done(
-            clamp100(placeScore * 0.6 + (screwSum / holes.length) * 0.4),
-            placeScore > 80 ? "寸分の狂いもない。" : "少し傾いておるかのう。"), 260);
+      ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
+      actBanner(ui, 1, 3, "溝を印に合わせる", sc);
+      place();
+    }
+  },
+
+  /* ================================================================
+     ⑩ 塗装（量の見きわめ）
+     面をなでるたびに塗料が乗る。目安の線でちょうど止める。
+     ================================================================ */
+  tosou: {
+    name: "塗装", limit: 45000,
+    tip: "面をなでると塗料が乗る。<b>線のところでちょうど止める</b>。塗りすぎると垂れるぞ。",
+    start(svg, ui, done, lv) {
+      const h = actHard(lv);
+      const WAVES = [3, 4, 4];
+      const TOTAL = WAVES.reduce((a, b) => a + b, 0);
+      const sc = actScore(TOTAL);
+      let wave = 0, panels = [], last = -1;
+
+      const build = () => {
+        const n = WAVES[wave];
+        panels = Array.from({ length: n }, (_, i) => ({
+          i, got: 0,
+          need: 2 + ((Math.random() * (2 + wave)) | 0),
+          done: false, over: false
+        }));
+        last = -1;
+        draw();
+      };
+      const draw = () => {
+        const n = panels.length;
+        const w = n <= 3 ? 76 : 58, gap = 8;
+        const totalW = n * w + (n - 1) * gap, ox = (300 - totalW) / 2;
+        svg.innerHTML =
+          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+           <text x="150" y="40" text-anchor="middle" font-size="15" fill="#8a6446">
+             面をなでて、線のところで止める</text>` +
+          panels.map((p, i) => {
+            const x = ox + i * (w + gap), H = 150, y = 60;
+            const fill = Math.min(1, p.got / Math.max(1, p.need + 2)) * H;
+            const col = p.over ? "#8a5a30" : p.done ? "#9dbb8f" : "#dfa96c";
+            const lineY = y + H - (p.need / Math.max(1, p.need + 2)) * H;
+            return `<rect x="${x}" y="${y}" width="${w}" height="${H}" rx="6" fill="#f3e7cd"
+                      stroke="#b08a63" stroke-width="2"/>
+                    <rect x="${x}" y="${y + H - fill}" width="${w}" height="${fill}" rx="4" fill="${col}"/>
+                    <line x1="${x - 4}" y1="${lineY}" x2="${x + w + 4}" y2="${lineY}"
+                      stroke="#b8563e" stroke-width="3"/>
+                    <text x="${x + w / 2}" y="${y + H + 20}" text-anchor="middle" font-size="12"
+                      fill="#8a6446">${p.over ? "垂れた" : p.done ? "ちょうど" : p.got + "/" + p.need}</text>`;
+          }).join("") +
+          `<text x="150" y="252" text-anchor="middle" font-size="13" fill="#b08a63">
+             塗り終えた面は、もう触らぬこと</text>`;
+      };
+
+      ui.onDown = () => { last = -1; };
+      ui.onPoint = (p) => {
+        const n = panels.length;
+        const w = n <= 3 ? 76 : 58, gap = 8;
+        const totalW = n * w + (n - 1) * gap, ox = (300 - totalW) / 2;
+        if (p.y < 60 || p.y > 210) return;
+        const i = Math.floor((p.x - ox) / (w + gap));
+        if (i < 0 || i >= n) return;
+        if (p.x > ox + i * (w + gap) + w) return;
+        if (i === last) return;
+        last = i;
+        const pan = panels[i];
+        if (pan.over) return;
+        pan.got++;
+        if (pan.got === pan.need) { pan.done = true; sc.ok(); ui.say("✨ ちょうど良い厚みじゃ"); }
+        else if (pan.got > pan.need) {
+          pan.over = true; pan.done = false; sc.ng(); ui.say("⚠️ 塗りすぎて垂れた");
         }
-      }
+        draw();
+        const fin = panels.filter(x => x.done || x.over).length;
+        ui.progress((sc.hit + sc.miss) / TOTAL);
+        actBanner(ui, wave + 1, 3, "線でちょうど止める", sc);
+        if (fin === n) {
+          if (wave < 2) { wave++; setTimeout(build, 500); ui.say(`—— 第${wave + 1}波 ——`); }
+          else setTimeout(() => done(sc.value(), sc.word()), 450);
+        }
+      };
+      ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
+      actBanner(ui, 1, 3, "線でちょうど止める", sc);
+      build();
     }
   }
 };
@@ -2745,12 +3096,32 @@ const CRAFT_ACTIONS = {
    同じ「組立」の工程でも、家具によって別の遊びにできる */
 const ACTION_OF = {
   bench:        "mekiki",    // 木材を選ぶ     → 落ちてくる板から良い板だけ受ける
+  book_nook:    "mekiki",    // 木材を選ぶ     → 奥行きを出す板を見きわめる
   chest:        "rhythm",    // 引き出しを作る → ほぞを拍に合わせて打ちこむ
-  wardrobe:     "kidori",    // 扉を作る       → 一枚板から扉を木取りする
   rolltop_desk: "rhythm",    // 幕板を編む     → 桟を拍に合わせて貼っていく
   typewriter:   "rhythm",    // 鍵盤を並べる   → 四段の鍵盤を拍に合わせて
-  book_nook:    "mekiki"     // 木材を選ぶ     → 奥行きを出す板を見きわめる
+  wardrobe:     "kidori",    // 扉を作る       → 一枚板から扉を木取りする
+  moon_shelf:   "nokogiri",  // 三日月を挽く   → 鋸を帯に合わせて挽き進める
+  moon_bed:     "nokogiri"   // 弧を挽く       → 同上
 };
+
+/* ----------------------------------------------------------
+   道具えらび：山場に入る前の、ひと呼吸ぶんの判断
+   ---------------------------------------------------------- */
+const TOOLS = [
+  { id: "normal", name: "いつもの道具", icon: "🔨", mult: 1, focus: 0,
+    note: "ふだんどおり" },
+  { id: "sharp",  name: "研ぎたての刃", icon: "✨", mult: 1.12, focus: 20,
+    note: "点が1.12倍。集中力を20よけいに使う" },
+  { id: "old",    name: "手になじんだ古い道具", icon: "🪵", mult: 0.92, focus: 0, safe: true,
+    note: "点は0.92倍。そのかわり、しくじりが出ない" }
+];
+const toolById = (id) => TOOLS.find(t => t.id === id) || TOOLS[0];
+
+/* 家具ごとの難度（1〜3）。売値の高い家具ほど、山場もつらくなる。
+   速さ・狭さ・数が変わるだけで、遊び方そのものは同じ */
+const actLevel = (f) => f.price >= 20000 ? 3 : f.price >= 8000 ? 2 : 1;
+const ACT_LEVEL_NAME = ["", "ふつう", "むずかしい", "いちばんむずかしい"];
 
 /* その工程に職人アクションがあるか */
 const actionFor = (step) =>
@@ -2763,11 +3134,11 @@ const CRITICAL_STEP = {
   stool: 1, couch: 2, bench: 0, chest: 1, mitsudan: 1,
   dresser: 2, jewelry: 1, curio: 2, wardrobe: 1,
   /* Petit.Continue の実製品ぶん */
-  tea_table: 2, trunk_table: 3, balcony_chair: 2, ladder_shelf: 1,
+  tea_table: 3, trunk_table: 2, balcony_chair: 2, ladder_shelf: 1,
   stained_screen: 3, mantelpiece: 2, rolltop_desk: 1, bed_arch: 1,
-  moon_shelf: 1, airship: 3,
+  moon_shelf: 1, airship: 2,
   /* 追加4枚ぶん */
-  wall_clock: 3, birdcage_stand: 2, book_nook: 0, glass_lamp: 2, greenhouse: 3,
+  wall_clock: 3, birdcage_stand: 1, book_nook: 0, glass_lamp: 2, greenhouse: 4,
   typewriter: 2, canopy_bed: 2, clocktower: 1, moon_bed: 1, observatory: 1
 };
 
@@ -2952,7 +3323,27 @@ const SET_BONUSES = [
     check: (pieces) => pieces.filter(p => p.finish === "antique").length >= 2 },
   { id: "doll_set", name: "ドール家具セット", mult: 1.15,
     desc: "プティ家具（小さな家具）2点以上 → 収益+15%",
-    check: (pieces) => pieces.filter(p => p.name.includes("プティ") || p.design === "kogata").length >= 2 }
+    check: (pieces) => pieces.filter(p => p.name.includes("プティ") || p.design === "kogata").length >= 2 },
+  { id: "night_set", name: "夜の部屋", mult: 1.25,
+    desc: "漆黒か金箔の仕上げ3点以上 → 収益+25%",
+    check: (pieces) => pieces.filter(p =>
+      p.finish === "shikkoku" || p.finish === "kinpaku").length >= 3 },
+  { id: "wood_set", name: "銘木ぞろえ", mult: 1.3,
+    desc: "ローズウッドか黒檀3点以上 → 収益+30%",
+    check: (pieces) => pieces.filter(p =>
+      p.wood === "rosewood" || p.wood === "ebony").length >= 3 },
+  { id: "ace_set", name: "会心ぞろえ", mult: 1.35,
+    desc: "Sランク3点以上 → 収益+35%",
+    check: (pieces) => pieces.filter(p => p.rank === "S").length >= 3 },
+  { id: "chapter_set", name: "三章そろい踏み", mult: 1.4,
+    desc: "序章・第二章・第三章の家具を1点ずつ → 収益+40%",
+    check: (pieces) => [1, 2, 3].every(n =>
+      pieces.some(p => CHAPTER_OF[p.baseId || p.fid] === n)) },
+  { id: "tale_set", name: "童話の棚", mult: 1.2,
+    desc: "童話を持つ家具3点以上 → 収益+20%",
+    check: (pieces) => pieces.filter(p => {
+      const f = furnitureById(p.baseId || p.fid); return f && f.letter;
+    }).length >= 3 }
 ];
 
 const HENRY_DELIVER = {
@@ -3017,7 +3408,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 9,
+  ver: 10,
   player: { name: "", avatar: { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 } },
   money: 0,
   exp: 0,
@@ -3042,7 +3433,8 @@ let state = {
   showroom: [],                   // 展示中の家具 [{fid,name,design,wood,finish,score,rank,pop,price}]
   seenBP: [],                     // 解放告知済みの設計図id
   completed: {},                  // { 図鑑id: {count, best, bestScore, bestPop} }
-  stories: []                     // 解放済み物語のid（家具id・レシピid・"final"）
+  stories: [],                    // 解放済み物語のid（家具id・レシピid・"final"）
+  tool: "normal"                  // 山場でえらんだ道具（normal / sharp / old）
 };
 
 /* 制作前の設計えらび（一時状態。セーブしない） */
@@ -3101,6 +3493,7 @@ function load() {
   if (savedVer !== 6) {   // 第5章まで: 集中力・手帳・山場の記憶を補完
     if (typeof state.focus !== "number") state.focus = FOCUS_PER_DAY;
     if (typeof state.flaws !== "number") state.flaws = 0;
+    if (!state.tool) state.tool = "normal";
     if (!Array.isArray(state.notebook)) state.notebook = [];
     if (!Array.isArray(state.knownCritical)) state.knownCritical = [];
     /* すでに作ったことのある家具は、山場を知っているものとして引き継ぐ */
@@ -3127,6 +3520,17 @@ function load() {
   if (savedVer !== 9) {   // 第8章まで: 山場の出来を覚える欄を用意する
     if (state.actionScore === undefined) state.actionScore = null;
     state.ver = 9;
+  }
+  if (savedVer !== 10) {  // 第9章: 章・道具を用意する
+    if (!state.tool) state.tool = "normal";
+    /* 章の条件ができる前に作った家具は、Aランク以上なら「会心」として引き継ぐ。
+       納期を守ったかどうかは記録に残っていないので、作り手に有利なほうに寄せる */
+    Object.values(state.completed).forEach(rec => {
+      if (rec && typeof rec === "object" && rec.ace === undefined) {
+        rec.ace = rec.best === "S" || rec.best === "A";
+      }
+    });
+    state.ver = 10;
   }
 }
 
@@ -3170,6 +3574,7 @@ const lettersFound = () => FURNITURE.filter(f => f.letter && state.stories.inclu
 
 /* 設計図の解放判定 */
 function bpUnlocked(f) {
+  if (!chapterOpen(chapterOf(f))) return false;   // 章が開いていなければ出ない
   const u = f.unlock;
   if (u.type === "level") return state.level >= u.v;
   if (u.type === "visitors") return state.totalVisitors >= u.v;
@@ -3343,7 +3748,7 @@ function renderStatus() {
    描画：設計図えらび（ホーム画面）
    ========================================================== */
 function renderSelect() {
-  const list = FURNITURE.map(f => {
+  const card = (f) => {
     if (bpUnlocked(f)) {
       const need = neededMaterials(f, "classic");
       const partChips = Object.keys(need.parts).map(k => {
@@ -3364,9 +3769,25 @@ function renderSelect() {
       <span><span class="name">？？？の設計図</span>
       <div class="info">${bpCondLabel(f)}</div></span>
     </div>`;
-  }).join("");
-  $("#card-area").innerHTML = `<div class="select-title">📜 どの設計図で作る？（図鑑 ${dexFound()}/${dexTotal()}）</div>
-    <div class="select-list">${list}</div>`;
+  };
+
+  let html = `<div class="select-title">📜 どの設計図で作る？（図鑑 ${dexFound()}/${dexTotal()}）</div>`;
+  CHAPTERS.forEach(ch => {
+    const list = FURNITURE.filter(f => chapterOf(f) === ch.n);
+    if (!list.length) return;
+    const open = chapterOpen(ch.n);
+    const next = CHAPTERS[ch.n];          // 次の章（最後の章では undefined）
+    const sub = !open
+      ? `🔒 ${CHAPTERS[ch.n - 2].short}の家具を <b>会心で ${chapterDone(ch.n - 1)} / ${ch.need} 台</b>仕上げると開く`
+      : next
+        ? `次の章まで　<b>会心の一台 ${chapterDone(ch.n)} / ${next.need} 台</b><span class="ch-ace">会心＝Aランク以上を、納期内に</span>`
+        : "ここが最後の章じゃ";
+    html += `<div class="ch-head${open ? "" : " locked"}">
+      <div class="ch-name">${open ? "" : "🔒 "}${ch.name}　<span class="ch-n">${list.length}種</span></div>
+      <div class="ch-sub">${sub}</div></div>`;
+    if (open) html += `<div class="select-list">${list.map(card).join("")}</div>`;
+  });
+  $("#card-area").innerHTML = html;
   $("#steps-area").innerHTML = "";
 
   document.querySelectorAll(".select-item[data-id]").forEach(btn => {
@@ -3395,7 +3816,7 @@ function renderPrep() {
       ${it.icon} ${it.name}<span class="o-note">${it.note || it.desc || ""}</span>
     </button>`).join("");
 
-  const woods = MATERIALS.filter(m => m.type === "wood").map(m => ({
+  const woods = MATERIALS.filter(m => m.type === "wood" && chOpen(m)).map(m => ({
     ...m, note: `${m.desc.split("。")[1] || ""}　所持${state.materials[m.id] || 0}`
   }));
 
@@ -3417,11 +3838,11 @@ function renderPrep() {
         </div>
       </div>
       <div class="prep-group"><span class="g-title">📐 設計</span>
-        <div class="opt-row">${row(DESIGNS, "design")}</div></div>
+        <div class="opt-row">${row(DESIGNS.filter(chOpen), "design")}</div></div>
       <div class="prep-group"><span class="g-title">🪵 木材</span>
         <div class="opt-row">${row(woods, "wood")}</div></div>
       <div class="prep-group"><span class="g-title">🖌️ 仕上げ</span>
-        <div class="opt-row">${row(FINISHES, "finish")}</div></div>
+        <div class="opt-row">${row(FINISHES.filter(chOpen), "finish")}</div></div>
       <div class="prep-mats">🧺 ${woodChip}${partChips}</div>
     </div>`;
 
@@ -3573,12 +3994,20 @@ function renderCraft() {
       $("#steps-area").innerHTML = chips + flawNoteOf() +
         `<div class="act-call">
           <div class="ac-head">🔥 ここが山場じゃ ——「${step.label}」</div>
+          <div class="ac-game">${act.name}　<span class="ac-lv">難度 ${
+            "★".repeat(actLevel(f))}${"☆".repeat(3 - actLevel(f))} ${
+            ACT_LEVEL_NAME[actLevel(f)]}</span></div>
           <div class="ac-sub">${act.tip}</div>
           ${tired ? `<div class="ac-tired">⚠️ 集中力が足りん。手元が狂うぞ（腕前−15%）</div>` : ""}
+          <div class="tool-row">${TOOLS.map(t =>
+            `<button class="tool-chip${state.tool === t.id ? " selected" : ""}" data-tool="${t.id}">
+               ${t.icon} ${t.name}<span class="t-note">${t.note}</span></button>`).join("")}</div>
           <button class="act-go" id="btn-action">🖐 腕を見せる</button>
           <div class="act-skip" id="btn-skip-action">ふつうに作る（腕前は並・時間が2時間よけいにかかる）</div>
         </div>
         <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて集中力を戻す）</div>`;
+      document.querySelectorAll(".tool-chip[data-tool]").forEach(b =>
+        b.addEventListener("click", () => { state.tool = b.dataset.tool; save(); render(); }));
       $("#btn-action").addEventListener("click", () => runAction(step));
       $("#btn-skip-action").addEventListener("click", () => doAction(50, true));   // ふつうの出来どまり
       $("#btn-rest").addEventListener("click", restForToday);
@@ -3703,7 +4132,7 @@ function runAction(step) {
   if (!act) return;
   const svg = $("#act-svg");
 
-  $("#act-title").textContent = `🔥 山場 ── ${act.name}`;
+  $("#act-title").textContent = `🔥 ${act.name}　${"★".repeat(actLevel(furnitureById(state.currentId)))}`;
   $("#act-tip").innerHTML = act.tip;
   $("#act-say").textContent = "";
   $("#act-bar").style.width = "0%";
@@ -3754,7 +4183,7 @@ function runAction(step) {
     if (ui.onUp) ui.onUp(actPoint(svg, e));
   };
 
-  act.start(svg, ui, finish);
+  act.start(svg, ui, finish, actLevel(furnitureById(state.currentId)));
 
   /* 制限時間のあるアクションだけ、残り時間を出す */
   if (act.limit) {
@@ -3815,14 +4244,17 @@ function doAction(rawScore, skipped) {
 
   /* 集中力が切れていると、手元が狂う */
   const tired = state.focus < 30;
-  const score = Math.max(0, Math.min(100, Math.round(tired ? rawScore * 0.85 : rawScore)));
+  const tool = toolById(state.tool);
+  let n = tired ? rawScore * 0.85 : rawScore;
+  if (!skipped) n *= tool.mult;                          // えらんだ道具のぶん
+  const score = Math.max(0, Math.min(100, Math.round(n)));
 
   /* 山場の出来は、品質に足すのではなく、最後に土台へ掛ける */
   state.actionScore = score;
-  if (score < 40) state.flaws++;                        // 検品で取り返せる
+  if (score < 40 && !(tool.safe && !skipped)) state.flaws++;   // 古い道具なら、しくじらない
 
   state.stepIndex++;
-  state.focus = Math.max(0, state.focus - 30);
+  state.focus = Math.max(0, state.focus - 30 - (skipped ? 0 : tool.focus));
 
   /* 記録：家具ごとの自己ベストと、工程タイプごとの成績 */
   if (!skipped) {
@@ -3920,6 +4352,9 @@ function nearMissRecipe(baseId, c) {
   }) || null;
 }
 
+/* 会心の一台：Aランク以上を、納期内に仕上げたもの。章を開く鍵になる */
+const isAce = (p) => p.onTime && (p.rank === "S" || p.rank === "A");
+
 /* 完成品を 納品(即売) または 展示 する。図鑑登録は両方共通 */
 function finishCraft(exhibit) {
   const p = currentPiece();
@@ -3933,8 +4368,10 @@ function finishCraft(exhibit) {
     if (rec.best === null || RANK_ORDER.indexOf(p.rank) > RANK_ORDER.indexOf(rec.best)) rec.best = p.rank;
     if (rec.bestScore == null || p.score > rec.bestScore) rec.bestScore = p.score;
     if (rec.bestPop == null || p.pop > rec.bestPop) rec.bestPop = p.pop;
+    if (isAce(p)) rec.ace = true;
   } else {
-    state.completed[p.fid] = { count: 1, best: p.rank, bestScore: p.score, bestPop: p.pop };
+    state.completed[p.fid] =
+      { count: 1, best: p.rank, bestScore: p.score, bestPop: p.pop, ace: isAce(p) };
   }
 
   /* --- 職人手帳：試した組み合わせは必ず記録する（謎解きの material） --- */
@@ -4050,7 +4487,9 @@ function renderDex() {
         </div>
         <div class="d-desc">${e.description}</div>
         ${e.kind === "base" && state.knownCritical.indexOf(e.id) >= 0
-          ? `<span class="dex-crit">🔥 山場は「${e.steps[CRITICAL_STEP[e.id]].label}」</span>`
+          ? `<span class="dex-crit">🔥 山場は「${e.steps[CRITICAL_STEP[e.id]].label}」</span>` +
+            (rec && rec.ace ? `<span class="dex-ace">🏅 会心の一台</span>`
+              : `<span class="dex-ace off">Aランク以上＋納期内で「会心」</span>`)
             + (state.actionBest[e.id]
               ? `<span class="dex-crit" style="margin-left:5px">🖐 自己ベスト ${state.actionBest[e.id]}点</span>` : "")
           : ""}
@@ -4157,7 +4596,7 @@ function renderMarket() {
   $("#market-body").innerHTML =
     `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
       所持金 💰 ${state.money.toLocaleString()}円</p>` +
-    MATERIALS.map(m => `<div class="mat-item">
+    MATERIALS.filter(chOpen).map(m => `<div class="mat-item">
       <span class="m-icon">${m.icon}</span>
       <span class="m-body"><div class="m-name">${m.name}</div>
       <div class="m-desc">${m.desc}</div></span>
