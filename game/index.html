@@ -142,6 +142,7 @@ main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10
 @keyframes triviaIn{ from{ transform:translateY(-6px); opacity:0; } to{ transform:none; opacity:1; } }
 
 /* ----- 家具カード ----- */
+.card.prep-card{ padding:12px 12px 12px; }
 .card{
   background:
     repeating-linear-gradient(90deg,
@@ -157,7 +158,7 @@ main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10
   filter:drop-shadow(0 4px 4px rgba(107,74,47,.22)); }
 .card .art svg{ width:100%; height:100%; display:block; }
 /* 設計をえらぶ画面は、絵より選択肢を見せたいので絵を小さく */
-.card.prep-card .art{ width:104px; height:104px; }
+.card.prep-card .art{ width:86px; height:86px; }
 /* 実物の写真を入れたときも、枠に収める */
 .card .art img{ width:100%; height:100%; object-fit:contain; display:block; }
 .card h2{ text-align:center; font-size:1.06rem; margin-top:2px; letter-spacing:.04em; }
@@ -248,18 +249,34 @@ main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10
 .mat-chip.ng{ color:var(--red); border-color:var(--red); background:#f8ece8; }
 
 /* ----- 制作の設計えらび（設計・素材・仕上げ） ----- */
-.prep-group{ margin-top:8px; }
-.prep-group .g-title{ font-size:.72rem; font-weight:bold; margin-bottom:4px; text-align:center; }
+/* 絵と名前を横ならびにして、縦の長さを詰める */
+.prep-head{ display:flex; align-items:center; gap:10px; }
+.prep-head .art{ flex:0 0 86px; }
+.prep-head .ph-body{ flex:1; min-width:0; }
+.prep-head h2{ text-align:left; font-size:.98rem; margin:0; }
+.prep-head .desc{ text-align:left; margin-top:3px; font-size:.68rem; line-height:1.55; }
+
+/* 見出しを行の左に置いて、1項目を1行におさめる */
+.prep-group{
+  margin-top:7px; display:grid; grid-template-columns:2.9em 1fr;
+  align-items:center; gap:6px;
+}
+.prep-group .g-title{ font-size:.62rem; font-weight:bold; text-align:right; line-height:1.3; }
+.prep-mats{
+  margin-top:8px; text-align:center; font-size:.7rem;
+  border-top:1.5px dashed var(--wood-light); padding-top:7px;
+}
 /* 3つを横にならべる。折り返すと画面が長くなりすぎる */
 .opt-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
 .opt-chip{
-  font-family:inherit; font-size:.68rem; font-weight:bold; color:var(--brown);
-  padding:7px 2px; border-radius:13px; cursor:pointer; letter-spacing:-.01em;
+  font-family:inherit; font-size:.63rem; font-weight:bold; color:var(--brown);
+  padding:7px 2px; border-radius:13px; cursor:pointer; letter-spacing:-.02em;
+  white-space:nowrap;
   border:2px solid var(--brown-soft);
   background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
   min-height:48px; line-height:1.35;
 }
-.opt-chip .o-note{ display:block; font-size:.52rem; font-weight:normal;
+.opt-chip .o-note{ display:block; font-size:.5rem; font-weight:normal; white-space:normal;
   color:var(--brown-mid); line-height:1.4; margin-top:1px; }
 .opt-chip.selected{
   background:linear-gradient(180deg,#eef5e8,var(--green));
@@ -3358,7 +3375,7 @@ function renderSelect() {
       /* 設計えらびへ。木材は持っているものを初期選択 */
       const firstWood = MATERIALS.find(m => m.type === "wood" && (state.materials[m.id] || 0) > 0);
       prep = { fid: f.id, design: "classic", wood: firstWood ? firstWood.id : "oak", finish: "natural" };
-      showMessage(`「${f.name}」じゃな。${you()}、設計・素材・仕上げで家具の顔つきが決まる。よう考えるのじゃ。`);
+      showMessage(`「${f.name}」じゃな。設計・素材・仕上げで顔つきが決まるぞ。`);
       render();
     });
   });
@@ -3392,17 +3409,20 @@ function renderPrep() {
 
   $("#card-area").innerHTML = `
     <div class="card prep-card">
-      ${artOf(f, "art")}
-      <h2>${f.name}</h2>
-      <p class="desc">${f.description}</p>
-      <div class="prep-group"><div class="g-title">📐 設計</div>
+      <div class="prep-head">
+        ${artOf(f, "art")}
+        <div class="ph-body">
+          <h2>${f.name}</h2>
+          <p class="desc">${f.description}</p>
+        </div>
+      </div>
+      <div class="prep-group"><span class="g-title">📐 設計</span>
         <div class="opt-row">${row(DESIGNS, "design")}</div></div>
-      <div class="prep-group"><div class="g-title">🪵 素材（木材）</div>
+      <div class="prep-group"><span class="g-title">🪵 木材</span>
         <div class="opt-row">${row(woods, "wood")}</div></div>
-      <div class="prep-group"><div class="g-title">🖌️ 仕上げ</div>
+      <div class="prep-group"><span class="g-title">🖌️ 仕上げ</span>
         <div class="opt-row">${row(FINISHES, "finish")}</div></div>
-      <div class="prep-group"><div class="g-title">🧺 使う材料</div>
-        <div style="text-align:center;">${woodChip}${partChips}</div></div>
+      <div class="prep-mats">🧺 ${woodChip}${partChips}</div>
     </div>`;
 
   $("#steps-area").innerHTML =
