@@ -563,6 +563,33 @@ footer{
 }
 
 /* ---------- ショールームの催し ---------- */
+/* 職人をつくる画面の、合言葉の欄 */
+.av-event{
+  margin:10px auto 0; max-width:280px; padding:9px 10px 6px;
+  border:2px dashed var(--gold); border-radius:14px;
+  background:linear-gradient(180deg,#fffdf5,#fdf6e6);
+}
+.ave-title{ text-align:center; font-size:.74rem; font-weight:bold; color:#a97c14; }
+.ave-note{ text-align:center; font-size:.63rem; color:var(--brown-mid); line-height:1.6; margin-top:5px; }
+.ave-note b{ color:#a97c14; }
+
+/* 名誉職人の金の額縁 */
+.av-preview.honored, .player-face.honored{
+  border-color:var(--gold) !important;
+  box-shadow:0 0 0 2px #fdf3d5, 0 0 10px rgba(201,162,75,.75);
+}
+.about-block.honored{
+  border-color:var(--gold);
+  background:linear-gradient(180deg,#fffdf5,#fdf3d5);
+  box-shadow:0 0 0 2px rgba(201,162,75,.2);
+}
+.honor-seal{
+  display:inline-block; margin-top:5px;
+  font-size:.74rem; font-weight:bold; color:#a97c14;
+  border:1.5px solid var(--gold); background:#fdf3d5;
+  border-radius:999px; padding:3px 12px; letter-spacing:.04em;
+}
+
 .ev-msg{ text-align:center; color:var(--red); font-size:.7rem; margin-top:6px; min-height:1em; }
 .ev-guest{
   display:flex; align-items:center; gap:10px; margin-top:7px;
@@ -601,6 +628,9 @@ footer{
 }
 .act-call .ac-head{ font-size:.94rem; font-weight:bold; color:#a97c14; }
 .tool-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:9px; }
+/* 催しの道具が加わって4つになったら、2×2にならべる */
+.tool-row.four{ grid-template-columns:repeat(2,1fr); }
+.tool-chip.gift{ border-color:var(--gold); background:linear-gradient(180deg,#fffaf0,#fdf3d5); }
 .tool-chip{
   font-family:inherit; font-size:.63rem; font-weight:bold; color:var(--brown);
   padding:7px 2px; border-radius:12px; cursor:pointer; min-height:50px;
@@ -949,6 +979,14 @@ footer{
       <input class="av-name-input" id="av-name" maxlength="12" placeholder="名前を入れてください">
     </div>
     <div class="av-hint">ヘンリーさんが、この名前で呼んでくれます</div>
+    <div class="av-event" id="av-event" hidden>
+      <div class="ave-title">🎟 合言葉をお持ちの方</div>
+      <input class="av-name-input" id="av-code" maxlength="24" placeholder="あいことば"
+             autocapitalize="off" autocomplete="off" spellcheck="false">
+      <p class="ave-note">ショールームの催しでお渡ししている言葉です。<br>
+        入れて作った職人は <b>名誉職人</b> として、工房に名が残ります。</p>
+      <p class="ev-msg" id="av-code-msg"></p>
+    </div>
     <div id="av-rows"></div>
     <button class="av-done" id="av-done">この職人ではじめる</button>
   </div>
@@ -3401,9 +3439,17 @@ const TOOLS = [
   { id: "sharp",  name: "研ぎたての刃", icon: "✨", mult: 1.12, focus: 20,
     note: "点が1.12倍。集中力を20よけいに使う" },
   { id: "old",    name: "手になじんだ古い道具", icon: "🪵", mult: 0.92, focus: 0, safe: true,
-    note: "点は0.92倍。そのかわり、しくじりが出ない" }
+    note: "点は0.92倍。そのかわり、しくじりが出ない" },
+  /* 催しの日に来た人だけが持っている一本。合言葉を入れるまで出てこない */
+  { id: "gift",   name: "あの日の小刀", icon: "🎀", mult: 1.06, focus: 0, event: true,
+    note: "点が1.06倍。集中力はふだんどおり" }
 ];
-const toolById = (id) => TOOLS.find(t => t.id === id) || TOOLS[0];
+/* 催しの道具は、合言葉を入れていない職人には渡さない */
+const toolById = (id) => {
+  const t = TOOLS.find(x => x.id === id);
+  return (t && (!t.event || eventOpen())) ? t : TOOLS[0];
+};
+const toolsOpen = () => TOOLS.filter(t => !t.event || eventOpen());
 
 /* 家具ごとの難度（1〜3）。売値の高い家具ほど、山場もつらくなる。
    速さ・狭さ・数が変わるだけで、遊び方そのものは同じ */
@@ -3504,6 +3550,7 @@ const VISITORS = [
    ---------------------------------------------------------- */
 const EVENT_CODE  = "どーる";                 // 会場で配る合言葉
 const EVENT_TITLE = "ドールイベント";
+const EVENT_HONOR = "ドールの日の職人";        // 合言葉を入れた人にだけ付く称号
 
 /* 合言葉の照らし合わせ。ひらがな・カタカナ・全角半角・空白のちがいを吸収する。
    会場で口で伝える言葉なので、書き方のゆれでつまずかせない */
@@ -4110,7 +4157,8 @@ function renderStatus() {
   const fill = $("#lv-fill"), label = $("#lv-label");
   const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
   $("#player-face").innerHTML = buildAvatar(state.player.avatar);
-  const who = `<b>${esc(you())}</b>・${title}`;
+  $("#player-face").classList.toggle("honored", eventOpen());
+  const who = `<b>${esc(you())}</b>${eventOpen() ? "🎀" : ""}・${title}`;
   if (next === undefined) {
     fill.style.width = "100%";
     label.innerHTML = `${who}（最高レベル！）　📖 ${dexFound()}/${dexTotal()}`;
@@ -4375,8 +4423,8 @@ function renderCraft() {
             ACT_LEVEL_NAME[actLevel(f)]}</span></div>
           <div class="ac-sub">${act.tip}</div>
           ${tired ? `<div class="ac-tired">⚠️ 集中力が足りん。手元が狂うぞ（腕前−15%）</div>` : ""}
-          <div class="tool-row">${TOOLS.map(t =>
-            `<button class="tool-chip${state.tool === t.id ? " selected" : ""}" data-tool="${t.id}">
+          <div class="tool-row${toolsOpen().length > 3 ? " four" : ""}">${toolsOpen().map(t =>
+            `<button class="tool-chip${state.tool === t.id ? " selected" : ""}${t.event ? " gift" : ""}" data-tool="${t.id}">
                ${t.icon} ${t.name}<span class="t-note">${t.note}</span></button>`).join("")}</div>
           <button class="act-go" id="btn-action">🖐 腕を見せる</button>
           <div class="act-skip" id="btn-skip-action">ふつうに作る（腕前は並・時間が2時間よけいにかかる）</div>
@@ -5084,6 +5132,10 @@ function openAvatarEditor(first) {
   avDraft = Object.assign({}, state.player.avatar);
   $("#av-name").value = state.player.name || "";
   $("#avatar-title").textContent = first ? "🧑‍🔧 あなたの職人をつくる" : "🧑‍🔧 職人を変える";
+  /* 合言葉の欄は、まだ催しが開いていないときだけ出す */
+  $("#av-event").hidden = eventOpen();
+  $("#av-code").value = "";
+  $("#av-code-msg").textContent = "";
   $("#av-done").textContent = first ? "この職人ではじめる" : "決定する";
   renderAvatarEditor();
   openModal("avatar-modal");
@@ -5116,15 +5168,36 @@ function renderAvatarEditor() {
 }
 
 function saveAvatar() {
+  /* 合言葉が入っていたら、先に照らし合わせる。
+     ちがっていたら職人は作らず、入れ直してもらう */
+  let honored = false;
+  if (!eventOpen() && !$("#av-event").hidden) {
+    const got = normCode($("#av-code").value);
+    if (got) {
+      if (got !== normCode(EVENT_CODE)) {
+        $("#av-code-msg").textContent = "その合言葉は、聞いたことがないのう。";
+        return;
+      }
+      honored = true;
+    }
+  }
   const nm = $("#av-name").value.trim().slice(0, 12);
   state.player.name = nm || "見習い";
   state.player.avatar = avDraft;
+  if (honored) openEvent();
   save();
   closeModal("avatar-modal");
   renderStatus();
-  showMessage(avFirst
-    ? `ようこそ、${you()}。わしはヘンリー、この工房に住みついておる案内役じゃ。まずは設計図をえらんで、一台こしらえてみるのじゃ。`
-    : `ほう、${you()}。ずいぶん職人らしい顔になったのう。`);
+  if (honored) {
+    showMessage(`ようこそ、${you()}。……ほう、その合言葉を持っておるか。`
+      + `ならば、きみは「${EVENT_HONOR}」じゃ。工房の名札に、その名を刻んでおいた。`
+      + `あの日の小刀も渡しておこう。だいじに使うのじゃぞ。`);
+    showEventStory();
+  } else {
+    showMessage(avFirst
+      ? `ようこそ、${you()}。わしはヘンリー、この工房に住みついておる案内役じゃ。まずは設計図をえらんで、一台こしらえてみるのじゃ。`
+      : `ほう、${you()}。ずいぶん職人らしい顔になったのう。`);
+  }
 }
 
 /* ---------- ショールームの催し ---------- */
@@ -5152,18 +5225,14 @@ function eventBlock() {
     ${rows}${note}</div>`;
 }
 
-/* 合言葉を受けとる。合えば、お客さま5人が工房に住みつく */
-function tryEventCode() {
-  const got = normCode($("#ev-code").value);
-  if (!got) return;
-  if (got !== normCode(EVENT_CODE)) {
-    $("#ev-msg").textContent = "その合言葉は、聞いたことがないのう。";
-    return;
-  }
+/* 催しを開く。合言葉がどこから入っても、通り道はここ一本にする */
+function openEvent() {
   if (!state.event || typeof state.event !== "object") state.event = {};
   state.event.doll = { day: state.day };
-  save();
-  closeModal("about-modal");
+  state.tool = "gift";          // もらった小刀を、はじめから手に持たせておく
+}
+
+function showEventStory() {
   openStoryPop(
     `🎀 ${EVENT_TITLE}の日`,
     "ショールームの扉が、いつもより何度も開いた日だった。\n\n"
@@ -5173,6 +5242,20 @@ function tryEventCode() {
     + "ヘンリーさんが、めずらしく感心したような声を出した。\n\n"
     + "あの5人は、それから工房の常連になった。これからも、きみの並べたものを見にくるだろう。",
     "🎀");
+}
+
+/* 工房の画面から合言葉を受けとる（あとから言葉を知った人のため） */
+function tryEventCode() {
+  const got = normCode($("#ev-code").value);
+  if (!got) return;
+  if (got !== normCode(EVENT_CODE)) {
+    $("#ev-msg").textContent = "その合言葉は、聞いたことがないのう。";
+    return;
+  }
+  openEvent();
+  save();
+  closeModal("about-modal");
+  showEventStory();
   render();
 }
 
@@ -5184,10 +5267,15 @@ function renderAbout() {
       <span class="art"><img src="${PHOTOS.henry_body}" alt="ヘンリーさん"></span>
       <div class="catch">「小さな家具にも、大きな物語を。」</div>
     </div>
-    <div class="about-block" style="text-align:center">
-      <div class="av-preview" style="width:84px;height:84px;border-width:2px;">${buildAvatar(state.player.avatar)}</div>
+    <div class="about-block${eventOpen() ? " honored" : ""}" style="text-align:center">
+      <div class="av-preview${eventOpen() ? " honored" : ""}" style="width:84px;height:84px;border-width:2px;">${buildAvatar(state.player.avatar)}</div>
       <h4 style="margin-top:6px">${esc(you())}　<span style="font-weight:normal;color:var(--brown-mid)">${title}</span></h4>
-      <p style="text-align:center">この工房で家具をこしらえている職人。</p>
+      ${eventOpen()
+        ? `<div class="honor-seal">🎀 ${esc(EVENT_HONOR)}</div>
+           <p style="text-align:center;font-size:.72rem">
+             ${(state.event.doll && state.event.doll.day) || 1}日目、${esc(EVENT_TITLE)}の日に工房へ加わった職人。<br>
+             この名札は、その日の記念です。</p>`
+        : `<p style="text-align:center">この工房で家具をこしらえている職人。</p>`}
       <button class="foot-btn" id="btn-edit-avatar" style="max-width:200px;margin:8px auto 0;display:block;min-height:44px">🧑‍🔧 職人を変える</button>
     </div>` +
     skillBlock() +
