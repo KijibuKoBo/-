@@ -30,6 +30,17 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # 家具ゲームは1枚のHTMLなので、ブラウザが古いものを握ったままになりやすい。
+      # 公開のたびに版の番号を焼きこみ、小さな version.json を置いておく。
+      # ページはこれだけを毎回ネットから見にいき、ちがえば一度だけ読み直す。
+      - name: Stamp build id (game)
+        run: |
+          B="$(git rev-parse --short HEAD)"
+          printf '{"v":"%s"}\n' "$B" > game/version.json
+          sed -i "s/__BUILD__/$B/" game/index.html
+          echo "版: $B"
+          grep -c "$B" game/index.html
+
       # リポジトリ全体をそのまま公開（kinoko も既存アプリも両方残す）
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

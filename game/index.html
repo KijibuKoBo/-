@@ -5060,15 +5060,47 @@ function renderAbout() {
     </div>` +
     skillBlock() +
     ABOUT_BLOCKS.map(b =>
-      `<div class="about-block"><h4>${b.icon} ${b.title}</h4><p>${b.text}</p></div>`).join("");
+      `<div class="about-block"><h4>${b.icon} ${b.title}</h4><p>${b.text}</p></div>`).join("") +
+    `<div class="about-block" style="text-align:center">
+      <p style="font-size:.68rem">このゲームの版　<b>${esc(buildLabel())}</b><br>
+      いちばん新しいものが出ていれば、開いたときに自動で入れ替わります。</p>
+    </div>`;
   $("#knowledge-list").innerHTML = KNOWLEDGE.map(k =>
     `<div class="knowledge"><h4>${k.icon} ${k.title}</h4><p>${k.text}</p></div>`).join("");
+}
+
+/* ==========================================================
+   配信しているファイルが新しくなっていないか見にいく
+   ----------------------------------------------------------
+   このゲームは1枚のHTMLなので、ブラウザが古いものを握ったままに
+   なりやすい。小さな version.json だけを毎回ネットから取りにいき、
+   番号がちがえば、一度だけ読み直す。
+   下の印は公開のときに版の番号へ差し替わる。手元で開いたときは何もしない
+   ========================================================== */
+const BUILD = "__BUILD__";
+const buildLabel = () => BUILD.startsWith("__") ? "開発中" : BUILD;
+
+async function checkBuild() {
+  if (BUILD.startsWith("__")) return;
+  try {
+    const res = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) return;
+    const got = (await res.json()).v;
+    if (!got || got === BUILD) return;
+    /* 読み直しが繰り返されないよう、同じ番号では一度きりにする */
+    if (sessionStorage.getItem("mk-reload") === got) return;
+    sessionStorage.setItem("mk-reload", got);
+    location.replace(location.pathname + "?v=" + encodeURIComponent(got));
+  } catch (e) {
+    /* つながらないときは、古いままでも遊べればよい */
+  }
 }
 
 /* ==========================================================
    初期化
    ========================================================== */
 function init() {
+  checkBuild();
   load();
   state.level = calcLevel(state.exp);
   /* 初回は現在解放済みの設計図を「告知済み」にしておく（起動時に騒がない） */
