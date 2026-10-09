@@ -1124,7 +1124,7 @@ const SVG_ART = {
     <ellipse cx="48" cy="40" rx="9" ry="3.5" fill="#f2cf9d" opacity=".8"/>
   </svg>`,
 
-  couch: `<svg viewBox="0 0 120 120" role="img" aria-label="プティカウチ">
+  couch: `<svg viewBox="0 0 120 120" role="img" aria-label="アーチ背のセティ">
     <ellipse cx="60" cy="106" rx="46" ry="6" fill="rgba(107,74,47,.14)"/>
     <rect x="22" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>
     <rect x="90" y="96" width="8" height="9" rx="3" fill="#8a5a30"/>
@@ -1140,8 +1140,8 @@ const SVG_ART = {
     <path d="M20 36 L26 34" stroke="#e6efdb" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
   </svg>`,
 
-  /* 一枚板のベンチ（耳付きの天板が主役） */
-  bench: `<svg viewBox="0 0 120 120" role="img" aria-label="一枚板のベンチ">
+  /* 礼拝堂のベンチ（透かし彫りの背が主役） */
+  bench: `<svg viewBox="0 0 120 120" role="img" aria-label="礼拝堂のベンチ">
     <ellipse cx="60" cy="108" rx="44" ry="6" fill="rgba(107,74,47,.14)"/>
     <rect x="24" y="70" width="14" height="36" rx="4" fill="#8a5a30"/>
     <rect x="82" y="70" width="14" height="36" rx="4" fill="#8a5a30"/>
@@ -1156,7 +1156,7 @@ const SVG_ART = {
     <path d="M22 57 L34 55" stroke="#f2cf9d" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>
   </svg>`,
 
-  chest: `<svg viewBox="0 0 120 120" role="img" aria-label="プティチェスト">
+  chest: `<svg viewBox="0 0 120 120" role="img" aria-label="まるいチェスト">
     <ellipse cx="60" cy="108" rx="42" ry="6" fill="rgba(107,74,47,.14)"/>
     <rect x="27" y="97" width="9" height="10" rx="3" fill="#8a5a30"/>
     <rect x="84" y="97" width="9" height="10" rx="3" fill="#8a5a30"/>
@@ -1172,7 +1172,7 @@ const SVG_ART = {
     <path d="M28 36 L34 36" stroke="#f2cf9d" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>
   </svg>`,
 
-  mitsudan: `<svg viewBox="0 0 120 120" role="img" aria-label="密談椅子">
+  mitsudan: `<svg viewBox="0 0 120 120" role="img" aria-label="空色のアームチェア">
     <ellipse cx="60" cy="108" rx="40" ry="6" fill="rgba(107,74,47,.14)"/>
     <rect x="30" y="96" width="8" height="11" rx="3" fill="#6e4526"/>
     <rect x="82" y="96" width="8" height="11" rx="3" fill="#6e4526"/>
@@ -1510,20 +1510,20 @@ const FURNITURE = [
     letter: null
   },
   {
-    id: "couch", name: "プティカウチ", icon: "🛋️", art: "couch", photo: PHOTOS.r_couch,
-    description: "小さなカウチ。ふたりには少しせまくて、ひとりと一匹にはちょうどいい。",
+    id: "couch", name: "アーチ背のセティ", icon: "🛋️", art: "couch", photo: PHOTOS.r_couch,
+    description: "セティは、二人掛けの小さな長椅子。背もたれに並ぶアーチが、窓辺の光を切りとる。座面の下には引き出しがひとつ。",
     price: 2800, exp: 20, deadline: 12, basePop: 30,
     materials: { wood: 1, cloth: 2 },
     unlock: { type: "level", v: 2 },
     steps: [
-      { label: "木材を選ぶ",       icon: "🪵", msg: "しなやかで丈夫な板。カウチの骨組みにぴったりだ。" },
-      { label: "フレームを組む",   icon: "🔨", msg: "ほぞを組んで、ゆすってもきしまない骨組みができた。" },
-      { label: "クッションを張る", icon: "🪡", msg: "布を、しわなくぴんと張った。" },
-      { label: "塗装する",         icon: "🖌️", msg: "木部を仕上げ、布との境目を美しく整えた。" },
-      { label: "検品する",         icon: "🔍", msg: "座ってみる。……立ちたくなくなる。これは良いカウチだ。" }
+      { label: "木材を選ぶ",       icon: "🪵", msg: "白く軽い板。アーチを何本も抜くので、素直な木目のものがいい。" },
+      { label: "フレームを組む",   icon: "🔨", msg: "アーチをひとつずつ抜いて、背に並べる。幅がそろうまで何度もやり直した。" },
+      { label: "クッションを張る", icon: "🪡", msg: "布をしわなくぴんと張り、ボタンを深く沈めた。やっと椅子の顔になる。" },
+      { label: "塗装する",         icon: "🖌️", msg: "木部を白く仕上げ、布との境目を美しく整えた。" },
+      { label: "検品する",         icon: "🔍", msg: "座ってみる。……立ちたくなくなる。これは良いセティだ。" }
     ],
-    story: "小さなカウチは、ふたりで座るには少しせまい。だからこそ、猫と、本と、ひとりの午後にちょうどよかった。",
-    letter: "カウチの張り地の下から、二枚目。『野原じゅうの白つめ草をさがしても、四つ葉は見つかりません。娘はあきらめて、<b>オーク</b>の木陰のカウチに寝ころびました。飾りけのない、<b>いちばん素直な形</b>のカウチです。<b>塗りはかけられていません</b>。木のにおいのするそのカウチで娘が目をつむると——そうして、手のひらの下に、四つ葉がありました』"
+    story: "アーチの並んだ背もたれは、窓にも似ている。腰かけた人は、まだ外にいるような顔で本を読む。",
+    letter: "セティの張り地の下から、二枚目。『野原じゅうの白つめ草をさがしても、四つ葉は見つかりません。娘はあきらめて、<b>オーク</b>の木陰のセティに寝ころびました。飾りけのない、<b>いちばん素直な形</b>のセティです。<b>塗りはかけられていません</b>。木のにおいのするそのセティで娘が目をつむると——そうして、手のひらの下に、四つ葉がありました』"
   },
   {
     id: "trunk_table", name: "トランクテーブル", icon: "🧳", art: null, photo: PHOTOS.r_trunk_table,
@@ -1543,19 +1543,19 @@ const FURNITURE = [
     letter: null
   },
   {
-    id: "bench", name: "一枚板のベンチ", icon: "🪑", art: "bench", photo: PHOTOS.r_bench,
-    description: "板そのものが主役。木目の流れと耳のかたちを、そのまま残して仕上げる。",
+    id: "bench", name: "礼拝堂のベンチ", icon: "🪑", art: "bench", photo: PHOTOS.r_bench,
+    description: "尖ったアーチを透かし彫りにした背に、深い赤の座面。小さな礼拝堂から、そのまま運んできたような一脚。",
     price: 6500, exp: 45, deadline: 13, basePop: 42,
     materials: { wood: 3 },
     unlock: { type: "level", v: 2 },
     steps: [
-      { label: "木材を選ぶ", icon: "🪵", msg: "何十枚もの板を見比べて、これぞという一枚を選び出した。" },
-      { label: "耳を整える", icon: "🧽", msg: "樹皮を落とし、耳の曲線はそのまま残す。木が育った形だ。" },
-      { label: "脚を組む",   icon: "🔨", msg: "板の表情を邪魔しないよう、脚はできるだけ控えめに。" },
-      { label: "塗装する",   icon: "🖌️", msg: "オイルを入れた瞬間、眠っていた木目が一気に目をさました。" },
-      { label: "検品する",   icon: "🔍", msg: "手のひらで表面をなでる。まっすぐで、あたたかい。" }
+      { label: "木材を選ぶ",       icon: "🪵", msg: "何十枚もの板を見比べて、透かし彫りに耐える節のない一枚を選び出した。" },
+      { label: "透かし彫りをする", icon: "🗡️", msg: "尖塔のかたちに、糸のこで抜いていく。残す線は、鉛筆一本ぶんの太さだ。" },
+      { label: "脚を組む",         icon: "🔨", msg: "背の重さを受ける脚。細く見せて、じつは太い。" },
+      { label: "塗装する",         icon: "🖌️", msg: "濃い色を入れた瞬間、透かしの影がくっきり立ちあがった。" },
+      { label: "検品する",         icon: "🔍", msg: "座面をなでる。かたいが、背すじがまっすぐになる椅子だ。" }
     ],
-    story: "一枚板のベンチは、どこを削るかではなく、どこを残すかで決まる。木が育った形をそのまま座れるようにするのが、職人の仕事なのだ。",
+    story: "礼拝堂のベンチは、長く座るための椅子ではない。背すじを伸ばして、少しだけ短く祈るための椅子なのだ。",
     letter: null
   },
   {
@@ -1576,35 +1576,35 @@ const FURNITURE = [
     letter: null
   },
   {
-    id: "chest", name: "プティチェスト", icon: "🗄️", art: "chest", photo: PHOTOS.r_chest,
-    description: "アンティーク風の小さなチェスト。引き出しには、だいじなものをひとつだけ。",
+    id: "chest", name: "まるいチェスト", icon: "🗄️", art: "chest", photo: PHOTOS.r_chest,
+    description: "ぐるりと丸い、四段の引き出し。天板には星の象嵌をひとつ。どこから見ても正面になる、ふしぎなチェスト。",
     price: 3500, exp: 25, deadline: 12, basePop: 30,
     materials: { wood: 2, brass: 1 },
     unlock: { type: "level", v: 2 },
     steps: [
-      { label: "木材を選ぶ",     icon: "🪵", msg: "少し古びた色味の板。チェストにはこれが合う。" },
-      { label: "引き出しを作る", icon: "📦", msg: "すーっと滑らかに開く引き出し。何度も開け閉めして確かめた。" },
-      { label: "金具を付ける",   icon: "🔩", msg: "真鍮の取っ手を付けると、ぐっと表情が生まれた。" },
-      { label: "塗装する",       icon: "🖌️", msg: "塗料を重ねて、深みのある色に。" },
-      { label: "検品する",       icon: "🔍", msg: "引き出しの奥まで、ていねいに拭きあげた。" }
+      { label: "木材を選ぶ",     icon: "🪵", msg: "少し古びた色味の板。丸く曲げるので、素直に曲がる木を選ぶ。" },
+      { label: "引き出しを作る", icon: "📦", msg: "円に合わせて前板も丸く削る。すーっと滑るまで、何度も直した。" },
+      { label: "金具を付ける",   icon: "🔩", msg: "真鍮の取っ手を四つ。円のどこに付けるかで、顔つきが変わる。" },
+      { label: "塗装する",       icon: "🖌️", msg: "塗料を重ねて、深みのある色に。天板の星だけ、磨き残しておく。" },
+      { label: "検品する",       icon: "🔍", msg: "ぐるりと回してみる。……うん、どこから見ても正面だ。" }
     ],
-    story: "小さな引き出しの奥には、誰かの大切なものがしまわれる。指輪か、手紙か、それとも言えなかった一言か。",
+    story: "まるいチェストには、裏がない。だから壁から離して、部屋のまんなかに置くのがいい。四方のどこからでも、だれかが引き出しを開けにくる。",
     letter: "引き出しの奥に貼りついていた、三枚目。『この家のどの扉を開けてもかまわない。ただし、いちばん小さな引き出しだけは開けてはならぬ』。……妻はもちろん、開けた。中にあったのは、<b>ウォールナット</b>の深い色をした椅子の下絵が一枚きり。〈伯爵のための椅子〉と、そう書いてあった。"
   },
   {
-    id: "mitsudan", name: "密談椅子", icon: "🪑", art: "mitsudan", photo: PHOTOS.r_mitsudan,
-    description: "炉のそばに置く、座面の深い椅子。ひそひそ話と、内緒の約束がよく似合う。",
+    id: "mitsudan", name: "空色のアームチェア", icon: "🪑", art: "mitsudan", photo: PHOTOS.r_mitsudan,
+    description: "やわらかな空色の張り地を、ボタンで深く沈めて。炉のそばに置くと、つい長居してしまう肘掛け椅子。",
     price: 5000, exp: 35, deadline: 12, basePop: 40,
     materials: { wood: 2, cloth: 1 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "どっしりした板。長話を支える椅子には、これだ。" },
-      { label: "背もたれを彫る", icon: "🗡️", msg: "声を包みこむような、丸い背もたれを彫り出した。" },
-      { label: "座面を張る",     icon: "🪡", msg: "深い色の布を張る。座った人の秘密ごと、受けとめる色だ。" },
-      { label: "塗装する",       icon: "🖌️", msg: "つや消しの仕上げ。ひかえめな椅子ほど、話がはずむ。" },
+      { label: "背もたれを彫る", icon: "🗡️", msg: "冠のような飾りを、背のてっぺんに彫り出した。" },
+      { label: "座面を張る",     icon: "🪡", msg: "空色の布を張る。ボタンをひとつずつ沈めると、椅子が急にやわらかくなった。" },
+      { label: "塗装する",       icon: "🖌️", msg: "縁にだけ、金をひとはけ。張り地の空色が、いっそう澄んで見える。" },
       { label: "検品する",       icon: "🔍", msg: "座って耳をすます。……この椅子は、聞き上手だ。" }
     ],
-    story: "背の高い椅子は、ひそひそ話がよく似合う。ここで交わされた約束は、なぜかちゃんと守られるのだという。",
+    story: "空色の椅子は、ひそひそ話がよく似合う。ここで交わされた約束は、なぜかちゃんと守られるのだという。",
     letter: "座面の裏から、四枚目。『炉ばたの椅子に腰かけた小人は言った。——三日のうちにわしの名を当てられたら、約束はなかったことにしよう。娘は毎晩その椅子にすわって考えた。その椅子は、頼まれたよりずっと<b>豪華</b>にこしらえられ、仕上げはわざと<b>古びた色</b>に沈めてあった。新品の顔をした椅子は、秘密を預かってくれないからだ』"
   },
   {
@@ -2167,14 +2167,14 @@ const chOpen = (it) => !it.ch || it.ch <= topChapter();
 const RECIPES = [
   {
     id: "earl_mitsudan", baseId: "mitsudan",
-    name: "伯爵の密談椅子", icon: "👑",
+    name: "伯爵のハイバックチェア", icon: "👑",
     combo: { design: "gouka", wood: "walnut", finish: "antique" },
     photo: PHOTOS.r_earl_mitsudan,
     filter: "saturate(1.35) brightness(.92) contrast(1.1)",
     popBonus: 25, priceMult: 1.8,
-    description: "深いウォールナットに時を重ねた仕上げ。ささやきさえ豪華に聞こえる、伝説の一脚。",
+    description: "深いウォールナットに時を重ねた仕上げ。背が高く、座面の下に小さな引き出しがひとつ。ささやきさえ豪華に聞こえる、伝説の一脚。",
     story: "むかし、ある伯爵がこの椅子で交わした約束は、三代あとまで守られたという。豪華な椅子は、約束まで重くするらしい。",
-    hint: "密談椅子を、いちばん贅沢な組み合わせで作ると……？"
+    hint: "空色のアームチェアを、いちばん贅沢な組み合わせで作ると……？"
   },
   {
     id: "moon_curio", baseId: "curio", photo: PHOTOS.r_moon_curio,
@@ -2188,13 +2188,13 @@ const RECIPES = [
   },
   {
     id: "clover_couch", baseId: "couch",
-    name: "白つめ草のプティカウチ", icon: "🍀",
+    name: "白つめ草のセティ", icon: "🍀",
     combo: { design: "classic", wood: "oak", finish: "natural" },
     filter: "hue-rotate(20deg) saturate(1.2) brightness(1.06)",
     popBonus: 25, priceMult: 1.8,
-    description: "オークの素肌に生成りの布。はらっぱの昼寝みたいな、いちばん素直なカウチ。",
-    story: "飾らない材料だけで作ったカウチは、なぜかいちばん長く愛された。白つめ草の花冠のような家具、と誰かが呼んだ。",
-    hint: "プティカウチを、いちばん素直な組み合わせで作ると……？"
+    description: "オークの素肌に生成りの布。はらっぱの昼寝みたいな、いちばん素直なセティ。",
+    story: "飾らない材料だけで作ったセティは、なぜかいちばん長く愛された。白つめ草の花冠のような家具、と誰かが呼んだ。",
+    hint: "アーチ背のセティを、いちばん素直な組み合わせで作ると……？"
   }
 ];
 
@@ -3442,6 +3442,12 @@ const skillMult = (score) => 0.55 + Math.max(0, Math.min(100, score)) / 100 * 0.
    展示した家具を見てひとこと言っていく。
    ときどき、昔の職人の仕事についてのヒントを落としてくれる。
    ---------------------------------------------------------- */
+/* ドール家具（もとから小さく作られている家具）。
+   名前を変えても判定がずれないよう、idで持っておく */
+const DOLL_PIECES = ["couch", "chest", "wardrobe"];
+const isDollPiece = (p) =>
+  p.design === "kogata" || DOLL_PIECES.indexOf(p.baseId || p.fid) >= 0;
+
 const VISITORS = [
   { id:"earl", name:"伯爵", icon:"👑",
     likes:(p)=>p.wood==="walnut"||p.design==="gouka",
@@ -3459,7 +3465,7 @@ const VISITORS = [
     miss:"「ふうん。僕はもっと黒いのが好きだな」",
     hint:"「漆みたいな黒はね、月の光を集めるんですよ。夜に映える飾り棚を作った職人がいたとか」" },
   { id:"couple", name:"新婚夫婦", icon:"💑",
-    likes:(p)=>p.design==="kogata"||p.name.indexOf("プティ")>=0,
+    likes:(p)=>isDollPiece(p),
     hit:"「小さい！　うちのお部屋にちょうどいいね」",
     miss:"「すてき。でも、うちにはちょっと大きいかも……」",
     hint:"「小さい家具って、かえって手間がかかるんですってね。赤みのある木で作ると可愛いとか」" },
@@ -3601,8 +3607,8 @@ const SET_BONUSES = [
     desc: "アンティーク仕上げ2点以上 → 収益+20%",
     check: (pieces) => pieces.filter(p => p.finish === "antique").length >= 2 },
   { id: "doll_set", name: "ドール家具セット", mult: 1.15,
-    desc: "プティ家具（小さな家具）2点以上 → 収益+15%",
-    check: (pieces) => pieces.filter(p => p.name.includes("プティ") || p.design === "kogata").length >= 2 },
+    desc: "小さな家具（ドール家具）2点以上 → 収益+15%",
+    check: (pieces) => pieces.filter(isDollPiece).length >= 2 },
   { id: "night_set", name: "夜の部屋", mult: 1.25,
     desc: "漆黒か金箔の仕上げ3点以上 → 収益+25%",
     check: (pieces) => pieces.filter(p =>
