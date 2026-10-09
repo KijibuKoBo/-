@@ -562,6 +562,18 @@ footer{
   border-style:dashed; box-shadow:none;
 }
 
+/* ---------- ショールームの催し ---------- */
+.ev-msg{ text-align:center; color:var(--red); font-size:.7rem; margin-top:6px; min-height:1em; }
+.ev-guest{
+  display:flex; align-items:center; gap:10px; margin-top:7px;
+  border:1.5px solid var(--wood-light); border-radius:12px;
+  padding:7px 10px; background:linear-gradient(180deg,#fffef9,#fdf6e6);
+}
+.ev-icon{ font-size:1.5rem; width:34px; text-align:center; flex:0 0 34px; }
+.ev-body{ flex:1; font-size:.78rem; line-height:1.5; }
+.ev-like{ font-size:.68rem; color:var(--brown-mid); }
+.ev-note{ text-align:center; font-size:.66rem; color:var(--brown-soft); margin-top:7px; }
+
 /* ---------- 工房紹介 ---------- */
 .about-hero{ text-align:center; margin-bottom:12px; }
 .about-hero .art{ display:block; width:124px; height:190px; margin:0 auto; }
@@ -3481,6 +3493,69 @@ const VISITORS = [
     hint:"「おじいちゃんが言ってた。童話のはしばしに、作りかたが書いてあるんだって」" }
 ];
 
+/* ----------------------------------------------------------
+   ショールームのドールイベント
+   ----------------------------------------------------------
+   会場で配る合言葉を入れると、その日のお客さま5人が工房に住みつく。
+   以後ずっと、ほかの来館者と同じように展示を見にきてひとこと言っていく。
+
+   お名前・好み・せりふを変えるときは、EVENT_GUESTS の5行だけ直せばよい。
+   placeholder を消すと「※お名前はまだ仮です」の注記が出なくなる。
+   ---------------------------------------------------------- */
+const EVENT_CODE  = "どーる";                 // 会場で配る合言葉
+const EVENT_TITLE = "ドールイベント";
+
+/* 合言葉の照らし合わせ。ひらがな・カタカナ・全角半角・空白のちがいを吸収する。
+   会場で口で伝える言葉なので、書き方のゆれでつまずかせない */
+function normCode(s) {
+  return String(s || "")
+    .normalize("NFKC")
+    .replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[\s\u3000ー－-]/g, "")
+    .toLowerCase();
+}
+
+const EVENT_GUESTS = [
+  { id:"ev1", name:"お客さま 一", icon:"🎀", placeholder:true,
+    like:"小さな家具がすき",
+    likes:(p)=>isDollPiece(p),
+    hit:"「わあ、この大きさ。うちの子にぴったり」",
+    miss:"「すてきですね。もう少し小さいのもありますか？」",
+    hint:"「小さく作るほど、手の跡が見えるんですって。ふしぎですよね」" },
+
+  { id:"ev2", name:"お客さま 二", icon:"🧸", placeholder:true,
+    like:"塗らない、白木のままの仕上げがすき",
+    likes:(p)=>p.finish==="natural",
+    hit:"「塗らないほうが、木の顔が見えますね」",
+    miss:"「きれい。でも私は、木そのままの色が好きで」",
+    hint:"「オークは素直な木だから、はじめの一台に向いているそうです」" },
+
+  { id:"ev3", name:"お客さま 三", icon:"🌙", placeholder:true,
+    like:"黒と金の、夜のような家具がすき",
+    likes:(p)=>p.finish==="shikkoku"||p.finish==="kinpaku",
+    hit:"「夜の部屋に置きたい。光の集まり方がちがう」",
+    miss:"「明るいですね。私はもっと暗いのが好みで」",
+    hint:"「金は、たくさん貼るより一筋だけのほうが効くんだとか」" },
+
+  { id:"ev4", name:"お客さま 四", icon:"🕊", placeholder:true,
+    like:"赤みのある木がすき",
+    likes:(p)=>p.wood==="cherry"||p.wood==="rosewood",
+    hit:"「この赤み。チェリーですね、きっと長く育つ色」",
+    miss:"「落ち着いていますね。私は赤みのある木が好きで」",
+    hint:"「チェリーは年を重ねるほど赤が濃くなるそうですよ」" },
+
+  { id:"ev5", name:"お客さま 五", icon:"🍓", placeholder:true,
+    like:"童話のある家具がすき",
+    likes:(p)=>{ const f = furnitureById(p.baseId || p.fid); return !!(f && f.letter); },
+    hit:"「この子には、お話がついていますね。聞かせてください」",
+    miss:"「かわいい。でも、お話のある子はどこですか？」",
+    hint:"「家具が一台できるたび、お話がひとつ生まれるんですって」" }
+];
+
+const eventOpen  = () => !!(state.event && state.event.doll);
+/* イベントが開いていれば、特別なお客さまも来館者にまざる */
+const visitorPool = () => eventOpen() ? VISITORS.concat(EVENT_GUESTS) : VISITORS;
+
 const RANKS = {
   S: { min: 90, mult: 1.5,  label: "最高級のできばえ！", popBonus: 15 },
   A: { min: 75, mult: 1.2,  label: "とても良いできばえ", popBonus: 8 },
@@ -3693,7 +3768,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 10,
+  ver: 11,
   player: { name: "", avatar: { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 } },
   money: 0,
   exp: 0,
@@ -3719,7 +3794,8 @@ let state = {
   seenBP: [],                     // 解放告知済みの設計図id
   completed: {},                  // { 図鑑id: {count, best, bestScore, bestPop} }
   stories: [],                    // 解放済み物語のid（家具id・レシピid・"final"）
-  tool: "normal"                  // 山場でえらんだ道具（normal / sharp / old）
+  tool: "normal",                 // 山場でえらんだ道具（normal / sharp / old）
+  event: {}                       // 合言葉で開いた催し { doll: {day} }
 };
 
 /* 制作前の設計えらび（一時状態。セーブしない） */
@@ -3817,6 +3893,13 @@ function load() {
     });
     state.ver = 10;
   }
+  if (savedVer !== 11) {  // 第10章: 催しの合言葉を置く場所を用意する
+    if (!state.event || typeof state.event !== "object") state.event = {};
+  }
+  /* 移行の条件はどれも「savedVer !== N」なので、新しいセーブでも途中の
+     ブロックを通ってしまい、state.ver が巻き戻ることがあった。
+     ぜんぶ通したあとで、版は必ず最新にそろえる */
+  state.ver = 11;
 }
 
 /* ==========================================================
@@ -4618,7 +4701,7 @@ function dailyVisitors() {
   }
 
   /* 来館者がひとり、展示を見ていく。3割の確率で昔の仕事の話をしていく */
-  const v = pick(VISITORS);
+  const v = pick(visitorPool());
   let line;
   if (!pieces.length) {
     line = v.miss;
@@ -5044,6 +5127,55 @@ function saveAvatar() {
     : `ほう、${you()}。ずいぶん職人らしい顔になったのう。`);
 }
 
+/* ---------- ショールームの催し ---------- */
+function eventBlock() {
+  if (!eventOpen()) {
+    return `<div class="about-block" style="text-align:center">
+      <h4>🎟 合言葉</h4>
+      <p style="text-align:center">ショールームの催しで合言葉をもらった方は、ここに入れてください。</p>
+      <input class="av-name-input" id="ev-code" maxlength="24" placeholder="あいことば"
+             autocapitalize="off" autocomplete="off" spellcheck="false">
+      <button class="foot-btn" id="ev-go"
+              style="max-width:220px;margin:9px auto 0;display:block;min-height:44px">🎟 合言葉を入れる</button>
+      <p class="ev-msg" id="ev-msg"></p>
+    </div>`;
+  }
+  const rows = EVENT_GUESTS.map(g =>
+    `<div class="ev-guest"><span class="ev-icon">${g.icon}</span><span class="ev-body">
+       <b>${esc(g.name)}</b><br><span class="ev-like">${esc(g.like)}</span></span></div>`).join("");
+  const note = EVENT_GUESTS.some(g => g.placeholder)
+    ? `<p class="ev-note">※ お名前はまだ仮のものです</p>` : "";
+  const day = (state.event.doll && state.event.doll.day) || 1;
+  return `<div class="about-block">
+    <h4>🎀 ${esc(EVENT_TITLE)}のお客さま</h4>
+    <p>${day}日目に工房へ来てくれた5人。いまも、ときどき展示を見にきてくれます。</p>
+    ${rows}${note}</div>`;
+}
+
+/* 合言葉を受けとる。合えば、お客さま5人が工房に住みつく */
+function tryEventCode() {
+  const got = normCode($("#ev-code").value);
+  if (!got) return;
+  if (got !== normCode(EVENT_CODE)) {
+    $("#ev-msg").textContent = "その合言葉は、聞いたことがないのう。";
+    return;
+  }
+  if (!state.event || typeof state.event !== "object") state.event = {};
+  state.event.doll = { day: state.day };
+  save();
+  closeModal("about-modal");
+  openStoryPop(
+    `🎀 ${EVENT_TITLE}の日`,
+    "ショールームの扉が、いつもより何度も開いた日だった。\n\n"
+    + "腕に小さな子をかかえたお客さまが、かわりばんこに展示をのぞきこんでいく。"
+    + "うちの子にはこの大きさ、この色、この木目——と、だれもが自分の目で選んでいく。\n\n"
+    + "「家具を見にくるのではなくて、置く場所のほうを連れてくるのじゃな」\n\n"
+    + "ヘンリーさんが、めずらしく感心したような声を出した。\n\n"
+    + "あの5人は、それから工房の常連になった。これからも、きみの並べたものを見にくるだろう。",
+    "🎀");
+  render();
+}
+
 /* ---------- 工房紹介 ---------- */
 function renderAbout() {
   const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
@@ -5061,6 +5193,7 @@ function renderAbout() {
     skillBlock() +
     ABOUT_BLOCKS.map(b =>
       `<div class="about-block"><h4>${b.icon} ${b.title}</h4><p>${b.text}</p></div>`).join("") +
+    eventBlock() +
     `<div class="about-block" style="text-align:center">
       <p style="font-size:.68rem">このゲームの版　<b>${esc(buildLabel())}</b><br>
       いちばん新しいものが出ていれば、開いたときに自動で入れ替わります。</p>
@@ -5117,6 +5250,12 @@ function init() {
     $("#btn-edit-avatar").addEventListener("click", () => {
       closeModal("about-modal"); openAvatarEditor(false);
     });
+    if ($("#ev-go")) {
+      $("#ev-go").addEventListener("click", tryEventCode);
+      $("#ev-code").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); tryEventCode(); }
+      });
+    }
   });
   $("#act-cancel").addEventListener("click", () => { if (actRunning) actRunning(); });
   /* ヘッダーの顔をタップしても職人を変えられる */
