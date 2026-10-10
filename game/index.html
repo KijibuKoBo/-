@@ -3550,7 +3550,7 @@ const VISITORS = [
    ---------------------------------------------------------- */
 const EVENT_CODE  = "どーる";                 // 会場で配る合言葉
 const EVENT_TITLE = "ドールイベント";
-const EVENT_HONOR = "ドールの日の職人";        // 合言葉を入れた人にだけ付く称号
+const EVENT_HONOR = "名誉職人";               // 合言葉を入れた人にだけ付く、名札の印
 
 /* 合言葉の照らし合わせ。ひらがな・カタカナ・全角半角・空白のちがいを吸収する。
    会場で口で伝える言葉なので、書き方のゆれでつまずかせない */
@@ -3777,6 +3777,14 @@ const TRIVIA = [
 
 const LEVELS = [0, 30, 100, 250, 500, 1000];
 const LEVEL_TITLES = ["見習い職人", "若手職人", "一人前の職人", "熟練の職人", "工房の匠", "伝説の職人"];
+/* 合言葉を入れた職人だけの称号。ふつうの肩書きと一段ずつ対になっていて、
+   同じレベルでも、こちらは人形たちに選ばれた者としての呼ばれ方になる */
+const HONOR_TITLES = ["ドールの日の職人", "人形に選ばれた職人", "小さなお客の名工",
+                      "ドールハウスの匠", "人形たちの御用達", "ドールの日の伝説"];
+const playerTitle = () => {
+  const i = Math.min(state.level - 1, LEVEL_TITLES.length - 1);
+  return (eventOpen() ? HONOR_TITLES : LEVEL_TITLES)[i];
+};
 
 const KNOWLEDGE = [
   { icon: "🎀", title: "Petit.Continue（プティ・コンティニュー）",
@@ -4155,10 +4163,10 @@ function renderStatus() {
   const cur = LEVELS[state.level - 1];
   const next = LEVELS[state.level];
   const fill = $("#lv-fill"), label = $("#lv-label");
-  const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+  const title = playerTitle();
   $("#player-face").innerHTML = buildAvatar(state.player.avatar);
   $("#player-face").classList.toggle("honored", eventOpen());
-  const who = `<b>${esc(you())}</b>${eventOpen() ? "🎀" : ""}・${title}`;
+  const who = `<b>${esc(you())}</b>・${eventOpen() ? "🎀" : ""}${title}`;
   if (next === undefined) {
     fill.style.width = "100%";
     label.innerHTML = `${who}（最高レベル！）　📖 ${dexFound()}/${dexTotal()}`;
@@ -5190,7 +5198,8 @@ function saveAvatar() {
   renderStatus();
   if (honored) {
     showMessage(`ようこそ、${you()}。……ほう、その合言葉を持っておるか。`
-      + `ならば、きみは「${EVENT_HONOR}」じゃ。工房の名札に、その名を刻んでおいた。`
+      + `ならば、きみは見習いではない。「${playerTitle()}」じゃ。`
+      + `工房の名札に、その名を刻んでおいた。`
       + `あの日の小刀も渡しておこう。だいじに使うのじゃぞ。`);
     showEventStory();
   } else {
@@ -5238,9 +5247,12 @@ function showEventStory() {
     "ショールームの扉が、いつもより何度も開いた日だった。\n\n"
     + "腕に小さな子をかかえたお客さまが、かわりばんこに展示をのぞきこんでいく。"
     + "うちの子にはこの大きさ、この色、この木目——と、だれもが自分の目で選んでいく。\n\n"
-    + "「家具を見にくるのではなくて、置く場所のほうを連れてくるのじゃな」\n\n"
+    + "「みな、家具を見にきておるのではないな。……その子に合うかどうかを、確かめにきておる」\n\n"
     + "ヘンリーさんが、めずらしく感心したような声を出した。\n\n"
-    + "あの5人は、それから工房の常連になった。これからも、きみの並べたものを見にくるだろう。",
+    + "5人とも、好きなものはてんでばらばらだった。"
+    + "だから、どの一台を置いても、全員がうなずくことはない。"
+    + "そのかわり、並べ方しだいで、誰かひとりは必ず足を止める。\n\n"
+    + "そして、きみもその日ここにいた。そのことは、この工房に残る。",
     "🎀");
 }
 
@@ -5261,7 +5273,8 @@ function tryEventCode() {
 
 /* ---------- 工房紹介 ---------- */
 function renderAbout() {
-  const title = LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+  /* 名札には 🎀 の印が別に出るので、こちらの肩書きには付けない */
+  const title = playerTitle();
   $("#about-body").innerHTML =
     `<div class="about-hero">
       <span class="art"><img src="${PHOTOS.henry_body}" alt="ヘンリーさん"></span>
