@@ -484,6 +484,23 @@ footer{
 .story-item.final{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,162,75,.25); }
 
 /* ---------- 仕入れ（材料） ---------- */
+.mat-head{
+  margin:14px 0 7px; font-size:.78rem; font-weight:bold; letter-spacing:.06em;
+  border-bottom:2px dashed var(--wood-light); padding-bottom:5px;
+}
+.mat-head span{ font-size:.62rem; font-weight:normal; color:var(--brown-mid); letter-spacing:0; }
+.boost-note{
+  text-align:center; font-size:.68rem; color:var(--brown-mid); margin-bottom:8px;
+  background:#fdf3d5; border:1.5px solid var(--gold); border-radius:999px; padding:4px 8px;
+}
+.boost-note b{ color:#a97c14; }
+.m-right{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.mat-use{
+  font-family:inherit; font-weight:bold; font-size:.66rem; color:var(--brown);
+  padding:5px 10px; border-radius:10px; cursor:pointer; white-space:nowrap;
+  border:2px solid var(--gold); background:#fdf3d5;
+}
+.mat-use:disabled{ opacity:.4; cursor:default; border-color:var(--brown-soft); background:var(--cream-deep); }
 .mat-item{
   display:flex; gap:12px; align-items:center;
   border:2px solid var(--wood-light); border-radius:14px;
@@ -1369,25 +1386,82 @@ const SVG_ART = {
    ========================================================== */
 /* 材料：仕入れモーダルで購入し、制作で消費する。
    type:"wood" は制作時に選ぶ「素材」候補。q/pop は選んだときの補正 */
+/* 材料：仕入れで買って、制作で使う。
+     type "wood" … 制作のときに1つえらぶ素材。q/pop/priceMult がそのまま効く
+     type "part" … 設計図が「真鍮2」のように指定する部品
+     type "use"  … 買ってその場で使う消耗品。effect に何が起きるかを書く
+   ch を書くと、その章が開くまで仕入れに出てこない */
 const MATERIALS = [
-  { id: "walnut", name: "ウォールナット", icon: "🟫", price: 500, type: "wood",
-    q: 5, pop: 5, priceMult: 1.05, desc: "深い色つやの高級材。品質+5・人気+5・価格+5%" },
+  /* ---------- 木材 12種 ---------- */
+  { id: "pine",   name: "パイン",        icon: "🟡", price: 180, type: "wood",
+    q: -3, pop: 0, priceMult: 0.9,  desc: "軽くて安いやわらかい針葉樹。品質-3・価格-10%" },
+  { id: "beech",  name: "ブナ",          icon: "🤍", price: 260, type: "wood",
+    q: 2, pop: 2, priceMult: 0.95, desc: "よくしなる白い木。曲げ木の定番。品質+2・人気+2・価格-5%" },
+  { id: "chestnut", name: "栗",          icon: "🌰", price: 300, type: "wood",
+    q: 3, pop: 4, priceMult: 0.98, desc: "水に強い素朴な木目。品質+3・人気+4" },
   { id: "oak",    name: "オーク",        icon: "🪵", price: 350, type: "wood",
     q: 5, pop: 0, priceMult: 1,    desc: "力強い木目の定番材。品質+5" },
   { id: "cherry", name: "チェリー",      icon: "🌸", price: 400, type: "wood",
     q: 0, pop: 8, priceMult: 1,    desc: "使うほど赤みが深まる材。人気+8" },
+  { id: "maple",  name: "メープル",      icon: "🤎", price: 460, type: "wood",
+    q: 7, pop: 0, priceMult: 1.05, desc: "白く硬く、傷がつきにくい。品質+7・価格+5%" },
+  { id: "walnut", name: "ウォールナット", icon: "🟫", price: 500, type: "wood",
+    q: 5, pop: 5, priceMult: 1.05, desc: "深い色つやの高級材。品質+5・人気+5・価格+5%" },
+  { id: "mahogany", name: "マホガニー",  icon: "🔴", price: 700, type: "wood", ch: 2,
+    q: 7, pop: 7, priceMult: 1.08, desc: "赤みのある銘木。彫りがよく映える。品質+7・人気+7・価格+8%" },
+  { id: "teak",   name: "チーク",        icon: "🟤", price: 850, type: "wood", ch: 2,
+    q: 10, pop: 4, priceMult: 1.1,  desc: "油をふくんだ重い木。狂いが出ない。品質+10・人気+4・価格+10%" },
+  { id: "rosewood", name: "ローズウッド", icon: "🟪", price: 900, type: "wood", ch: 2,
+    q: 8, pop: 8, priceMult: 1.1,  desc: "紫がかった稀少材。品質+8・人気+8・価格+10%" },
+  { id: "ebony",  name: "黒檀",          icon: "⚫", price: 1600, type: "wood", ch: 3,
+    q: 12, pop: 12, priceMult: 1.25, desc: "石のように重い黒。品質+12・人気+12・価格+25%" },
+  { id: "jindai", name: "神代欅",        icon: "🪨", price: 2600, type: "wood", ch: 3,
+    q: 16, pop: 16, priceMult: 1.4,  desc: "土に千年埋もれていた欅。灰緑の色は二度と出せない。品質+16・人気+16・価格+40%" },
+
+  /* ---------- 部品 12種 ---------- */
   { id: "brass",  name: "真鍮金具",      icon: "🔩", price: 250, type: "part",
     desc: "取っ手や蝶番。アンティークの顔" },
   { id: "glass",  name: "ガラス",        icon: "🪟", price: 400, type: "part",
     desc: "鏡や飾り棚に。割れ物注意" },
   { id: "cloth",  name: "布",            icon: "🧵", price: 300, type: "part",
     desc: "張り地・内張り用のやさしい布" },
-  /* ここから、章が進むと仕入れられるようになる銘木 */
-  { id: "rosewood", name: "ローズウッド", icon: "🟪", price: 900, type: "wood", ch: 2,
-    q: 8, pop: 8, priceMult: 1.1, desc: "紫がかった稀少材。品質+8・人気+8・価格+10%" },
-  { id: "ebony",    name: "黒檀",        icon: "⚫", price: 1600, type: "wood", ch: 3,
-    q: 12, pop: 12, priceMult: 1.25, desc: "石のように重い黒。品質+12・人気+12・価格+25%" }
+  { id: "hinge",  name: "蝶番",          icon: "🚪", price: 320, type: "part",
+    desc: "扉のかなめ。ここが狂うと、扉は一生鳴る" },
+  { id: "nail",   name: "飾り鋲",        icon: "📍", price: 200, type: "part",
+    desc: "張り地のふちに等間隔で。数えながら打つ" },
+  { id: "mirror", name: "鏡板",          icon: "🪞", price: 600, type: "part",
+    desc: "裏に銀を焼きつけた板ガラス。姿見やドレッサーに" },
+  { id: "leather", name: "革",           icon: "🟥", price: 550, type: "part",
+    desc: "トランクや座面に。使うほど色が深くなる" },
+  { id: "velvet", name: "ビロード",      icon: "🟩", price: 650, type: "part",
+    desc: "ボタンを深く沈めるための厚い布。品のある艶" },
+  { id: "lace",   name: "レース",        icon: "🕸", price: 480, type: "part", ch: 2,
+    desc: "天蓋やカーテンに。糸が細いほど高い" },
+  { id: "stained", name: "色ガラス",     icon: "🌈", price: 900, type: "part", ch: 2,
+    desc: "一枚ずつ色の違うガラス。鉛の線でつなぐ" },
+  { id: "clockwork", name: "時計の機械", icon: "⚙️", price: 1400, type: "part",
+    desc: "歯車とぜんまい。これだけは工房では作れない" },
+  { id: "lampwork", name: "灯りの金具",  icon: "💡", price: 1100, type: "part",
+    desc: "笠を支える細工もの。熱を逃がす形になっている" },
+
+  /* ---------- 消耗品 6種（買って、その場で使う） ---------- */
+  { id: "tea",    name: "濃いお茶",      icon: "🍵", price: 250, type: "use",
+    effect: "focus", v: 25, desc: "ひと息いれる。集中力が25もどる" },
+  { id: "candle", name: "ろうそく",      icon: "🕯", price: 500, type: "use",
+    effect: "hours", v: 2,  desc: "日が暮れても手が止まらない。きょうの作業が2時間のびる" },
+  { id: "nikawa", name: "にかわ",        icon: "🫗", price: 300, type: "use",
+    effect: "flaw", v: 1,   desc: "いま出ているしくじりを1つ消す。制作中だけ使える" },
+  { id: "tokusa", name: "とくさ",        icon: "🌾", price: 350, type: "use",
+    effect: "quality", v: 5, desc: "昔ながらの研ぎ草。つぎに仕上げる一台の品質+5" },
+  { id: "toishi", name: "研ぎ石",        icon: "🪨", price: 450, type: "use",
+    effect: "action", v: 6, desc: "刃を立て直す。つぎの山場の点が+6" },
+  { id: "kinpun", name: "金粉",          icon: "✨", price: 1300, type: "use", ch: 3,
+    effect: "pop", v: 12,   desc: "ひとつまみ散らすだけで目を引く。つぎの一台の人気+12" }
 ];
+
+/* 消耗品でためた「つぎの一台」ぶんの底上げ */
+const boostOf = (k) => (state.boost && state.boost[k]) || 0;
+function clearBoost() { state.boost = { quality: 0, pop: 0, action: 0 }; }
 
 /* 設計：家具のかたちの方向性。extraWood は必要木材の増減 */
 const DESIGNS = [
@@ -1537,7 +1611,7 @@ const FURNITURE = [
     id: "vanity_box", name: "白い小物入れ", icon: "🪞", art: null, photo: PHOTOS.r_vanity_box,
     description: "ふたを開けると鏡が立つ、ちいさな化粧箱。朝のひとときのための家具。（70×40×75mm）",
     price: 3800, exp: 26, deadline: 11, basePop: 28,
-    materials: { wood: 2, glass: 1, brass: 1 },
+    materials: { wood: 2, mirror: 1, brass: 1 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "白く塗る木は、目のつんだものを。粗いと塗りが泣く。" },
@@ -1553,7 +1627,7 @@ const FURNITURE = [
     id: "mirror_stand", name: "姿見", icon: "🪞", art: null, photo: PHOTOS.r_mirror_stand,
     description: "立てかけるだけで、部屋がひとつ広く見える。角度を変えると、映るものが変わる。（60×40×150mm）",
     price: 4800, exp: 32, deadline: 12, basePop: 34,
-    materials: { wood: 2, glass: 2 },
+    materials: { wood: 2, mirror: 1 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "縦に長い家具は、まっすぐな板がすべてだ。" },
@@ -1570,7 +1644,7 @@ const FURNITURE = [
     id: "hat_stand", name: "帽子箱スタンド", icon: "👒", art: null, photo: PHOTOS.r_hat_stand,
     description: "三脚の上にまるい箱がひとつ。中には、よそゆきの帽子がひとつだけ。（φ55×115mm）",
     price: 5600, exp: 38, deadline: 12, basePop: 36,
-    materials: { wood: 1, cloth: 3, brass: 1 },
+    materials: { wood: 1, cloth: 2, nail: 1, brass: 1 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "細い三脚になる木。軽くて、折れない種類を選ぶ。" },
@@ -1587,7 +1661,7 @@ const FURNITURE = [
     id: "oak_dresser", name: "化粧だんす", icon: "🪞", art: null, photo: PHOTOS.r_oak_dresser,
     description: "彫りの深い飾りをいただいた、鏡付きの小だんす。木そのものの色で仕上げる。（85×40×125mm）",
     price: 7200, exp: 50, deadline: 13, basePop: 42,
-    materials: { wood: 3, glass: 1, brass: 2 },
+    materials: { wood: 3, mirror: 1, brass: 2 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "彫りに耐える目のつんだ板。刃の入りで良し悪しがわかる。" },
@@ -1620,7 +1694,7 @@ const FURNITURE = [
     id: "couch", name: "アーチ背のセティ", icon: "🛋️", art: "couch", photo: PHOTOS.r_couch,
     description: "セティは、二人掛けの小さな長椅子。背もたれに並ぶアーチが、窓辺の光を切りとる。座面の下には引き出しがひとつ。",
     price: 2800, exp: 20, deadline: 12, basePop: 30,
-    materials: { wood: 1, cloth: 2 },
+    materials: { wood: 1, cloth: 2, nail: 1 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ",       icon: "🪵", msg: "白く軽い板。アーチを何本も抜くので、素直な木目のものがいい。" },
@@ -1636,7 +1710,7 @@ const FURNITURE = [
     id: "trunk_table", name: "革張りのトランク", icon: "🧳", art: null, photo: PHOTOS.r_trunk_table,
     description: "角を金具で締めた、旅のトランク。ふたは開かないので、そのままローテーブルになる。（100×55×50mm）",
     price: 4200, exp: 28, deadline: 12, basePop: 32,
-    materials: { wood: 2, brass: 3 },
+    materials: { wood: 2, leather: 2, brass: 2 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "角の立った、かたい板。旅をしてきた顔をさせたい。" },
@@ -1653,7 +1727,7 @@ const FURNITURE = [
     id: "bench", name: "礼拝堂のベンチ", icon: "🪑", art: "bench", photo: PHOTOS.r_bench,
     description: "尖ったアーチを透かし彫りにした背に、深い赤の座面。小さな礼拝堂から、そのまま運んできたような一脚。",
     price: 6500, exp: 45, deadline: 13, basePop: 42,
-    materials: { wood: 3 },
+    materials: { wood: 3, velvet: 1, nail: 1 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ",       icon: "🪵", msg: "何十枚もの板を見比べて、透かし彫りに耐える節のない一枚を選び出した。" },
@@ -1669,7 +1743,7 @@ const FURNITURE = [
     id: "wall_clock", name: "ウォールクロック", icon: "🕰️", art: null, photo: PHOTOS.wall_clock,
     description: "時を刻む音まで聞こえてきそうな、アンティーク調の振り子時計。（45×20×130mm）",
     price: 7000, exp: 50, deadline: 13, basePop: 40,
-    materials: { wood: 2, brass: 2, glass: 1 },
+    materials: { wood: 2, clockwork: 1, glass: 1, brass: 1 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "音の響く板を選ぶ。時計の箱は、楽器に少し似ている。" },
@@ -1702,7 +1776,7 @@ const FURNITURE = [
     id: "mitsudan", name: "空色のアームチェア", icon: "🪑", art: "mitsudan", photo: PHOTOS.r_mitsudan,
     description: "やわらかな空色の張り地を、ボタンで深く沈めて。炉のそばに置くと、つい長居してしまう肘掛け椅子。",
     price: 5000, exp: 35, deadline: 12, basePop: 40,
-    materials: { wood: 2, cloth: 1 },
+    materials: { wood: 2, velvet: 1, nail: 1 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "どっしりした板。長話を支える椅子には、これだ。" },
@@ -1718,7 +1792,7 @@ const FURNITURE = [
     id: "balcony_chair", name: "バルコニーチェア", icon: "🌿", art: null, photo: PHOTOS.r_balcony_chair,
     description: "アイアンの曲線が美しい一脚。バルコニーにも窓辺にも、置いた場所がそのまま絵になる。（55×50×85mm）",
     price: 5500, exp: 38, deadline: 12, basePop: 38,
-    materials: { wood: 1, brass: 4 },
+    materials: { wood: 1, cloth: 1, nail: 1, brass: 3 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ", icon: "🪵", msg: "型をとるための板。ここが狂うと、曲線がぜんぶ狂う。" },
@@ -1752,7 +1826,7 @@ const FURNITURE = [
     id: "dresser", name: "三面鏡ドレッサー", icon: "🪞", art: "dresser", photo: PHOTOS.r_dresser,
     description: "工房の技を集めた特別な一台。三枚の鏡が、いろんな自分を映してくれる。",
     price: 8000, exp: 60, deadline: 15, basePop: 45,
-    materials: { wood: 2, glass: 3, brass: 1 },
+    materials: { wood: 2, mirror: 2, brass: 1 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ", icon: "🪵", msg: "特別な家具には特別な木を。" },
@@ -1786,7 +1860,7 @@ const FURNITURE = [
     id: "jewelry", name: "ジュエリーチェスト", icon: "💍", art: "jewelry", photo: PHOTOS.r_jewelry,
     description: "小さな抽斗がならぶ宝物の家。いちばん小さな抽斗に、いちばん大きな思い出を。",
     price: 12000, exp: 80, deadline: 15, basePop: 55,
-    materials: { wood: 2, brass: 4, cloth: 1 },
+    materials: { wood: 2, velvet: 1, nail: 2, brass: 3 },
     unlock: { type: "level", v: 4 },
     steps: [
       { label: "木材を選ぶ",       icon: "🪵", msg: "きめの細かい板。宝物を守る木は、静かで強い。" },
@@ -1820,7 +1894,7 @@ const FURNITURE = [
     id: "stained_screen", name: "ステンドグラスの衝立", icon: "🪟", art: null, photo: PHOTOS.r_stained_screen,
     description: "光を通すと、床のほうに色が落ちる三連の衝立。晴れた日の午後がいちばん似合う。（120×20×120mm）",
     price: 18000, exp: 115, deadline: 15, basePop: 52,
-    materials: { wood: 2, glass: 5, brass: 1 },
+    materials: { wood: 2, stained: 5, brass: 1 },
     unlock: { type: "letters", v: 2 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "細い枠になる板。ガラスを抱くのだから、しなやかさがいる。" },
@@ -1837,7 +1911,7 @@ const FURNITURE = [
     id: "glass_lamp", name: "ステンドグラスランプ", icon: "💡", art: null, photo: PHOTOS.r_glass_lamp,
     description: "幻想的な光を灯す、小さなステンドグラスのランプ。笠の骨組みが歪むと、光まで歪む。（φ50×95mm）",
     price: 12000, exp: 82, deadline: 14, basePop: 58,
-    materials: { wood: 1, glass: 5, brass: 3 },
+    materials: { wood: 1, stained: 4, lampwork: 1, brass: 1 },
     unlock: { type: "visitors", v: 150 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "台座の芯になる板。光の下では、木の素性がよく見える。" },
@@ -1854,7 +1928,7 @@ const FURNITURE = [
     id: "curio", name: "キュリオケース", icon: "🏺", art: "curio", photo: PHOTOS.r_curio,
     description: "ガラスの向こうに思い出を飾る、小さな博物館。来館者の目をいちばん集める。",
     price: 15000, exp: 100, deadline: 15, basePop: 50,
-    materials: { wood: 2, glass: 4, brass: 2 },
+    materials: { wood: 2, glass: 3, hinge: 1, brass: 2 },
     unlock: { type: "visitors", v: 100 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "まっすぐで狂いのない板。ガラスを支える骨格だ。" },
@@ -1922,7 +1996,7 @@ const FURNITURE = [
     id: "jewel_trunk", name: "旅のジュエリートランク", icon: "💎", art: null, photo: PHOTOS.r_jewel_trunk,
     description: "ふたを開けると丸い鏡と、仕切られた赤い内張り。旅先でも、朝の支度ができる。（85×60×60mm）",
     price: 10500, exp: 68, deadline: 14, basePop: 48,
-    materials: { wood: 2, brass: 4, cloth: 2, glass: 1 },
+    materials: { wood: 2, leather: 2, cloth: 1, brass: 2 },
     unlock: { type: "visitors", v: 120 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "旅をする箱は、軽さと丈夫さの両方がいる。難しい注文だ。" },
@@ -1939,7 +2013,7 @@ const FURNITURE = [
     id: "white_bureau", name: "白いビューロー", icon: "🗞️", art: null, photo: PHOTOS.r_white_bureau,
     description: "斜めのふたを開けると、小さな抽斗がずらりと並ぶ。白く塗ると、影だけで形が見える。（85×45×115mm）",
     price: 11000, exp: 72, deadline: 14, basePop: 46,
-    materials: { wood: 3, brass: 2 },
+    materials: { wood: 3, hinge: 1, brass: 2 },
     unlock: { type: "level", v: 4 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "白は木目を隠す。だからこそ、下地の素直な板を選ぶ。" },
@@ -1973,7 +2047,7 @@ const FURNITURE = [
     id: "greenhouse", name: "グリーンハウスキャビネット", icon: "🪴", art: null, photo: PHOTOS.r_greenhouse,
     description: "植物を飾るための、小さな温室風キャビネット。扉は開け閉めできる。（70×45×125mm）",
     price: 17000, exp: 112, deadline: 15, basePop: 56,
-    materials: { wood: 2, glass: 6, brass: 1 },
+    materials: { wood: 2, glass: 5, hinge: 2 },
     unlock: { type: "level", v: 5 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "白く塗る家具は、木目の粗さがそのまま出る。細かい板を。" },
@@ -1990,7 +2064,7 @@ const FURNITURE = [
     id: "wardrobe", name: "プティワードローブ", icon: "👗", art: "wardrobe", photo: PHOTOS.r_wardrobe,
     description: "ドールたちの一張羅をしまう小さな洋服だんす。扉を開けると木の香り。",
     price: 9000, exp: 70, deadline: 14, basePop: 40,
-    materials: { wood: 3, brass: 2 },
+    materials: { wood: 3, hinge: 2, brass: 1 },
     unlock: { type: "letters", v: 3 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "軽くて丈夫な板。小さな扉には小さな木目を。" },
@@ -2023,7 +2097,7 @@ const FURNITURE = [
     id: "rolltop_desk", name: "ロールトップデスク", icon: "🗝️", art: null, photo: PHOTOS.r_rolltop_desk,
     description: "くるりと巻きあがる蛇腹の扉。その奥に、小さな書斎がまるごと隠れている。（100×45×110mm）",
     price: 16000, exp: 108, deadline: 15, basePop: 54,
-    materials: { wood: 3, brass: 3 },
+    materials: { wood: 3, leather: 1, brass: 3 },
     unlock: { type: "level", v: 5 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "薄く挽いても割れない板。蛇腹は木の粘りで決まる。" },
@@ -2040,7 +2114,7 @@ const FURNITURE = [
     id: "canopy_bed", name: "天蓋付きデイベッド", icon: "🛋️", art: null, photo: PHOTOS.canopy_bed,
     description: "繊細なレースのカーテンが揺れる、アンティークホワイトのデイベッド。（180×80×140mm）",
     price: 26000, exp: 175, deadline: 17, basePop: 64,
-    materials: { wood: 4, cloth: 5, brass: 1 },
+    materials: { wood: 4, cloth: 3, lace: 3, brass: 1 },
     unlock: { type: "level", v: 6 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "四本の柱に使う板。木目のそろった一本の木から取りたい。" },
@@ -2057,7 +2131,7 @@ const FURNITURE = [
     id: "bed_arch", name: "アーチ窓のベッド", icon: "🛏️", art: null, photo: PHOTOS.bed_arch,
     description: "ゴシックアーチの透かし彫りが、窓のように見えるベッド。眠るというより、物語に入るための場所。（160×65×105mm）",
     price: 20000, exp: 140, deadline: 16, basePop: 58,
-    materials: { wood: 4, cloth: 3, brass: 1 },
+    materials: { wood: 4, cloth: 2, lace: 1, brass: 1 },
     unlock: { type: "level", v: 6 },
     steps: [
       { label: "木材を選ぶ",       icon: "🪵", msg: "透かし彫りに耐える板。細くなる所ほど、木目が味方になる。" },
@@ -2091,7 +2165,7 @@ const FURNITURE = [
     id: "airship", name: "飛行船バルコニー", icon: "🎈", art: null, photo: PHOTOS.airship,
     description: "吊り下げて使う、空へつながる小さなデッキ。ここに立つと、部屋がひとまわり広くなる。（100×60×130mm）",
     price: 30000, exp: 200, deadline: 18, basePop: 70,
-    materials: { wood: 3, brass: 5, cloth: 2 },
+    materials: { wood: 3, lampwork: 1, brass: 4, cloth: 2 },
     unlock: { type: "visitors", v: 300 },
     steps: [
       { label: "木材を選ぶ", icon: "🪵", msg: "軽くて強い板だけを選び抜く。吊るものに、重さは敵だ。" },
@@ -2108,7 +2182,7 @@ const FURNITURE = [
     id: "clocktower", name: "時計塔のキャビネット", icon: "🏰", art: null, photo: PHOTOS.r_clocktower,
     description: "塔をそのまま家具にした一台。高く積むほど、下の一段が効いてくる。（70×50×170mm）",
     price: 28000, exp: 190, deadline: 17, basePop: 68,
-    materials: { wood: 4, brass: 4, glass: 1 },
+    materials: { wood: 4, clockwork: 1, brass: 3, glass: 1 },
     unlock: { type: "visitors", v: 400 },
     steps: [
       { label: "木材を選ぶ", icon: "🪵", msg: "背の高い家具は、重さより「まっすぐ」。何度も目で通して選ぶ。" },
@@ -2125,7 +2199,7 @@ const FURNITURE = [
     id: "moon_bed", name: "月のベッド", icon: "🌜", art: null, photo: PHOTOS.moon_bed,
     description: "三日月の中で眠るようなベッド。工房の技をひとつ残らず使う、最後の一台。（110×60×130mm）",
     price: 34000, exp: 220, deadline: 18, basePop: 74,
-    materials: { wood: 4, cloth: 3, brass: 2 },
+    materials: { wood: 4, cloth: 2, velvet: 2, brass: 2 },
     unlock: { type: "letters", v: 9 },
     steps: [
       { label: "木材を選ぶ",     icon: "🪵", msg: "厚い板を四枚。削り落とすぶんまで数えて選ぶ。" },
@@ -2142,7 +2216,7 @@ const FURNITURE = [
     id: "observatory", name: "天体観測ドーム", icon: "🔭", art: null, photo: PHOTOS.observatory,
     description: "ドームを開けると、星空を眺める小さな天体望遠鏡が現れる。工房のいちばん奥に置かれる一台。（80×80×120mm）",
     price: 40000, exp: 260, deadline: 20, basePop: 80,
-    materials: { wood: 4, brass: 6, glass: 3 },
+    materials: { wood: 4, lampwork: 1, brass: 5, glass: 3 },
     unlock: { type: "visitors", v: 600 },
     steps: [
       { label: "木材を選ぶ",       icon: "🪵", msg: "半球にするための塊。削る量を思うと、少し気が遠くなる。" },
@@ -2159,7 +2233,7 @@ const FURNITURE = [
     id: "cupboard", name: "よそゆきの戸棚", icon: "👞", art: null, photo: PHOTOS.r_cupboard,
     description: "扉を開けると、本と時計、カップがひとつ、よそゆきの靴がひとそろい。出かける前に、ここだけ開ければいい棚。（80×40×120mm）",
     price: 16000, exp: 108, deadline: 15, basePop: 52,
-    materials: { wood: 4, brass: 2 },
+    materials: { wood: 4, hinge: 2, brass: 1 },
     unlock: { type: "level", v: 5 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "毎日開け閉めされる棚だ。丈夫で、反らない板を選ぶ。" },
@@ -2228,7 +2302,7 @@ const FURNITURE = [
     eventOnly: true,
     description: "薔薇をひとつずつ彫り出したアーチの背。Petit.Continue の、催しの日だけの一台。",
     price: 22000, exp: 150, deadline: 16, basePop: 64,
-    materials: { wood: 3, cloth: 4, brass: 1 },
+    materials: { wood: 3, velvet: 3, nail: 2, brass: 1 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ",       icon: "🪵", msg: "彫りに耐える、きめの細かい板。薔薇は木目に逆らうと欠ける。" },
@@ -2246,7 +2320,7 @@ const FURNITURE = [
     eventOnly: true,
     description: "三面の鏡と、小さなスツールがひとそろい。ねこ脚の白いパウダーテーブル。",
     price: 19000, exp: 128, deadline: 15, basePop: 60,
-    materials: { wood: 3, glass: 3, brass: 2 },
+    materials: { wood: 3, mirror: 3, brass: 2 },
     unlock: { type: "level", v: 3 },
     steps: [
       { label: "木材を選ぶ",   icon: "🪵", msg: "白く仕上げる家具は、木目の素直なものを選ぶに限る。" },
@@ -2264,7 +2338,7 @@ const FURNITURE = [
     eventOnly: true,
     description: "黒い枠に薔薇を一輪。深い赤の座面を張った、Petit.Continue の小さな椅子。",
     price: 15000, exp: 102, deadline: 14, basePop: 56,
-    materials: { wood: 2, cloth: 2, brass: 3 },
+    materials: { wood: 2, velvet: 2, nail: 2, brass: 2 },
     unlock: { type: "level", v: 2 },
     steps: [
       { label: "木材を選ぶ", icon: "🪵", msg: "細く挽いても粘る木。黒く塗るので、色より強さで選ぶ。" },
@@ -4010,7 +4084,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 11,
+  ver: 12,
   player: { name: "", avatar: { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 } },
   money: 0,
   exp: 0,
@@ -4021,6 +4095,7 @@ let state = {
   totalVisitors: 0,               // のべ来館者（設計図解放にも使う）
   materials: { walnut: 0, oak: 2, cherry: 0, brass: 0, glass: 0, cloth: 2 },  // 最初の持ち材料
   currentId: null,                // 制作中の家具id
+  craftBoost: { quality: 0, pop: 0, action: 0 },   // いま作っている一台にのった下駄
   craft: null,                    // 制作中の選択 {design, wood, finish}
   stepIndex: 0,
   quality: 0,
@@ -4037,7 +4112,8 @@ let state = {
   completed: {},                  // { 図鑑id: {count, best, bestScore, bestPop} }
   stories: [],                    // 解放済み物語のid（家具id・レシピid・"final"）
   tool: "normal",                 // 山場でえらんだ道具（normal / sharp / old）
-  event: {}                       // 合言葉で開いた催し { doll: {day} }
+  event: {},                      // 合言葉で開いた催し { doll: {day} }
+  boost: { quality: 0, pop: 0, action: 0 }  // 消耗品でためた「つぎの一台」ぶん
 };
 
 /* 制作前の設計えらび（一時状態。セーブしない） */
@@ -4138,10 +4214,16 @@ function load() {
   if (savedVer !== 11) {  // 第10章: 催しの合言葉を置く場所を用意する
     if (!state.event || typeof state.event !== "object") state.event = {};
   }
+  if (savedVer !== 12) {  // 第11章: 消耗品を置く場所を用意する
+    if (!state.boost || typeof state.boost !== "object") clearBoost();
+  }
+  if (!state.craftBoost || typeof state.craftBoost !== "object") {
+    state.craftBoost = { quality: 0, pop: 0, action: 0 };
+  }
   /* 移行の条件はどれも「savedVer !== N」なので、新しいセーブでも途中の
      ブロックを通ってしまい、state.ver が巻き戻ることがあった。
      ぜんぶ通したあとで、版は必ず最新にそろえる */
-  state.ver = 11;
+  state.ver = 12;
 }
 
 /* ==========================================================
@@ -4297,7 +4379,8 @@ function neededMaterials(f, designId) {
   const d = designById(designId);
   const woodCount = Math.max(1, (f.materials.wood || 0) + (d.extraWood || 0));
   const parts = {};
-  ["brass", "glass", "cloth"].forEach(k => { if (f.materials[k]) parts[k] = f.materials[k]; });
+  MATERIALS.filter(m => m.type === "part")
+    .forEach(m => { if (f.materials[m.id]) parts[m.id] = f.materials[m.id]; });
   return { woodCount, parts };
 }
 /* 選んだ木材・部品が足りているか */
@@ -4486,9 +4569,12 @@ function renderPrep() {
     state.craftUsed = 0;
     state.flaws = 0;
     state.actionScore = null;
+    /* 消耗品の下駄は、ここで一台ぶん使い切る */
+    state.craftBoost = { quality: boostOf("quality"), pop: boostOf("pop"), action: boostOf("action") };
+    clearBoost();
     /* 土台＝素材50＋設備＋設計・素材・仕上げの補正。
        ここに通常工程の判断が積み上がり、最後に山場の腕前が掛かる */
-    state.quality = BASE_QUALITY + gearQualityBonus()
+    state.quality = BASE_QUALITY + gearQualityBonus() + state.craftBoost.quality
       + designById(prep.design).q + materialById(prep.wood).q + finishById(prep.finish).q;
     prep = null;
     save();
@@ -4519,7 +4605,8 @@ function currentPiece() {
   const rank = calcRank(score);
   const onTime = state.craftUsed <= f.deadline;
   const d = designById(c.design), w = materialById(c.wood), fin = finishById(c.finish);
-  const pop = Math.max(1, f.basePop + (v ? v.popBonus : 0) + d.pop + (w.pop || 0) + fin.pop + RANKS[rank].popBonus);
+  const pop = Math.max(1, f.basePop + (v ? v.popBonus : 0) + d.pop + (w.pop || 0) + fin.pop
+    + RANKS[rank].popBonus + ((state.craftBoost && state.craftBoost.pop) || 0));
   const mult = RANKS[rank].mult * (onTime ? ONTIME_MULT : LATE_MULT)
     * d.priceMult * (w.priceMult || 1) * fin.priceMult * (v ? v.priceMult : 1) * gearPriceMult();
   const price = Math.round(f.price * mult / 10) * 10;
@@ -4870,6 +4957,7 @@ function doAction(rawScore, skipped) {
   const tool = toolById(state.tool);
   let n = tired ? rawScore * 0.85 : rawScore;
   if (!skipped) n *= tool.mult;                          // えらんだ道具のぶん
+  if (!skipped) n += (state.craftBoost && state.craftBoost.action) || 0;   // 研ぎ石のぶん
   const score = Math.max(0, Math.min(100, Math.round(n)));
 
   /* 山場の出来は、品質に足すのではなく、最後に土台へ掛ける */
@@ -5216,19 +5304,45 @@ function renderShow() {
 }
 
 /* ---------- 仕入れ（材料） ---------- */
+const MAT_GROUPS = [
+  { type: "wood", title: "🪵 木材", note: "制作のときに、この中から1つえらぶ" },
+  { type: "part", title: "🔩 部品", note: "設計図が「真鍮2」のように指定する" },
+  { type: "use",  title: "🍵 消耗品", note: "買って、その場で使う" }
+];
+
 function renderMarket() {
-  $("#market-body").innerHTML =
-    `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:10px;">
-      所持金 💰 ${state.money.toLocaleString()}円</p>` +
-    MATERIALS.filter(chOpen).map(m => `<div class="mat-item">
+  const boost = [];
+  if (boostOf("quality")) boost.push(`品質+${boostOf("quality")}`);
+  if (boostOf("pop"))     boost.push(`人気+${boostOf("pop")}`);
+  if (boostOf("action"))  boost.push(`山場+${boostOf("action")}`);
+
+  const rows = (list) => list.map(m => {
+    const ng = m.type === "use" ? useReady(m) : "";
+    return `<div class="mat-item">
       <span class="m-icon">${m.icon}</span>
       <span class="m-body"><div class="m-name">${m.name}</div>
       <div class="m-desc">${m.desc}</div></span>
-      <span class="m-own">×${state.materials[m.id] || 0}</span>
+      <span class="m-right">
+        <span class="m-own">×${state.materials[m.id] || 0}</span>
+        ${m.type === "use" ? `<button class="mat-use" data-u="${m.id}"
+            ${(state.materials[m.id] || 0) < 1 || ng ? "disabled" : ""}
+            title="${esc(ng)}">使う</button>` : ""}
+      </span>
       <button class="mat-buy" data-m="${m.id}" ${state.money < matPrice(m) ? "disabled" : ""}>
         ${matPrice(m).toLocaleString()}円${gearMatOff() > 0
           ? `<span style="display:block;font-size:.56rem;font-weight:normal;opacity:.8;text-decoration:line-through">${m.price.toLocaleString()}円</span>` : ""}</button>
-    </div>`).join("");
+    </div>`;
+  }).join("");
+
+  $("#market-body").innerHTML =
+    `<p style="text-align:center;font-size:.74rem;color:var(--brown-mid);margin-bottom:4px;">
+      所持金 💰 ${state.money.toLocaleString()}円</p>` +
+    (boost.length ? `<p class="boost-note">✨ つぎの一台にのる下駄：<b>${boost.join("・")}</b></p>` : "") +
+    MAT_GROUPS.map(g => {
+      const list = MATERIALS.filter(m => m.type === g.type).filter(chOpen);
+      if (!list.length) return "";
+      return `<div class="mat-head">${g.title}　<span>${g.note}</span></div>` + rows(list);
+    }).join("");
 
   document.querySelectorAll(".mat-buy[data-m]").forEach(b =>
     b.addEventListener("click", () => {
@@ -5240,6 +5354,44 @@ function renderMarket() {
       renderMarket(); renderStatus();
       if (prep || !state.currentId) render();   /* 設計図一覧の在庫表示も更新 */
     }));
+  document.querySelectorAll(".mat-use[data-u]").forEach(b =>
+    b.addEventListener("click", () => useItem(b.dataset.u)));
+}
+
+/* 消耗品が、いま使えるか。使えないときは、その理由を返す */
+function useReady(m) {
+  if ((state.materials[m.id] || 0) < 1) return "持っていない";
+  if (m.effect === "focus"  && state.focus >= focusPerDay()) return "集中力は満ちている";
+  if (m.effect === "flaw"   && !(state.currentId && state.flaws > 0)) return "いま、しくじりは無い";
+  return "";
+}
+
+/* 消耗品をひとつ使う */
+function useItem(id) {
+  const m = materialById(id);
+  if (!m || m.type !== "use" || (state.materials[id] || 0) < 1) return;
+  if (useReady(m)) { showMessage(`……いまは要らぬようじゃ。（${useReady(m)}）`); return; }
+  state.materials[id]--;
+  let msg = "";
+  if (m.effect === "focus") {
+    state.focus = Math.min(focusPerDay(), state.focus + m.v);
+    msg = `🍵 お茶をいれた。集中力が${m.v}もどった。`;
+  } else if (m.effect === "hours") {
+    state.hoursLeft += m.v;
+    msg = `🕯 ろうそくに火を入れた。きょうはあと${state.hoursLeft}時間、手を動かせる。`;
+  } else if (m.effect === "flaw") {
+    state.flaws = Math.max(0, state.flaws - m.v);
+    msg = `🫗 にかわで直した。しくじりが${state.flaws}つになった。`;
+  } else {
+    state.boost[m.effect] = boostOf(m.effect) + m.v;
+    msg = m.effect === "quality" ? `🌾 とくさで研いだ。つぎの一台の品質が+${boostOf("quality")}。`
+        : m.effect === "action"  ? `🪨 刃を立て直した。つぎの山場の点が+${boostOf("action")}。`
+        : `✨ 金粉を用意した。つぎの一台の人気が+${boostOf("pop")}。`;
+  }
+  save();
+  showMessage(msg);
+  renderMarket(); renderStatus();
+  if (prep || !state.currentId) render();
 }
 
 /* ---------- 設備 ---------- */
