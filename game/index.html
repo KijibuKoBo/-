@@ -1164,7 +1164,7 @@ footer{
       <div class="ave-title">🎟 合言葉をお持ちの方</div>
       <input class="av-name-input" id="av-code" maxlength="24" placeholder="あいことば"
              autocapitalize="off" autocomplete="off" spellcheck="false">
-      <p class="ave-note">ショールームの催しでお渡ししている言葉です。<br>
+      <p class="ave-note">工房の催しでお渡ししている言葉です。<br>
         入れて作った職人は <b>名誉職人</b> として、工房に名が残ります。</p>
       <p class="ev-msg" id="av-code-msg"></p>
     </div>
@@ -4022,7 +4022,7 @@ const VISITORS = [
 ];
 
 /* ----------------------------------------------------------
-   ショールームのドールイベント
+   ドール工房ツアー
    ----------------------------------------------------------
    会場で配る合言葉を入れると、その日のお客さま5人が工房に住みつく。
    以後ずっと、ほかの来館者と同じように展示を見にきてひとこと言っていく。
@@ -4040,8 +4040,9 @@ const EVENT_HONOR = "名誉職人";               // 合言葉を入れた人に
      id    … セーブに残る印。一度配ったら、ぜったいに変えないこと
      key   … 木のQRカードの ?k= に入れる短い印（打ちこんでも通る）
      code  … 口で伝える合言葉
-     days  … 受けつける日。["2026-11-15"] のように書くと、その日だけ。
-             空のままなら、いつでも受けつける
+     days  … 受けつける日。["2026-11-08"] のように書くと、その日だけ。
+             空のままなら、いつでも受けつける。
+             いく日か書けば、そのどの日でも受けつける
      guests… 特別なお客さま5人が来るようになる
      gift  … 「あの日の小刀」を渡す
      extra … その催しでだけ作れるようになる設計図のid
@@ -4055,8 +4056,8 @@ const EVENTS = [
     id: "doll",
     key: "neko",
     code: "ねこあし",
-    title: "ショールームのドールイベント",
-    days: [],          // ★ 開催日が決まったら ["2026-11-15"] のように入れる
+    title: "ドール工房ツアー",
+    days: ["2026-11-08"],      // 2026年11月8日（日）13時〜　松永工房にて
     guests: true,
     gift: true,
     extra: ["rose_sofa", "powder_table", "rose_chair"]
@@ -4110,8 +4111,17 @@ const EVENT_GUESTS = [
     hint:"「家具が一台できるたび、お話がひとつ生まれるんですって」" }
 ];
 
-/* きょうの日づけ。端末の時計で見る。「その日だけ」はこれで決まる */
+/* きょうの日づけ。端末の時計で見る。「その日だけ」はこれで決まる。
+
+   ?day=2026-11-08 を付けると、その日ということにして動かせる（けいこ用）。
+   当日より前に、合言葉とQRカードの通りぐあいを確かめるためのもの。
+   ページの中を読めば誰でも使えるので、ほんとうの鍵は合言葉のほう。
+   木のQRカードには、ぜったいに付けないこと。 */
 function todayStr() {
+  try {
+    const q = new URLSearchParams(location.search).get("day");
+    if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return q;
+  } catch (e) { /* 読めなければ、ふつうに端末の時計で */ }
   const d = new Date(), p = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
@@ -4134,12 +4144,22 @@ function findEvent(text) {
   const e = EVENTS.find(x => normCode(x.code) === got || normCode(x.key) === got);
   if (!e) return { bad: true };
   if (joinedEvent(e.id)) return { e, already: true };
-  if (!eventLive(e)) return { e, late: true };
+  if (!eventLive(e)) {
+    /* 「まだ先」と「過ぎた」は、言われる側にはずいぶんちがう。
+       合言葉つきのカードは開催日より前に配ることもあるので、
+       その日が来ていないだけなら、そう言ってあげる */
+    const first = e.days.slice().sort()[0];
+    return todayStr() < first ? { e, early: true } : { e, late: true };
+  }
   return { e };
 }
+/* 合言葉を受けつけられるか。だめな理由は eventNg が言う。
+   判定をここ一か所にまとめてあるので、理由が増えても取りこぼさない */
+const eventOk = (r) => !!(r && r.e && !r.bad && !r.early && !r.late && !r.already);
 /* 合言葉を受けつけなかったときの、KoBoさんのことば */
 function eventNg(r) {
   if (!r || r.bad) return "その合言葉は、聞いたことがないのう。";
+  if (r.early) return "その合言葉は、たしかに聞いたことがある。……じゃが、その日はまだ来ておらん。当日にまた会おうぞ。";
   if (r.late) return "その合言葉は、たしかに聞いたことがある。……じゃが、その日は過ぎてしもうた。";
   if (r.already) return "その合言葉なら、もう受けとっておるぞ。";
   return "";
@@ -5905,10 +5925,11 @@ function openAvatarEditor(first) {
   const fromQr = urlEvent();
   if (fromQr && fromQr.e && !fromQr.bad && !fromQr.already) {
     $("#av-code").value = fromQr.e.code;
-    $("#av-code-msg").textContent = fromQr.late
-      ? eventNg(fromQr)
-      : `✓ ${fromQr.e.title}の合言葉が入りました`;
-    $("#av-code-msg").classList.toggle("ok", !fromQr.late);
+    const okQr = eventOk(fromQr);
+    $("#av-code-msg").textContent = okQr
+      ? `✓ ${fromQr.e.title}の合言葉が入りました`
+      : eventNg(fromQr);
+    $("#av-code-msg").classList.toggle("ok", okQr);
   } else {
     $("#av-code-msg").classList.remove("ok");
   }
@@ -5953,7 +5974,7 @@ function saveAvatar() {
   if (!$("#av-event").hidden) {
     const r = findEvent($("#av-code").value);
     if (r) {
-      if (!r.e || r.bad || r.late || r.already) {
+      if (!eventOk(r)) {
         $("#av-code-msg").classList.remove("ok");
         $("#av-code-msg").textContent = eventNg(r);
         return;
@@ -6095,7 +6116,7 @@ function eventBlock() {
   if (!eventOpen()) {
     return `<div class="about-block" style="text-align:center">
       <h4>🎟 合言葉</h4>
-      <p style="text-align:center">ショールームの催しで合言葉をもらった方は、ここに入れてください。</p>
+      <p style="text-align:center">工房の催しで合言葉をもらった方は、ここに入れてください。</p>
       <input class="av-name-input" id="ev-code" maxlength="24" placeholder="あいことば"
              autocapitalize="off" autocomplete="off" spellcheck="false">
       <button class="foot-btn" id="ev-go"
@@ -6124,7 +6145,7 @@ function openEvent(e) {
 function showEventStory(e) {
   openStoryPop(
     `🎀 ${esc(e.title)}の日`,
-    "ショールームの扉が、いつもより何度も開いた日だった。\n\n"
+    "工房の扉が、いつもより何度も開いた日だった。\n\n"
     + "腕に小さな子をかかえたお客さまが、かわりばんこに展示をのぞきこんでいく。"
     + "うちの子にはこの大きさ、この色、この木目——と、だれもが自分の目で選んでいく。\n\n"
     + "「みな、家具を見にきておるのではないな。……その子に合うかどうかを、確かめにきておる」\n\n"
@@ -6140,7 +6161,7 @@ function showEventStory(e) {
 function tryEventCode() {
   const r = findEvent($("#ev-code").value);
   if (!r) return;
-  if (!r.e || r.bad || r.late || r.already) {
+  if (!eventOk(r)) {
     $("#ev-msg").textContent = eventNg(r);
     return;
   }
@@ -6247,7 +6268,7 @@ function init() {
   /* もう職人がいる人が、木のQRカードから来たとき。
      その場で合言葉を受けとる（職人をつくる画面は出ないので） */
   const qr = urlEvent();
-  if (state.player.name && qr && qr.e && !qr.bad && !qr.late && !qr.already) {
+  if (state.player.name && eventOk(qr)) {
     openEvent(qr.e);
     save();
     setTimeout(() => showEventStory(qr.e), 600);
