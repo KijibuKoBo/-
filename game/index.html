@@ -1444,19 +1444,56 @@ const MATERIALS = [
   { id: "lampwork", name: "灯りの金具",  icon: "💡", price: 1100, type: "part",
     desc: "笠を支える細工もの。熱を逃がす形になっている" },
 
-  /* ---------- 消耗品 6種（買って、その場で使う） ---------- */
-  { id: "tea",    name: "濃いお茶",      icon: "🍵", price: 250, type: "use",
-    effect: "focus", v: 25, desc: "ひと息いれる。集中力が25もどる" },
+  /* ---------- 工房の消耗品 5種（買って、その場で使う） ----------
+     fx … ききめの組。[種類, 量] をいくつでも書ける
+       focus   その場で集中力がもどる
+       hours   きょうの作業時間がのびる
+       flaw    いま出ているしくじりが消える
+       quality つぎに仕上げる一台の品質にのる
+       action  つぎの山場の点にのる
+       pop     つぎの一台の人気にのる                        */
   { id: "candle", name: "ろうそく",      icon: "🕯", price: 500, type: "use",
-    effect: "hours", v: 2,  desc: "日が暮れても手が止まらない。きょうの作業が2時間のびる" },
+    fx: [["hours", 2]], say: "ろうそくに火を入れた。",
+    desc: "日が暮れても手が止まらない。きょうの作業が2時間のびる" },
   { id: "nikawa", name: "にかわ",        icon: "🫗", price: 300, type: "use",
-    effect: "flaw", v: 1,   desc: "いま出ているしくじりを1つ消す。制作中だけ使える" },
+    fx: [["flaw", 1]], say: "にかわで直した。",
+    desc: "いま出ているしくじりを1つ消す。制作中だけ使える" },
   { id: "tokusa", name: "とくさ",        icon: "🌾", price: 350, type: "use",
-    effect: "quality", v: 5, desc: "昔ながらの研ぎ草。つぎに仕上げる一台の品質+5" },
+    fx: [["quality", 5]], say: "とくさで研いだ。",
+    desc: "昔ながらの研ぎ草。つぎに仕上げる一台の品質+5" },
   { id: "toishi", name: "研ぎ石",        icon: "🪨", price: 450, type: "use",
-    effect: "action", v: 6, desc: "刃を立て直す。つぎの山場の点が+6" },
+    fx: [["action", 6]], say: "刃を立て直した。",
+    desc: "刃を立て直す。つぎの山場の点が+6" },
   { id: "kinpun", name: "金粉",          icon: "✨", price: 1300, type: "use", ch: 3,
-    effect: "pop", v: 12,   desc: "ひとつまみ散らすだけで目を引く。つぎの一台の人気+12" }
+    fx: [["pop", 12]], say: "金粉をひとつまみ用意した。",
+    desc: "ひとつまみ散らすだけで目を引く。つぎの一台の人気+12" },
+
+  /* ---------- 静岡の名品 8種 ----------
+     松永工房は静岡の工房。昼に食べるもの、合間につまむもので手が戻る */
+  { id: "mikan",  name: "温州みかん",    icon: "🍊", price: 180, type: "use", local: true,
+    fx: [["focus", 12]], say: "みかんをひとつ剥いた。",
+    desc: "こたつでひとつ。手が止まったら、まずこれ。集中力+12" },
+  { id: "ocha",   name: "静岡茶",        icon: "🍵", price: 250, type: "use", local: true,
+    fx: [["focus", 25]], say: "お茶をいれた。",
+    desc: "二煎目がいちばんうまい。工房の湯のみは、いつも減らない。集中力+25" },
+  { id: "abekawa", name: "安倍川もち",   icon: "🍡", price: 320, type: "use", local: true,
+    fx: [["quality", 4]], say: "きな粉で手がざらりとした。",
+    desc: "きな粉と餡がひと折。甘いと、なぜか手が丁寧になる。つぎの一台の品質+4" },
+  { id: "shirasu", name: "シラス丼",     icon: "🍚", price: 420, type: "use", local: true,
+    fx: [["focus", 45]], say: "しらすを丼いっぱいかきこんだ。",
+    desc: "駿河湾の朝どれを、どんぶりに山ほど。集中力+45" },
+  { id: "oden",   name: "静岡おでん",    icon: "🍢", price: 460, type: "use", local: true,
+    fx: [["focus", 20], ["hours", 1]], say: "黒いつゆの串を二本。だし粉をたっぷり。",
+    desc: "黒はんぺんと牛すじ。体があたたまる。集中力+20・きょうの作業が1時間のびる" },
+  { id: "sakuraebi", name: "桜えびのかき揚げ", icon: "🦐", price: 560, type: "use", local: true,
+    fx: [["action", 5]], say: "揚げたてを塩で。",
+    desc: "由比の桜えびを、衣を薄くまとわせて。つぎの山場の点が+5" },
+  { id: "wasabi", name: "わさび",        icon: "🌿", price: 680, type: "use", local: true,
+    fx: [["action", 9]], say: "鮫皮でそっと円を描くように下ろした。",
+    desc: "わさび栽培はここから始まった。鼻に抜けて、目が覚める。つぎの山場の点が+9" },
+  { id: "melon",  name: "クラウンメロン", icon: "🍈", price: 3200, type: "use", local: true, ch: 3,
+    fx: [["pop", 22]], say: "一本の木に、一玉だけ残して育てたものじゃ。",
+    desc: "贈りものの王様。納めた先で、まず話題になる。つぎの一台の人気+22" }
 ];
 
 /* 消耗品でためた「つぎの一台」ぶんの底上げ */
@@ -4050,6 +4087,8 @@ const KNOWLEDGE = [
     text: "松永工房のアンティーク家具のシリーズ。飴色のつや、彫りの影、ねこ脚の張り出し——長い時を旅してきた家具のたたずまいを、いまの木と、いまの手でこしらえます。" },
   { icon: "🪑", title: "MASTERPIECE（マスターピース）",
     text: "松永工房のモダン家具のシリーズ。飾りを落とし、線をまっすぐに。彫りのある家具と同じ工房の、同じ手から生まれています。" },
+  { icon: "🍊", title: "静岡の工房",
+    text: "松永工房があるのは静岡。駿河湾でとれるシラスや桜えび、山であつまる茶、わさびの栽培がはじまった土地です。仕入れに名品がならんでいるのは、そのためです。" },
   { icon: "🔨", title: "職人技",
     text: "木目を読んで板を選び、指先の感覚で研磨し、塗りかさねて深みを出す。ゲームで「ていねい」を選んだときの気持ちこそ、職人技のはじまりです。" }
 ];
@@ -5305,9 +5344,14 @@ function renderShow() {
 
 /* ---------- 仕入れ（材料） ---------- */
 const MAT_GROUPS = [
-  { type: "wood", title: "🪵 木材", note: "制作のときに、この中から1つえらぶ" },
-  { type: "part", title: "🔩 部品", note: "設計図が「真鍮2」のように指定する" },
-  { type: "use",  title: "🍵 消耗品", note: "買って、その場で使う" }
+  { title: "🪵 木材", note: "制作のときに、この中から1つえらぶ",
+    pick: (m) => m.type === "wood" },
+  { title: "🔩 部品", note: "設計図が「真鍮2」のように指定する",
+    pick: (m) => m.type === "part" },
+  { title: "🕯 工房の消耗品", note: "買って、その場で使う",
+    pick: (m) => m.type === "use" && !m.local },
+  { title: "🍊 静岡の名品", note: "工房のある町のもの。昼に食べて、手を戻す",
+    pick: (m) => m.type === "use" && m.local }
 ];
 
 function renderMarket() {
@@ -5339,7 +5383,7 @@ function renderMarket() {
       所持金 💰 ${state.money.toLocaleString()}円</p>` +
     (boost.length ? `<p class="boost-note">✨ つぎの一台にのる下駄：<b>${boost.join("・")}</b></p>` : "") +
     MAT_GROUPS.map(g => {
-      const list = MATERIALS.filter(m => m.type === g.type).filter(chOpen);
+      const list = MATERIALS.filter(g.pick).filter(chOpen);
       if (!list.length) return "";
       return `<div class="mat-head">${g.title}　<span>${g.note}</span></div>` + rows(list);
     }).join("");
@@ -5361,35 +5405,51 @@ function renderMarket() {
 /* 消耗品が、いま使えるか。使えないときは、その理由を返す */
 function useReady(m) {
   if ((state.materials[m.id] || 0) < 1) return "持っていない";
-  if (m.effect === "focus"  && state.focus >= focusPerDay()) return "集中力は満ちている";
-  if (m.effect === "flaw"   && !(state.currentId && state.flaws > 0)) return "いま、しくじりは無い";
-  return "";
+  /* ききめが1つでも通れば使える（おでんのように二つ効くものがあるので） */
+  const live = (k) =>
+    k === "focus" ? state.focus < focusPerDay()
+    : k === "flaw" ? !!(state.currentId && state.flaws > 0)
+    : true;
+  if ((m.fx || []).some(([k]) => live(k))) return "";
+  const only = (m.fx || []).map(([k]) => k);
+  return only.indexOf("focus") >= 0 ? "集中力は満ちている" : "いま、しくじりは無い";
 }
 
-/* 消耗品をひとつ使う */
+/* ききめの文。どれだけ効いたかを、そのつど読める形で返す */
+const FX_WORD = {
+  focus:   (v) => `集中力が${v}もどった`,
+  hours:   (v) => `きょうの作業が${v}時間のびた`,
+  flaw:    (v) => `しくじりが${v}つ消えた`,
+  quality: (v) => `つぎの一台の品質+${v}`,
+  action:  (v) => `つぎの山場+${v}`,
+  pop:     (v) => `つぎの一台の人気+${v}`
+};
+
+/* 消耗品をひとつ使う。fx に書いたききめを、上から順に当てていく */
 function useItem(id) {
   const m = materialById(id);
   if (!m || m.type !== "use" || (state.materials[id] || 0) < 1) return;
-  if (useReady(m)) { showMessage(`……いまは要らぬようじゃ。（${useReady(m)}）`); return; }
+  const ng = useReady(m);
+  if (ng) { showMessage(`……いまは要らぬようじゃ。（${ng}）`); return; }
   state.materials[id]--;
-  let msg = "";
-  if (m.effect === "focus") {
-    state.focus = Math.min(focusPerDay(), state.focus + m.v);
-    msg = `🍵 お茶をいれた。集中力が${m.v}もどった。`;
-  } else if (m.effect === "hours") {
-    state.hoursLeft += m.v;
-    msg = `🕯 ろうそくに火を入れた。きょうはあと${state.hoursLeft}時間、手を動かせる。`;
-  } else if (m.effect === "flaw") {
-    state.flaws = Math.max(0, state.flaws - m.v);
-    msg = `🫗 にかわで直した。しくじりが${state.flaws}つになった。`;
-  } else {
-    state.boost[m.effect] = boostOf(m.effect) + m.v;
-    msg = m.effect === "quality" ? `🌾 とくさで研いだ。つぎの一台の品質が+${boostOf("quality")}。`
-        : m.effect === "action"  ? `🪨 刃を立て直した。つぎの山場の点が+${boostOf("action")}。`
-        : `✨ 金粉を用意した。つぎの一台の人気が+${boostOf("pop")}。`;
-  }
+  const done = [];
+  (m.fx || []).forEach(([k, v]) => {
+    if (k === "focus") {
+      const got = Math.min(focusPerDay(), state.focus + v) - state.focus;
+      state.focus += got;
+      if (got > 0) done.push(FX_WORD.focus(got));
+    } else if (k === "hours") {
+      state.hoursLeft += v; done.push(FX_WORD.hours(v));
+    } else if (k === "flaw") {
+      const got = Math.min(state.flaws, v);
+      state.flaws -= got;
+      if (got > 0) done.push(FX_WORD.flaw(got));
+    } else {
+      state.boost[k] = boostOf(k) + v; done.push(FX_WORD[k](v));
+    }
+  });
   save();
-  showMessage(msg);
+  showMessage(`${m.icon} ${m.say || ""}${done.join("。")}。`);
   renderMarket(); renderStatus();
   if (prep || !state.currentId) render();
 }
