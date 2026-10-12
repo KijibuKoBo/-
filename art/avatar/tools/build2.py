@@ -48,12 +48,30 @@ def soft_rect(x0, y0, x1, y1, feather=3.0):
     m = np.zeros((H, W), np.float32); m[y0:y1, x0:x1] = 1
     return ndimage.gaussian_filter(m, feather)
 
+def not_hair(img):
+    """髪をよけたところを返す。
+       髪は頭のてっぺんから続く大きなかたまりなので、
+       顔のまんなかにぽつんとある目やまゆの黒とは切り離せる。
+       目の部品にもみあげが入りこむと、髪の色を変えたときに
+       そこだけ黒く残ってしまうため。"""
+    d = dark(img, 152)
+    lab, n = ndimage.label(d)
+    hair = np.zeros((H, W), bool)
+    for i in range(1, n + 1):
+        c = (lab == i)
+        ys, _ = np.where(c)
+        if ys.min() < 165 and c.sum() > 500:
+            hair |= c
+    soft = ndimage.gaussian_filter(
+        ndimage.binary_dilation(hair, np.ones((7, 7), bool)).astype(np.float32), 2.0)
+    return np.clip(1.0 - soft * 1.6, 0, 1)
+
 def cut_rect_and_mask(img, rect, mask, grow=2, blur=1.1):
     """四角（肌ごと貼りかえ）と、はみ出す部分（まゆなど）を合わせて抜く"""
     rm = soft_rect(*rect)
     mm = ndimage.binary_dilation(mask, np.ones((grow*2+1,)*2, bool))
     mm = np.clip((ndimage.gaussian_filter(mm.astype(np.float32), blur) - .35) / .4, 0, 1)
-    al = np.maximum(rm, mm)
+    al = np.maximum(rm, mm) * not_hair(img)      # 髪は持ちこまない
     a = np.asarray(img).copy()
     a[:, :, 3] = (a[:, :, 3] * al).astype(np.uint8)
     return Image.fromarray(a, 'RGBA')
@@ -101,10 +119,10 @@ for i, h in enumerate(heads): h.save(f'../parts/head{i:02d}.webp', **LL)
 print('■ 目 5種 ・ 口 5種')
 s2 = B.cells(S2)
 for i, c in enumerate(s2[11:16]):
-    m = inked(c) & zone(*EYE_ZONE)
+    m = inked(c) & zone(*EYE_ZONE) & (not_hair(c) > 0.5)
     cut_rect_and_mask(c, EYE_ERASE, m).save(f'../parts/eye{i}.webp', **LL)
 for i, c in enumerate(s2[16:21]):
-    m = inked(c) & zone(*MOUTH_ZONE)
+    m = inked(c) & zone(*MOUTH_ZONE) & (not_hair(c) > 0.5)
     cut_rect_and_mask(c, MOUTH_ERASE, m).save(f'../parts/mouth{i}.webp', **LL)
 
 print('■ メガネ 3種 ・ ピアス 3種 ・ ひげ 3種')
