@@ -658,6 +658,17 @@ footer{
 .cert-tip{ text-align:center; font-size:.68rem; color:var(--brown-mid); margin-top:10px; }
 
 /* 専門の称号 */
+/* 山場のけいこの一覧（?mg=1 のときだけ出る） */
+.mg-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+.mg-btn{
+  font-family:inherit; font-size:.76rem; font-weight:bold; color:var(--brown);
+  padding:9px 4px; border-radius:13px; cursor:pointer; min-height:52px;
+  border:2px solid var(--brown-soft); line-height:1.35;
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+}
+.mg-btn:active{ transform:translateY(2px); }
+.mg-kind{ display:block; font-size:.58rem; font-weight:normal; color:var(--brown-mid); margin-top:1px; }
+
 .skill-title{
   /* 説明が2行に折り返しても、右の「2 / 5種類」とぶつからないようにする */
   display:flex; align-items:center; gap:9px; margin-top:7px; min-width:0;
@@ -3994,6 +4005,12 @@ const toolsOpen = () => TOOLS.filter(t => !t.event || eventHas("gift"));
    速さ・狭さ・数が変わるだけで、遊び方そのものは同じ */
 const actLevel = (f) => f.price >= 20000 ? 3 : f.price >= 8000 ? 2 : 1;
 const ACT_LEVEL_NAME = ["", "ふつう", "むずかしい", "いちばんむずかしい"];
+/* けいこの一覧に出す、遊びの種類。どんな手つきを使うかの目印 */
+const ACT_KIND = {
+  mekiki: "落ちもの", kidori: "詰めこみ", nokogiri: "間合い", rhythm: "拍",
+  hori: "一筆なぞり", kenma: "追いかけ", kumi: "形合わせ", hari: "はらう",
+  kanagu: "角度合わせ", tosou: "量の見きわめ"
+};
 
 /* その工程に職人アクションがあるか */
 const actionFor = (step) =>
@@ -5298,15 +5315,23 @@ let actRunning = null;   // 実行中のアクション（後片付け用）
 function runAction(step) {
   const act = actionFor(step);
   if (!act) return;
-  const svg = $("#act-svg");
+  const lv = actLevel(furnitureById(state.currentId));
+  $("#act-title").textContent = `🔥 ${act.name}　${"★".repeat(lv)}`;
+  playAction(act, lv, showActionResult);
+}
 
-  $("#act-title").textContent = `🔥 ${act.name}　${"★".repeat(actLevel(furnitureById(state.currentId)))}`;
+/* 山場をひとつ走らせる。
+   どう始末するか（点を家具に効かせるのか、けいことして見せるだけか）は
+   onDone にまかせる。見出しは呼ぶ側で立てておくこと */
+function playAction(act, lv, onDone) {
+  const svg = $("#act-svg");
   $("#act-tip").innerHTML = act.tip;
   $("#act-say").textContent = "";
   $("#act-bar").style.width = "0%";
   $("#act-result").hidden = true;
   $("#act-tip").hidden = false;
   svg.style.display = "";
+  $(".act-stage").style.display = "";
   $(".act-bar-wrap").style.display = "";
   openModal("action-modal");
 
@@ -5330,7 +5355,7 @@ function runAction(step) {
     if (ended) return;
     ended = true;
     cleanup();
-    showActionResult(Math.round(score), comment);
+    onDone(Math.round(score), comment);
   };
   actRunning = cleanup;
 
@@ -5354,7 +5379,7 @@ function runAction(step) {
     if (ui.onUp) ui.onUp(actPoint(svg, e));
   };
 
-  act.start(svg, ui, finish, actLevel(furnitureById(state.currentId)));
+  act.start(svg, ui, finish, lv);
 
   /* 制限時間のあるアクションだけ、残り時間を出す */
   if (act.limit) {
@@ -5371,6 +5396,54 @@ function runAction(step) {
   }
 }
 
+/* ----------------------------------------------------------
+   山場のけいこ
+   ----------------------------------------------------------
+   10種を、家具を作らずに1つずつためせる。
+   点はその場で見せるだけで、セーブには一切さわらない
+   （自己ベストも、得意不得意も、生涯の記録も動かない）。
+
+   URL に ?mg=1 を付けたときだけ、工房の画面に入口が出る。
+   ふだんの遊びには出てこない。
+   ---------------------------------------------------------- */
+const practiceOpen = () => {
+  try { return new URLSearchParams(location.search).get("mg") === "1"; }
+  catch (e) { return false; }
+};
+let practiceLv = 1;
+
+function practiceAction(key) {
+  const act = CRAFT_ACTIONS[key];
+  if (!act) return;
+  const lv = practiceLv;
+  $("#act-title").textContent = `🔥 ${act.name}　${"★".repeat(lv)}　けいこ`;
+  playAction(act, lv, (score, comment) => showPracticeResult(key, score, comment));
+}
+
+function showPracticeResult(key, score, comment) {
+  const grade = score >= 90 ? "職人級じゃ！" : score >= 70 ? "よい仕事じゃ。"
+    : score >= 45 ? "まずまずといったところか。" : "うむ……次じゃ、次。";
+  $("#act-tip").hidden = true;
+  $("#act-svg").style.display = "none";
+  $(".act-stage").style.display = "none";    // わくごと隠さないと、空の四角が残る
+  $(".act-bar-wrap").style.display = "none";
+  $("#act-say").textContent = "";
+  const r = $("#act-result");
+  r.hidden = false;
+  r.innerHTML =
+    `<div class="act-score">${score}<span class="unit">点</span></div>
+     <div class="act-henry">${esc(grade)}　${esc(comment)}</div>
+     <p class="ev-note">けいこなので、記録には残らん。</p>
+     <div class="finish-row">
+       <button class="deliver-btn" id="pr-again">もう一度</button>
+       <button class="exhibit-btn" id="pr-back">ほかの山場へ</button>
+     </div>`;
+  $("#pr-again").addEventListener("click", () => practiceAction(key));
+  $("#pr-back").addEventListener("click", () => {
+    closeModal("action-modal"); renderAbout(); openModal("about-modal");
+  });
+}
+
 /* アクションの結果を見せてから、工程を進める */
 function showActionResult(score, comment) {
   const f = furnitureById(state.currentId);
@@ -5381,6 +5454,7 @@ function showActionResult(score, comment) {
 
   $("#act-tip").hidden = true;
   $("#act-svg").style.display = "none";
+  $(".act-stage").style.display = "none";    // わくごと隠さないと、空の四角が残る
   $(".act-bar-wrap").style.display = "none";
   $("#act-say").textContent = "";
   const r = $("#act-result");
@@ -6274,6 +6348,19 @@ function renderAbout() {
       <button class="foot-btn" id="btn-cert"
               style="max-width:240px;margin:10px auto 0;display:block;min-height:44px">🎖 職人の記念証を見る</button>
     </div>
+    ${practiceOpen() ? `<div class="about-block">
+      <h4>🔥 山場のけいこ</h4>
+      <p>10種を、家具を作らずにためせます。<b>点は記録に残りません。</b></p>
+      <div class="opt-row" style="margin:8px 0 10px">
+        ${[1, 2, 3].map(n => `<button class="opt-chip${practiceLv === n ? " selected" : ""}"
+          data-plv="${n}">${"★".repeat(n)}<span class="o-note">${ACT_LEVEL_NAME[n]}</span></button>`).join("")}
+      </div>
+      <div class="mg-grid">
+        ${Object.keys(CRAFT_ACTIONS).map(k => `<button class="mg-btn" data-mg="${k}">
+          ${esc(CRAFT_ACTIONS[k].name)}<span class="mg-kind">${esc(ACT_KIND[k] || "")}</span>
+        </button>`).join("")}
+      </div>
+    </div>` : ""}
     <div class="about-block" style="text-align:center">
       <h4>🎀 本物の Petit.Continue</h4>
       <p style="text-align:center">このゲームの家具のもとになった、松永工房のドール家具です。</p>
@@ -6350,6 +6437,18 @@ function init() {
     $("#btn-edit-avatar").addEventListener("click", () => {
       closeModal("about-modal"); openAvatarEditor(false);
     });
+    /* 山場のけいこ（?mg=1 のときだけ出ている） */
+    document.querySelectorAll("#about-body [data-plv]").forEach(b =>
+      b.addEventListener("click", () => {
+        practiceLv = +b.dataset.plv;
+        renderAbout();
+      }));
+    document.querySelectorAll("#about-body [data-mg]").forEach(b =>
+      b.addEventListener("click", () => {
+        closeModal("about-modal");
+        practiceAction(b.dataset.mg);
+      }));
+
     $("#btn-cert").addEventListener("click", () => {
       closeModal("about-modal"); renderCert(); openModal("cert-modal");
     });
