@@ -3036,27 +3036,48 @@ const CARVE_PATTERN = {
      lv   … 家具ごとの難度 1〜3
    ========================================================== */
 
-/* 採点の共通土台。命中率が8割、連続成功が2割、しくじりは引き算 */
+/* 採点の共通土台。
+     命中   … 当てたかどうか（72点ぶん）
+     きわ   … そのうち、どれだけ ど真ん中で決めたか（10点ぶん）
+     連続   … いちばん長く続いた数（18点ぶん）
+     しくじり … 1回につき3点ひく
+
+   ok(n, q) の q は「決まりぐあい」0〜1。
+   1 なら ど真ん中、0 なら ぎりぎり入った、という意味。
+   省くと 1 として数えるので、きわどさのない遊び（置く・はめる）は
+   これまでどおり満点に届く。 */
 function actScore(total) {
-  let hit = 0, miss = 0, combo = 0, best = 0;
+  let hit = 0, fine = 0, miss = 0, combo = 0, best = 0;
   return {
     setTotal(n) { total = Math.max(1, n); },
-    ok(n) { n = n || 1; hit += n; combo += n; if (combo > best) best = combo; },
+    ok(n, q) {
+      n = n || 1;
+      hit += n; fine += n * (q === undefined ? 1 : Math.max(0, Math.min(1, q)));
+      combo += n; if (combo > best) best = combo;
+    },
     ng(n) { n = n || 1; miss += n; combo = 0; },
     get combo() { return combo; },
     get best() { return best; },
     get hit() { return hit; },
+    get fine() { return fine; },
     get miss() { return miss; },
     value() {
-      const acc = total > 0 ? hit / total : 0;
-      const run = total > 0 ? best / total : 0;
-      return clamp100(acc * 82 + run * 18 - miss * 3);
+      /* 1を超えないようにしておく。終わりぎわに余分に手が入っても、
+         「決まりぐあい」を薄めたまま満点に届く、ということが起きない */
+      const cap = (v) => Math.max(0, Math.min(1, total > 0 ? v / total : 0));
+      return clamp100(cap(hit) * 72 + cap(fine) * 10 + cap(best) * 18 - miss * 3);
     },
     word() {
+      const m = Math.round(miss);
+      /* 手を動かさないまま終わったときに、褒めてはいけない */
+      if (hit <= 0) return "手が、ほとんど動いておらんかったのう。";
+      if (hit < total * 0.3) return "まだ手が付いてきておらんな。";
+      if (fine >= hit * 0.8 && hit >= total * 0.8) return "どれもど真ん中じゃ。恐れ入った。";
       if (total > 0 && best >= total * 0.85) return `${best}つ続けて決めおった。手が覚えておるな。`;
-      if (miss === 0) return "ひとつも外さなんだか。";
-      if (miss <= 2) return "ほぼ狙いどおりじゃ。";
-      if (miss <= 5) return `${miss}回しくじったのう。`;
+      if (m === 0 && hit >= total * 0.9) return "ひとつも外さなんだか。";
+      if (m === 0) return "外しはせなんだが、取りこぼしが多いのう。";
+      if (m <= 2) return "ほぼ狙いどおりじゃ。";
+      if (m <= 5) return `${m}回しくじったのう。`;
       return "まだ手が付いてきておらんな。";
     }
   };
@@ -3254,7 +3275,7 @@ const CRAFT_ACTIONS = {
         ui.progress(sc.hit / TOTAL);
         if (left > 0) { nextShape(); draw(); }
         else if (wave < 2) { wave++; setTimeout(newBoard, 400); draw(); }
-        else { setTimeout(() => done(sc.value(), sc.word()), 350); }
+        else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 350); }
         actBanner(ui, wave + 1, 3, "節をよけて部材を取る", sc);
       };
       ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
@@ -3307,9 +3328,11 @@ const CRAFT_ACTIONS = {
       const tap = () => {
         const w = WAVES[wave].band;
         const inside = x >= band && x <= band + w;
-        const center = Math.abs(x - (band + w / 2)) < w * .22;
+        /* 帯のまんなかほど「決まった」。端ぎりぎりだと点が伸びない */
+        const off = Math.abs(x - (band + w / 2)) / (w / 2);
+        const center = off < .22;
         if (inside) {
-          sc.ok(); cut += 240 / TOTAL;
+          sc.ok(1, 1 - off); cut += 240 / TOTAL;
           gCut.setAttribute("width", Math.min(240, cut));
           ui.say(center ? "✨ ど真ん中じゃ" : "挽けた");
         } else {
@@ -3322,6 +3345,7 @@ const CRAFT_ACTIONS = {
           wave++; left = WAVES[wave].n; place();
           ui.say(`—— 第${wave + 1}波　帯が狭くなるぞ ——`);
         } else {
+          ui.lock();
           if (timer) clearInterval(timer);
           setTimeout(() => done(sc.value(), sc.word()), 300);
           return;
@@ -3399,7 +3423,7 @@ const CRAFT_ACTIONS = {
         }
         if (spawned >= need && !nails.length) {
           if (wave < 2) { wave++; nextAt = Date.now() + 600; ui.say(`—— 第${wave + 1}波 ——`); }
-          else { if (timer) clearInterval(timer); setTimeout(() => done(sc.value(), sc.word()), 300); }
+          else { ui.lock(); if (timer) clearInterval(timer); setTimeout(() => done(sc.value(), sc.word()), 300); }
         }
       };
       const flash = (i) => {
@@ -3419,7 +3443,8 @@ const CRAFT_ACTIONS = {
           if (d < best) { best = d; idx = i; }
         });
         if (idx >= 0 && best < 26) {
-          sc.ok(); ui.say(best < 9 ? "✨ ぴたり" : "打てた");
+          sc.ok(1, 1 - best / 26);          // 線に近いほど、よく決まる
+          ui.say(best < 9 ? "✨ ぴたり" : "打てた");
           nails[idx].el.remove(); nails.splice(idx, 1);
         } else {
           sc.ng(); ui.say("⚠️ 空打ちじゃ");
@@ -3667,7 +3692,7 @@ const CRAFT_ACTIONS = {
           draw();
           if (slots.every(s => s.filled)) {
             if (wave < 2) { wave++; setTimeout(build, 450); ui.say(`—— 第${wave + 1}波 ——`); }
-            else setTimeout(() => done(sc.value(), sc.word()), 400);
+            else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 400); }
           }
         } else {
           sc.ng(); picked = -1; draw();
@@ -3740,7 +3765,7 @@ const CRAFT_ACTIONS = {
         }
         if (spawned >= need && !marks.length) {
           if (wave < 2) { wave++; nextAt = Date.now() + 500; ui.say(`—— 第${wave + 1}波 ——`); }
-          else { if (timer) clearInterval(timer); setTimeout(() => done(sc.value(), sc.word()), 300); }
+          else { ui.lock(); if (timer) clearInterval(timer); setTimeout(() => done(sc.value(), sc.word()), 300); }
         }
       };
 
@@ -3756,7 +3781,10 @@ const CRAFT_ACTIONS = {
         const dx = p.x - s.x, dy = p.y - s.y;
         const len = Math.hypot(dx, dy);
         const dot = len > 0 ? (dx * m.d.x + dy * m.d.y) / len : 0;
-        if (len > 26 && dot > .72) { sc.ok(); ui.say(dot > .95 ? "✨ まっすぐ伸びた" : "しわが消えた"); }
+        if (len > 26 && dot > .72) {
+          sc.ok(1, (dot - .72) / .28);      // 矢印とそろうほど、よく伸びる
+          ui.say(dot > .95 ? "✨ まっすぐ伸びた" : "しわが消えた");
+        }
         else { sc.ng(); ui.say("⚠️ 向きが違う。布が寄った"); }
         kill(idx);
         actBanner(ui, wave + 1, 3, "矢印の向きへはらう", sc);
@@ -3818,14 +3846,17 @@ const CRAFT_ACTIONS = {
       ui.onUp = () => {
         const tol = WAVES[wave].tol / h;
         const diff = Math.min(Math.abs(ang - target), 180 - Math.abs(ang - target));
-        if (diff <= tol) { sc.ok(); ui.say(diff < tol * .3 ? "✨ 寸分の狂いもない" : "締まった"); }
+        if (diff <= tol) {
+          sc.ok(1, 1 - diff / tol);         // 印にそろうほど、よく締まる
+          ui.say(diff < tol * .3 ? "✨ 寸分の狂いもない" : "締まった");
+        }
         else { sc.ng(); ui.say(`⚠️ ${Math.round(diff)}度ずれておる`); }
         left--; ui.progress((sc.hit + sc.miss) / TOTAL);
         if (left > 0) place();
         else if (wave < 2) {
           wave++; left = WAVES[wave].n; place();
           ui.say(`—— 第${wave + 1}波　許される狂いが小さくなる ——`);
-        } else { setTimeout(() => done(sc.value(), sc.word()), 350); return; }
+        } else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 350); return; }
         actBanner(ui, wave + 1, 3, "溝を印に合わせる", sc);
       };
       ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
@@ -3907,7 +3938,7 @@ const CRAFT_ACTIONS = {
         actBanner(ui, wave + 1, 3, "線でちょうど止める", sc);
         if (fin === n) {
           if (wave < 2) { wave++; setTimeout(build, 500); ui.say(`—— 第${wave + 1}波 ——`); }
-          else setTimeout(() => done(sc.value(), sc.word()), 450);
+          else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 450); }
         }
       };
       ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
@@ -5283,7 +5314,10 @@ function runAction(step) {
   const ui = {
     progress: (r) => { $("#act-bar").style.width = Math.min(100, r * 100) + "%"; },
     say: (t) => { $("#act-say").textContent = t; },
-    setTip: (html) => { $("#act-tip").innerHTML = html; }
+    setTip: (html) => { $("#act-tip").innerHTML = html; },
+    /* 遊びが終わった合図。結果を見せるまでに少し間を置くので、
+       そのあいだの指の動きまで数えてしまわないよう、受けつけをやめる */
+    lock: () => { ui.onDown = ui.onPoint = ui.onUp = null; }
   };
 
   const cleanup = () => {
