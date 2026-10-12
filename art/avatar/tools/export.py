@@ -5,8 +5,12 @@ import numpy as np
 from PIL import Image
 
 SRC_W, SRC_H = 280, 340
-OUT = 300
-DX, DY = 7, -8                     # ほおを (147,237) に置く
+# 顔をできるだけ大きく見せたいので、枠は「頭（髪＋顔）の広がり」に合わせる。
+# 横 256 は、いちばん広い髪型（くるくる）でちょうど。
+# 縦は頭の広がり（88〜305）を真ん中に置くと、帽子は上いっぱいに収まる。
+# ウサ耳だけは、はみ出したぶんが切れる（切れてよい、という決まり）。
+OUT = 256
+DX, DY = -15, -68
 Q = 74
 
 def place(im):
@@ -29,7 +33,8 @@ for kind, name in ORDER:
     im = place(Image.open(f'../parts/{name}.webp').convert('RGBA'))
     bb = im.getbbox()
     assert bb, name
-    assert bb[0] >= 0 and bb[1] >= 0 and bb[2] <= OUT and bb[3] <= OUT, (name, bb)
+    if name != 'hat3':      # ウサ耳だけは上が切れてよい
+        assert bb[0] >= 0 and bb[1] >= 0 and bb[2] <= OUT and bb[3] <= OUT, (name, bb)
     sub = im.crop(bb)
     b = io.BytesIO(); sub.save(b, 'WEBP', quality=Q, method=6)
     data = b.getvalue(); total += len(data)
