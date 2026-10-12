@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>松永工房クラフトストーリー ショールーム活用のご提案</title>
+<title>松永工房クラフトストーリー 催しでのご提案</title>
 <style>
   @page { size: A4; margin: 18mm 16mm 16mm; }
   * { box-sizing: border-box; }
@@ -14,45 +14,43 @@
   .sub { font-size: 11pt; color: #6b5a44; margin: 0 0 1mm; }
   .meta { font-size: 9pt; color: #8a7a64; margin: 0 0 7mm;
           border-bottom: 2px solid #c9a24b; padding-bottom: 3mm; }
-  h2 {
-    font-size: 13pt; margin: 9mm 0 3mm; padding: 2mm 0 1.5mm 3mm;
-    border-left: 4px solid #c9a24b; background: #fdf6e6;
-    page-break-after: avoid;
-  }
+  h2 { font-size: 13pt; margin: 9mm 0 3mm; padding: 2mm 0 1.5mm 3mm;
+       border-left: 4px solid #c9a24b; background: #fdf6e6; page-break-after: avoid; }
   h3 { font-size: 11pt; margin: 6mm 0 2mm; color: #6b4a2f; page-break-after: avoid; }
   p { margin: 0 0 3mm; }
   ul, ol { margin: 0 0 4mm; padding-left: 6mm; }
   li { margin-bottom: 1.8mm; }
   b, strong { color: #0f0a04; }
-  table {
-    width: 100%; border-collapse: collapse; margin: 0 0 5mm;
-    font-size: 9.5pt; page-break-inside: avoid;
-  }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 5mm;
+          font-size: 9.5pt; page-break-inside: avoid; }
   th, td { border: 1px solid #d8c7ab; padding: 2mm 2.5mm; text-align: left; vertical-align: top; }
   th { background: #f3e7cd; font-weight: bold; }
   td.k { background: #fdf9f0; width: 32%; font-weight: bold; }
-  .lead {
-    background: #fdf6e6; border: 1.5px solid #e0cfa8; border-radius: 3mm;
-    padding: 4mm 5mm; margin: 0 0 6mm; font-size: 11pt;
-  }
+  .lead { background: #fdf6e6; border: 1.5px solid #e0cfa8; border-radius: 3mm;
+          padding: 4mm 5mm; margin: 0 0 6mm; font-size: 11pt; }
   .lead p:last-child { margin-bottom: 0; }
-  .note {
-    background: #f7f3ea; border-left: 3px solid #b08a63;
-    padding: 3mm 4mm; margin: 0 0 4mm; font-size: 9.5pt;
-  }
+  .fixed { background: #fdf3d5; border: 2px solid #c9a24b; border-radius: 3mm;
+           padding: 4mm 5mm; margin: 0 0 6mm; page-break-inside: avoid; }
+  .fixed h3 { margin: 0 0 2mm; color: #a97c14; font-size: 12pt; }
+  .fixed table { margin: 0; font-size: 10pt; }
+  .fixed td { border-color: #e0cfa8; }
+  .fixed td.k { background: #fffaef; width: 26%; }
+  .note { background: #f7f3ea; border-left: 3px solid #b08a63;
+          padding: 3mm 4mm; margin: 0 0 4mm; font-size: 9.5pt; }
   .s { font-size: 8.5pt; color: #7a6650; font-weight: normal; }
   .url { font-family: "DejaVu Sans Mono", monospace; font-size: 9pt;
          background: #f3eee4; padding: .5mm 1.5mm; border-radius: 1mm; }
-  .big-url {
-    text-align: center; font-size: 12pt; font-weight: bold; letter-spacing: .01em;
-    background: #fdf3d5; border: 2px solid #c9a24b; border-radius: 3mm;
-    padding: 4mm; margin: 4mm 0;
-  }
+  .big-url { text-align: center; font-size: 12pt; font-weight: bold; letter-spacing: .01em;
+             background: #fdf3d5; border: 2px solid #c9a24b; border-radius: 3mm;
+             padding: 4mm; margin: 4mm 0; }
   .check { list-style: none; padding-left: 0; }
   .check li { padding-left: 7mm; position: relative; margin-bottom: 3mm; }
-  .check li::before {
-    content: "☐"; position: absolute; left: 0; font-size: 12pt; color: #a97c14;
-  }
+  .check li::before { content: "\2610"; position: absolute; left: 0; font-size: 12pt; color: #a97c14; }
+  .shots { display: flex; gap: 5mm; justify-content: center; align-items: flex-end;
+           margin: 0 0 6mm; page-break-inside: avoid; }
+  .shot { margin: 0; text-align: center; }
+  .shot img { display: block; width: auto; border: 1px solid #d8c7ab; border-radius: 2mm; }
+  .shot figcaption { font-size: 8.5pt; color: #6b5a44; margin-top: 1.5mm; line-height: 1.5; }
   .foot { margin-top: 9mm; padding-top: 3mm; border-top: 1px solid #d8c7ab;
           font-size: 8.5pt; color: #8a7a64; }
   .pb { page-break-before: always; }
@@ -61,13 +59,26 @@
 <body>
 
 <h1>松永工房クラフトストーリー</h1>
-<p class="sub">ショールームの催しでのご提案</p>
+<p class="sub">〜小さな家具と、いろいろな童話〜　催しでのご提案</p>
 <p class="meta">2026年10月12日　／　木地部工房</p>
 
 <div class="lead">
-  <p>ショールームの催しで<b>木のQRカード</b>を配り、来場者のスマホで遊んでもらう提案です。
-  アプリも登録も不要、サーバー費用はかからず、カードの実費だけで始められます。
-  <b>すでに動くものができています。</b></p>
+  <p>催しで<b>木のQRカード</b>を配り、来場された方のスマホで遊んでもらう提案です。
+  アプリも会員登録も不要、サーバー費用はかからず、カードの実費だけで始められます。
+  <b>すでに動くものができていて、いま開けば遊べます。</b></p>
+</div>
+
+<div class="fixed">
+  <h3>第1回は、もう決まっています</h3>
+  <table>
+    <tr><td class="k">催し</td><td><b>ドール工房ツアー</b></td></tr>
+    <tr><td class="k">日時</td><td>2026年<b>11月8日（日）13時</b>〜</td></tr>
+    <tr><td class="k">場所</td><td>松永工房（ショールームと工場）</td></tr>
+    <tr><td class="k">合言葉</td><td><b>ねこあし</b>　<span class="s">（Petit.Continue の家具がどれも「ねこ脚」を名乗っているので、実物を見れば目に入ります）</span></td></tr>
+    <tr><td class="k">申し込み</td><td>10月12日時点で<b>5名</b></td></tr>
+  </table>
+  <p class="s" style="margin:3mm 0 0">ゲームにもこの日付が入っていて、合言葉は<b>11月8日と9日だけ</b>通ります。
+  （夕方にお渡ししたカードを、その晩おそくに読む方のために翌日まで）</p>
 </div>
 
 <h2>なぜこれをやるか</h2>
@@ -78,32 +89,50 @@
   <li><b>滞在時間がのびる</b> — 付き添いの方や、迷っている方の手があく時間に、やることができます。</li>
   <li><b>ゲームそのものがカタログになる</b> — 「本物の Petit.Continue」のページに実物の写真10点がならび、そのまま公式サイトへ飛べます。</li>
   <li><b>買わなかった人にも接点が残る</b> — 合言葉なしのカードを渡せば、帰ったあとも遊べます。家に持ち帰る「工房の扱いのあるもの」になります。</li>
-  <li><b>買った人にはその日の記念が残る</b> — 合言葉を入れて作った職人は「名誉職人」になり、金の名札にその日が刻まれます。</li>
+  <li><b>来た人にはその日の記念が残る</b> — 合言葉を入れて作った職人には、顔・名前・称号・開催日を刻んだ<b>記念証</b>が出ます。そのまま画面を撮って持ち帰れます。</li>
   <li><b>手仕事の中身が伝わる</b> — 木を選び、彫り、張り、金具を付ける。工程を自分の手で通すので、「なぜこの値段なのか」が説明なしに届きます。</li>
 </ul>
 
-<p>催しごとに合言葉を変えれば、同じしくみを何度でも使い回せます。ショールームの催しなら来場者全員に、ドルパのような大きな場なら購入者にだけ、という使い分けもできます。</p>
+<p>催しごとに合言葉を変えれば、同じしくみを何度でも使い回せます。工房の催しなら来場者全員に、ドルパのような大きな場なら購入者にだけ、という使い分けもできます。</p>
 
 <h2>当日の流れ</h2>
 
 <p>スタッフがするのは、<b>カードを渡すことだけ</b>です。</p>
 
 <ol>
-  <li>来場者に木のQRカードを渡す。合言葉入りと、合言葉なしの2種類を用意します。</li>
-  <li>お客さまがスマホでQRを読む。ブラウザが開いて、それで終わりです。<b>アプリの導入も、会員登録もありません。</b></li>
+  <li>来場された方に木のQRカードを渡す。合言葉入りと、合言葉なしの2種類を用意します。</li>
+  <li>スマホでQRを読む。ブラウザが開いて、それで終わりです。<b>アプリの導入も、会員登録もありません。</b></li>
   <li>最初の画面で、自分の職人の顔と名前を作る。合言葉入りのカードから来た場合は、合言葉の欄に<b>自動で入った状態</b>で開きます。会場で文字を打つ必要はありません。</li>
-  <li>「この職人ではじめる」を押すと、案内役のKoBoさんが迎えます。合言葉を持っていた人には「きみは見習いではない」と告げ、その日のことを語るページが一度だけ開きます。</li>
+  <li>「この職人ではじめる」を押すと、案内役の<b>KoBoさん</b>が迎えます。合言葉を持っていた方には、その日のことを語るページが一度だけ開きます。</li>
   <li>あとは自由に遊ぶ。設計図をえらび、木と仕上げを決め、工程を通して一台仕上げます。</li>
 </ol>
 
 <p>すでに遊んでいる方が合言葉入りのQRを読んだときは、その場で合言葉を受けとります。最初からやり直す必要はありません。</p>
 
-<div class="note">
-  合言葉は<b>その日だけ有効</b>にできます。日が変わると「その合言葉は、たしかに聞いたことがある。……じゃが、その日は過ぎてしもうた」と返します。
-  一度受けとった人は、そのあともずっと名誉職人のままです。
+<div class="shots">
+  <figure class="shot"><img style="height:42mm" src="shots/code.jpg" alt=""><figcaption>合言葉の欄。カードから来ると、<br>すでに入った状態で開きます</figcaption></figure>
 </div>
 
-<h2>合言葉を入れた人だけに起きること</h2>
+<h2 class="pb">画面でみる</h2>
+
+<p>実際の画面です。スマホで開いたところを、そのまま載せています。</p>
+
+<div class="shots">
+  <figure class="shot"><img style="height:92mm" src="shots/avatar.jpg" alt=""><figcaption>① 自分の職人をつくる</figcaption></figure><figure class="shot"><img style="height:92mm" src="shots/cert.jpg" alt=""><figcaption>② 職人の記念証</figcaption></figure><figure class="shot"><img style="height:92mm" src="shots/petit.jpg" alt=""><figcaption>③ 本物の Petit.Continue</figcaption></figure>
+</div>
+
+<div class="shots">
+  <figure class="shot"><img style="height:92mm" src="shots/market.jpg" alt=""><figcaption>④ 材料の仕入れ</figcaption></figure><figure class="shot"><img style="height:92mm" src="shots/dex.jpg" alt=""><figcaption>⑤ 家具図鑑から本物へ</figcaption></figure><figure class="shot"><img style="height:60mm" src="shots/prep.jpg" alt=""><figcaption>⑥ 設計・木・仕上げをえらぶ</figcaption></figure>
+</div>
+
+<p class="s">① 髪型20・目5・口5・めがね3・ピアス3・ひげ3・かぶりもの9。絵はすべて松永工房さんが描いたものです。
+② 顔・名前・称号・制作実績・開催日・代表作を1枚に。催しの職人は金の枠になります。
+③ 実物の写真10点。いちばん下から公式サイトへ飛べます。
+④ 木材の絵も松永工房さんが描いたものです（序章の7種）。
+⑤ 実物のある家具には「この家具には、本物があります」と出て、③のページへつながります。
+⑥ 設計・木・仕上げの組み合わせで、できあがりの顔つきが変わります。</p>
+
+<h2 class="pb">合言葉を入れた人だけに起きること</h2>
 
 <p>「来た人だけが得をする」を、見た目と中身の両方で作ってあります。</p>
 
@@ -128,15 +157,13 @@
   <tr><td class="k">祝祭の伝説</td><td>限定の家具を3台とも、会心で仕上げた</td></tr>
 </table>
 
-<p>金の名札と<b>職人の記念証</b>は、そのまま画面を撮って持ち帰れます。SNSに上げてもらえれば、そのまま催しの記録になります。</p>
-
 <p>限定の設計図3種（プティ・ローズソファ、プティ・パウダーテーブル、プティ・ローズチェア）は、<b>ふつうの職人には一生出てこない</b>設計図です。図鑑のマスも、持っていない方には最初から数えません。これが無いと100%に届かなくなる——という不公平は起きません。</p>
 
 <p>その日の子たち5人（リボンの子、白い服の子、夜色の子、赤い髪の子、いちごの子）は、<b>好みがてんでバラバラ</b>です。どの一台を置いても全員は満足しません。そのかわり、並べ方しだいで誰かひとりは必ず足を止めます。</p>
 
-<h2 class="pb">ゲームの中身</h2>
+<h2>ゲームの中身</h2>
 
-<p>「家具図鑑をぜんぶ埋める」のが目的の、家具づくりゲームです。プレイヤーは松永工房の新人職人という設定です。</p>
+<p>「家具図鑑をぜんぶ埋める」のが目的の、家具づくりゲームです。遊ぶ人は松永工房の新人職人という設定です。</p>
 
 <table>
   <tr><td class="k">家具</td><td>46種（うち限定3種）・かくし家具3種</td></tr>
@@ -144,7 +171,7 @@
   <tr><td class="k">ミニゲーム</td><td>10種。制作の山場を自分の手で通す</td></tr>
   <tr><td class="k">工房の設備</td><td>22種。品質・速さ・展示枠・来館者を伸ばす</td></tr>
   <tr><td class="k">仕入れ</td><td>37品。木材12・部品12・消耗品5・<b>静岡の名品8</b></td></tr>
-  <tr><td class="k">称号</td><td>成長6段・<b>専門3種</b>・催し限定4段</td></tr>
+  <tr><td class="k">称号</td><td>成長6段・専門3種・催し限定4段</td></tr>
   <tr><td class="k">職人の似顔絵</td><td>髪型20・髪の色6・肌の色4・目5・口5・ひげ3・めがね3・ピアス3・かぶりもの9。<b>480万通り</b>以上</td></tr>
 </table>
 
@@ -152,50 +179,15 @@
 
 <p>静岡の名品は、温州みかん・静岡茶・安倍川もち・シラス丼・静岡おでん・桜えびのかき揚げ・わさび・クラウンメロンの8品。食べると集中力がもどったり、次の一台の出来が上がったりします。工房が静岡にあることが、説明なしに伝わります。</p>
 
-<h3>職人の似顔絵</h3>
+<p><b>似顔絵と木材の絵は、松永工房さんに描いていただいたものです。</b>髪の色と肌の色は、絵の明暗をそのままに塗りかえているので、水彩の風合いが消えません。</p>
 
-<p>はじめに自分の職人の顔をこしらえます。<b>絵は松永工房さんに描いていただいたもの</b>を、部品に分けて重ねています。髪の色と肌の色は、絵の明暗をそのままに塗りかえているので、水彩の風合いが消えません。</p>
+<h2>準備していただくこと</h2>
 
-<p>会場では、この顔が<b>記念証にそのまま残ります</b>。自分で作った顔だからこそ、持ち帰って見せたくなります。</p>
-
-<h3>職人の称号と、職人の記念証</h3>
-
-<p>称号には三つの系統があります。<b>成長の称号</b>は工房レベルで上がる一本道。<b>専門の称号</b>は作った実績でふえ、何枚でも持てます。<b>催しの称号</b>は合言葉を入れた方だけの階段です。</p>
-
-<table>
-  <tr><th style="width:30%">専門の称号</th><th>条件</th></tr>
-  <tr><td class="k">銘木の目利き</td><td>8種類以上の木で家具を仕上げた</td></tr>
-  <tr><td class="k">精密加工の達人</td><td>山場で90点以上を20回出した</td></tr>
-  <tr><td class="k">仕上げの名人</td><td>すべての仕上げでSランクを出した</td></tr>
-</table>
-
-<p>同じ家具ばかり作る方と、いろいろな木を試す方とでは、持つ称号が変わります。<b>自分だけの職人像</b>が残ります。</p>
-
-<p>そして工房の画面から、<b>職人の記念証</b>が開きます。顔・名前・称号・制作実績・開催日・<b>代表作</b>（いちばん人気の高かった一台）を1枚にまとめた証書です。<b>そのまま画面を撮って持ち帰る</b>ことを前提に作ってあります。催しの職人の記念証は金の枠になり、開催日が刻まれます。</p>
-
-<h3>公式サイトへの導線</h3>
-
-<p>工房の画面に「🎀 本物を見てみる」を置いてあります。ブランドの説明と<b>実物の写真10点</b>がならび、いちばん下から公式サイトへ飛べます。</p>
-
-<p>プティ・姿見、プティ・ワードローブ、プティ・ダイニングテーブル、プティ・ティーテーブル、プティ・チェア、プティ・スツール、プティ・カウチ、プティ・ベンチ、プティ・ブックケース、そして<b>密談椅子（ドルパ限定）</b>。限定の一台は金の枠と札ですぐ分かるようにしてあります。</p>
-
-<p><b>家具図鑑からも飛べます。</b>実物のあるゲーム内家具8種には、図鑑の欄に「🎀 この家具には、本物があります ――「プティ・スツール」」と出て、そこから写真のページへ、さらに公式サイトへつながります。遊んで覚えた家具が、そのまま商品への入口になります。</p>
-
-<h2>開催までに準備すること</h2>
-
-<div class="note">
-  <b>第1回は決まりました。</b>「ドール工房ツアー」2026年11月8日（日）13時〜、松永工房にて。
-  合言葉は「<b>ねこあし</b>」。ゲームにもこの日付を入れてあり、<b>当日と翌日だけ</b>通ります
-  （夕方にお渡ししたカードを、その晩おそくに読む方のために翌日まで）。
-</div>
-
-<p>残って決めていただくのは<b>1つだけ</b>です。</p>
+<p>決めていただくのは、残り<b>1つだけ</b>です。</p>
 
 <ul class="check">
-  <li><b>公式サイトボタンの飛び先</b> — いまはブランドサイト。買ってほしいならショップのほうが素直かもしれません。両方ならべることもできます。</li>
+  <li><b>公式サイトボタンの飛び先</b> — いまはブランドサイト（petit-de-continue.com）。買っていただきたいならショップのほうが素直かもしれません。両方ならべることもできます。</li>
 </ul>
-
-<p class="s">※ 開催日と合言葉は、催しごとに決め直せます。2回目以降はここに足していくだけです。</p>
 
 <p>用意していただくのは<b>木のQRカード2種</b>です。</p>
 
@@ -204,7 +196,7 @@
   <tr>
     <td class="k">合言葉入り</td>
     <td><span class="url">https://kijibukobo.github.io/-/game/?k=neko</span></td>
-    <td>ショールームの催しなら全員、ドルパなら購入者</td>
+    <td>工房の催しなら来場者全員、ドルパなら購入者</td>
   </tr>
   <tr>
     <td class="k">合言葉なし</td>
@@ -225,7 +217,8 @@
   <li><b>記録は端末ごと</b> — 遊んだ記録はそのブラウザの中に残ります。機種変更や、別の端末への引き継ぎはできません。ブラウザのデータを消すと消えます。</li>
   <li><b>ランキングは作れません</b> — 通信を一切しない作りなので、他の人の点数と比べることはできません。そのかわり、個人情報を一つも預からずに済んでいます。会場で順位を出したい場合は、会場の1台を使うか、別のしくみが必要です。</li>
   <li><b>合言葉は漏れます</b> — 口で伝わるものなので、会場に来ていない人に知られる可能性はあります。<b>「その日だけ」にしてあるのは、そのためです。</b>厳密な本人確認はしていませんし、するべきでもないと考えています。</li>
-  <li><b>通信はいりませんが、最初の読み込みは必要</b> — ページは1MBほど。会場の電波が弱いと、最初の表示に時間がかかることがあります。一度開けば、あとはオフラインでも遊べます。</li>
+  <li><b>日づけは、遊ぶ方の端末の時計で見ています</b> — 時計が大きくずれている端末では、合言葉が通らないことがあります。</li>
+  <li><b>最初の読み込みだけ、電波が要ります</b> — ページは1.4MBほど。会場の電波が弱いと、最初の表示に時間がかかることがあります。一度開けば、あとはオフラインでも遊べます。</li>
   <li><b>更新は自動で入れ替わります</b> — 新しく公開すると、開いているページがそれに気づいて一度だけ読み直します。お客さまに「キャッシュを消して」とお願いする必要はありません。</li>
 </ul>
 
@@ -237,12 +230,13 @@
 
 <h3>この先に伸ばせること</h3>
 
-<p>今回の催しで試してみて、手応えがあればですが：</p>
+<p>11月8日で試してみて、手応えがあればですが：</p>
 
 <ul>
   <li>催しごとに合言葉と限定の設計図を変える（ドルパなら<b>密談椅子</b>をその回の限定にする、など）</li>
   <li>新商品が出たら、その写真を「本物を見るページ」に足す</li>
-  <li>来場者が設計を注文するしくみ（「黒い仕上げの小さな家具が見たい」）</li>
+  <li>第二章・第三章の木材5種（マホガニー・チーク・ローズウッド・黒檀・神代欅）にも絵を入れる</li>
+  <li>来場された方が設計を注文するしくみ（「黒い仕上げの小さな家具が見たい」）</li>
 </ul>
 
 <p>いずれも、いまの作りの延長です。作り直す必要はありません。</p>
@@ -251,7 +245,10 @@
 
 <div class="big-url">https://kijibukobo.github.io/-/game/</div>
 
-<p>合言葉を試すなら、最初の画面の「🎟 合言葉をお持ちの方」に「<b>ねこあし</b>」と入れてみてください。</p>
+<p>合言葉は11月8日まで通りませんが、<b>その日のつもりで動かして見ることはできます。</b>
+下のURLを開くと、11月8日ということにして動きます（けいこ用です。木のカードには付けないでください）。</p>
+
+<div class="big-url" style="font-size:10.5pt">https://kijibukobo.github.io/-/game/?k=neko&amp;day=2026-11-08</div>
 
 <p class="foot">
   このゲームは1枚のHTMLファイルでできています。外部のライブラリなし、通信なし、インストール不要。

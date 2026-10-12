@@ -1,0 +1,13 @@
+{
+  "name": "proposal-tools",
+  "private": true,
+  "description": "提案書の画面を撮って、PDFに刷る道具",
+  "scripts": {
+    "shots": "node shots.js && node shots2.js",
+    "pdf": "node pdf.js",
+    "all": "npm run shots && npm run pdf"
+  },
+  "dependencies": {
+    "playwright-core": "^1.48.0"
+  }
+}
