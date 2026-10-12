@@ -579,6 +579,113 @@ footer{
   border-style:dashed; box-shadow:none;
 }
 
+/* ---------- 職人の記念証 ---------- */
+.cert{
+  /* とじる✕が記念証の枠に重ならないよう、少し下げる（写真に撮る紙なので） */
+  margin-top:14px;
+  border:3px solid var(--wood-dark); border-radius:16px; padding:16px 14px 14px;
+  background:
+    repeating-linear-gradient(90deg, rgba(107,74,47,.04) 0 2px, transparent 2px 40px),
+    linear-gradient(160deg,#fff9ec,var(--paper));
+  text-align:center; box-shadow:inset 0 0 0 3px rgba(232,207,165,.4);
+}
+.cert.honored{
+  border-color:var(--gold);
+  background:linear-gradient(160deg,#fffdf5,#fdf3d5);
+  box-shadow:inset 0 0 0 3px rgba(201,162,75,.35);
+}
+.cert-head{
+  font-size:.82rem; font-weight:bold; letter-spacing:.3em;
+  color:var(--brown-mid); border-bottom:2px solid var(--wood-light);
+  padding-bottom:7px; margin-bottom:12px;
+}
+.cert.honored .cert-head{ color:#a97c14; border-color:var(--gold); }
+.cert-face{
+  width:92px; height:92px; margin:0 auto 7px;
+  background:var(--paper); border:3px solid var(--brown-soft); border-radius:50%;
+  overflow:hidden; box-shadow:0 2px 6px rgba(107,74,47,.22);
+}
+.cert-face.honored{
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px #fdf3d5, 0 0 12px rgba(201,162,75,.8);
+}
+.cert-face svg{ width:100%; height:100%; display:block; }
+.cert-name{ font-size:1.18rem; font-weight:bold; letter-spacing:.06em; }
+.cert-title{
+  display:inline-block; margin-top:5px;
+  font-size:.86rem; font-weight:bold; color:#a97c14;
+  border:2px solid var(--gold); background:#fdf3d5;
+  border-radius:999px; padding:4px 16px; letter-spacing:.04em;
+}
+.cert-note{ font-size:.68rem; color:var(--brown-mid); margin-top:6px; line-height:1.7; }
+.cert-sub{ font-size:.68rem; color:var(--brown-soft); margin-top:4px; }
+.cert-skills{ margin-top:10px; display:flex; flex-wrap:wrap; gap:5px; justify-content:center; }
+.cert-skill{
+  font-size:.66rem; font-weight:bold; color:var(--green-deep);
+  border:1.5px solid var(--green-deep); background:#eef5e8;
+  border-radius:999px; padding:3px 10px;
+}
+.cert-table{
+  width:100%; margin:12px 0 0; border-collapse:collapse; font-size:.74rem;
+}
+.cert-table th, .cert-table td{
+  border-top:1px dashed var(--wood-light); padding:5px 4px; text-align:left;
+}
+.cert-table th{ color:var(--brown-mid); font-weight:normal; width:48%; }
+.cert-table td{ text-align:right; font-weight:bold; }
+.cert-best{
+  margin-top:12px; padding:9px; border-radius:12px;
+  background:rgba(255,253,245,.75); border:1.5px dashed var(--wood-dark);
+}
+.cert-best-label{ font-size:.64rem; color:var(--brown-soft); letter-spacing:.2em; }
+.cert-art{ display:block; width:92px; height:92px; margin:4px auto; }
+.cert-art img, .cert-art svg{ width:100%; height:100%; object-fit:contain; display:block; }
+.cert-best-name{ font-size:.86rem; font-weight:bold; }
+.cert-best-info{ font-size:.7rem; color:var(--brown-mid); margin-top:3px; }
+.cert-event{
+  margin-top:11px; font-size:.72rem; font-weight:bold; color:#a97c14;
+  border-top:2px solid var(--gold); padding-top:8px;
+}
+.cert-foot{ font-size:.6rem; color:var(--brown-soft); margin-top:9px; letter-spacing:.04em; }
+.cert-tip{ text-align:center; font-size:.68rem; color:var(--brown-mid); margin-top:10px; }
+
+/* 専門の称号 */
+.skill-title{
+  /* 説明が2行に折り返しても、右の「2 / 5種類」とぶつからないようにする */
+  display:flex; align-items:center; gap:9px; margin-top:7px; min-width:0;
+  border:1.5px solid var(--wood-light); border-radius:12px;
+  padding:7px 10px; background:#fffdf7; opacity:.62;
+}
+.skill-title.got{
+  opacity:1; border-color:var(--green-deep);
+  background:linear-gradient(180deg,#f4f8f0,#eef5e8);
+}
+.st-icon{ font-size:1.4rem; width:30px; text-align:center; flex:0 0 30px; }
+.st-body{ flex:1 1 auto; min-width:0; font-size:.78rem; line-height:1.5; }
+.st-line{ display:flex; align-items:baseline; gap:8px; }
+.st-line b{ flex:1 1 auto; min-width:0; }
+.st-note{ display:block; font-size:.65rem; color:var(--brown-mid); }
+.st-now{
+  flex:0 0 auto; text-align:right;
+  font-size:.68rem; font-weight:bold; color:var(--brown-mid); white-space:nowrap;
+}
+.skill-title.got .st-now{ color:var(--green-deep); }
+
+/* 図鑑から本物へ */
+.dex-real{
+  display:flex; align-items:center; gap:8px; margin-top:7px;
+  border:1.5px solid var(--gold); border-radius:10px;
+  padding:6px 9px; background:#fdf3d5;
+  font-size:.66rem; color:#8a6a2f; line-height:1.5;
+}
+.dex-real span{ flex:1; }
+.dex-real-btn{
+  font-family:inherit; font-weight:bold; font-size:.66rem; color:#fff;
+  padding:6px 10px; border-radius:10px; border:none; cursor:pointer; white-space:nowrap;
+  background:linear-gradient(180deg,#d8b45e,var(--gold)); box-shadow:0 2px 0 #a97c14;
+}
+.dex-real-btn:active{ transform:translateY(2px); box-shadow:none; }
+
 /* ---------- 本物の Petit.Continue ---------- */
 .pt-lead{ font-size:.76rem; line-height:1.9; text-align:justify; color:var(--brown-mid); }
 .pt-lead b{ color:var(--brown); }
@@ -1004,6 +1111,15 @@ footer{
     <div id="knowledge-list"></div>
     <div class="reset-link" id="btn-reset">セーブデータを消して、はじめからやり直す</div>
     <button class="close" data-close="about-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：職人の記念証 ========== -->
+<div class="modal-back" id="cert-modal">
+  <div class="modal">
+    <button class="x-close" data-close="cert-modal" aria-label="とじる">✕</button>
+    <div id="cert-body"></div>
+    <button class="close" data-close="cert-modal">とじる</button>
   </div>
 </div>
 
@@ -4070,15 +4186,59 @@ const TRIVIA = [
 ];
 
 const LEVELS = [0, 30, 100, 250, 500, 1000];
-const LEVEL_TITLES = ["見習い職人", "若手職人", "一人前の職人", "熟練の職人", "工房の匠", "伝説の職人"];
-/* 合言葉を入れた職人だけの称号。ふつうの肩書きと一段ずつ対になっていて、
-   同じレベルでも、こちらは人形たちに選ばれた者としての呼ばれ方になる */
-const HONOR_TITLES = ["ドールの日の職人", "人形に選ばれた職人", "小さなお客の名工",
-                      "ドールハウスの匠", "人形たちの御用達", "ドールの日の伝説"];
-const playerTitle = () => {
-  const i = Math.min(state.level - 1, LEVEL_TITLES.length - 1);
-  return (eventOpen() ? HONOR_TITLES : LEVEL_TITLES)[i];
-};
+/* ----------------------------------------------------------
+   称号
+   ----------------------------------------------------------
+   三つの系統がある。
+     成長の称号 … レベルで上がる。だれもが通る一本道
+     専門の称号 … 作った実績でふえる。並行して何枚でも持てる
+     催しの称号 … 合言葉を入れた人が、そこから何をしたかで上がる
+   ---------------------------------------------------------- */
+const LEVEL_TITLES = ["木工見習い", "若手の木工職人", "一人前の家具職人",
+                      "熟練の家具職人", "工房の匠", "伝説の木匠"];
+
+/* 生涯の記録から数える小道具 */
+const logOf    = () => state.craftLog || { woods: {}, finishS: {}, hi: 0, total: 0 };
+const woodKinds = () => Object.keys(logOf().woods || {}).length;
+const finishSKinds = () => Object.keys(logOf().finishS || {}).length;
+/* 催しの家具を、会心に仕上げた数 */
+const extraAces = () => FURNITURE.filter(f => f.eventOnly)
+  .filter(f => { const r = state.completed[f.id]; return !!(r && r.ace); }).length;
+
+/* 専門の称号。条件を満たすと増えていく。足すときはここに1行 */
+const SKILL_TITLES = [
+  { id: "wood", icon: "🪵", name: "銘木の目利き",
+    note: "8種類以上の木で家具を仕上げた職人",
+    need: 8, now: () => woodKinds(), unit: "種類" },
+  { id: "craft", icon: "🔧", name: "精密加工の達人",
+    note: "山場で90点以上を20回出した職人",
+    need: 20, now: () => logOf().hi || 0, unit: "回" },
+  { id: "finish", icon: "✨", name: "仕上げの名人",
+    note: "すべての仕上げでSランクを出した職人",
+    need: () => FINISHES.length, now: () => finishSKinds(), unit: "種類" }
+];
+const skillNeed = (t) => typeof t.need === "function" ? t.need() : t.need;
+const hasSkillTitle = (t) => t.now() >= skillNeed(t);
+const skillTitlesGot = () => SKILL_TITLES.filter(hasSkillTitle);
+
+/* 催しの称号。レベルではなく、その日からの歩みで上がる */
+const HONOR_TITLES = [
+  { name: "記念日の見習い", note: "特別な日に工房を訪れ、職人への第一歩を踏み出した証",
+    ok: () => true },
+  { name: "祝祭の家具職人", note: "イベントで家具づくりを体験し、自分の手で一台を完成させた証",
+    ok: () => (logOf().total || 0) >= 1 },
+  { name: "黄金の名匠",     note: "特別な経験を積み、工房から認められた職人の証",
+    ok: () => extraAces() >= 1 },
+  { name: "祝祭の伝説",     note: "特別な日の思い出とともに残る、イベント限定の最高称号",
+    ok: () => extraAces() >= 3 }
+];
+/* いま届いているうち、いちばん上のもの */
+const honorRank  = () => { let i = 0; HONOR_TITLES.forEach((h, n) => { if (h.ok()) i = n; }); return i; };
+const honorTitle = () => HONOR_TITLES[honorRank()];
+
+const levelTitle  = () => LEVEL_TITLES[Math.min(state.level - 1, LEVEL_TITLES.length - 1)];
+/* 画面の肩書き。催しに出た人は、催しの称号で呼ばれる */
+const playerTitle = () => eventOpen() ? honorTitle().name : levelTitle();
 
 const KNOWLEDGE = [
   { icon: "🎀", title: "Petit.Continue（プティ・デュ・カンティーニュ）",
@@ -4123,7 +4283,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 12,
+  ver: 13,
   player: { name: "", avatar: { skin:0, hairColor:1, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0 } },
   money: 0,
   exp: 0,
@@ -4144,6 +4304,10 @@ let state = {
   actionScore: null,              // いま作っている家具の、山場の出来（0〜100）
   actionBest: {},                 // 家具ごとの職人アクション自己ベスト
   actionStats: {},                // 工程タイプごとの成績（得意・不得意）
+  /* 生涯の記録。専門の称号はここから数える。
+     woods … 使った木ごとの台数／finishS … Sランクを出した仕上げ
+     hi    … 山場で90点以上を出した回数／total … 仕上げた総台数 */
+  craftLog: { woods: {}, finishS: {}, hi: 0, total: 0 },
   knownCritical: [],              // 山場工程を知っている家具id
   gear: [],                       // 買った設備
   showroom: [],                   // 展示中の家具 [{fid,name,design,wood,finish,score,rank,pop,price}]
@@ -4164,11 +4328,13 @@ function save() {
 }
 function load() {
   let savedVer = 5;
+  let saved = null;        // 読みこんだセーブそのもの（「入っていなかった欄」を知るため）
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
       savedVer = data.ver;
+      saved = data;
       state = Object.assign(state, data);
     }
   } catch (e) { /* 壊れたデータは無視して新規開始 */ }
@@ -4256,13 +4422,29 @@ function load() {
   if (savedVer !== 12) {  // 第11章: 消耗品を置く場所を用意する
     if (!state.boost || typeof state.boost !== "object") clearBoost();
   }
+  if (savedVer !== 13) {  // 第12章: 生涯の記録をためはじめる
+    /* 既定の state には craftLog があるので「state にない」では判定できない。
+       セーブのほうに入っていなかったときだけ、過去のぶんを拾う */
+    if (saved && (!saved.craftLog || typeof saved.craftLog !== "object")) {
+      state.craftLog = { woods: {}, finishS: {}, hi: 0, total: 0 };
+      /* これまでのぶんは、残っている記録から拾えるだけ拾う。
+         職人手帳は直近40件しか残らないので、総台数は図鑑から数える */
+      Object.values(state.completed).forEach(r => {
+        if (r && typeof r === "object") state.craftLog.total += (r.count || 0);
+      });
+      (state.notebook || []).forEach(n => {
+        if (n.wood) state.craftLog.woods[n.wood] = (state.craftLog.woods[n.wood] || 0) + 1;
+        if (n.finish && n.rank === "S") state.craftLog.finishS[n.finish] = true;
+      });
+    }
+  }
   if (!state.craftBoost || typeof state.craftBoost !== "object") {
     state.craftBoost = { quality: 0, pop: 0, action: 0 };
   }
   /* 移行の条件はどれも「savedVer !== N」なので、新しいセーブでも途中の
      ブロックを通ってしまい、state.ver が巻き戻ることがあった。
      ぜんぶ通したあとで、版は必ず最新にそろえる */
-  state.ver = 12;
+  state.ver = 13;
 }
 
 /* ==========================================================
@@ -5012,6 +5194,7 @@ function doAction(rawScore, skipped) {
     const st = state.actionStats[type] || { n: 0, sum: 0 };
     st.n++; st.sum += score;
     state.actionStats[type] = st;
+    if (score >= 90) state.craftLog.hi = (state.craftLog.hi || 0) + 1;   // 精密加工の達人
   }
 
   /* 時間経過。アクションをとばすと、手堅いぶん時間が余計にかかる */
@@ -5123,6 +5306,12 @@ function finishCraft(exhibit) {
     state.completed[p.fid] =
       { count: 1, best: p.rank, bestScore: p.score, bestPop: p.pop, ace: isAce(p) };
   }
+
+  /* --- 生涯の記録。専門の称号はここから数える --- */
+  const cc = state.craft || {};
+  state.craftLog.total = (state.craftLog.total || 0) + 1;
+  if (cc.wood) state.craftLog.woods[cc.wood] = (state.craftLog.woods[cc.wood] || 0) + 1;
+  if (cc.finish && p.rank === "S") state.craftLog.finishS[cc.finish] = true;
 
   /* --- 職人手帳：試した組み合わせは必ず記録する（謎解きの material） --- */
   const near = nearMissRecipe(f.id, state.craft);
@@ -5237,6 +5426,10 @@ function renderDex() {
           <div class="count">🔨 ${rec.count}台　最高品質 ${rec.best ? rankBadge(rec.best) : "—"}${rec.bestScore != null ? ` <b>${rec.bestScore}点</b>` : ""}　💖 人気 ${rec.bestPop != null ? rec.bestPop : "—"}</div></span>
         </div>
         <div class="d-desc">${e.description}</div>
+        ${realItemOf(e.id) ? `<div class="dex-real">
+            <span>🎀 この家具には、本物があります ——「${esc(realItemOf(e.id).name)}」</span>
+            <button class="dex-real-btn" data-real="1">本物を見る</button>
+          </div>` : ""}
         ${e.kind === "base" && state.knownCritical.indexOf(e.id) >= 0
           ? `<span class="dex-crit">🔥 山場は「${e.steps[CRITICAL_STEP[e.id]].label}」</span>` +
             (rec && rec.ace ? `<span class="dex-ace">🏅 会心の一台</span>`
@@ -5291,6 +5484,11 @@ function renderDex() {
   } else {
     letters += `<div class="story-item locked final"><h4>🔒 ${FINAL_STORY.title}</h4><p>ページをすべて集めると、まっさらな最後の一枚が出てくるらしい……。</p></div>`;
   }
+  document.querySelectorAll(".dex-real-btn[data-real]").forEach(b =>
+    b.addEventListener("click", () => {
+      closeModal("dex-modal"); renderPetit(); openModal("petit-modal");
+    }));
+
   $("#letter-list").innerHTML = letters;
 }
 
@@ -5625,6 +5823,80 @@ function saveAvatar() {
   }
 }
 
+/* ---------- 職人の記念証 ----------
+   名前・称号・実績・開催日・代表作を1枚にまとめる。
+   そのまま画面を撮って持ち帰ってもらうための紙 */
+
+/* ゲームの家具と、実物の商品のむすびつき。
+   図鑑から「本物を見る」で、写真のならぶページへ飛べる */
+const REAL_OF = {
+  stool: "stool", mirror_stand: "mirror", wardrobe: "wardrobe",
+  tea_table: "tea", couch: "couch", mitsudan: "mitsudan",
+  ladder_shelf: "bookcase", bench: "bench"
+};
+const realItemOf = (id) => REAL_OF[id]
+  ? PETIT_ITEMS.find(it => it.photo() === PHOTOS["real_" + REAL_OF[id]]) : null;
+
+/* 代表作＝いちばん人気の高かった一台 */
+function bestPiece() {
+  let best = null;
+  Object.keys(state.completed).forEach(id => {
+    const r = state.completed[id];
+    if (!r || !r.count || r.bestPop == null) return;
+    if (!best || r.bestPop > best.pop) {
+      const e = allDexEntries().find(x => x.id === id);
+      if (e) best = { name: e.name, pop: r.bestPop, rank: r.best, score: r.bestScore, art: e };
+    }
+  });
+  return best;
+}
+
+function renderCert() {
+  const ev = joinedList()[0];
+  const log = logOf();
+  const got = skillTitlesGot();
+  const best = bestPiece();
+  const day = ev && state.event[ev.id] ? state.event[ev.id].day : null;
+  const on  = ev && state.event[ev.id] ? state.event[ev.id].on : null;
+
+  const rows = [
+    ["仕上げた家具", `${log.total || 0} 台`],
+    ["図鑑", `${dexFound()} / ${dexTotal()} マス（${Math.round(dexFound() / dexTotal() * 100)}%）`],
+    ["使った木", `${woodKinds()} / ${MATERIALS.filter(m => m.type === "wood").length} 種類`],
+    ["会心の一台", `${Object.values(state.completed).filter(r => r && r.ace).length} 台`],
+    ["山場で90点以上", `${log.hi || 0} 回`]
+  ];
+
+  $("#cert-body").innerHTML =
+    `<div class="cert${eventOpen() ? " honored" : ""}">
+      <div class="cert-head">職人の記念証</div>
+      <div class="cert-face${eventOpen() ? " honored" : ""}">${buildAvatar(state.player.avatar)}</div>
+      <div class="cert-name">${esc(you())}</div>
+      <div class="cert-title">${esc(playerTitle())}</div>
+      ${eventOpen()
+        ? `<div class="cert-note">${esc(honorTitle().note)}</div>
+           <div class="cert-sub">成長の称号：${esc(levelTitle())}（工房Lv${state.level}）</div>`
+        : `<div class="cert-sub">工房Lv${state.level}</div>`}
+
+      ${got.length ? `<div class="cert-skills">${got.map(t =>
+        `<span class="cert-skill">${t.icon} ${esc(t.name)}</span>`).join("")}</div>` : ""}
+
+      <table class="cert-table">${rows.map(([k, v]) =>
+        `<tr><th>${k}</th><td>${v}</td></tr>`).join("")}</table>
+
+      ${best ? `<div class="cert-best">
+         <div class="cert-best-label">代表作</div>
+         ${artOf(best.art, "cert-art", best.art.artFilter)}
+         <div class="cert-best-name">${esc(best.name)}</div>
+         <div class="cert-best-info">${best.rank ? rankBadge(best.rank) : ""} ${best.score != null ? best.score + "点" : ""}　💖 人気 ${best.pop}</div>
+       </div>` : `<div class="cert-best"><div class="cert-best-info">まだ一台も仕上げていない</div></div>`}
+
+      ${ev ? `<div class="cert-event">🎀 ${esc(ev.title)}${on ? `　${esc(on)}` : ""}${day ? `（工房${day}日目）` : ""}</div>` : ""}
+      <div class="cert-foot">有限会社 松永工房　松永工房クラフトストーリー</div>
+    </div>
+    <p class="cert-tip">📷 この画面をそのまま撮って、持ち帰ってください。</p>`;
+}
+
 /* ---------- 本物の Petit.Continue ---------- */
 /* 松永工房のドール家具ブランド。公式サイトへの入口を、ゲームの中に置く。
    並べているのは実物の写真。足すときは PETIT_ITEMS に1行足す */
@@ -5741,6 +6013,23 @@ function renderAbout() {
         : `<p style="text-align:center">この工房で家具をこしらえている職人。</p>`}
       <button class="foot-btn" id="btn-edit-avatar" style="max-width:200px;margin:8px auto 0;display:block;min-height:44px">🧑‍🔧 職人を変える</button>
     </div>
+    <div class="about-block">
+      <h4>🎖 専門の称号</h4>
+      <p>作った実績で増えていきます。何枚でも持てます。</p>
+      ${SKILL_TITLES.map(t => {
+        const ok = hasSkillTitle(t);
+        /* 進みぐあいは名前と同じ行に置く。説明を折り返しの外に出さないため */
+        return `<div class="skill-title${ok ? " got" : ""}">
+          <span class="st-icon">${t.icon}</span>
+          <span class="st-body">
+            <span class="st-line"><b>${esc(t.name)}</b>
+              <span class="st-now">${ok ? "獲得" : `${t.now()} / ${skillNeed(t)}${t.unit}`}</span></span>
+            <span class="st-note">${esc(t.note)}</span></span>
+        </div>`;
+      }).join("")}
+      <button class="foot-btn" id="btn-cert"
+              style="max-width:240px;margin:10px auto 0;display:block;min-height:44px">🎖 職人の記念証を見る</button>
+    </div>
     <div class="about-block" style="text-align:center">
       <h4>🎀 本物の Petit.Continue</h4>
       <p style="text-align:center">このゲームの家具のもとになった、松永工房のドール家具です。</p>
@@ -5815,6 +6104,9 @@ function init() {
     renderAbout(); openModal("about-modal");
     $("#btn-edit-avatar").addEventListener("click", () => {
       closeModal("about-modal"); openAvatarEditor(false);
+    });
+    $("#btn-cert").addEventListener("click", () => {
+      closeModal("about-modal"); renderCert(); openModal("cert-modal");
     });
     $("#btn-petit").addEventListener("click", () => {
       closeModal("about-modal"); renderPetit(); openModal("petit-modal");
