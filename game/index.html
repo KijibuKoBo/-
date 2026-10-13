@@ -1574,7 +1574,7 @@ const SVG_ART = {
     <path d="M38 18 L44 15" stroke="#c98d76" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
   </svg>`,
 
-  dresser: `<svg viewBox="0 0 120 120" role="img" aria-label="三面鏡ドレッサー">
+  dresser: `<svg viewBox="0 0 120 120" role="img" aria-label="オーバル鏡のドレッサー">
     <ellipse cx="60" cy="112" rx="44" ry="5.5" fill="rgba(107,74,47,.14)"/>
     <rect x="14" y="24" width="24" height="40" rx="9" fill="#b07c4a" transform="rotate(-8 26 44)"/>
     <rect x="18" y="28" width="16" height="32" rx="7" fill="#d8e9ef" transform="rotate(-8 26 44)"/>
@@ -2071,8 +2071,8 @@ const FURNITURE = [
     letter: null
   },
   {
-    id: "wall_clock", name: "ウォールクロック", icon: "🕰️", art: null, photo: PHOTOS.wall_clock,
-    description: "時を刻む音まで聞こえてきそうな、アンティーク調の振り子時計。（45×20×130mm）",
+    id: "wall_clock", name: "振り子時計", icon: "🕰️", art: null, photo: PHOTOS.wall_clock,
+    description: "時を刻む音まで聞こえてきそうな、アンティーク調の一台。ふりこが振れるたび、部屋が少し静かになる。（45×20×130mm）",
     price: 7000, exp: 50, deadline: 13, basePop: 40,
     materials: { wood: 2, clockwork: 1, glass: 1, brass: 1 },
     unlock: { type: "level", v: 2 },
@@ -2154,8 +2154,8 @@ const FURNITURE = [
     letter: null
   },
   {
-    id: "dresser", name: "三面鏡ドレッサー", icon: "🪞", art: "dresser", photo: PHOTOS.r_dresser,
-    description: "工房の技を集めた特別な一台。三枚の鏡が、いろんな自分を映してくれる。",
+    id: "dresser", name: "オーバル鏡のドレッサー", icon: "🪞", art: "dresser", photo: PHOTOS.r_dresser,
+    description: "工房の技を集めた特別な一台。大きな楕円の鏡が、ありのままを映してくれる。",
     price: 8000, exp: 60, deadline: 15, basePop: 45,
     materials: { wood: 2, mirror: 2, brass: 1 },
     unlock: { type: "level", v: 3 },
@@ -2205,8 +2205,8 @@ const FURNITURE = [
     letter: "鍵付きのいちばん小さな抽斗に、六枚目。『着るものまで人にあげてしまった娘が、夜の野原にひとり立っていると、空から星が降ってきて、みんな銀貨になりました。娘はそれを、<b>チェリー</b>の赤みを黒の下に隠した、うんと<b>小さく</b>こしらえた棚にしまったということです』"
   },
   {
-    id: "ladder_shelf", name: "階段付き書棚", icon: "📚", art: null, photo: PHOTOS.r_ladder_shelf,
-    description: "図書館の空気を、小さく写しとった書棚。梯子は取り外せて、好きな段に掛けられる。（110×35×165mm）",
+    id: "ladder_shelf", name: "三段の飾り棚", icon: "📚", art: null, photo: PHOTOS.r_ladder_shelf,
+    description: "図書館の空気を、小さく写しとった棚。細い柱で支えた三段に、本でも花でも。（110×35×165mm）",
     price: 11000, exp: 72, deadline: 14, basePop: 46,
     materials: { wood: 4, brass: 1 },
     unlock: { type: "level", v: 4 },
@@ -2214,11 +2214,11 @@ const FURNITURE = [
       { label: "木材を選ぶ",   icon: "🪵", msg: "背の高い家具は、重さより「まっすぐ」で選ぶ。" },
       { label: "側板を木取る", icon: "🪚", msg: "一枚の板から、左右の側板を木目をそろえて取る。" },
       { label: "棚板を渡す",   icon: "📐", msg: "本の高さを想像しながら、段の間隔を変えていく。" },
-      { label: "梯子を作る",   icon: "🪜", msg: "細い横木を一段ずつ。掛けて、外して、また掛ける。" },
+      { label: "支柱を立てる", icon: "🪜", msg: "細い柱を四本。削りすぎると、三段ぶんの重さに負ける。" },
       { label: "塗装する",     icon: "🖌️", msg: "深い色を何度も。古い図書館の、あの色にしたかった。" },
-      { label: "検品する",     icon: "🔍", msg: "梯子を掛けてゆすってみる。びくともしない。" }
+      { label: "検品する",     icon: "🔍", msg: "いちばん上に本を載せてゆすってみる。びくともしない。" }
     ],
-    story: "梯子のある本棚は、上の段にこそ大事な本を置きたくなる。手が届かない場所は、いつだって少し特別だ。",
+    story: "三段の棚は、上にいくほど物を置かなくなる。何も載せない段がひとつあると、ふしぎと部屋が広く見える。",
     letter: null
   },
   {
@@ -2239,8 +2239,8 @@ const FURNITURE = [
     letter: "色ガラスのあいだから、八枚目。『十二時の鐘で、馬車はかぼちゃに、ドレスは灰色にもどりました。もどらなかったのは、ガラスのくつが片方だけ。……ガラスというものは、ふしぎです。うそをつけないくせに、向こう側の色まで変えてしまう』"
   },
   {
-    id: "glass_lamp", name: "ステンドグラスランプ", icon: "💡", art: null, photo: PHOTOS.r_glass_lamp,
-    description: "幻想的な光を灯す、小さなステンドグラスのランプ。笠の骨組みが歪むと、光まで歪む。（φ50×95mm）",
+    id: "glass_lamp", name: "街灯のランプ", icon: "💡", art: null, photo: PHOTOS.r_glass_lamp,
+    description: "夜の道に立っていたような、小さな街灯。笠の骨組みが歪むと、光まで歪む。（φ50×95mm）",
     price: 12000, exp: 82, deadline: 14, basePop: 58,
     materials: { wood: 1, stained: 4, lampwork: 1, brass: 1 },
     unlock: { type: "visitors", v: 150 },
@@ -2442,8 +2442,8 @@ const FURNITURE = [
     letter: null
   },
   {
-    id: "canopy_bed", name: "天蓋付きデイベッド", icon: "🛋️", art: null, photo: PHOTOS.canopy_bed,
-    description: "繊細なレースのカーテンが揺れる、アンティークホワイトのデイベッド。（180×80×140mm）",
+    id: "canopy_bed", name: "天蓋付きのベッド", icon: "🛏️", art: null, photo: PHOTOS.canopy_bed,
+    description: "繊細なレースのカーテンが揺れる、アンティークホワイトの寝台。（180×80×140mm）",
     price: 26000, exp: 175, deadline: 17, basePop: 64,
     materials: { wood: 4, cloth: 3, lace: 3, brass: 1 },
     unlock: { type: "level", v: 6 },
