@@ -1057,6 +1057,75 @@ footer{
   white-space:pre-line;
 }
 .pop-badge{ font-size:2.2rem; display:block; animation:pulse 1.2s infinite; }
+/* ---------- ドールハウス（飾り部屋） ---------- */
+#room-modal .modal{ max-width:520px; }
+.rbg-row{ display:flex; gap:5px; margin-bottom:8px; }
+.rbg-btn{
+  flex:1; font-family:inherit; font-size:.64rem; font-weight:bold; color:var(--brown);
+  min-height:36px; border-radius:9px; cursor:pointer;
+  border:2px solid var(--wood-dark); background:var(--cream-deep);
+}
+.rbg-btn.on{ background:var(--gold); color:#fff; border-color:#a97c14; }
+.room-stage{
+  position:relative; width:100%; aspect-ratio:4/3;
+  border:3px solid var(--wood-dark); border-radius:12px; overflow:hidden;
+  background:var(--cream-deep);
+  touch-action:none; user-select:none; -webkit-user-select:none;
+}
+.room-stage .rbg{ position:absolute; inset:0; }
+.room-stage .rbg svg{ width:100%; height:100%; display:block; }
+/* 置いた家具。足もとの中央を (left,top) にそろえている */
+.rp{
+  position:absolute; width:auto; display:block; cursor:grab;
+  -webkit-user-drag:none; -webkit-touch-callout:none;
+}
+.rp.sel{ outline:2.5px dashed var(--gold); outline-offset:2px; }
+.room-ctl{
+  margin-top:8px; border:2px solid var(--gold); border-radius:12px;
+  padding:7px 8px; background:#fffaec;
+}
+.rc-name{ text-align:center; font-size:.74rem; font-weight:bold; margin-bottom:6px; }
+.rc-row{ display:flex; gap:4px; }
+.rc-row button{
+  flex:1; font-family:inherit; font-size:.64rem; font-weight:bold; color:var(--brown);
+  min-height:42px; border-radius:9px; cursor:pointer;
+  border:2px solid var(--brown-mid);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+}
+.rc-row button:active{ transform:translateY(2px); }
+.room-tip{
+  margin-top:8px; font-size:.68rem; color:var(--brown-mid);
+  text-align:center; line-height:1.7;
+}
+.room-count{ text-align:center; font-size:.64rem; color:var(--brown-mid); margin-top:7px; }
+.room-count.full{ color:var(--red); font-weight:bold; }
+.rs-item[disabled]{ opacity:.4; cursor:default; }
+.room-shelf{
+  margin-top:8px; max-height:184px; overflow-y:auto;
+  display:grid; grid-template-columns:repeat(4,1fr); gap:6px;
+  border:2px solid var(--wood-light); border-radius:12px; padding:8px; background:#fffdf7;
+}
+.rs-item{
+  font-family:inherit; cursor:pointer; border:2px solid var(--wood-light);
+  border-radius:10px; background:#fff; padding:4px 2px;
+  display:grid; gap:2px; justify-items:center;
+}
+.rs-item:active{ transform:translateY(2px); }
+.rs-thumb{ width:100%; height:42px; }
+.rs-thumb img{ width:100%; height:100%; object-fit:contain; }
+.rs-name{
+  font-size:.56rem; color:var(--brown-mid); line-height:1.25; text-align:center;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.room-empty{
+  text-align:center; font-size:.72rem; color:var(--brown-mid); line-height:1.9;
+  padding:16px 10px; border:2px dashed var(--wood-light); border-radius:12px;
+  background:#fffdf7; margin-top:8px;
+}
+.room-clear{
+  display:block; margin:12px auto 0; font-size:.64rem; color:var(--brown-soft);
+  background:none; border:none; font-family:inherit; text-decoration:underline; cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -1103,6 +1172,7 @@ footer{
 <!-- ========== 固定フッター ========== -->
 <footer>
   <button class="foot-btn" id="btn-dex">📖<br>図鑑</button>
+  <button class="foot-btn" id="btn-room">🏡<br>お部屋</button>
   <button class="foot-btn" id="btn-show">🖼<br>展示室</button>
   <button class="foot-btn" id="btn-market">🧺<br>仕入れ</button>
   <button class="foot-btn" id="btn-gear">🛠<br>設備</button>
@@ -1121,6 +1191,16 @@ footer{
     <div class="dex-section-title">📖 童話のきれはし</div>
     <div id="letter-list"></div>
     <button class="close" data-close="dex-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：ドールハウス（飾り部屋） ========== -->
+<div class="modal-back" id="room-modal">
+  <div class="modal">
+    <button class="x-close" data-close="room-modal" aria-label="とじる">✕</button>
+    <h3>🏡 ドールハウス</h3>
+    <div id="room-body"></div>
+    <button class="close" data-close="room-modal">とじる</button>
   </div>
 </div>
 
@@ -4558,7 +4638,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 15,
+  ver: 16,
   player: { name: "", avatar: { skin:0, hairColor:0, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0, ear:0 } },
   money: 0,
   exp: 0,
@@ -4592,7 +4672,9 @@ let state = {
   tool: "normal",                 // 山場でえらんだ道具（normal / sharp / old）
   event: {},                      // 合言葉で開いた催し { doll: {day} }
   boost: { quality: 0, pop: 0, action: 0 }, // 消耗品でためた「つぎの一台」ぶん
-  guide: 1                                  // はじめの案内　1=案内中 2=終わった/やめた
+  guide: 1,                                 // はじめの案内　1=案内中 2=終わった/やめた
+  /* ドールハウス。bg=いま見ている部屋、sets=部屋ごとの並べ方 */
+  room: { bg: 0, sets: {} }
 };
 
 /* 制作前の設計えらび（一時状態。セーブしない） */
@@ -4735,13 +4817,17 @@ function load() {
       av.art = 1;                                             // 読みかえ済みの印
     }
   }
+  if (savedVer !== 16) {  // 第15章: ドールハウスの置き場を用意する
+    if (!state.room || typeof state.room !== "object") state.room = { bg: 0, sets: {} };
+    if (!state.room.sets || typeof state.room.sets !== "object") state.room.sets = {};
+  }
   if (!state.craftBoost || typeof state.craftBoost !== "object") {
     state.craftBoost = { quality: 0, pop: 0, action: 0 };
   }
   /* 移行の条件はどれも「savedVer !== N」なので、新しいセーブでも途中の
      ブロックを通ってしまい、state.ver が巻き戻ることがあった。
      ぜんぶ通したあとで、版は必ず最新にそろえる */
-  state.ver = 15;
+  state.ver = 16;
 }
 
 /* ==========================================================
@@ -5832,6 +5918,451 @@ function finishCraft(exhibit) {
 /* ==========================================================
    モーダル
    ========================================================== */
+/* ==========================================================
+   ドールハウス（飾り部屋）
+   ----------------------------------------------------------
+   作った家具を部屋に並べる。家具の絵は図鑑と同じ実物写真を
+   そのまま重ねている。写真はすべて背景が抜けてあるので、
+   新しい絵を描かずに置くだけで足りる。
+
+   置いた位置は state.room に入る。数は部屋の幅・高さに対する
+   「割合」なので、画面の大きさが変わっても崩れない。
+     x  … 足もとの中央の左右位置（0〜1）
+     y  … 足もとの高さ（0〜1）
+     h  … 高さ（部屋の高さに対する割合）
+     fl … 左右の反転（1 か -1）
+   配列の並びがそのまま前後で、うしろの要素が手前に出る。
+
+   部屋ごとに別の並べ方を覚える（state.room.sets[部屋id]）。
+   部屋を変えても、前の部屋はそのまま残る。
+   ========================================================== */
+const ROOM_MAX = 24;          // ひと部屋に置ける数
+
+/* 部屋の背景。floor は床の高さ（置いたときの既定の足もと）。
+   いずれ実物のドールハウスの写真に差しかえられるよう、
+   背景は svg ひとつだけを見ている */
+const ROOMS = [
+  { id: "day", name: "板張りの部屋", floor: 0.667, svg: `
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="rdw" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f8efdd"/><stop offset="1" stop-color="#ebe0c6"/></linearGradient>
+        <linearGradient id="rdf" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#c49d6d"/><stop offset="1" stop-color="#e6c89f"/></linearGradient>
+        <linearGradient id="rdl" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff4d4" stop-opacity=".6"/>
+          <stop offset="1" stop-color="#fff4d4" stop-opacity="0"/></linearGradient>
+      </defs>
+      <rect width="400" height="300" fill="url(#rdw)"/>
+      <path d="M0 26h400" stroke="#dcc9a6" stroke-width="3"/>
+      <rect x="248" y="38" width="112" height="96" rx="4" fill="#dcecf2"/>
+      <path d="M304 38v96M248 86h112" stroke="#b08a63" stroke-width="4"/>
+      <path d="M254 128 300 44" stroke="#fff" stroke-width="11" opacity=".33"/>
+      <rect x="248" y="38" width="112" height="96" rx="4" fill="none" stroke="#b08a63" stroke-width="5"/>
+      <path d="M250 134 362 134 336 206 214 206z" fill="url(#rdl)"/>
+      <rect x="0" y="156" width="400" height="44" fill="#e6cda6"/>
+      <g stroke="#cfae84" stroke-width="2">
+        <path d="M36 158v38M92 158v38M148 158v38M204 158v38M260 158v38M316 158v38M372 158v38"/>
+      </g>
+      <path d="M0 156h400" stroke="#c09a6c" stroke-width="3"/>
+      <path d="M0 198h400" stroke="#a8814f" stroke-width="4"/>
+      <rect x="0" y="200" width="400" height="100" fill="url(#rdf)"/>
+      <g stroke="#b2884f" stroke-width="1.5" opacity=".5">
+        <path d="M0 226h400M0 254h400M0 286h400"/></g>
+      <g stroke="#b2884f" stroke-width="1.2" opacity=".35">
+        <path d="M96 200v26M254 200v26M40 226v28M180 226v28M320 226v28M130 254v32M292 254v32"/></g>
+    </svg>` },
+
+  { id: "attic", name: "屋根裏", floor: 0.70, svg: `
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="rab" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff4d4" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#fff4d4" stop-opacity="0"/></linearGradient>
+      </defs>
+      <rect width="400" height="300" fill="#f1e6d0"/>
+      <rect width="400" height="18" fill="#dccbab"/>
+      <path d="M0 18 112 112 0 112z" fill="#e4d6b8"/>
+      <path d="M400 18 288 112 400 112z" fill="#e4d6b8"/>
+      <g stroke="#d2bf9c" stroke-width="3">
+        <path d="M30 18 112 86M68 18 112 55M0 56 68 112M0 86 30 112"/>
+        <path d="M370 18 288 86M332 18 288 55M400 56 332 112M400 86 370 112"/></g>
+      <circle cx="200" cy="60" r="31" fill="#dcecf2"/>
+      <path d="M200 29v62M169 60h62" stroke="#b08a63" stroke-width="3.5"/>
+      <circle cx="200" cy="60" r="31" fill="none" stroke="#b08a63" stroke-width="5"/>
+      <path d="M0 18 112 112" stroke="#a8814f" stroke-width="7"/>
+      <path d="M400 18 288 112" stroke="#a8814f" stroke-width="7"/>
+      <rect x="104" y="99" width="192" height="13" rx="3" fill="#b08a63"/>
+      <rect x="0" y="112" width="400" height="98" fill="#ece0c6"/>
+      <path d="M164 110 236 110 258 214 142 214z" fill="url(#rab)"/>
+      <g stroke="#ddcdae" stroke-width="2.4">
+        <path d="M46 112v74M354 112v74"/></g>
+      <rect x="0" y="186" width="400" height="24" fill="#e0c9a4"/>
+      <path d="M0 186h400" stroke="#c09a6c" stroke-width="2.5"/>
+      <path d="M0 208h400" stroke="#a8814f" stroke-width="4"/>
+      <rect x="0" y="210" width="400" height="90" fill="#cfa877"/>
+      <g stroke="#a87f4c" stroke-width="1.5" opacity=".55">
+        <path d="M0 236h400M0 262h400M0 288h400"/></g>
+      <g stroke="#a87f4c" stroke-width="1.2" opacity=".38">
+        <path d="M118 210v26M286 210v26M60 236v26M210 236v26M344 236v26M150 262v26M300 262v26"/></g>
+    </svg>` },
+
+  { id: "green", name: "温室", floor: 0.653, svg: `
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="400" height="300" fill="#eef4ea"/>
+      <rect width="400" height="196" fill="#e1ebdc"/>
+      <g fill="#c6daBD" opacity=".85">
+        <circle cx="56" cy="152" r="48"/><circle cx="146" cy="166" r="32"/>
+        <circle cx="336" cy="148" r="52"/><circle cx="256" cy="170" r="28"/></g>
+      <g stroke="#9db98f" stroke-width="2.6" opacity=".8">
+        <path d="M100 34v162M300 34v162M44 134h112M244 134h112"/></g>
+      <g fill="none" stroke="#7a9c6e" stroke-width="6">
+        <path d="M44 196V92a56 56 0 0 1 112 0v104z"/>
+        <path d="M244 196V92a56 56 0 0 1 112 0v104z"/></g>
+      <rect x="184" y="30" width="32" height="166" fill="#e6eee1"/>
+      <path d="M184 30v166M216 30v166" stroke="#9db98f" stroke-width="3"/>
+      <rect y="14" width="400" height="18" fill="#8fae82"/>
+      <path d="M0 194h400" stroke="#7a9c6e" stroke-width="5"/>
+      <g>
+        <path d="M30 192c-18-18-18-52 4-68 12 20 12 50-4 68z" fill="#8fae82"/>
+        <path d="M40 192c17-16 20-46 2-62-12 18-13 44-2 62z" fill="#a8c49a"/>
+        <path d="M16 178h40l-6 20H22z" fill="#c08a5e"/>
+      </g>
+      <g>
+        <path d="M372 192c16-16 15-46-3-60-9 18-8 44 3 60z" fill="#8fae82"/>
+        <path d="M362 192c-14-13-16-38-2-52 9 15 10 36 2 52z" fill="#a8c49a"/>
+        <path d="M348 180h38l-6 18h-26z" fill="#c08a5e"/>
+      </g>
+      <rect y="196" width="400" height="104" fill="#e0d2b8"/>
+      <g stroke="#c9b795" stroke-width="1.8" opacity=".85">
+        <path d="M0 224h400M0 254h400M0 286h400"/>
+        <path d="M72 196 28 300M162 196 142 300M238 196 258 300M328 196 372 300"/></g>
+    </svg>` },
+
+  { id: "night", name: "夜の窓辺", floor: 0.687, svg: `
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <radialGradient id="rnm" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#f9e7bb" stop-opacity=".34"/>
+          <stop offset="1" stop-color="#f9e7bb" stop-opacity="0"/></radialGradient>
+        <linearGradient id="rnw" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f9e7bb" stop-opacity=".22"/>
+          <stop offset="1" stop-color="#f9e7bb" stop-opacity="0"/></linearGradient>
+      </defs>
+      <rect width="400" height="300" fill="#52413a"/>
+      <path d="M142 152V78a58 58 0 0 1 116 0v74z" fill="#20293c"/>
+      <circle cx="232" cy="66" r="16" fill="#f7eecb" opacity=".92"/>
+      <circle cx="232" cy="66" r="30" fill="#f7eecb" opacity=".10"/>
+      <g fill="#f7eecb" opacity=".7">
+        <circle cx="168" cy="58" r="2"/><circle cx="186" cy="96" r="1.6"/>
+        <circle cx="158" cy="112" r="1.8"/><circle cx="212" cy="114" r="1.4"/>
+        <circle cx="248" cy="106" r="1.7"/><circle cx="196" cy="44" r="1.5"/></g>
+      <path d="M200 152V22M142 112h116" stroke="#8a6446" stroke-width="4"/>
+      <path d="M142 152V78a58 58 0 0 1 116 0v74z" fill="none" stroke="#8a6446" stroke-width="7"/>
+      <path d="M144 150 256 150 296 216 104 216z" fill="url(#rnw)"/>
+      <rect y="152" width="400" height="54" fill="#5c493f"/>
+      <path d="M0 152h400" stroke="#6b5549" stroke-width="3"/>
+      <path d="M0 204h400" stroke="#3c302a" stroke-width="4"/>
+      <rect y="206" width="400" height="94" fill="#413530"/>
+      <ellipse cx="200" cy="248" rx="168" ry="50" fill="url(#rnm)"/>
+      <g stroke="#2f2622" stroke-width="1.5" opacity=".7">
+        <path d="M0 232h400M0 260h400M0 286h400"/></g>
+      <g stroke="#2f2622" stroke-width="1.2" opacity=".5">
+        <path d="M104 206v26M272 206v26M46 232v28M196 232v28M330 232v28M140 260v26M296 260v26"/></g>
+    </svg>` }
+];
+
+let roomSel = null;                  // えらんでいる家具の番号（null はえらんでいない）
+const roomPt = new Map();            // いま触っている指 {pointerId: {x,y}}
+let roomDrag = null;                 // 動かし中 {i, el, ox, oy}
+let roomPinch = null;                // 二本指で大きさを変え中 {d0, h0}
+
+/* 置き場。古いセーブにも、まだ無い部屋にも耐える */
+function roomState() {
+  if (!state.room || typeof state.room !== "object") state.room = { bg: 0, sets: {} };
+  if (!state.room.sets || typeof state.room.sets !== "object") state.room.sets = {};
+  if (typeof state.room.bg !== "number" || !ROOMS[state.room.bg]) state.room.bg = 0;
+  return state.room;
+}
+function roomItems() {
+  const R = roomState(), key = ROOMS[R.bg].id;
+  if (!Array.isArray(R.sets[key])) R.sets[key] = [];
+  return R.sets[key];
+}
+/* 置ける家具 ── 図鑑で一台でも仕上げたもの（秘伝もふくむ） */
+const roomStock = () => allDexEntries()
+  .filter(e => state.completed[e.id] && state.completed[e.id].count > 0);
+
+const roomClamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function roomPieceStyle(it, e) {
+  const f = e.artFilter ? e.artFilter + " " : "";
+  return `left:${(it.x * 100).toFixed(2)}%;top:${(it.y * 100).toFixed(2)}%;`
+       + `height:${(it.h * 100).toFixed(2)}%;`
+       + `transform:translate(-50%,-100%) scaleX(${it.fl});`
+       + `filter:${f}drop-shadow(0 2px 3px rgba(60,40,20,.35))`;
+}
+
+/* ----------------------------------------------------------
+   どの家具をさわったか
+   ----------------------------------------------------------
+   写真は四角いが、家具は四角くない。四角で当てると、
+   前にある家具の「透けている角」に取られて、うしろの家具を
+   つかめなくなる。そこで、写真の点が透けていないかどうかで見る。
+
+   透け具合は写真ごとに一度だけ調べて覚えておく（1画素1バイト）。
+   読めない browser では、これまでどおり四角で当たる。
+   ---------------------------------------------------------- */
+const roomHit = {};
+
+function roomAlpha(el) {
+  if (roomHit[el.src] !== undefined) return roomHit[el.src];
+  let a = null;
+  try {
+    if (el.complete && el.naturalWidth) {
+      const w = el.naturalWidth, h = el.naturalHeight;
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const g = cv.getContext("2d");
+      g.drawImage(el, 0, 0);
+      const d = g.getImageData(0, 0, w, h).data;
+      const m = new Uint8Array(w * h);
+      for (let i = 0; i < m.length; i++) m[i] = d[i * 4 + 3];
+      a = { w, h, m };
+    }
+  } catch (e) { a = null; }      // 読めなければ四角で当てる
+  roomHit[el.src] = a;
+  return a;
+}
+
+/* 指は太いので、押した所のまわりも少し見る */
+const ROOM_TOUCH = [[0, 0], [-7, 0], [7, 0], [0, -7], [0, 7]];
+
+function roomPick(stage, cx, cy) {
+  const els = Array.from(stage.querySelectorAll(".rp"));
+  let box = null;                                  // 絵には当たらなかったが、枠には入ったもの
+  for (let k = els.length - 1; k >= 0; k--) {      // 手前にあるものから見る
+    const el = els[k], r = el.getBoundingClientRect();
+    if (cx < r.left - 7 || cx > r.right + 7 || cy < r.top - 7 || cy > r.bottom + 7) continue;
+    const a = roomAlpha(el);
+    if (!a) return el;                             // 透け具合が読めないときは四角のまま
+    if (!box) box = el;
+    const flip = el.style.transform.indexOf("scaleX(-1)") >= 0;
+    for (let t = 0; t < ROOM_TOUCH.length; t++) {
+      const px = cx + ROOM_TOUCH[t][0], py = cy + ROOM_TOUCH[t][1];
+      let u = (px - r.left) / r.width;
+      const v = (py - r.top) / r.height;
+      if (flip) u = 1 - u;
+      const x = Math.floor(u * a.w), y = Math.floor(v * a.h);
+      if (x < 0 || y < 0 || x >= a.w || y >= a.h) continue;
+      if (a.m[y * a.w + x] > 24) return el;
+    }
+  }
+  /* どの絵にも当たらなかったとき。椅子の脚のあいだのような
+     「すき間」をつまんだ場合なので、いちばん手前の家具を返す。
+     うしろに絵がある所は上で先に拾われているので、取りちがえない */
+  return box;
+}
+
+function renderRoom() {
+  const R = roomState();
+  const stock = roomStock();
+  const byId = {};
+  stock.forEach(e => { byId[e.id] = e; });
+
+  /* 図鑑から消えた家具（催しの設計図など）が残っていたら、静かに落とす */
+  const items = roomItems().filter(it => byId[it.id]);
+  R.sets[ROOMS[R.bg].id] = items;
+  if (roomSel !== null && !items[roomSel]) roomSel = null;
+
+  const bgs = ROOMS.map((r, i) =>
+    `<button class="rbg-btn${i === R.bg ? " on" : ""}" data-bg="${i}">${r.name}</button>`).join("");
+
+  const pieces = items.map((it, i) => {
+    const e = byId[it.id];
+    return `<img class="rp${roomSel === i ? " sel" : ""}" data-i="${i}" src="${e.photo}"`
+         + ` alt="${esc(e.name)}" draggable="false" style="${roomPieceStyle(it, e)}">`;
+  }).join("");
+
+  const full = items.length >= ROOM_MAX;
+  const shelf = stock.length
+    ? `<div class="room-shelf">` + stock.map(e =>
+        `<button class="rs-item" data-add="${e.id}" title="${esc(e.name)}"${full ? " disabled" : ""}>`
+        + `<span class="rs-thumb"><img src="${e.photo}" alt=""`
+        + (e.artFilter ? ` style="filter:${e.artFilter}"` : "") + `></span>`
+        + `<span class="rs-name">${esc(e.name)}</span></button>`).join("") + `</div>`
+    : `<div class="room-empty">まだ一台も仕上がっておらんな。<br>`
+      + `ひとつ作って図鑑に入れれば、ここに並ぶぞ。</div>`;
+
+  /* 棚は長い。置くたびに先頭へもどってしまわないよう、位置を覚えておく */
+  const shelfWas = $(".room-shelf");
+  const shelfTop = shelfWas ? shelfWas.scrollTop : 0;
+
+  $("#room-body").innerHTML =
+    `<div class="rbg-row">${bgs}</div>
+     <div class="room-stage" id="room-stage">
+       <span class="rbg">${ROOMS[R.bg].svg}</span>${pieces}
+     </div>
+     <div id="room-ctl">${roomCtlHtml(byId)}</div>
+     <div class="room-count${full ? " full" : ""}">置いてある家具　${items.length} / ${ROOM_MAX}`
+       + `${full ? "　これ以上は置けません。どれかはずしてください" : ""}</div>
+     ${shelf}
+     ${items.length ? `<button class="room-clear" id="room-clear">この部屋を片づける</button>` : ""}`;
+
+  const shelfNow = $(".room-shelf");
+  if (shelfNow && shelfTop) shelfNow.scrollTop = shelfTop;
+
+  bindRoom(byId);
+}
+
+function roomCtlHtml(byId) {
+  const items = roomItems();
+  if (roomSel === null || !items[roomSel]) {
+    return `<div class="room-tip">下の棚から、置きたい家具をえらんでください。<br>`
+         + `置いた家具は、指でつまんで動かせます。<br>`
+         + `二本指でひろげると、大きさが変わります。</div>`;
+  }
+  const e = byId[items[roomSel].id];
+  return `<div class="room-ctl">
+      <div class="rc-name">${esc(e ? e.name : "")}</div>
+      <div class="rc-row">
+        <button data-rc="small" aria-label="小さく">－</button>
+        <button data-rc="big" aria-label="大きく">＋</button>
+        <button data-rc="flip" aria-label="左右を返す">⇄</button>
+        <button data-rc="front">手前へ</button>
+        <button data-rc="back">奥へ</button>
+        <button data-rc="off">はずす</button>
+      </div>
+    </div>`;
+}
+
+/* 棚からひとつ置く。同じ所に重ならないよう、少しずつずらす */
+function roomAdd(id) {
+  const items = roomItems();
+  if (items.length >= ROOM_MAX) return;   // 棚のほうを押せなくしてあるので、ふつうは来ない
+  const n = items.length;
+  items.push({ id, x: +(0.28 + (n % 5) * 0.11).toFixed(3),
+               y: ROOMS[roomState().bg].floor, h: 0.3, fl: 1 });
+  roomSel = items.length - 1;
+  save();
+  renderRoom();
+}
+
+function roomCtl(cmd) {
+  const items = roomItems();
+  if (roomSel === null || !items[roomSel]) return;
+  const it = items[roomSel];
+  if (cmd === "small") it.h = +roomClamp(it.h - 0.03, 0.08, 0.95).toFixed(3);
+  if (cmd === "big")   it.h = +roomClamp(it.h + 0.03, 0.08, 0.95).toFixed(3);
+  if (cmd === "flip")  it.fl = it.fl === 1 ? -1 : 1;
+  if (cmd === "front") { items.push(items.splice(roomSel, 1)[0]); roomSel = items.length - 1; }
+  if (cmd === "back")  { items.unshift(items.splice(roomSel, 1)[0]); roomSel = 0; }
+  if (cmd === "off")   { items.splice(roomSel, 1); roomSel = null; }
+  save();
+  renderRoom();
+}
+
+/* えらび直しでは作り直さない。動かしている最中に要素が消えると、
+   指が離れてしまうため、印と操作バーだけを書きかえる */
+function roomMarkSel(byId) {
+  document.querySelectorAll("#room-stage .rp").forEach(el =>
+    el.classList.toggle("sel", +el.dataset.i === roomSel));
+  $("#room-ctl").innerHTML = roomCtlHtml(byId);
+  bindRoomCtl();
+}
+
+function bindRoomCtl() {
+  document.querySelectorAll("#room-ctl [data-rc]").forEach(b =>
+    b.addEventListener("click", () => roomCtl(b.dataset.rc)));
+}
+
+function bindRoom(byId) {
+  document.querySelectorAll("#room-body [data-bg]").forEach(b =>
+    b.addEventListener("click", () => {
+      roomState().bg = +b.dataset.bg;
+      roomSel = null;
+      save();
+      renderRoom();
+    }));
+  document.querySelectorAll("#room-body [data-add]").forEach(b =>
+    b.addEventListener("click", () => roomAdd(b.dataset.add)));
+  bindRoomCtl();
+
+  const clr = $("#room-clear");
+  if (clr) clr.addEventListener("click", () => {
+    if (!confirm("この部屋に置いた家具を、ぜんぶはずしますか？")) return;
+    roomState().sets[ROOMS[roomState().bg].id] = [];
+    roomSel = null;
+    save();
+    renderRoom();
+  });
+
+  const stage = $("#room-stage");
+  if (!stage) return;
+  const box = () => stage.getBoundingClientRect();
+
+  stage.addEventListener("pointerdown", (ev) => {
+    const el = roomPick(stage, ev.clientX, ev.clientY);
+    if (!el) {                       // 床や壁をさわったら、えらぶのをやめる
+      if (roomSel !== null) { roomSel = null; roomMarkSel(byId); }
+      return;
+    }
+    ev.preventDefault();
+    roomPt.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    const i = +el.dataset.i;
+    if (roomSel !== i) { roomSel = i; roomMarkSel(byId); }
+
+    if (roomPt.size >= 2) {          // 二本目の指 → 大きさを変える
+      const p = Array.from(roomPt.values());
+      roomDrag = null;
+      roomPinch = { d0: Math.max(8, Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y)),
+                    h0: roomItems()[roomSel].h };
+      return;
+    }
+    const b = box(), it = roomItems()[i];
+    roomDrag = { i, el, ox: it.x - (ev.clientX - b.left) / b.width,
+                        oy: it.y - (ev.clientY - b.top) / b.height };
+    try { el.setPointerCapture(ev.pointerId); } catch (e) { /* 使えなくても動く */ }
+  });
+
+  stage.addEventListener("pointermove", (ev) => {
+    if (!roomPt.has(ev.pointerId)) return;
+    roomPt.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    const items = roomItems();
+
+    if (roomPinch && roomPt.size >= 2 && roomSel !== null && items[roomSel]) {
+      const p = Array.from(roomPt.values());
+      const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+      const it = items[roomSel];
+      it.h = +roomClamp(roomPinch.h0 * d / roomPinch.d0, 0.08, 0.95).toFixed(3);
+      const el = stage.querySelector(".rp.sel");
+      if (el) el.style.height = (it.h * 100).toFixed(2) + "%";
+      return;
+    }
+    if (roomDrag && items[roomDrag.i]) {
+      const b = box(), it = items[roomDrag.i];
+      it.x = +roomClamp((ev.clientX - b.left) / b.width + roomDrag.ox, 0.03, 0.97).toFixed(4);
+      it.y = +roomClamp((ev.clientY - b.top) / b.height + roomDrag.oy, 0.10, 1).toFixed(4);
+      roomDrag.el.style.left = (it.x * 100).toFixed(2) + "%";
+      roomDrag.el.style.top  = (it.y * 100).toFixed(2) + "%";
+    }
+  });
+
+  const letGo = (ev) => {
+    if (!roomPt.has(ev.pointerId)) return;
+    roomPt.delete(ev.pointerId);
+    if (roomPt.size === 0) {
+      if (roomDrag || roomPinch) save();
+      roomDrag = null;
+      roomPinch = null;
+    } else if (roomPinch) {
+      roomPinch = null;            // 指が一本に減ったら、大きさ変えはそこで終わり
+    }
+  };
+  stage.addEventListener("pointerup", letGo);
+  stage.addEventListener("pointercancel", letGo);
+}
+
 function openModal(id) { $("#" + id).classList.add("open"); }
 function closeModal(id) { $("#" + id).classList.remove("open"); }
 function openStoryPop(title, text, badge) {
@@ -6561,6 +7092,9 @@ function init() {
   drawKobo();
 
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
+  $("#btn-room").addEventListener("click", () => {
+    roomSel = null; renderRoom(); openModal("room-modal");
+  });
   $("#btn-show").addEventListener("click", () => { renderShow(); openModal("show-modal"); });
   $("#btn-market").addEventListener("click", () => { renderMarket(); openModal("market-modal"); });
   $("#btn-gear").addEventListener("click", () => { renderGear(); openModal("gear-modal"); });
