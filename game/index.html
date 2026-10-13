@@ -365,6 +365,33 @@ main{ flex:1; padding:10px 14px 8px; display:flex; flex-direction:column; gap:10
 
 /* 固定フッターの高さぶんの余白。これがないと、いちばん下のボタンが隠れる */
 #bottom-space{ flex:0 0 auto; height:92px; }
+/* 案内の帯が出ているあいだは、そのぶんも空ける（帯が内容に重ならないように） */
+body.guided #bottom-space{ height:176px; }
+
+/* ---------- はじめの案内 ---------- */
+#guide{
+  position:sticky; bottom:92px; z-index:29; margin:0 10px -4px;
+  display:flex; align-items:center; gap:8px;
+  background:linear-gradient(180deg,#fdf6e6,#f7ecd2);
+  border:2px solid var(--gold); border-radius:14px;
+  padding:9px 11px; box-shadow:0 4px 12px rgba(107,74,47,.22);
+}
+#guide .g-say{ flex:1; font-size:.76rem; line-height:1.65; color:var(--brown); }
+#guide .g-say b{ color:#a97c14; }
+#guide .g-skip{
+  flex:0 0 auto; font-family:inherit; font-size:.62rem; color:var(--brown-mid);
+  border:1.5px solid var(--brown-soft); background:var(--paper);
+  border-radius:999px; padding:5px 9px; cursor:pointer; min-height:32px;
+}
+/* 次に押すところを光らせる。外枠なので、ボタンの影とけんかしない */
+.guide-hi{
+  outline:3px solid var(--gold); outline-offset:3px; border-radius:inherit;
+  animation:guideGlow 1.3s ease-in-out infinite;
+}
+@keyframes guideGlow{
+  0%,100%{ outline-color:rgba(201,162,75,.30); }
+  50%    { outline-color:rgba(201,162,75,1); }
+}
 
 /* ---------- 固定フッター ---------- */
 footer{
@@ -1069,6 +1096,9 @@ footer{
 
 <!-- 固定フッターの下に中身が隠れないための余白 -->
 <div id="bottom-space"></div>
+
+<!-- はじめの一台だけ、KoBoさんが手順を教えてくれる帯 -->
+<div id="guide" hidden></div>
 
 <!-- ========== 固定フッター ========== -->
 <footer>
@@ -4528,7 +4558,7 @@ const SAVE_KEY = "matsunaga-craft-story-v1";
    ゲーム状態
    ========================================================== */
 let state = {
-  ver: 14,
+  ver: 15,
   player: { name: "", avatar: { skin:0, hairColor:0, hair:0, eyes:0, mouth:0, hat:0, glasses:0, beard:0, ear:0 } },
   money: 0,
   exp: 0,
@@ -4561,7 +4591,8 @@ let state = {
   stories: [],                    // 解放済み物語のid（家具id・レシピid・"final"）
   tool: "normal",                 // 山場でえらんだ道具（normal / sharp / old）
   event: {},                      // 合言葉で開いた催し { doll: {day} }
-  boost: { quality: 0, pop: 0, action: 0 }  // 消耗品でためた「つぎの一台」ぶん
+  boost: { quality: 0, pop: 0, action: 0 }, // 消耗品でためた「つぎの一台」ぶん
+  guide: 1                                  // はじめの案内　1=案内中 2=終わった/やめた
 };
 
 /* 制作前の設計えらび（一時状態。セーブしない） */
@@ -4683,6 +4714,11 @@ function load() {
       });
     }
   }
+  if (savedVer !== 15) {  // 第14章: はじめの一台の案内
+    /* すでに一台でも作っている職人には、いまさら案内を出さない。
+       まっさらな職人にだけ出す */
+    if (typeof state.guide !== "number") state.guide = firstDone() ? 2 : 1;
+  }
   if (savedVer !== 14) {  // 第13章: 似顔絵を、工房の絵に描きかえる
     /* 顔の部品がそっくり入れかわったので、番号の指す先を読みかえる。
        今の顔にいちばん近いものへ移し、無いもの（つるりなど）は既定にもどす */
@@ -4705,7 +4741,7 @@ function load() {
   /* 移行の条件はどれも「savedVer !== N」なので、新しいセーブでも途中の
      ブロックを通ってしまい、state.ver が巻き戻ることがあった。
      ぜんぶ通したあとで、版は必ず最新にそろえる */
-  state.ver = 14;
+  state.ver = 15;
 }
 
 /* ==========================================================
@@ -5239,6 +5275,87 @@ function render() {
   if (state.currentId) renderCraft();
   else if (prep) renderPrep();
   else renderSelect();
+  renderGuide();
+}
+
+/* ----------------------------------------------------------
+   はじめの一台の案内
+   ----------------------------------------------------------
+   遊び方がわからない人のために、最初の一台だけ KoBoさんが
+   手順を教える。次に押すところが光り、帯に「なぜそうするか」が出る。
+
+   いま何をすべきかは、**画面に出ているもの**から決めている。
+   どの工程か・何台目かといった中の事情を見ないので、
+   家具を足しても工程を変えても、案内のほうは直さなくてよい。
+
+   state.guide  1 = 案内中 ／ 2 = 終わった、またはやめた
+   ---------------------------------------------------------- */
+const firstDone = () => Object.values(state.completed)
+  .some(r => r && typeof r === "object" && r.count > 0);
+
+/* 次に押すところと、かける言葉。上から順に見て、最初に当てはまったもの */
+const GUIDE_STEPS = [
+  { sel: "#btn-deliver",
+    say: "できたのう。<b>納品</b>すればその場で金になる。<b>展示</b>すれば、毎日お客が見にくるぞ。" },
+  { sel: "#btn-action",
+    say: "ここが<b>山場</b>じゃ。「腕を見せる」を押すと、おぬしの手で仕上げられる。" },
+  { sel: ".choice-btn:not([disabled])",
+    say: "工程をひとつずつ進めるのじゃ。<b>ていねいにやるほど品質は上がる</b>が、時間と集中力を食う。" },
+  { sel: "#btn-start:not([disabled])",
+    say: "設計・木・仕上げで、できあがりの顔つきが変わる。決まったら<b>「制作をはじめる」</b>じゃ。" },
+  { sel: "#btn-market", when: () => !!prep,
+    say: "木が足りておらんな。下の<b>🧺 仕入れ</b>で、木を一本買うのじゃ。" },
+  { sel: ".select-item:not(.locked)",
+    say: "まずは<b>設計図</b>をえらぶのじゃ。下の一覧から、好きな一台を押してみよ。" }
+];
+
+let guideLast = "";          // いま光らせている所。変わったときだけ画面を送る
+
+function renderGuide() {
+  const box = $("#guide");
+  if (!box) return;
+  document.querySelectorAll(".guide-hi").forEach(e => e.classList.remove("guide-hi"));
+
+  /* 一台できあがったら、案内はおしまい */
+  if (state.guide === 1 && firstDone()) {
+    state.guide = 2; save();
+    showMessage(`よし、一台じゃ。${you()}、あとは好きに作ってよい。`
+      + "図鑑を埋めるもよし、展示室をにぎやかにするもよし。");
+  }
+  const hide = () => {
+    box.hidden = true; box.innerHTML = ""; guideLast = "";
+    document.body.classList.remove("guided");
+  };
+  if (state.guide !== 1) { hide(); return; }
+
+  const step = GUIDE_STEPS.find(g => (!g.when || g.when()) && document.querySelector(g.sel));
+  if (!step) { hide(); return; }
+
+  const target = document.querySelector(step.sel);
+  target.classList.add("guide-hi");
+  box.hidden = false;
+  document.body.classList.add("guided");
+  box.innerHTML =
+    `<span class="g-say">${step.say}</span>
+     <button class="g-skip" id="g-skip">案内をやめる</button>`;
+  $("#g-skip").addEventListener("click", () => {
+    state.guide = 2; save(); render();
+    showMessage("うむ。わからなくなったら、工房の画面から呼びもどせるぞ。");
+  });
+
+  /* 光らせた所が帯の裏や画面の外にいたら、一度だけ見える位置まで送る。
+     毎回送ると、読んでいる途中で画面が動いてしまうので、変わったときだけ */
+  if (guideLast !== step.sel) {
+    guideLast = step.sel;
+    setTimeout(() => {
+      if (!document.body.contains(target)) return;
+      const r = target.getBoundingClientRect();
+      const bar = box.getBoundingClientRect().top;
+      if (r.bottom > bar - 8 || r.top < 56) {
+        target.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+    }, 180);
+  }
 }
 
 /* ==========================================================
@@ -6355,6 +6472,14 @@ function renderAbout() {
       <button class="foot-btn" id="btn-cert"
               style="max-width:240px;margin:10px auto 0;display:block;min-height:44px">🎖 職人の記念証を見る</button>
     </div>
+    ${!firstDone() ? `<div class="about-block" style="text-align:center">
+      <h4>🧭 はじめの案内</h4>
+      <p style="text-align:center">最初の一台だけ、手順をお教えします。${
+        state.guide === 1 ? "いま案内中です。" : "いまは出していません。"}</p>
+      <button class="foot-btn" id="btn-guide"
+              style="max-width:240px;margin:8px auto 0;display:block;min-height:44px">${
+        state.guide === 1 ? "案内をやめる" : "案内をもう一度"}</button>
+    </div>` : ""}
     ${practiceOpen() ? `<div class="about-block">
       <h4>🔥 山場のけいこ</h4>
       <p>10種を、家具を作らずにためせます。<b>点は記録に残りません。</b></p>
@@ -6455,6 +6580,12 @@ function init() {
         closeModal("about-modal");
         practiceAction(b.dataset.mg);
       }));
+
+    const gb = $("#btn-guide");
+    if (gb) gb.addEventListener("click", () => {
+      state.guide = state.guide === 1 ? 2 : 1;
+      save(); render(); renderAbout();
+    });
 
     $("#btn-cert").addEventListener("click", () => {
       closeModal("about-modal"); renderCert(); openModal("cert-modal");
