@@ -1195,6 +1195,70 @@ footer{
   line-height:1.4; padding:4px 2px; min-height:74px;
 }
 .rs-add:active{ transform:translateY(2px); }
+/* ---------- 撮影と写真棚 ---------- */
+.room-cam{ display:flex; gap:6px; margin-top:9px; }
+.room-cam button{
+  flex:1; font-family:inherit; font-size:.72rem; font-weight:bold;
+  min-height:46px; border-radius:11px; cursor:pointer;
+}
+.cam-go{
+  color:#fff; border:2px solid #a97c14;
+  background:linear-gradient(180deg,#e0bd63,var(--gold));
+  box-shadow:0 3px 0 #a97c14;
+}
+.cam-go:active{ transform:translateY(2px); box-shadow:0 1px 0 #a97c14; }
+.cam-go:disabled{ opacity:.5; box-shadow:none; }
+.cam-album{
+  color:var(--brown); border:2px solid var(--brown-mid);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+  box-shadow:0 3px 0 var(--brown-mid);
+}
+.cam-album:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-mid); }
+/* シャッターの、ひとまたたき */
+.room-stage .flash{
+  position:absolute; inset:0; background:#fff; pointer-events:none;
+  animation:camFlash .42s ease-out forwards;
+}
+@keyframes camFlash{ from{ opacity:.85; } to{ opacity:0; } }
+.cam-said{
+  text-align:center; font-size:.68rem; font-weight:bold; color:var(--green-deep);
+  margin-top:7px; animation:triviaIn .3s ease;
+}
+
+#album-modal .modal{ max-width:520px; }
+.album-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.album-card{
+  border:2px solid var(--wood-light); border-radius:12px; overflow:hidden;
+  background:#fffdf7; cursor:pointer; padding:0; font-family:inherit;
+}
+.album-card img{ width:100%; display:block; }
+.album-card .ac-at{ font-size:.6rem; color:var(--brown-mid); padding:4px 2px; }
+.album-empty{
+  text-align:center; font-size:.72rem; color:var(--brown-mid); line-height:1.9;
+  padding:18px 10px; border:2px dashed var(--wood-light); border-radius:12px;
+  background:#fffdf7;
+}
+.album-big img{
+  width:100%; display:block; border:2px solid var(--wood-dark); border-radius:12px;
+}
+.album-big .ab-at{ text-align:center; font-size:.66rem; color:var(--brown-mid); margin:7px 0 9px; }
+.album-row{ display:flex; gap:6px; }
+.album-row button{
+  flex:1; font-family:inherit; font-size:.68rem; font-weight:bold; color:var(--brown);
+  min-height:44px; border-radius:10px; cursor:pointer;
+  border:2px solid var(--brown-mid);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+}
+.album-row button:active{ transform:translateY(2px); }
+.album-row .ab-save{ background:linear-gradient(180deg,#a9cb9b,var(--green-deep));
+  color:#fff; border-color:#5f7d55; }
+.album-note{ font-size:.64rem; color:var(--brown-mid); line-height:1.75; margin-top:10px; }
+.album-top{
+  display:flex; align-items:center; gap:8px; margin-bottom:10px;
+  font-size:.66rem; color:var(--brown-mid);
+}
+.album-top label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+.album-top input{ width:18px; height:18px; accent-color:var(--green-deep); }
 </style>
 </head>
 <body>
@@ -1281,6 +1345,16 @@ footer{
     <div id="doll-body"></div>
     <input type="file" id="doll-file" accept="image/*" hidden>
     <button class="close" data-close="doll-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：写真棚 ========== -->
+<div class="modal-back" id="album-modal">
+  <div class="modal">
+    <button class="x-close" data-close="album-modal" aria-label="とじる">✕</button>
+    <h3>🖼 写真棚</h3>
+    <div id="album-body"></div>
+    <button class="close" data-close="album-modal">とじる</button>
   </div>
 </div>
 
@@ -6410,6 +6484,253 @@ function dollCommit() {
 }
 
 /* ==========================================================
+   撮影と写真棚
+   ----------------------------------------------------------
+   飾った部屋をそのまま一枚の絵にして、写真棚にしまう。
+
+   絵は、画面に出ている <img> をそのまま canvas に写している。
+   位置も大きさも、画面から測った実寸をそのまま使うので、
+   **見えているとおりに撮れる**。絵の部屋だけは SVG を
+   いったん絵にしてから敷く。
+
+   写真も大きいので、セーブともうちの子とも別の置き場に入れる。
+   ========================================================== */
+const ALBUM_KEY = "matsunaga-craft-story-album-v1";
+const ALBUM_MAX = 12;         // しまっておける枚数
+const ALBUM_W   = 900;        // 撮る大きさ（横）
+
+let album = { v: 1, stamp: true, list: [] };
+let albumOpen = null;         // 大きく見ている写真のid
+let camSaid = "";             // 撮ったあとのひとこと
+
+function loadAlbum() {
+  try {
+    const raw = localStorage.getItem(ALBUM_KEY);
+    if (raw) {
+      const a = JSON.parse(raw);
+      if (a && Array.isArray(a.list)) album = a;
+      if (typeof album.stamp !== "boolean") album.stamp = true;
+    }
+  } catch (e) { /* 読めなくても、ゲームは動く */ }
+}
+function saveAlbum() {
+  try { localStorage.setItem(ALBUM_KEY, JSON.stringify(album)); return true; }
+  catch (e) { return false; }
+}
+
+const camDate = (t) => {
+  const d = new Date(t);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`
+       + `.${String(d.getDate()).padStart(2, "0")}`;
+};
+
+/* 落款。小さく、すみに */
+function camStamp(g, W, H, at) {
+  const fs = Math.max(10, Math.round(W * 0.0155));
+  g.font = `bold ${fs}px "Hiragino Maru Gothic ProN","BIZ UDGothic","Yu Gothic UI","Meiryo",sans-serif`;
+  /* 写真はお人形のためのもの。落款は、小さく、ひかえめに */
+  const t = `㈲松永工房　${camDate(at)}`;
+  const tw = g.measureText(t).width;
+  const pad = Math.round(fs * 0.85), m = Math.round(W * 0.018);
+  const bw = tw + pad * 2, bh = fs + pad * 1.2;
+  const x = W - m - bw, y = H - m - bh;
+  g.save();
+  g.globalAlpha = 0.72;
+  g.fillStyle = "#fffdf5";
+  if (g.roundRect) { g.beginPath(); g.roundRect(x, y, bw, bh, bh / 2); g.fill(); }
+  else g.fillRect(x, y, bw, bh);
+  g.globalAlpha = 1;
+  g.fillStyle = "#8a6446";
+  g.textBaseline = "middle";
+  g.fillText(t, x + pad, y + bh / 2);
+  g.restore();
+}
+
+/* いま見えている部屋を、一枚の絵にする */
+function camShoot(done) {
+  const stage = $("#room-stage");
+  if (!stage) { done(null); return; }
+  const sb = stage.getBoundingClientRect();
+  if (!sb.width || !sb.height) { done(null); return; }
+
+  const W = ALBUM_W, H = Math.round(W * sb.height / sb.width);
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const g = cv.getContext("2d");
+  const k = W / sb.width;
+  const at = Date.now();
+
+  const pieces = () => {
+    stage.querySelectorAll(".rp").forEach(el => {
+      const r = el.getBoundingClientRect();
+      const x = (r.left - sb.left) * k, y = (r.top - sb.top) * k;
+      const w = r.width * k, h = r.height * k;
+      g.save();
+      /* 色の変えてある家具や、落ちている影も、見えているとおりに */
+      try { g.filter = el.style.filter || "none"; } catch (e) { /* 使えなくても描ける */ }
+      const flip = el.style.transform.indexOf("scaleX(-1)") >= 0;
+      if (flip) { g.translate(x + w, y); g.scale(-1, 1); g.drawImage(el, 0, 0, w, h); }
+      else g.drawImage(el, x, y, w, h);
+      g.restore();
+    });
+    if (album.stamp) camStamp(g, W, H, at);
+    done({ cv, at });
+  };
+
+  const bg = stage.querySelector("img.rbg");
+  if (bg && bg.complete) { g.drawImage(bg, 0, 0, W, H); pieces(); return; }
+
+  /* 絵の部屋は、SVG をいったん絵にしてから敷く */
+  const svg = roomNow().svg;
+  if (!svg) { g.fillStyle = "#f1e6d0"; g.fillRect(0, 0, W, H); pieces(); return; }
+  const img = new Image();
+  img.onload  = () => { g.drawImage(img, 0, 0, W, H); pieces(); };
+  img.onerror = () => { g.fillStyle = "#f1e6d0"; g.fillRect(0, 0, W, H); pieces(); };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.trim());
+}
+
+const CAM_SAY = [
+  "よう撮れた。",
+  "ええ部屋じゃ。",
+  "これは、残しておきたくなるのう。",
+  "ほう。なかなかの腕じゃ。",
+  "写真棚にしまっておいたぞ。"
+];
+
+function camTake() {
+  if (album.list.length >= ALBUM_MAX) {
+    camSaid = `写真棚がいっぱいじゃ。${ALBUM_MAX}枚まで入る。`;
+    renderRoom();
+    return;
+  }
+  camShoot((shot) => {
+    if (!shot) { camSaid = "うまく撮れんかった。"; renderRoom(); return; }
+    let img = null;
+    try { img = shot.cv.toDataURL("image/webp", 0.82); } catch (e) { img = null; }
+    if (!img || img.indexOf("data:image/webp") !== 0) {
+      try { img = shot.cv.toDataURL("image/png"); } catch (e) { img = null; }
+    }
+    if (!img) { camSaid = "この部屋は撮れんかった。"; renderRoom(); return; }
+
+    const keep = album.list.slice();
+    album.list.unshift({ id: "p" + shot.at.toString(36), img, at: shot.at,
+                         room: roomNow().name });
+    if (!saveAlbum()) {
+      album.list = keep;
+      saveAlbum();
+      camSaid = "写真棚に入りきらん。古いのを何枚か出しておくれ。";
+      renderRoom();
+      return;
+    }
+    camSaid = pick(CAM_SAY);
+    renderRoom();
+    /* ひとまたたき */
+    const stage = $("#room-stage");
+    if (stage) {
+      const f = document.createElement("span");
+      f.className = "flash";
+      stage.appendChild(f);
+      setTimeout(() => { if (f.parentNode) f.parentNode.removeChild(f); }, 460);
+    }
+  });
+}
+
+/* ---------- 写真棚 ---------- */
+function openAlbum() { albumOpen = null; renderAlbum(); openModal("album-modal"); }
+
+function renderAlbum() {
+  const one = albumOpen && album.list.find(p => p.id === albumOpen);
+  let html = "";
+
+  if (one) {
+    html = `<div class="album-big">
+        <img src="${one.img}" alt="飾った部屋">
+        <div class="ab-at">${camDate(one.at)}　${esc(one.room || "")}</div>
+        <div class="album-row">
+          <button class="ab-save" id="ab-save">⬇ 保存する</button>
+          <button id="ab-back">一覧へ</button>
+          <button id="ab-del">消す</button>
+        </div>
+      </div>
+      <div class="album-note">
+        うまく保存できないときは、<b>写真を長押し</b>して保存してください。</div>`;
+  } else if (album.list.length) {
+    html = `<div class="album-top">
+        <label><input type="checkbox" id="ab-stamp"${album.stamp ? " checked" : ""}>
+          写真に工房の名前を入れる</label>
+      </div>
+      <div class="album-grid">` + album.list.map(p =>
+        `<button class="album-card" data-open="${p.id}">
+           <img src="${p.img}" alt="飾った部屋">
+           <div class="ac-at">${camDate(p.at)}　${esc(p.room || "")}</div>
+         </button>`).join("") + `</div>
+      <div class="album-note">${album.list.length} / ${ALBUM_MAX} 枚　
+        写真をおすと、大きく見られます。</div>`;
+  } else {
+    html = `<div class="album-empty">まだ一枚もないのう。<br>
+        お部屋をかざって、<b>📷 撮る</b> をおしてごらん。</div>`;
+  }
+  $("#album-body").innerHTML = html;
+  bindAlbum();
+}
+
+function bindAlbum() {
+  document.querySelectorAll("#album-body [data-open]").forEach(b =>
+    b.addEventListener("click", () => { albumOpen = b.dataset.open; renderAlbum(); }));
+
+  const st = $("#ab-stamp");
+  if (st) st.addEventListener("change", () => {
+    album.stamp = st.checked;
+    saveAlbum();
+  });
+
+  const back = $("#ab-back");
+  if (back) back.addEventListener("click", () => { albumOpen = null; renderAlbum(); });
+
+  const del = $("#ab-del");
+  if (del) del.addEventListener("click", () => {
+    if (!confirm("この写真を消しますか？")) return;
+    album.list = album.list.filter(p => p.id !== albumOpen);
+    saveAlbum();
+    albumOpen = null;
+    renderAlbum();
+    if ($("#room-stage")) renderRoom();
+  });
+
+  const sv = $("#ab-save");
+  if (sv) sv.addEventListener("click", () => {
+    const one = album.list.find(p => p.id === albumOpen);
+    if (one) camDownload(one);
+  });
+}
+
+/* 端末にしまう。data: のままだと落ちない browser があるので、
+   いったん blob にしてから渡す */
+function camDownload(one) {
+  /* 名前は英数字だけにしておく。日本語のファイル名は、
+     端末によっては文字化けしたり、保存そのものが落ちたりする */
+  const name = `matsunaga-kobo-${camDate(one.at).replace(/\./g, "")}`
+             + `-${one.id}.${one.img.indexOf("webp") > 0 ? "webp" : "png"}`;
+  try {
+    const bin = atob(one.img.slice(one.img.indexOf(",") + 1));
+    const buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    const type = one.img.slice(5, one.img.indexOf(";"));
+    const url = URL.createObjectURL(new Blob([buf], { type }));
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch (e) {
+    const a = document.createElement("a");
+    a.href = one.img; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+}
+
+/* ==========================================================
    ドールハウス（飾り部屋）
    ----------------------------------------------------------
    作った家具を部屋に並べる。家具の絵は図鑑と同じ実物写真を
@@ -6744,6 +7065,11 @@ function renderRoom() {
                   : `<span class="rbg">${room.svg}</span>`}${pieces}
      </div>
      <div id="room-ctl">${roomCtlHtml(byId, byDoll)}</div>
+     <div class="room-cam">
+       <button class="cam-go" id="cam-take"${items.length ? "" : " disabled"}>📷 撮る</button>
+       <button class="cam-album" id="cam-album">🖼 写真棚　${album.list.length}</button>
+     </div>
+     ${camSaid ? `<div class="cam-said">${esc(camSaid)}</div>` : ""}
      <div class="room-count${full ? " full" : ""}">置いてある家具　${items.length} / ${ROOM_MAX}`
        + `${full ? "　これ以上は置けません。どれかはずしてください" : ""}</div>
      ${shelf}
@@ -6837,6 +7163,10 @@ function bindRoom(byId, byDoll) {
     b.addEventListener("click", () => roomAdd(b.dataset.doll, "d")));
   const dollBtn = $("#room-doll");
   if (dollBtn) dollBtn.addEventListener("click", openDollEditor);
+  const take = $("#cam-take");
+  if (take) take.addEventListener("click", camTake);
+  const alb = $("#cam-album");
+  if (alb) alb.addEventListener("click", openAlbum);
   bindRoomCtl();
 
   const clr = $("#room-clear");
@@ -7641,11 +7971,12 @@ function init() {
   }
 
   loadDolls();
+  loadAlbum();
   drawKobo();
 
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
   $("#btn-room").addEventListener("click", () => {
-    roomSel = null; renderRoom(); openModal("room-modal");
+    roomSel = null; camSaid = ""; renderRoom(); openModal("room-modal");
   });
   $("#btn-show").addEventListener("click", () => { renderShow(); openModal("show-modal"); });
   $("#btn-market").addEventListener("click", () => { renderMarket(); openModal("market-modal"); });
