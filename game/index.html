@@ -6704,30 +6704,45 @@ function bindAlbum() {
   });
 }
 
-/* 端末にしまう。data: のままだと落ちない browser があるので、
-   いったん blob にしてから渡す */
+/* 端末にしまう
+   ----------------------------------------------------------
+   ふつうのページ（GitHub Pages）では、いったん blob にしてから
+   <a download> で渡す。data: のままだと落ちない browser がある。
+
+   claude.ai の中で開いているときは、ふつうの保存が通らないので、
+   むこうの仕組みに渡す。ふだんは window.claude が無いので、
+   あるかどうかだけ見て、無ければこれまでどおり。 */
+function camBlob(one) {
+  try {
+    const bin = atob(one.img.slice(one.img.indexOf(",") + 1));
+    const buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    return new Blob([buf], { type: one.img.slice(5, one.img.indexOf(";")) });
+  } catch (e) { return null; }
+}
+function camAnchor(one, name, blob) {
+  const a = document.createElement("a");
+  const url = blob ? URL.createObjectURL(blob) : one.img;
+  a.href = url; a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  if (blob) setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
 function camDownload(one) {
   /* 名前は英数字だけにしておく。日本語のファイル名は、
      端末によっては文字化けしたり、保存そのものが落ちたりする */
   const name = `matsunaga-kobo-${camDate(one.at).replace(/\./g, "")}`
              + `-${one.id}.${one.img.indexOf("webp") > 0 ? "webp" : "png"}`;
-  try {
-    const bin = atob(one.img.slice(one.img.indexOf(",") + 1));
-    const buf = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-    const type = one.img.slice(5, one.img.indexOf(";"));
-    const url = URL.createObjectURL(new Blob([buf], { type }));
-    const a = document.createElement("a");
-    a.href = url; a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-  } catch (e) {
-    const a = document.createElement("a");
-    a.href = one.img; a.download = name;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  const blob = camBlob(one);
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("downloads").then(dl => {
+      if (!dl) { camAnchor(one, name, blob); return; }
+      return dl.save({ filename: name, data: blob || one.img });
+    }).catch(() => { /* ことわられた。何もしない */ });
+    return;
   }
+  camAnchor(one, name, blob);
 }
 
 /* ==========================================================
