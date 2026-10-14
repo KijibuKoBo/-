@@ -1182,6 +1182,8 @@ footer{
 .doll-card .dc-thumb img{ width:100%; height:100%; object-fit:contain; }
 .doll-card .dc-name{ font-size:.6rem; color:var(--brown); line-height:1.2; text-align:center;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.doll-card.sample{ border-color:var(--gold); background:#fffaec; }
+.doll-card.sample .dc-name i{ font-style:normal; font-size:.54rem; color:var(--brown-soft); }
 .doll-card .dc-x{
   position:absolute; top:-7px; right:-7px; width:26px; height:26px; border-radius:50%;
   border:2px solid var(--brown-mid); background:var(--cream-deep); color:var(--brown);
@@ -6115,6 +6117,15 @@ const DOLL_MM  = 120;        // 置いたときの背たけの目安
 
 let dolls = { v: 1, list: [] };
 
+/* 見本のうちの子。写真が無くても、この子で置きかたを試せる。
+   セーブには入らず、お帰しもできない。案内役のKoBoさんその人 */
+const DOLL_SAMPLE = { id: "kobo", name: "KoBo", sample: true };
+const dollSampleOf = () => ({ id: DOLL_SAMPLE.id, name: DOLL_SAMPLE.name,
+                              photo: PHOTOS.kobo_body, doll: true, sample: true });
+/* 置ける子ぜんぶ（自分の子 → 見本の順） */
+const dollAll = () => dolls.list.map(d => ({ id: d.id, name: d.name, photo: d.img, doll: true }))
+                       .concat([dollSampleOf()]);
+
 function loadDolls() {
   try {
     const raw = localStorage.getItem(DOLL_KEY);
@@ -6371,15 +6382,19 @@ function renderDoll() {
            style="width:100%;min-height:48px">📷 写真をえらぶ</button>`;
   }
 
-  if (list.length) {
-    html += `<div class="dex-section-title">うちの子（${list.length} / ${DOLL_MAX}）</div>
-      <div class="doll-list">` + list.map(d =>
-        `<div class="doll-card">
-           <button class="dc-x" data-del="${d.id}" aria-label="お帰しする">✕</button>
-           <span class="dc-thumb"><img src="${d.img}" alt="${esc(d.name)}"></span>
-           <span class="dc-name">${esc(d.name)}</span>
-         </div>`).join("") + `</div>`;
-  }
+  html += `<div class="dex-section-title">うちの子（${list.length} / ${DOLL_MAX}）</div>
+    <div class="doll-list">` + list.map(d =>
+      `<div class="doll-card">
+         <button class="dc-x" data-del="${d.id}" aria-label="お帰しする">✕</button>
+         <span class="dc-thumb"><img src="${d.img}" alt="${esc(d.name)}"></span>
+         <span class="dc-name">${esc(d.name)}</span>
+       </div>`).join("")
+    + `<div class="doll-card sample">
+         <span class="dc-thumb"><img src="${PHOTOS.kobo_body}" alt="KoBo"></span>
+         <span class="dc-name">KoBo<br><i>見本</i></span>
+       </div></div>
+    <div class="doll-note">KoBoさんは<b>見本</b>です。写真が無くても、
+      この子でお部屋の飾りかたを試せます。お帰しはできません。</div>`;
 
   $("#doll-body").innerHTML = html;
   bindDoll();
@@ -6943,9 +6958,9 @@ function renderRoom() {
   const stock = roomStock();
   const byId = {};
   stock.forEach(e => { byId[e.id] = e; });
-  /* うちの子も、家具と同じ形にそろえて置けるようにする */
+  /* うちの子も、家具と同じ形にそろえて置けるようにする（見本もふくむ） */
   const byDoll = {};
-  dolls.list.forEach(d => { byDoll[d.id] = { id: d.id, name: d.name, photo: d.img, doll: true }; });
+  dollAll().forEach(d => { byDoll[d.id] = d; });
 
   /* 図鑑から消えた家具や、お帰しになったうちの子は、静かに落とす */
   const room = roomNow();
@@ -6965,9 +6980,9 @@ function renderRoom() {
   const full = items.length >= ROOM_MAX;
   const dis = full ? " disabled" : "";
   /* うちの子を先に、そのあとに家具。いちばん後ろに「ふやす」 */
-  const dollTiles = dolls.list.map(d =>
+  const dollTiles = dollAll().map(d =>
     `<button class="rs-item doll" data-doll="${d.id}" title="${esc(d.name)}"${dis}>`
-    + `<span class="rs-thumb"><img src="${d.img}" alt=""></span>`
+    + `<span class="rs-thumb"><img src="${d.photo}" alt=""></span>`
     + `<span class="rs-name">${esc(d.name)}</span></button>`).join("");
   const furnTiles = stock.map(e =>
     `<button class="rs-item" data-add="${e.id}" title="${esc(e.name)}"${dis}>`
@@ -6975,11 +6990,9 @@ function renderRoom() {
     + (e.artFilter ? ` style="filter:${e.artFilter}"` : "") + `></span>`
     + `<span class="rs-name">${esc(e.name)}</span></button>`).join("");
   const addTile = `<button class="rs-add" id="room-doll">🧸<br>うちの子を<br>ふやす</button>`;
-  const shelf = (stock.length || dolls.list.length)
-    ? `<div class="room-shelf">${dollTiles}${furnTiles}${addTile}</div>`
-    : `<div class="room-shelf">${addTile}</div>`
-      + `<div class="room-empty">まだ一台も仕上がっておらんな。<br>`
-      + `ひとつ作って図鑑に入れれば、ここに並ぶぞ。</div>`;
+  const shelf = `<div class="room-shelf">${dollTiles}${furnTiles}${addTile}</div>`
+    + (stock.length ? "" : `<div class="room-empty">まだ一台も仕上がっておらんな。<br>`
+      + `ひとつ作って図鑑に入れれば、ここに家具が並ぶぞ。</div>`);
 
   /* 棚は長い。置くたびに先頭へもどってしまわないよう、位置を覚えておく */
   const shelfWas = $(".room-shelf");
@@ -7013,7 +7026,8 @@ function roomCtlHtml(byId, byDoll) {
   if (roomSel === null || !items[roomSel]) {
     return `<div class="room-tip">下の棚から、置きたい家具をえらんでください。<br>`
          + `置いた家具は、指でつまんで動かせます。<br>`
-         + `二本指でひろげると、大きさが変わります。</div>`;
+         + `<b>タップしてえらぶ</b>と、大きさ・<b>左右の向き</b>・前後を変えられます。<br>`
+         + `二本指でひろげても、大きさが変わります。</div>`;
   }
   const e = roomLook(items[roomSel], byId, byDoll);
   return `<div class="room-ctl">
@@ -7021,7 +7035,7 @@ function roomCtlHtml(byId, byDoll) {
       <div class="rc-row">
         <button data-rc="small" aria-label="小さく">－</button>
         <button data-rc="big" aria-label="大きく">＋</button>
-        <button data-rc="flip" aria-label="左右を返す">⇄</button>
+        <button data-rc="flip" aria-label="左右を返す">⇄ 反転</button>
         <button data-rc="front">手前へ</button>
         <button data-rc="back">奥へ</button>
         <button data-rc="off">はずす</button>
