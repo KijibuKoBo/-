@@ -1133,6 +1133,68 @@ footer{
   display:block; margin:12px auto 0; font-size:.64rem; color:var(--brown-soft);
   background:none; border:none; font-family:inherit; text-decoration:underline; cursor:pointer;
 }
+/* ---------- うちの子（お人形の取りこみ） ---------- */
+#doll-modal .modal{ max-width:460px; }
+.doll-prev{
+  position:relative; width:100%; height:230px; margin-bottom:9px;
+  border:2px solid var(--wood-dark); border-radius:12px; overflow:hidden;
+  background-color:#fffdf5;
+  background-image:
+    linear-gradient(45deg,#e8ddc4 25%,transparent 25%,transparent 75%,#e8ddc4 75%),
+    linear-gradient(45deg,#e8ddc4 25%,transparent 25%,transparent 75%,#e8ddc4 75%);
+  background-size:18px 18px; background-position:0 0,9px 9px;
+  touch-action:none;
+}
+.doll-prev canvas{
+  position:absolute; inset:0; margin:auto; display:block;
+  max-width:100%; max-height:100%;
+}
+.doll-prev.erasing canvas{ cursor:crosshair; }
+.doll-row{ display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+.doll-row label{ font-size:.66rem; color:var(--brown-mid); flex:0 0 auto; }
+.doll-row input[type=range]{ flex:1; accent-color:var(--green-deep); }
+.doll-btn{
+  font-family:inherit; font-size:.68rem; font-weight:bold; color:var(--brown);
+  min-height:42px; padding:0 14px; border-radius:10px; cursor:pointer;
+  border:2px solid var(--brown-mid);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+}
+.doll-btn:active{ transform:translateY(2px); }
+.doll-btn.on{ background:var(--gold); color:#fff; border-color:#a97c14; }
+.doll-btn.go{ background:linear-gradient(180deg,#a9cb9b,var(--green-deep)); color:#fff;
+  border-color:#5f7d55; }
+.doll-btns{ display:flex; gap:6px; margin-bottom:9px; }
+.doll-btns .doll-btn{ flex:1; padding:0 4px; }
+.doll-name{
+  width:100%; font-family:inherit; font-size:.86rem; text-align:center;
+  padding:9px; border-radius:10px; border:2px solid var(--wood-dark);
+  background:#fffdf5; color:var(--brown); margin-bottom:9px;
+}
+.doll-note{ font-size:.66rem; color:var(--brown-mid); line-height:1.75; margin-bottom:10px; }
+.doll-warn{ font-size:.68rem; color:var(--red); font-weight:bold; text-align:center;
+  line-height:1.7; margin-bottom:9px; }
+.doll-list{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:4px; }
+.doll-card{
+  border:2px solid var(--wood-light); border-radius:11px; background:#fffdf7;
+  padding:5px 4px; display:grid; gap:3px; justify-items:center; position:relative;
+}
+.doll-card .dc-thumb{ width:100%; height:66px; }
+.doll-card .dc-thumb img{ width:100%; height:100%; object-fit:contain; }
+.doll-card .dc-name{ font-size:.6rem; color:var(--brown); line-height:1.2; text-align:center;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.doll-card .dc-x{
+  position:absolute; top:-7px; right:-7px; width:26px; height:26px; border-radius:50%;
+  border:2px solid var(--brown-mid); background:var(--cream-deep); color:var(--brown);
+  font-family:inherit; font-size:.7rem; font-weight:bold; cursor:pointer; line-height:1;
+}
+/* 棚のなかの、うちの子 */
+.rs-item.doll{ border-color:var(--gold); background:#fffaec; }
+.rs-add{
+  font-family:inherit; cursor:pointer; border:2px dashed var(--gold); border-radius:10px;
+  background:#fffdf7; color:var(--brown-mid); font-size:.6rem; font-weight:bold;
+  line-height:1.4; padding:4px 2px; min-height:74px;
+}
+.rs-add:active{ transform:translateY(2px); }
 </style>
 </head>
 <body>
@@ -1208,6 +1270,17 @@ footer{
     <h3>🏡 ドールハウス</h3>
     <div id="room-body"></div>
     <button class="close" data-close="room-modal">とじる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：うちの子（お人形の取りこみ） ========== -->
+<div class="modal-back" id="doll-modal">
+  <div class="modal">
+    <button class="x-close" data-close="doll-modal" aria-label="とじる">✕</button>
+    <h3>🧸 うちの子</h3>
+    <div id="doll-body"></div>
+    <input type="file" id="doll-file" accept="image/*" hidden>
+    <button class="close" data-close="doll-modal">とじる</button>
   </div>
 </div>
 
@@ -5933,6 +6006,410 @@ function finishCraft(exhibit) {
    モーダル
    ========================================================== */
 /* ==========================================================
+   うちの子（お人形）
+   ----------------------------------------------------------
+   お人形の写真を取りこんで、部屋に立たせる。
+
+   写真は大きいので、**ゲームのセーブとは別の置き場**に入れている。
+   写真がいっぱいになっても、職人の記録には指一本ふれない。
+
+   いちばんきれいなのは、すでに切り抜いてある透過PNG。
+   iPhone なら写真を長押しして「切り抜き」、Android なら
+   Google フォトの切り抜きで作れる。それを入れたときは、
+   こちらでは何もせず、そのまま使う。
+
+   そうでない写真は、**ふちから、似た色をたどって**背景を抜く。
+   まんなかに同じ色があっても、ふちからつながっていなければ消えない。
+   ========================================================== */
+const DOLL_KEY = "matsunaga-craft-story-dolls-v1";   // セーブとは別の置き場
+const DOLL_MAX = 8;          // 入れておける人数
+const DOLL_PX  = 420;        // 取りこむときの長辺
+const DOLL_MM  = 120;        // 置いたときの背たけの目安
+
+let dolls = { v: 1, list: [] };
+
+function loadDolls() {
+  try {
+    const raw = localStorage.getItem(DOLL_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.list)) dolls = d;
+    }
+  } catch (e) { /* 読めなくても、ゲームは動く */ }
+}
+/* 書けたかどうかを返す。書けなくても、セーブのほうは無事 */
+function saveDolls() {
+  try { localStorage.setItem(DOLL_KEY, JSON.stringify(dolls)); return true; }
+  catch (e) { return false; }
+}
+
+/* ---------- 写真を読む ---------- */
+function dollRead(file, done) {
+  const r = new FileReader();
+  r.onerror = () => done(null);
+  r.onload = () => {
+    const img = new Image();
+    img.onerror = () => done(null);
+    img.onload = () => {
+      /* try は縮めるところだけに掛ける。done の中で何かあっても
+         「読めなかった」に化けないように */
+      let shrunk = null;
+      try { shrunk = dollShrink(img); } catch (e) { shrunk = null; }
+      done(shrunk);
+    };
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+function dollShrink(img) {
+  const nw = img.naturalWidth || img.width, nh = img.naturalHeight || img.height;
+  if (!nw || !nh) throw new Error("size");
+  const k = Math.min(1, DOLL_PX / Math.max(nw, nh));
+  const w = Math.max(1, Math.round(nw * k)), h = Math.max(1, Math.round(nh * k));
+  const cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  const g = cv.getContext("2d");
+  g.drawImage(img, 0, 0, w, h);
+  return g.getImageData(0, 0, w, h);
+}
+
+/* すでに切り抜いてある写真かどうか（透けている所の多さで見る） */
+function dollAlreadyCut(src) {
+  const d = src.data;
+  let clear = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] < 16) clear++;
+  return clear / (d.length / 4) > 0.04;
+}
+
+/* ---------- ふちから背景をたどって抜く ----------
+   tol は「ふちの色とどれくらいちがってよいか」。大きいほど多く抜ける */
+
+/* ふちの色（中央値）。かたよった一点に引きずられない */
+function dollEdgeColor(src) {
+  const w = src.width, h = src.height, s = src.data;
+  const take = (k) => {
+    const a = [];
+    for (let x = 0; x < w; x += 2) { a.push(s[x * 4 + k]); a.push(s[((h - 1) * w + x) * 4 + k]); }
+    for (let y = 0; y < h; y += 2) { a.push(s[(y * w) * 4 + k]); a.push(s[(y * w + w - 1) * 4 + k]); }
+    a.sort((p, q) => p - q);
+    return a[a.length >> 1];
+  };
+  return [take(0), take(1), take(2)];
+}
+
+/* ふちから、似た色だけをたどる。返すのは「ここは背景」の印 */
+function dollMask(src, tol, col) {
+  const w = src.width, h = src.height, s = src.data;
+  const [br, bg, bb] = col || dollEdgeColor(src);
+  const lim = tol * tol;
+  const mask = new Uint8Array(w * h);
+  const q = new Int32Array(w * h);
+  let qh = 0, qt = 0, n = 0;
+  const near = (p) => {
+    const i = p * 4;
+    if (s[i + 3] < 16) return true;            // もとから透けている所も背景
+    const dr = s[i] - br, dg = s[i + 1] - bg, db = s[i + 2] - bb;
+    return dr * dr + dg * dg + db * db <= lim;
+  };
+  const push = (p) => { if (!mask[p] && near(p)) { mask[p] = 1; n++; q[qt++] = p; } };
+  for (let x = 0; x < w; x++) { push(x); push((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { push(y * w); push(y * w + w - 1); }
+  while (qh < qt) {
+    const p = q[qh++], x = p % w, y = (p / w) | 0;
+    if (x > 0)     push(p - 1);
+    if (x < w - 1) push(p + 1);
+    if (y > 0)     push(p - w);
+    if (y < h - 1) push(p + w);
+  }
+  return { mask, ratio: n / (w * h) };
+}
+
+/* 抜き具合を、こちらで見つくろう
+   ----------------------------------------------------------
+   ゆるめていくと、はじめは背景だけが消えていき、消える量の
+   のびはほとんど止まる。そのうちお人形まで食いはじめ、そこで
+   のびが「どん」と跳ねる。その手前で止める。
+
+   跳ねたかどうかは、ひとつ前ののびとくらべて見る。もとから
+   まだらな背景だと、のびはずっと大きいままなので、
+   「大きい」ではなく「急に大きくなった」で見るのが要る。
+   白い背景に色の淡い子でも、顔が消えない */
+function dollAutoTol(src) {
+  const col = dollEdgeColor(src);
+  const tries = [8, 12, 16, 20, 26, 32, 40, 50, 62, 76];
+  let prev = dollMask(src, tries[0], col).ratio;
+  let prevD = 0.02;                           // はじめの一歩は、ゆるく見る
+  let best = tries[0];
+  for (let i = 1; i < tries.length; i++) {
+    const r = dollMask(src, tries[i], col).ratio;
+    const d = r - prev;
+    if (d > 0.02 && d > prevD * 4) break;     // ここから食いはじめた
+    prev = r;
+    prevD = Math.max(d, 0.0005);              // 0 で割り算まがいにならないように
+    best = tries[i];
+  }
+  return best;
+}
+
+function dollCut(src, tol) {
+  const w = src.width, h = src.height, s = src.data;
+  const out = new ImageData(new Uint8ClampedArray(s), w, h);
+  const o = out.data;
+  const mask = dollMask(src, tol).mask;
+
+  /* ふちをすこしだけぼかす。切り口がぎざぎざに見えないように */
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const p = y * w + x, i = p * 4;
+      if (mask[p]) { o[i + 3] = 0; continue; }
+      let n = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx < 0 || yy < 0 || xx >= w || yy >= h) { n++; continue; }
+          if (mask[yy * w + xx]) n++;
+        }
+      }
+      o[i + 3] = n ? Math.max(0, 255 - n * 46) : 255;
+    }
+  }
+  return out;
+}
+
+/* 透けている所を落として、お人形のまわりだけにする */
+function dollTrim(src) {
+  const w = src.width, h = src.height, d = src.data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 24) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return null;                   // ぜんぶ消えてしまった
+  const pad = 2;
+  x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+  x1 = Math.min(w - 1, x1 + pad); y1 = Math.min(h - 1, y1 + pad);
+  const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+  const cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  cv.getContext("2d").putImageData(src, 0, 0);
+  const out = document.createElement("canvas");
+  out.width = cw; out.height = ch;
+  out.getContext("2d").drawImage(cv, x0, y0, cw, ch, 0, 0, cw, ch);
+  return out;
+}
+
+/* ---------- 取りこみの画面 ----------
+   work は取りこみ中のひとり。
+     src    … 読んだままの写真
+     cut    … 背景を抜いたもの
+     erased … 消しゴムで消した所（濃さを変えても残す）
+     cut0   … すでに切り抜いてあった写真なら true（こちらでは抜かない） */
+let dollWork = null;
+let dollErase = false;
+let dollMsg = "";
+
+function openDollEditor() {
+  dollWork = null;
+  dollErase = false;
+  dollMsg = "";
+  renderDoll();
+  openModal("doll-modal");
+}
+
+function dollApply() {
+  const w = dollWork;
+  if (!w) return;
+  w.cut = w.cut0 ? new ImageData(new Uint8ClampedArray(w.src.data), w.src.width, w.src.height)
+                 : dollCut(w.src, w.tol);
+  /* 消しゴムのぶんは、濃さを変えてもそのまま残す */
+  if (w.erased) {
+    const d = w.cut.data;
+    for (let p = 0; p < w.erased.length; p++) if (w.erased[p]) d[p * 4 + 3] = 0;
+  }
+  dollDraw();
+}
+
+function dollDraw() {
+  const w = dollWork, cv = $("#doll-canvas");
+  if (!w || !w.cut || !cv) return;   // まだ抜いていないうちは、何も描かない
+  cv.width = w.cut.width;
+  cv.height = w.cut.height;
+  cv.getContext("2d").putImageData(w.cut, 0, 0);
+}
+
+function renderDoll() {
+  const list = dolls.list;
+  let html = "";
+
+  if (dollMsg) html += `<div class="doll-warn">${esc(dollMsg)}</div>`;
+
+  if (dollWork) {
+    html += `<div class="doll-prev${dollErase ? " erasing" : ""}" id="doll-prev">
+               <canvas id="doll-canvas"></canvas>
+             </div>`;
+    html += dollWork.cut0
+      ? `<div class="doll-note">もう切り抜いてある写真じゃな。このまま使うぞ。</div>`
+      : `<div class="doll-row">
+           <label>背景の抜き具合</label>
+           <input type="range" id="doll-tol" min="6" max="120" step="2" value="${dollWork.tol}">
+         </div>`;
+    html += `<div class="doll-btns">
+        <button class="doll-btn${dollErase ? " on" : ""}" id="doll-eraser">🧽 消しゴム</button>
+        <button class="doll-btn" id="doll-redo">やり直す</button>
+        <button class="doll-btn" id="doll-cancel">やめる</button>
+      </div>`;
+    html += `<input class="doll-name" id="doll-nm" maxlength="12"
+               placeholder="この子の名前" value="${esc(dollWork.name || "")}">`;
+    html += `<button class="doll-btn go" id="doll-save"
+               style="width:100%;min-height:48px">この子を迎える</button>`;
+    html += `<div class="doll-note">
+        消しのこりは <b>🧽 消しゴム</b> でなぞって消せます。<br>
+        抜きすぎたら「やり直す」で、写真のところからやり直せます。</div>`;
+  } else {
+    html += `<div class="doll-note">
+        お人形の写真を取りこむと、ドールハウスに立たせられます。<br><br>
+        <b>いちばんきれいなのは、切り抜いてある写真です。</b><br>
+        iPhone なら写真を長押しして「切り抜き」、Android なら
+        Google フォトの切り抜きで作れます。<br>
+        ふつうの写真でも、背景が無地なら、こちらで抜きます。</div>`;
+    html += list.length >= DOLL_MAX
+      ? `<div class="doll-warn">${DOLL_MAX}人まで入ります。<br>どなたかお帰しください。</div>`
+      : `<button class="doll-btn go" id="doll-open"
+           style="width:100%;min-height:48px">📷 写真をえらぶ</button>`;
+  }
+
+  if (list.length) {
+    html += `<div class="dex-section-title">うちの子（${list.length} / ${DOLL_MAX}）</div>
+      <div class="doll-list">` + list.map(d =>
+        `<div class="doll-card">
+           <button class="dc-x" data-del="${d.id}" aria-label="お帰しする">✕</button>
+           <span class="dc-thumb"><img src="${d.img}" alt="${esc(d.name)}"></span>
+           <span class="dc-name">${esc(d.name)}</span>
+         </div>`).join("") + `</div>`;
+  }
+
+  $("#doll-body").innerHTML = html;
+  bindDoll();
+  if (dollWork) dollDraw();
+}
+
+function bindDoll() {
+  const open = $("#doll-open");
+  if (open) open.addEventListener("click", () => $("#doll-file").click());
+
+  const tol = $("#doll-tol");
+  if (tol) tol.addEventListener("input", () => {
+    dollWork.tol = +tol.value;
+    dollApply();
+  });
+
+  const er = $("#doll-eraser");
+  if (er) er.addEventListener("click", () => { dollErase = !dollErase; renderDoll(); });
+
+  const redo = $("#doll-redo");
+  if (redo) redo.addEventListener("click", () => {
+    dollWork.erased = new Uint8Array(dollWork.src.width * dollWork.src.height);
+    dollWork.tol = dollWork.cut0 ? 30 : dollAutoTol(dollWork.src);
+    dollErase = false;
+    renderDoll();
+    dollApply();
+  });
+
+  const cancel = $("#doll-cancel");
+  if (cancel) cancel.addEventListener("click", () => {
+    dollWork = null; dollErase = false; dollMsg = ""; renderDoll();
+  });
+
+  const nm = $("#doll-nm");
+  if (nm) nm.addEventListener("input", () => { dollWork.name = nm.value; });
+
+  const go = $("#doll-save");
+  if (go) go.addEventListener("click", dollCommit);
+
+  document.querySelectorAll("#doll-body [data-del]").forEach(b =>
+    b.addEventListener("click", () => {
+      const d = dolls.list.find(x => x.id === b.dataset.del);
+      if (!d) return;
+      if (!confirm(`「${d.name}」をお帰ししますか？\n置いてある部屋からも出ていきます。`)) return;
+      dolls.list = dolls.list.filter(x => x.id !== d.id);
+      saveDolls();
+      dollMsg = "";
+      renderDoll();
+      if ($("#room-body") && $("#room-stage")) renderRoom();
+    }));
+
+  /* 消しゴム。canvas の見た目の大きさと、中の大きさがちがうので換算する */
+  const prev = $("#doll-prev"), cv = $("#doll-canvas");
+  if (!prev || !cv) return;
+  let wiping = false;
+  const wipe = (ev) => {
+    if (!dollErase || !dollWork) return;
+    const r = cv.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const x = Math.round((ev.clientX - r.left) / r.width * cv.width);
+    const y = Math.round((ev.clientY - r.top) / r.height * cv.height);
+    const rad = Math.max(6, Math.round(cv.width * 0.045));
+    const w = dollWork.cut, d = w.data, W = w.width, H = w.height;
+    for (let yy = Math.max(0, y - rad); yy <= Math.min(H - 1, y + rad); yy++) {
+      for (let xx = Math.max(0, x - rad); xx <= Math.min(W - 1, x + rad); xx++) {
+        const dx = xx - x, dy = yy - y;
+        if (dx * dx + dy * dy > rad * rad) continue;
+        const p = yy * W + xx;
+        d[p * 4 + 3] = 0;
+        dollWork.erased[p] = 1;
+      }
+    }
+    cv.getContext("2d").putImageData(w, 0, 0);
+  };
+  prev.addEventListener("pointerdown", (ev) => {
+    if (!dollErase) return;
+    ev.preventDefault(); wiping = true;
+    try { prev.setPointerCapture(ev.pointerId); } catch (e) {}
+    wipe(ev);
+  });
+  prev.addEventListener("pointermove", (ev) => { if (wiping) wipe(ev); });
+  const stop = () => { wiping = false; };
+  prev.addEventListener("pointerup", stop);
+  prev.addEventListener("pointercancel", stop);
+}
+
+function dollCommit() {
+  const w = dollWork;
+  if (!w) return;
+  const cv = dollTrim(w.cut);
+  if (!cv) { dollMsg = "ぜんぶ消えてしもうた。「やり直す」からもう一度。"; renderDoll(); return; }
+  const name = (w.name || "").trim() || "うちの子";
+  let img;
+  try { img = cv.toDataURL("image/webp", 0.82); } catch (e) { img = null; }
+  if (!img || img.indexOf("data:image/webp") !== 0) {
+    try { img = cv.toDataURL("image/png"); } catch (e) { img = null; }
+  }
+  if (!img) { dollMsg = "この写真は取りこめんかった。別の写真でためしてくれ。"; renderDoll(); return; }
+
+  const keep = dolls.list.slice();
+  dolls.list.push({ id: "d" + Date.now().toString(36) + Math.floor(Math.random() * 1000),
+                    name, img });
+  if (!saveDolls()) {
+    dolls.list = keep;
+    saveDolls();
+    dollMsg = "入れる場所がいっぱいじゃ。どなたかお帰しして、もう一度。";
+    renderDoll();
+    return;
+  }
+  dollWork = null;
+  dollErase = false;
+  dollMsg = "";
+  renderDoll();
+  if ($("#room-body") && $("#room-stage")) renderRoom();
+}
+
+/* ==========================================================
    ドールハウス（飾り部屋）
    ----------------------------------------------------------
    作った家具を部屋に並べる。家具の絵は図鑑と同じ実物写真を
@@ -6207,15 +6684,24 @@ function roomPick(stage, cx, cy) {
   return box;
 }
 
+/* 置いてあるものを引く。it.k が "d" ならうちの子、無ければ家具。
+   古いセーブの持ち物には k が無いので、そのまま家具として読める */
+function roomLook(it, byId, byDoll) {
+  return it.k === "d" ? byDoll[it.id] : byId[it.id];
+}
+
 function renderRoom() {
   const R = roomState();
   const stock = roomStock();
   const byId = {};
   stock.forEach(e => { byId[e.id] = e; });
+  /* うちの子も、家具と同じ形にそろえて置けるようにする */
+  const byDoll = {};
+  dolls.list.forEach(d => { byDoll[d.id] = { id: d.id, name: d.name, photo: d.img, doll: true }; });
 
-  /* 図鑑から消えた家具（催しの設計図など）が残っていたら、静かに落とす */
+  /* 図鑑から消えた家具や、お帰しになったうちの子は、静かに落とす */
   const room = roomNow();
-  const items = roomItems().filter(it => byId[it.id]);
+  const items = roomItems().filter(it => roomLook(it, byId, byDoll));
   R.sets[room.id] = items;
   if (roomSel !== null && !items[roomSel]) roomSel = null;
 
@@ -6223,19 +6709,28 @@ function renderRoom() {
     `<button class="rbg-btn${r.id === R.bg ? " on" : ""}" data-bg="${r.id}">${r.name}</button>`).join("");
 
   const pieces = items.map((it, i) => {
-    const e = byId[it.id];
+    const e = roomLook(it, byId, byDoll);
     return `<img class="rp${roomSel === i ? " sel" : ""}" data-i="${i}" src="${e.photo}"`
          + ` alt="${esc(e.name)}" draggable="false" style="${roomPieceStyle(it, e)}">`;
   }).join("");
 
   const full = items.length >= ROOM_MAX;
-  const shelf = stock.length
-    ? `<div class="room-shelf">` + stock.map(e =>
-        `<button class="rs-item" data-add="${e.id}" title="${esc(e.name)}"${full ? " disabled" : ""}>`
-        + `<span class="rs-thumb"><img src="${e.photo}" alt=""`
-        + (e.artFilter ? ` style="filter:${e.artFilter}"` : "") + `></span>`
-        + `<span class="rs-name">${esc(e.name)}</span></button>`).join("") + `</div>`
-    : `<div class="room-empty">まだ一台も仕上がっておらんな。<br>`
+  const dis = full ? " disabled" : "";
+  /* うちの子を先に、そのあとに家具。いちばん後ろに「ふやす」 */
+  const dollTiles = dolls.list.map(d =>
+    `<button class="rs-item doll" data-doll="${d.id}" title="${esc(d.name)}"${dis}>`
+    + `<span class="rs-thumb"><img src="${d.img}" alt=""></span>`
+    + `<span class="rs-name">${esc(d.name)}</span></button>`).join("");
+  const furnTiles = stock.map(e =>
+    `<button class="rs-item" data-add="${e.id}" title="${esc(e.name)}"${dis}>`
+    + `<span class="rs-thumb"><img src="${e.photo}" alt=""`
+    + (e.artFilter ? ` style="filter:${e.artFilter}"` : "") + `></span>`
+    + `<span class="rs-name">${esc(e.name)}</span></button>`).join("");
+  const addTile = `<button class="rs-add" id="room-doll">🧸<br>うちの子を<br>ふやす</button>`;
+  const shelf = (stock.length || dolls.list.length)
+    ? `<div class="room-shelf">${dollTiles}${furnTiles}${addTile}</div>`
+    : `<div class="room-shelf">${addTile}</div>`
+      + `<div class="room-empty">まだ一台も仕上がっておらんな。<br>`
       + `ひとつ作って図鑑に入れれば、ここに並ぶぞ。</div>`;
 
   /* 棚は長い。置くたびに先頭へもどってしまわないよう、位置を覚えておく */
@@ -6248,7 +6743,7 @@ function renderRoom() {
        ${room.img ? `<img class="rbg" src="${ROOM_ART[room.img]}" alt="" draggable="false">`
                   : `<span class="rbg">${room.svg}</span>`}${pieces}
      </div>
-     <div id="room-ctl">${roomCtlHtml(byId)}</div>
+     <div id="room-ctl">${roomCtlHtml(byId, byDoll)}</div>
      <div class="room-count${full ? " full" : ""}">置いてある家具　${items.length} / ${ROOM_MAX}`
        + `${full ? "　これ以上は置けません。どれかはずしてください" : ""}</div>
      ${shelf}
@@ -6257,17 +6752,17 @@ function renderRoom() {
   const shelfNow = $(".room-shelf");
   if (shelfNow && shelfTop) shelfNow.scrollTop = shelfTop;
 
-  bindRoom(byId);
+  bindRoom(byId, byDoll);
 }
 
-function roomCtlHtml(byId) {
+function roomCtlHtml(byId, byDoll) {
   const items = roomItems();
   if (roomSel === null || !items[roomSel]) {
     return `<div class="room-tip">下の棚から、置きたい家具をえらんでください。<br>`
          + `置いた家具は、指でつまんで動かせます。<br>`
          + `二本指でひろげると、大きさが変わります。</div>`;
   }
-  const e = byId[items[roomSel].id];
+  const e = roomLook(items[roomSel], byId, byDoll);
   return `<div class="room-ctl">
       <div class="rc-name">${esc(e ? e.name : "")}</div>
       <div class="rc-row">
@@ -6282,13 +6777,19 @@ function roomCtlHtml(byId) {
 }
 
 /* 棚からひとつ置く。同じ所に重ならないよう、少しずつずらす */
-function roomAdd(id) {
+function roomAdd(id, kind) {
   const items = roomItems();
   if (items.length >= ROOM_MAX) return;   // 棚のほうを押せなくしてあるので、ふつうは来ない
   const n = items.length, room = roomNow();
-  const e = roomStock().find(x => x.id === id);
-  items.push({ id, x: +(0.28 + (n % 5) * 0.11).toFixed(3),
-               y: room.floor, h: e ? roomDefH(e, room) : room.dh, fl: 1 });
+  const x = +(0.28 + (n % 5) * 0.11).toFixed(3);
+  if (kind === "d") {
+    /* うちの子の背たけは DOLL_MM を目安に。あとから好きに変えられる */
+    const h = +roomClamp(room.dh * DOLL_MM / ROOM_MM, 0.08, 0.95).toFixed(3);
+    items.push({ k: "d", id, x, y: room.floor, h, fl: 1 });
+  } else {
+    const e = roomStock().find(z => z.id === id);
+    items.push({ id, x, y: room.floor, h: e ? roomDefH(e, room) : room.dh, fl: 1 });
+  }
   roomSel = items.length - 1;
   save();
   renderRoom();
@@ -6310,10 +6811,10 @@ function roomCtl(cmd) {
 
 /* えらび直しでは作り直さない。動かしている最中に要素が消えると、
    指が離れてしまうため、印と操作バーだけを書きかえる */
-function roomMarkSel(byId) {
+function roomMarkSel(byId, byDoll) {
   document.querySelectorAll("#room-stage .rp").forEach(el =>
     el.classList.toggle("sel", +el.dataset.i === roomSel));
-  $("#room-ctl").innerHTML = roomCtlHtml(byId);
+  $("#room-ctl").innerHTML = roomCtlHtml(byId, byDoll);
   bindRoomCtl();
 }
 
@@ -6322,7 +6823,7 @@ function bindRoomCtl() {
     b.addEventListener("click", () => roomCtl(b.dataset.rc)));
 }
 
-function bindRoom(byId) {
+function bindRoom(byId, byDoll) {
   document.querySelectorAll("#room-body [data-bg]").forEach(b =>
     b.addEventListener("click", () => {
       roomState().bg = b.dataset.bg;
@@ -6332,6 +6833,10 @@ function bindRoom(byId) {
     }));
   document.querySelectorAll("#room-body [data-add]").forEach(b =>
     b.addEventListener("click", () => roomAdd(b.dataset.add)));
+  document.querySelectorAll("#room-body [data-doll]").forEach(b =>
+    b.addEventListener("click", () => roomAdd(b.dataset.doll, "d")));
+  const dollBtn = $("#room-doll");
+  if (dollBtn) dollBtn.addEventListener("click", openDollEditor);
   bindRoomCtl();
 
   const clr = $("#room-clear");
@@ -6350,13 +6855,13 @@ function bindRoom(byId) {
   stage.addEventListener("pointerdown", (ev) => {
     const el = roomPick(stage, ev.clientX, ev.clientY);
     if (!el) {                       // 床や壁をさわったら、えらぶのをやめる
-      if (roomSel !== null) { roomSel = null; roomMarkSel(byId); }
+      if (roomSel !== null) { roomSel = null; roomMarkSel(byId, byDoll); }
       return;
     }
     ev.preventDefault();
     roomPt.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
     const i = +el.dataset.i;
-    if (roomSel !== i) { roomSel = i; roomMarkSel(byId); }
+    if (roomSel !== i) { roomSel = i; roomMarkSel(byId, byDoll); }
 
     if (roomPt.size >= 2) {          // 二本目の指 → 大きさを変える
       const p = Array.from(roomPt.values());
@@ -7135,6 +7640,7 @@ function init() {
     setTimeout(() => showEventStory(qr.e), 600);
   }
 
+  loadDolls();
   drawKobo();
 
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
@@ -7179,6 +7685,27 @@ function init() {
         if (e.key === "Enter") { e.preventDefault(); tryEventCode(); }
       });
     }
+  });
+  $("#doll-file").addEventListener("change", (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    ev.target.value = "";                     // 同じ写真をもう一度えらべるように
+    if (!f) return;
+    dollMsg = "写真を読んでおる…";
+    renderDoll();
+    dollRead(f, (src) => {
+      if (!src) {
+        dollMsg = "この写真は読めんかった。別の写真でためしてくれ。";
+        dollWork = null; renderDoll(); return;
+      }
+      const cut0 = dollAlreadyCut(src);
+      dollWork = { src, cut: null, name: "", cut0,
+                   tol: cut0 ? 30 : dollAutoTol(src),
+                   erased: new Uint8Array(src.width * src.height) };
+      dollErase = false;
+      dollMsg = "";
+      renderDoll();
+      dollApply();
+    });
   });
   $("#act-cancel").addEventListener("click", () => { if (actRunning) actRunning(); });
   /* ヘッダーの顔をタップしても職人を変えられる */
