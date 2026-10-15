@@ -1305,12 +1305,29 @@ footer{
 }
 .avf-note{ font-size:.62rem; color:var(--brown-mid); line-height:1.7; margin-top:7px; text-align:center; }
 .avf-note b{ color:#a97c14; }
+/* ---------- 工房の音 ---------- */
+header{ position:relative; }
+.snd-btn{
+  position:absolute; top:8px; right:10px; z-index:2;
+  width:38px; height:38px; border-radius:50%; cursor:pointer;
+  font-family:inherit; font-size:1rem; line-height:1;
+  border:2px solid var(--brown-mid); color:var(--brown);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+  box-shadow:0 2px 0 var(--brown-mid);
+}
+.snd-btn:active{ transform:translateY(2px); box-shadow:0 0 0 var(--brown-mid); }
+.snd-btn.on{
+  border-color:var(--green-deep); color:#fff;
+  background:linear-gradient(180deg,#a9cb9b,var(--green-deep));
+  box-shadow:0 2px 0 #5f7d55;
+}
 </style>
 </head>
 <body>
 
 <!-- ========== ヘッダー ========== -->
 <header>
+  <button class="snd-btn" id="btn-snd" aria-label="工房の音" aria-pressed="false">🔈</button>
   <h1>🪑 松永工房クラフトストーリー
     <span class="sub">〜小さな家具と、いろいろな童話〜</span>
   </h1>
@@ -6172,6 +6189,185 @@ function finishCraft(exhibit) {
    モーダル
    ========================================================== */
 /* ==========================================================
+   工房の音
+   ----------------------------------------------------------
+   音のファイルは持たない。ブラウザの Web Audio で、その場で組み立てる。
+
+     ・1枚のHTMLで完結する作りを崩さない（音源を入れると MB 単位で増える）
+     ・よその曲を借りないので、権利の心配がいらない
+     ・つなぎ目が無いので、何時間でも途切れず流れる
+
+   ヘ長調。Fmaj7 → Dm7 → B♭maj7 → C6 を7.5秒ずつ、30秒で一巡する。
+   旋律はヘ長調の五音から、前の音の近くをその場で選ぶ。同じ並びは
+   二度と来ないが、どの音も和音に収まるので、ずっと落ち着いている。
+
+   鳴らしはじめは、かならず人が押したときだけ。browser が
+   勝手に鳴らすのを嫌うのと、催しの会場で急に鳴ると困るため。
+   ========================================================== */
+const BGM_KEY  = "matsunaga-craft-story-bgm-v1";
+const BGM_VOL  = 0.26;      // 全体の音量。小さめに
+const BGM_BEAT = 0.75;      // 一拍の秒
+const BGM_BPC  = 10;        // 和音ひとつぶんの拍数 → 7.5秒
+
+/* 和音。低いほうから四つ */
+const BGM_CHORDS = [
+  [174.61, 220.00, 261.63, 329.63],   // Fmaj7   F3 A3 C4 E4
+  [146.83, 174.61, 220.00, 261.63],   // Dm7     D3 F3 A3 C4
+  [116.54, 146.83, 174.61, 220.00],   // B♭maj7  B♭2 D3 F3 A3
+  [130.81, 164.81, 196.00, 220.00]    // C6      C3 E3 G3 A3
+];
+/* 旋律に使う音。ヘ長調の五音を、低いほうから */
+const BGM_NOTES = [349.23, 392.00, 440.00, 523.25, 587.33,
+                   698.46, 783.99, 880.00];
+
+let bgmOn = false;
+let actx = null, bgmMaster = null, bgmVoice = null, bgmPadBus = null;
+let bgmTimer = null, bgmAt = 0, bgmBeat = 0, bgmLast = 3;
+
+/* 残響。短い雑音を減らしながら並べて、部屋の響きにする */
+function bgmReverb(ctx) {
+  const n = Math.floor(ctx.sampleRate * 2.6);
+  const buf = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.8);
+  }
+  const cv = ctx.createConvolver();
+  cv.buffer = buf;
+  return cv;
+}
+
+/* 旋律のひと粒。オルゴールのように、すっと立ち上がって長く消える */
+function bgmNote(f, at, len, vol) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "sine"; o.frequency.value = f;
+  const o2 = actx.createOscillator(), g2 = actx.createGain();
+  o2.type = "triangle"; o2.frequency.value = f * 2; g2.gain.value = 0.16;
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(vol, at + 0.014);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+  o.connect(g); o2.connect(g2); g2.connect(g); g.connect(bgmVoice);
+  o.start(at); o.stop(at + len + 0.05);
+  o2.start(at); o2.stop(at + len + 0.05);
+}
+
+/* 下で支える和音。ゆっくり出てきて、ゆっくり引く */
+function bgmPad(freqs, at, len) {
+  freqs.forEach((f, i) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = i === 0 ? "sine" : "triangle";
+    o.frequency.value = f;
+    o.detune.value = i % 2 ? 5 : -5;
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(0.05, at + 1.8);
+    g.gain.setValueAtTime(0.05, at + len - 2.0);
+    g.gain.linearRampToValueAtTime(0.0001, at + len);
+    o.connect(g); g.connect(bgmPadBus);
+    o.start(at); o.stop(at + len + 0.05);
+  });
+}
+
+/* 先回りして組み立てておく。鳴る時刻は音の時計で決める */
+function bgmTick() {
+  if (!actx || !bgmTimer) return;
+  const ahead = actx.currentTime + 0.5;
+  let guard = 0;
+  while (bgmAt < ahead && guard++ < 40) {
+    const inChord = bgmBeat % BGM_BPC;
+    const ci = Math.floor(bgmBeat / BGM_BPC) % BGM_CHORDS.length;
+    if (inChord === 0) {
+      bgmPad(BGM_CHORDS[ci], bgmAt, BGM_BPC * BGM_BEAT);
+      bgmNote(BGM_CHORDS[ci][0] / 2, bgmAt, 5.0, 0.085);      // 低い支え
+    }
+    /* 旋律は一拍おきに、半分くらいの確からしさで。詰めすぎない */
+    if (inChord % 2 === 0 && Math.random() < 0.55) {
+      let i = bgmLast + (Math.floor(Math.random() * 5) - 2);
+      bgmLast = Math.max(0, Math.min(BGM_NOTES.length - 1, i));
+      bgmNote(BGM_NOTES[bgmLast], bgmAt, 2.6 + Math.random() * 1.4, 0.075);
+    }
+    bgmAt += BGM_BEAT;
+    bgmBeat++;
+  }
+}
+
+function bgmStart() {
+  try {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { bgmOn = false; return; }
+      actx = new AC();
+      bgmMaster = actx.createGain(); bgmMaster.gain.value = 0.0001;
+      bgmVoice  = actx.createGain();
+      bgmPadBus = actx.createGain();
+      const lp = actx.createBiquadFilter();
+      lp.type = "lowpass"; lp.frequency.value = 1400;        // 和音はやわらかく
+      const rev = bgmReverb(actx);
+      const wet = actx.createGain(); wet.gain.value = 0.55;
+      const comp = actx.createDynamicsCompressor();
+      bgmPadBus.connect(lp);
+      lp.connect(bgmMaster); lp.connect(rev);
+      bgmVoice.connect(bgmMaster); bgmVoice.connect(rev);
+      rev.connect(wet); wet.connect(bgmMaster);
+      bgmMaster.connect(comp); comp.connect(actx.destination);
+      bgmAt = actx.currentTime + 0.2;
+      bgmBeat = 0;
+    }
+    if (actx.state === "suspended" && actx.resume) actx.resume();
+    if (bgmAt < actx.currentTime) bgmAt = actx.currentTime + 0.2;
+    const t = actx.currentTime;
+    bgmMaster.gain.cancelScheduledValues(t);
+    bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
+    bgmMaster.gain.linearRampToValueAtTime(BGM_VOL, t + 1.4);   // そっと入る
+    if (!bgmTimer) bgmTimer = setInterval(bgmTick, 120);
+    bgmTick();
+  } catch (e) { bgmOn = false; }     // 鳴らせなくても、ゲームは動く
+}
+
+function bgmStop() {
+  if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+  if (!actx || !bgmMaster) return;
+  try {
+    const t = actx.currentTime;
+    bgmMaster.gain.cancelScheduledValues(t);
+    bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
+    bgmMaster.gain.linearRampToValueAtTime(0.0001, t + 0.8);    // そっと引く
+  } catch (e) { /* 止まらなくても困らない */ }
+}
+
+function renderSnd() {
+  const b = $("#btn-snd");
+  if (!b) return;
+  b.textContent = bgmOn ? "🔊" : "🔈";
+  b.classList.toggle("on", bgmOn);
+  b.setAttribute("aria-pressed", bgmOn ? "true" : "false");
+  b.title = bgmOn ? "工房の音をとめる" : "工房の音を流す";
+}
+
+function bgmToggle() {
+  bgmOn = !bgmOn;
+  try { localStorage.setItem(BGM_KEY, bgmOn ? "1" : "0"); } catch (e) {}
+  if (bgmOn) bgmStart(); else bgmStop();
+  renderSnd();
+}
+
+function loadBgm() {
+  /* はじめは鳴らさない。会場でとつぜん鳴ると困るので、
+     「前に流していた」人にだけ、最初に触れたときから流す */
+  let want = false;
+  try { want = localStorage.getItem(BGM_KEY) === "1"; } catch (e) {}
+  bgmOn = want;
+  renderSnd();
+  if (!want) return;
+  const wake = () => {
+    document.removeEventListener("pointerdown", wake);
+    document.removeEventListener("keydown", wake);
+    if (bgmOn) bgmStart();
+  };
+  document.addEventListener("pointerdown", wake);
+  document.addEventListener("keydown", wake);
+}
+
+/* ==========================================================
    うちの子（お人形）
    ----------------------------------------------------------
    お人形の写真を取りこんで、部屋に立たせる。
@@ -8110,6 +8306,11 @@ function renderAbout() {
         : `<p style="text-align:center">この工房で家具をこしらえている職人。</p>`}
       <button class="foot-btn" id="btn-edit-avatar" style="max-width:200px;margin:8px auto 0;display:block;min-height:44px">🧑‍🔧 職人を変える</button>
     </div>
+    <div class="about-block" style="text-align:center">
+      <h4>🔈 工房の音</h4>
+      <p style="text-align:center">右上のボタンで、静かな音楽が流れます。<br>
+        まわりに人のいるところでは、音にお気をつけください。</p>
+    </div>
     <div class="about-block">
       <h4>🎖 専門の称号</h4>
       <p>作った実績で増えていきます。何枚でも持てます。</p>
@@ -8216,6 +8417,7 @@ function init() {
   loadDolls();
   loadAlbum();
   loadFace();
+  loadBgm();
   drawKobo();
 
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
@@ -8299,6 +8501,15 @@ function init() {
       renderAvatarEditor();
       faceDraw();
     });
+  });
+  $("#btn-snd").addEventListener("click", bgmToggle);
+  /* ほかの画面を見ているあいだは止めて、電池を食わないようにする */
+  document.addEventListener("visibilitychange", () => {
+    if (!actx) return;
+    try {
+      if (document.hidden) actx.suspend();
+      else if (bgmOn) actx.resume();
+    } catch (e) { /* 使えなくても困らない */ }
   });
   $("#act-cancel").addEventListener("click", () => { if (actRunning) actRunning(); });
   /* ヘッダーの顔をタップしても職人を変えられる */
