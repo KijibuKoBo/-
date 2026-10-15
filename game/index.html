@@ -1192,6 +1192,16 @@ footer{
 }
 /* 棚のなかの、うちの子 */
 .rs-item.doll{ border-color:var(--gold); background:#fffaec; }
+.rs-item.real{ border-color:#d8a8a0; background:#fffaf8; }
+.rs-head{
+  grid-column:1/-1; font-size:.62rem; font-weight:bold; color:var(--brown-mid);
+  letter-spacing:.06em; padding:4px 2px 2px; border-bottom:1.5px dashed var(--wood-light);
+}
+.rs-head:first-child{ padding-top:0; }
+.rs-none{
+  grid-column:1/-1; font-size:.62rem; color:var(--brown-soft);
+  text-align:center; padding:8px 4px;
+}
 .rs-add{
   font-family:inherit; cursor:pointer; border:2px dashed var(--gold); border-radius:10px;
   background:#fffdf7; color:var(--brown-mid); font-size:.6rem; font-weight:bold;
@@ -1262,6 +1272,39 @@ footer{
 }
 .album-top label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
 .album-top input{ width:18px; height:18px; accent-color:var(--green-deep); }
+/* ---------- 名誉職人の、写真のアイコン ---------- */
+.av-art.av-photo{ object-fit:cover; border-radius:50%; }
+.av-face{
+  border:2px solid var(--gold); border-radius:14px;
+  background:linear-gradient(180deg,#fffdf5,#fdf3d5);
+  padding:10px 10px 11px; margin:10px 0 2px;
+}
+.av-face .avf-title{
+  text-align:center; font-size:.74rem; font-weight:bold; color:#a97c14; margin-bottom:8px;
+}
+.avf-stage{
+  width:170px; height:170px; margin:0 auto 8px; position:relative;
+  border-radius:50%; overflow:hidden; background:var(--cream-deep);
+  border:3px solid var(--gold); box-shadow:0 0 10px rgba(201,162,75,.6);
+  touch-action:none; cursor:grab;
+}
+.avf-stage canvas{ width:100%; height:100%; display:block; }
+.avf-row{ display:flex; gap:6px; align-items:center; margin-bottom:7px; }
+.avf-row label{ font-size:.64rem; color:var(--brown-mid); flex:0 0 auto; }
+.avf-row input[type=range]{ flex:1; accent-color:#a97c14; }
+.avf-btns{ display:flex; gap:6px; }
+.avf-btns button{
+  flex:1; font-family:inherit; font-size:.68rem; font-weight:bold; color:var(--brown);
+  min-height:42px; border-radius:10px; cursor:pointer;
+  border:2px solid var(--brown-mid);
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+}
+.avf-btns button:active{ transform:translateY(2px); }
+.avf-btns .avf-go{
+  background:linear-gradient(180deg,#e0bd63,var(--gold)); color:#fff; border-color:#a97c14;
+}
+.avf-note{ font-size:.62rem; color:var(--brown-mid); line-height:1.7; margin-top:7px; text-align:center; }
+.avf-note b{ color:#a97c14; }
 </style>
 </head>
 <body>
@@ -1454,7 +1497,9 @@ footer{
         入れて作った職人は <b>名誉職人</b> として、工房に名が残ります。</p>
       <p class="ev-msg" id="av-code-msg"></p>
     </div>
+    <div id="av-face-slot"></div>
     <div id="av-rows"></div>
+    <input type="file" id="face-file" accept="image/*" hidden>
     <button class="av-done" id="av-done">この職人ではじめる</button>
   </div>
 </div>
@@ -1710,7 +1755,34 @@ function avatarURL(av, size) {
 }
 
 /* 似顔絵を1枚ぶんの HTML にする。絵がまだ読めていないうちは、空の枠を返す */
+/* 名誉職人の写真アイコン
+   ----------------------------------------------------------
+   合言葉を入れた人だけ、顔に自分の写真を使える。
+   写真は大きいので、ゲームのセーブとは別の置き場に入れる。
+   セーブに残るのは「写真を使う」という印（av.photo）だけ */
+const FACE_KEY = "matsunaga-craft-story-face-v1";
+const FACE_PX  = 256;
+let face = { v: 1, img: null };
+
+function loadFace() {
+  try {
+    const raw = localStorage.getItem(FACE_KEY);
+    if (raw) {
+      const f = JSON.parse(raw);
+      if (f && typeof f.img === "string") face = f;
+    }
+  } catch (e) { /* 読めなくても、ゲームは動く */ }
+}
+function saveFace() {
+  try { localStorage.setItem(FACE_KEY, JSON.stringify(face)); return true; }
+  catch (e) { return false; }
+}
+/* 写真を使うか。合言葉を持っていない人には出さない */
+const facePhoto = (av) => (av && av.photo && face.img && eventOpen()) ? face.img : null;
+
 function buildAvatar(av, size) {
+  const ph = facePhoto(av);
+  if (ph) return `<img class="av-art av-photo" src="${ph}" alt="職人の顔">`;
   if (!avReady) return `<span class="av-art" aria-hidden="true"></span>`;
   return `<img class="av-art" src="${avatarURL(av, size)}" alt="職人の顔">`;
 }
@@ -6867,6 +6939,10 @@ function roomItems() {
 /* 置ける家具 ── 図鑑で一台でも仕上げたもの（秘伝もふくむ） */
 const roomStock = () => allDexEntries()
   .filter(e => state.completed[e.id] && state.completed[e.id].count > 0);
+/* 本物の Petit.Continue。作らなくても、はじめから置ける。
+   まだ一台も作っていない人でも、お部屋をすぐ飾れるように */
+const realAll = () => PETIT_ITEMS.map(it =>
+  ({ id: it.id, name: it.name, photo: it.photo(), real: true, note: it.note }));
 
 const roomClamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -6893,8 +6969,9 @@ function roomPhoto(it, e) {
 /* 置いてあるもの一つから、その中身を引く（操作バー用） */
 function roomEntryOf(it) {
   if (!it) return null;
-  return it.k === "d" ? (dollAll().find(d => d.id === it.id) || null)
-                      : (roomStock().find(e => e.id === it.id) || null);
+  if (it.k === "d") return dollAll().find(d => d.id === it.id) || null;
+  if (it.k === "p") return realAll().find(e => e.id === it.id) || null;
+  return roomStock().find(e => e.id === it.id) || null;
 }
 
 function roomPieceStyle(it, e) {
@@ -6968,8 +7045,10 @@ function roomPick(stage, cx, cy) {
 
 /* 置いてあるものを引く。it.k が "d" ならうちの子、無ければ家具。
    古いセーブの持ち物には k が無いので、そのまま家具として読める */
-function roomLook(it, byId, byDoll) {
-  return it.k === "d" ? byDoll[it.id] : byId[it.id];
+function roomLook(it, byId, byDoll, byReal) {
+  if (it.k === "d") return byDoll[it.id];
+  if (it.k === "p") return byReal[it.id];
+  return byId[it.id];
 }
 
 function renderRoom() {
@@ -6980,10 +7059,13 @@ function renderRoom() {
   /* うちの子も、家具と同じ形にそろえて置けるようにする（見本もふくむ） */
   const byDoll = {};
   dollAll().forEach(d => { byDoll[d.id] = d; });
+  /* 本物の Petit.Continue も、同じ形で置ける */
+  const byReal = {};
+  realAll().forEach(e => { byReal[e.id] = e; });
 
   /* 図鑑から消えた家具や、お帰しになったうちの子は、静かに落とす */
   const room = roomNow();
-  const items = roomItems().filter(it => roomLook(it, byId, byDoll));
+  const items = roomItems().filter(it => roomLook(it, byId, byDoll, byReal));
   R.sets[room.id] = items;
   if (roomSel !== null && !items[roomSel]) roomSel = null;
 
@@ -6991,7 +7073,7 @@ function renderRoom() {
     `<button class="rbg-btn${r.id === R.bg ? " on" : ""}" data-bg="${r.id}">${r.name}</button>`).join("");
 
   const pieces = items.map((it, i) => {
-    const e = roomLook(it, byId, byDoll);
+    const e = roomLook(it, byId, byDoll, byReal);
     return `<img class="rp${roomSel === i ? " sel" : ""}" data-i="${i}" src="${roomPhoto(it, e)}"`
          + ` alt="${esc(e.name)}" draggable="false" style="${roomPieceStyle(it, e)}">`;
   }).join("");
@@ -7008,10 +7090,20 @@ function renderRoom() {
     + `<span class="rs-thumb"><img src="${e.photo}" alt=""`
     + (e.artFilter ? ` style="filter:${e.artFilter}"` : "") + `></span>`
     + `<span class="rs-name">${esc(e.name)}</span></button>`).join("");
+  const realTiles = realAll().map(e =>
+    `<button class="rs-item real" data-real="${e.id}" title="${esc(e.name)}"${dis}>`
+    + `<span class="rs-thumb"><img src="${e.photo}" alt=""></span>`
+    + `<span class="rs-name">${esc(e.name)}</span></button>`).join("");
   const addTile = `<button class="rs-add" id="room-doll">🧸<br>うちの子を<br>ふやす</button>`;
-  const shelf = `<div class="room-shelf">${dollTiles}${furnTiles}${addTile}</div>`
-    + (stock.length ? "" : `<div class="room-empty">まだ一台も仕上がっておらんな。<br>`
-      + `ひとつ作って図鑑に入れれば、ここに家具が並ぶぞ。</div>`);
+  const head = (t) => `<div class="rs-head">${t}</div>`;
+  const shelf = `<div class="room-shelf">`
+    + head("🧸 うちの子") + dollTiles + addTile
+    + (stock.length
+        ? head("🔨 作った家具") + furnTiles
+        : head("🔨 作った家具")
+          + `<div class="rs-none">まだ一台も仕上がっておらん。ひとつ作れば、ここに並ぶぞ。</div>`)
+    + head("🎀 本物の Petit.Continue") + realTiles
+    + `</div>`;
 
   /* 棚は長い。置くたびに先頭へもどってしまわないよう、位置を覚えておく */
   const shelfWas = $(".room-shelf");
@@ -7023,7 +7115,7 @@ function renderRoom() {
        ${room.img ? `<img class="rbg" src="${ROOM_ART[room.img]}" alt="" draggable="false">`
                   : `<span class="rbg">${room.svg}</span>`}${pieces}
      </div>
-     <div id="room-ctl">${roomCtlHtml(byId, byDoll)}</div>
+     <div id="room-ctl">${roomCtlHtml(byId, byDoll, byReal)}</div>
      <div class="room-cam">
        <button class="cam-go" id="cam-take"${items.length ? "" : " disabled"}>📷 撮る</button>
        <button class="cam-album" id="cam-album">🖼 写真棚　${album.list.length}</button>
@@ -7037,10 +7129,10 @@ function renderRoom() {
   const shelfNow = $(".room-shelf");
   if (shelfNow && shelfTop) shelfNow.scrollTop = shelfTop;
 
-  bindRoom(byId, byDoll);
+  bindRoom(byId, byDoll, byReal);
 }
 
-function roomCtlHtml(byId, byDoll) {
+function roomCtlHtml(byId, byDoll, byReal) {
   const items = roomItems();
   if (roomSel === null || !items[roomSel]) {
     return `<div class="room-tip">下の棚から、置きたい家具をえらんでください。<br>`
@@ -7048,7 +7140,7 @@ function roomCtlHtml(byId, byDoll) {
          + `<b>タップしてえらぶ</b>と、大きさ・<b>左右の向き</b>・前後を変えられます。<br>`
          + `二本指でひろげても、大きさが変わります。</div>`;
   }
-  const e = roomLook(items[roomSel], byId, byDoll);
+  const e = roomLook(items[roomSel], byId, byDoll, byReal);
   const turn = e && e.poses
     ? `<button data-rc="turn" aria-label="向きを変える">↻ 向き</button>` : "";
   return `<div class="room-ctl">
@@ -7075,6 +7167,9 @@ function roomAdd(id, kind) {
     /* うちの子の背たけは DOLL_MM を目安に。あとから好きに変えられる */
     const h = +roomClamp(room.dh * DOLL_MM / ROOM_MM, 0.08, 0.95).toFixed(3);
     items.push({ k: "d", id, x, y: room.floor, h, fl: 1 });
+  } else if (kind === "p") {
+    const e = realAll().find(z => z.id === id);
+    items.push({ k: "p", id, x, y: room.floor, h: e ? roomDefH(e, room) : room.dh, fl: 1 });
   } else {
     const e = roomStock().find(z => z.id === id);
     items.push({ id, x, y: room.floor, h: e ? roomDefH(e, room) : room.dh, fl: 1 });
@@ -7104,10 +7199,10 @@ function roomCtl(cmd) {
 
 /* えらび直しでは作り直さない。動かしている最中に要素が消えると、
    指が離れてしまうため、印と操作バーだけを書きかえる */
-function roomMarkSel(byId, byDoll) {
+function roomMarkSel(byId, byDoll, byReal) {
   document.querySelectorAll("#room-stage .rp").forEach(el =>
     el.classList.toggle("sel", +el.dataset.i === roomSel));
-  $("#room-ctl").innerHTML = roomCtlHtml(byId, byDoll);
+  $("#room-ctl").innerHTML = roomCtlHtml(byId, byDoll, byReal);
   bindRoomCtl();
 }
 
@@ -7116,7 +7211,7 @@ function bindRoomCtl() {
     b.addEventListener("click", () => roomCtl(b.dataset.rc)));
 }
 
-function bindRoom(byId, byDoll) {
+function bindRoom(byId, byDoll, byReal) {
   document.querySelectorAll("#room-body [data-bg]").forEach(b =>
     b.addEventListener("click", () => {
       roomState().bg = b.dataset.bg;
@@ -7128,6 +7223,8 @@ function bindRoom(byId, byDoll) {
     b.addEventListener("click", () => roomAdd(b.dataset.add)));
   document.querySelectorAll("#room-body [data-doll]").forEach(b =>
     b.addEventListener("click", () => roomAdd(b.dataset.doll, "d")));
+  document.querySelectorAll("#room-body [data-real]").forEach(b =>
+    b.addEventListener("click", () => roomAdd(b.dataset.real, "p")));
   const dollBtn = $("#room-doll");
   if (dollBtn) dollBtn.addEventListener("click", openDollEditor);
   const take = $("#cam-take");
@@ -7152,13 +7249,13 @@ function bindRoom(byId, byDoll) {
   stage.addEventListener("pointerdown", (ev) => {
     const el = roomPick(stage, ev.clientX, ev.clientY);
     if (!el) {                       // 床や壁をさわったら、えらぶのをやめる
-      if (roomSel !== null) { roomSel = null; roomMarkSel(byId, byDoll); }
+      if (roomSel !== null) { roomSel = null; roomMarkSel(byId, byDoll, byReal); }
       return;
     }
     ev.preventDefault();
     roomPt.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
     const i = +el.dataset.i;
-    if (roomSel !== i) { roomSel = i; roomMarkSel(byId, byDoll); }
+    if (roomSel !== i) { roomSel = i; roomMarkSel(byId, byDoll, byReal); }
 
     if (roomPt.size >= 2) {          // 二本目の指 → 大きさを変える
       const p = Array.from(roomPt.values());
@@ -7549,6 +7646,50 @@ function skillBlock() {
   </div>`;
 }
 
+/* ---------- 名誉職人の写真を切り抜く ----------
+   丸い枠に収めるだけなので、背景は抜かない。
+   指で動かして、つまみで寄り引きする。それだけで足りる */
+let faceWork = null;   // { cv:元の絵, z:寄り, ox,oy:ずらし }
+let faceMsg  = "";
+
+function faceRead(file, done) {
+  const r = new FileReader();
+  r.onerror = () => done(null);
+  r.onload = () => {
+    const img = new Image();
+    img.onerror = () => done(null);
+    img.onload = () => {
+      try {
+        const k = Math.min(1, 900 / Math.max(img.naturalWidth, img.naturalHeight));
+        const cv = document.createElement("canvas");
+        cv.width  = Math.max(1, Math.round(img.naturalWidth * k));
+        cv.height = Math.max(1, Math.round(img.naturalHeight * k));
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        done(cv);
+      } catch (e) { done(null); }
+    };
+    img.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+/* 丸枠に、いまの寄り・ずらしで描く */
+function faceDrawTo(g, px) {
+  const w = faceWork;
+  g.clearRect(0, 0, px, px);
+  const s = w.cv;
+  const base = Math.max(px / s.width, px / s.height);   // はみ出すまで広げる
+  const k = base * w.z;
+  const dw = s.width * k, dh = s.height * k;
+  const r = px / FACE_PX;
+  g.drawImage(s, px / 2 - dw / 2 + w.ox * r, px / 2 - dh / 2 + w.oy * r, dw, dh);
+}
+function faceDraw() {
+  const cv = $("#avf-canvas");
+  if (!cv || !faceWork) return;
+  faceDrawTo(cv.getContext("2d"), FACE_PX);
+}
+
 /* ---------- 似顔絵メーカー ---------- */
 let avDraft = null;    // 編集中の顔。決定するまで state には入れない
 let avFirst = false;   // はじめて職人をつくるところか
@@ -7576,12 +7717,52 @@ function openAvatarEditor(first) {
     $("#av-code-msg").classList.remove("ok");
   }
   $("#av-done").textContent = first ? "この職人ではじめる" : "決定する";
+  faceWork = null;
+  faceMsg = "";
   renderAvatarEditor();
   openModal("avatar-modal");
 }
 
+/* 名誉職人だけに出る、写真の欄 */
+function faceBlockHtml() {
+  if (!eventOpen()) return "";
+  const has = !!face.img;
+  let html = `<div class="av-face"><div class="avf-title">🎟 名誉職人のしるし</div>`;
+  if (faceWork) {
+    html += `<div class="avf-stage" id="avf-stage">
+               <canvas id="avf-canvas" width="${FACE_PX}" height="${FACE_PX}"></canvas>
+             </div>
+             <div class="avf-row"><label>寄り</label>
+               <input type="range" id="avf-zoom" min="100" max="300" step="2"
+                      value="${Math.round(faceWork.z * 100)}"></div>
+             <div class="avf-btns">
+               <button class="avf-go" id="avf-ok">この写真にする</button>
+               <button id="avf-cancel">やめる</button>
+             </div>
+             <div class="avf-note">指でつまんで動かせます。</div>`;
+  } else {
+    if (has && avDraft.photo) {
+      html += `<div class="avf-stage"><img class="av-art av-photo" src="${face.img}" alt="職人の顔"></div>`;
+    }
+    html += `<div class="avf-btns">
+        <button class="avf-go" id="avf-pick">📷 写真をえらぶ</button>
+        ${(has && avDraft.photo) ? `<button id="avf-off">似顔絵にもどす</button>` : ""}
+      </div>`;
+    if (has && !avDraft.photo) {
+      html += `<div class="avf-note">前の写真は残してあります。
+        「📷 写真をえらぶ」で入れ直せます。</div>`;
+    }
+    html += `<div class="avf-note">合言葉を入れた方だけの<b>しるし</b>です。<br>
+      顔の絵のかわりに、お好きな写真を使えます。</div>`;
+  }
+  if (faceMsg) html += `<div class="doll-warn" style="margin:8px 0 0">${esc(faceMsg)}</div>`;
+  return html + `</div>`;
+}
+
 function renderAvatarEditor() {
   $("#av-preview").innerHTML = buildAvatar(avDraft, 240);
+  $("#av-face-slot").innerHTML = faceBlockHtml();
+  bindFaceBlock();
   $("#av-rows").innerHTML = AVATAR_ROWS.map(row => {
     const opts = row.list.map((it, i) => {
       const sel = avDraft[row.key] === i ? " selected" : "";
@@ -7607,6 +7788,71 @@ function renderAvatarEditor() {
       avDraft[b.dataset.k] = +b.dataset.i;
       renderAvatarEditor();
     }));
+}
+
+function bindFaceBlock() {
+  const pick = $("#avf-pick");
+  if (pick) pick.addEventListener("click", () => $("#face-file").click());
+
+  const off = $("#avf-off");
+  if (off) off.addEventListener("click", () => {
+    avDraft.photo = false; faceMsg = ""; renderAvatarEditor();
+  });
+
+  const zoom = $("#avf-zoom");
+  if (zoom) zoom.addEventListener("input", () => {
+    faceWork.z = +zoom.value / 100; faceDraw();
+  });
+
+  const cancel = $("#avf-cancel");
+  if (cancel) cancel.addEventListener("click", () => {
+    faceWork = null; faceMsg = ""; renderAvatarEditor();
+  });
+
+  const ok = $("#avf-ok");
+  if (ok) ok.addEventListener("click", () => {
+    const out = document.createElement("canvas");
+    out.width = out.height = FACE_PX;
+    faceDrawTo(out.getContext("2d"), FACE_PX);
+    let img = null;
+    try { img = out.toDataURL("image/webp", 0.86); } catch (e) { img = null; }
+    if (!img || img.indexOf("data:image/webp") !== 0) {
+      try { img = out.toDataURL("image/jpeg", 0.88); } catch (e) { img = null; }
+    }
+    if (!img) { faceMsg = "この写真は使えんかった。別の写真でためしてくれ。"; renderAvatarEditor(); return; }
+    const keep = face.img;
+    face.img = img;
+    if (!saveFace()) {
+      face.img = keep; saveFace();
+      faceMsg = "入れる場所がいっぱいじゃ。写真棚を少し減らしてみてくれ。";
+      renderAvatarEditor(); return;
+    }
+    avDraft.photo = true;
+    faceWork = null; faceMsg = "";
+    renderAvatarEditor();
+  });
+
+  /* 指でつまんで動かす */
+  const stage = $("#avf-stage");
+  const cv = $("#avf-canvas");
+  if (!stage || !cv || !faceWork) return;
+  let drag = null;
+  stage.addEventListener("pointerdown", (ev) => {
+    ev.preventDefault();
+    drag = { x: ev.clientX, y: ev.clientY, ox: faceWork.ox, oy: faceWork.oy };
+    try { stage.setPointerCapture(ev.pointerId); } catch (e) {}
+  });
+  stage.addEventListener("pointermove", (ev) => {
+    if (!drag) return;
+    const r = stage.getBoundingClientRect();
+    const k = FACE_PX / (r.width || FACE_PX);
+    faceWork.ox = drag.ox + (ev.clientX - drag.x) * k;
+    faceWork.oy = drag.oy + (ev.clientY - drag.y) * k;
+    faceDraw();
+  });
+  const stop = () => { drag = null; };
+  stage.addEventListener("pointerup", stop);
+  stage.addEventListener("pointercancel", stop);
 }
 
 function saveAvatar() {
@@ -7722,17 +7968,20 @@ function renderCert() {
 /* 松永工房のドール家具ブランド。公式サイトへの入口を、ゲームの中に置く。
    並べているのは実物の写真。足すときは PETIT_ITEMS に1行足す */
 const PETIT_SITE = "https://www.petit-de-continue.com/";
+/* 本物の Petit.Continue。どれも実物の写真。
+   id はドールハウスの置き場に残るので、変えないこと */
 const PETIT_ITEMS = [
-  { photo: () => PHOTOS.real_mirror, name: "プティ・姿見" },
-  { photo: () => PHOTOS.real_wardrobe, name: "プティ・ワードローブ" },
-  { photo: () => PHOTOS.real_dining, name: "プティ・ダイニングテーブル" },
-  { photo: () => PHOTOS.real_tea, name: "プティ・ティーテーブル" },
-  { photo: () => PHOTOS.real_chair, name: "プティ・チェア" },
-  { photo: () => PHOTOS.real_stool, name: "プティ・スツール" },
-  { photo: () => PHOTOS.real_couch, name: "プティ・カウチ" },
-  { photo: () => PHOTOS.real_bench, name: "プティ・ベンチ" },
-  { photo: () => PHOTOS.real_bookcase, name: "プティ・ブックケース" },
-  { photo: () => PHOTOS.real_mitsudan, name: "密談椅子", note: "ドルパ限定", special: true }
+  { id: "pt_mirror",   photo: () => PHOTOS.real_mirror,   name: "プティ・姿見" },
+  { id: "pt_wardrobe", photo: () => PHOTOS.real_wardrobe, name: "プティ・ワードローブ" },
+  { id: "pt_dining",   photo: () => PHOTOS.real_dining,   name: "プティ・ダイニングテーブル" },
+  { id: "pt_tea",      photo: () => PHOTOS.real_tea,      name: "プティ・ティーテーブル" },
+  { id: "pt_chair",    photo: () => PHOTOS.real_chair,    name: "プティ・チェア" },
+  { id: "pt_stool",    photo: () => PHOTOS.real_stool,    name: "プティ・スツール" },
+  { id: "pt_couch",    photo: () => PHOTOS.real_couch,    name: "プティ・カウチ" },
+  { id: "pt_bench",    photo: () => PHOTOS.real_bench,    name: "プティ・ベンチ" },
+  { id: "pt_bookcase", photo: () => PHOTOS.real_bookcase, name: "プティ・ブックケース" },
+  { id: "pt_mitsudan", photo: () => PHOTOS.real_mitsudan, name: "密談椅子",
+    note: "ドルパ限定", special: true }
 ];
 
 function renderPetit() {
@@ -7939,6 +8188,7 @@ function init() {
 
   loadDolls();
   loadAlbum();
+  loadFace();
   drawKobo();
 
   $("#btn-dex").addEventListener("click", () => { renderDex(); openModal("dex-modal"); });
@@ -8003,6 +8253,24 @@ function init() {
       dollMsg = "";
       renderDoll();
       dollApply();
+    });
+  });
+  $("#face-file").addEventListener("change", (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    faceMsg = "写真を読んでおる…";
+    renderAvatarEditor();
+    faceRead(f, (cv) => {
+      ev.target.value = "";
+      if (!cv) {
+        faceWork = null;
+        faceMsg = "この写真は読めんかった。別の写真でためしてくれ。";
+        renderAvatarEditor(); return;
+      }
+      faceWork = { cv, z: 1, ox: 0, oy: 0 };
+      faceMsg = "";
+      renderAvatarEditor();
+      faceDraw();
     });
   });
   $("#act-cancel").addEventListener("click", () => { if (actRunning) actRunning(); });
