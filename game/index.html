@@ -6936,13 +6936,38 @@ function roomItems() {
   if (!Array.isArray(R.sets[key])) R.sets[key] = [];
   return R.sets[key];
 }
+/* 家具の、ほかの向きの写真
+   ----------------------------------------------------------
+   いまの写真はどれも斜めから撮ったものが多い。正面から撮った写真を
+   足すと、その家具に「↻ 向き」が出て、押すたび切りかわる。
+   KoBoさんの四面図とまったく同じ仕掛け。
+
+   使いかた：PHOTOS に写真を一枚足して、ここに一行書くだけ。
+   並びの先頭は、いまの写真（棚に出る顔）にしておくこと。
+
+     r_wardrobe: ["r_wardrobe", "r_wardrobe_front"]
+
+   ゲーム側は poses があるかどうかしか見ていないので、
+   足しても減らしても、ほかはどこも触らなくてよい。
+   id はセーブに残るが、向きの番号（p）は写真が減れば勝手に丸められる */
+const FURN_POSES = {};
+
+/* その家具に、ほかの向きがあれば付ける */
+function withPoses(e) {
+  const keys = FURN_POSES[e.id];
+  if (!keys || keys.length < 2) return e;
+  const poses = keys.map(k => PHOTOS[k]).filter(Boolean);
+  return poses.length < 2 ? e : Object.assign({}, e, { poses });
+}
+
 /* 置ける家具 ── 図鑑で一台でも仕上げたもの（秘伝もふくむ） */
 const roomStock = () => allDexEntries()
-  .filter(e => state.completed[e.id] && state.completed[e.id].count > 0);
+  .filter(e => state.completed[e.id] && state.completed[e.id].count > 0)
+  .map(withPoses);
 /* 本物の Petit.Continue。作らなくても、はじめから置ける。
    まだ一台も作っていない人でも、お部屋をすぐ飾れるように */
 const realAll = () => PETIT_ITEMS.map(it =>
-  ({ id: it.id, name: it.name, photo: it.photo(), real: true, note: it.note }));
+  withPoses({ id: it.id, name: it.name, photo: it.photo(), real: true, note: it.note }));
 
 const roomClamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -6964,7 +6989,9 @@ function roomDefH(e, room) {
 
 /* 置いたものの絵。向きのあるもの（KoBoさん）は it.p で選ぶ */
 function roomPhoto(it, e) {
-  return (e && e.poses) ? e.poses[(it.p || 0) % e.poses.length] : (e ? e.photo : "");
+  if (!e) return "";
+  if (!e.poses) return e.photo;                       // 向きが減っても、ふつうの絵にもどるだけ
+  return e.poses[(it.p || 0) % e.poses.length];
 }
 /* 置いてあるもの一つから、その中身を引く（操作バー用） */
 function roomEntryOf(it) {
