@@ -1321,6 +1321,44 @@ header{ position:relative; }
   background:linear-gradient(180deg,#a9cb9b,var(--green-deep));
   box-shadow:0 2px 0 #5f7d55;
 }
+/* ---------- 新しい設計図のお披露目 ---------- */
+#bp-pop .modal{
+  text-align:center; position:relative; max-width:420px;
+  border-color:var(--gold);
+  background:linear-gradient(180deg,#fffdf5,#fdf3d5);
+  box-shadow:0 0 0 3px rgba(201,162,75,.3), 0 10px 30px rgba(60,40,20,.4);
+}
+#bp-pop h3{ border-bottom-color:var(--gold); color:#a97c14; }
+.bp-sub{ font-size:.72rem; color:var(--brown-mid); margin-bottom:10px; }
+.bp-one .bp-art{
+  display:block; width:168px; height:168px; margin:0 auto 6px;
+  animation:bpIn .6s cubic-bezier(.2,1.5,.4,1) both;
+}
+.bp-one .bp-art img, .bp-one .bp-art svg{
+  width:100%; height:100%; object-fit:contain; display:block;
+  filter:drop-shadow(0 4px 8px rgba(60,40,20,.3));
+}
+@keyframes bpIn{ from{ transform:scale(.3) rotate(-8deg); opacity:0; } to{ transform:none; opacity:1; } }
+.bp-one .bp-name{ font-size:1.06rem; font-weight:bold; letter-spacing:.06em; }
+.bp-one .bp-desc{
+  font-size:.74rem; line-height:1.9; text-align:justify; color:var(--brown);
+  margin:9px 0 2px; padding:11px; border-radius:12px;
+  background:#fffdf7; border:1.5px dashed var(--gold);
+}
+.bp-many{ display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-bottom:4px; }
+.bp-many .bp-cell{ animation:bpIn .6s cubic-bezier(.2,1.5,.4,1) both; }
+.bp-many .bp-cell-art{ display:block; width:100%; height:78px; }
+.bp-many .bp-cell-art img, .bp-many .bp-cell-art svg{
+  width:100%; height:100%; object-fit:contain; display:block;
+  filter:drop-shadow(0 3px 6px rgba(60,40,20,.28));
+}
+.bp-many .bp-cell span{ display:block; font-size:.62rem; line-height:1.3; margin-top:3px; }
+.bp-chips{ margin-top:9px; font-size:.68rem; color:var(--brown-mid); }
+.bp-kobo{
+  position:absolute; right:8px; bottom:6px;
+  width:58px; height:92px; opacity:.9; pointer-events:none;
+}
+.bp-kobo img{ width:100%; height:100%; object-fit:contain; display:block; }
 </style>
 </head>
 <body>
@@ -1518,6 +1556,17 @@ header{ position:relative; }
     <div id="av-rows"></div>
     <input type="file" id="face-file" accept="image/*" hidden>
     <button class="av-done" id="av-done">この職人ではじめる</button>
+  </div>
+</div>
+
+<!-- ========== モーダル：新しい設計図のお披露目 ========== -->
+<div class="modal-back" id="bp-pop">
+  <div class="modal">
+    <span class="bp-kobo" id="bp-kobo"></span>
+    <button class="x-close" data-close="bp-pop" aria-label="とじる">✕</button>
+    <h3>📜 新しい設計図</h3>
+    <div id="bp-body"></div>
+    <button class="close" data-close="bp-pop">設計図をしまう</button>
   </div>
 </div>
 
@@ -3432,8 +3481,9 @@ function actScore(total) {
       n = n || 1;
       hit += n; fine += n * (q === undefined ? 1 : Math.max(0, Math.min(1, q)));
       combo += n; if (combo > best) best = combo;
+      sfxHit(q, combo);
     },
-    ng(n) { n = n || 1; miss += n; combo = 0; },
+    ng(n) { n = n || 1; miss += n; combo = 0; sfxMiss(); },
     get combo() { return combo; },
     get best() { return best; },
     get hit() { return hit; },
@@ -5156,13 +5206,50 @@ function bpCondLabel(f) {
   return "";
 }
 /* 新しく解放された設計図があれば告知文を返す */
+/* 新しい設計図が来たときの、お披露目
+   ----------------------------------------------------------
+   前は KoBoさんのひとことに短く足すだけだったので、見のがしやすかった。
+   作れるものが増えるのは、この遊びでいちばん嬉しい瞬間なので、
+   紙を一枚めくるように、ちゃんと見せる */
+let bpWait = null;
+
+function showBPPop(ids) {
+  const list = ids.map(furnitureById).filter(Boolean);
+  if (!list.length) return;
+  /* ほかの紙が開いていたら、閉じるのを待つ。重ねて出さない */
+  if (document.querySelector(".modal-back.open")) {
+    if (bpWait) clearTimeout(bpWait);
+    bpWait = setTimeout(() => showBPPop(ids), 900);
+    return;
+  }
+  const one = list.length === 1;
+  $("#bp-body").innerHTML = one
+    ? `<div class="bp-sub">こしらえられるものが、ひとつ増えたぞ。</div>
+       <div class="bp-one">
+         ${artOf(list[0], "bp-art")}
+         <div class="bp-name">${esc(list[0].name)}</div>
+         <div class="bp-desc">${esc(list[0].description)}</div>
+         <div class="bp-chips">💰 ${list[0].price.toLocaleString()}円〜　⏳ 納期${list[0].deadline}時間</div>
+       </div>`
+    : `<div class="bp-sub">こしらえられるものが、${list.length}つ増えたぞ。</div>
+       <div class="bp-many">` + list.map((f, i) =>
+         `<div class="bp-cell" style="animation-delay:${(i * 0.09).toFixed(2)}s">
+            ${artOf(f, "bp-cell-art")}<span>${esc(f.name)}</span></div>`).join("")
+       + `</div>`;
+  $("#bp-kobo").innerHTML = `<img src="${PHOTOS.kobo_body}" alt="KoBoさん">`;
+  openModal("bp-pop");
+  confetti();
+  sfxBlueprint();
+}
+
 function announceBP() {
   const now = FURNITURE.filter(bpUnlocked).map(f => f.id);
   const fresh = now.filter(id => !state.seenBP.includes(id));
   state.seenBP = now;
   if (!fresh.length) return "";
-  confetti();
-  return `　📜 新しい設計図「${fresh.map(id => furnitureById(id).name).join("・")}」を手に入れた！`;
+  /* KoBoさんのひとことが出きってから、紙を見せる */
+  setTimeout(() => showBPPop(fresh), 850);
+  return "";
 }
 
 /* 設備の効果 */
@@ -5814,10 +5901,14 @@ function playAction(act, lv, onDone) {
   $(".act-stage").style.display = "";
   $(".act-bar-wrap").style.display = "";
   openModal("action-modal");
+  sfxTensionStart();
 
   let ended = false, tick = null, down = false;
   const ui = {
-    progress: (r) => { $("#act-bar").style.width = Math.min(100, r * 100) + "%"; },
+    progress: (r) => {
+      actProg = Math.max(0, Math.min(1, r));     // 心臓の音を、終わりに向けて速める
+      $("#act-bar").style.width = Math.min(100, r * 100) + "%";
+    },
     say: (t) => { $("#act-say").textContent = t; },
     setTip: (html) => { $("#act-tip").innerHTML = html; },
     /* 遊びが終わった合図。結果を見せるまでに少し間を置くので、
@@ -5826,6 +5917,7 @@ function playAction(act, lv, onDone) {
   };
 
   const cleanup = () => {
+    sfxTensionStop();
     if (ui.onStop) ui.onStop();          // 動き続けるアクションを止める
     if (tick) clearInterval(tick);
     svg.onpointerdown = svg.onpointermove = svg.onpointerup = svg.onpointercancel = null;
@@ -5901,6 +5993,7 @@ function practiceAction(key) {
 }
 
 function showPracticeResult(key, score, comment) {
+  sfxResult(score);
   const grade = score >= 90 ? "職人級じゃ！" : score >= 70 ? "よい仕事じゃ。"
     : score >= 45 ? "まずまずといったところか。" : "うむ……次じゃ、次。";
   $("#act-tip").hidden = true;
@@ -5926,6 +6019,7 @@ function showPracticeResult(key, score, comment) {
 
 /* アクションの結果を見せてから、工程を進める */
 function showActionResult(score, comment) {
+  sfxResult(score);
   const f = furnitureById(state.currentId);
   const best = state.actionBest[f.id] || 0;
   const isBest = score > best;
@@ -6220,9 +6314,16 @@ const BGM_CHORDS = [
 const BGM_NOTES = [349.23, 392.00, 440.00, 523.25, 587.33,
                    698.46, 783.99, 880.00];
 
-let bgmOn = false;
+/* 音の出しかた。0=消音 1=効果音だけ 2=音楽も
+   ボタンを押すたび、この三つをまわる。
+   「音楽はいらないが、山場の音はほしい」人のために、まんなかを置いた */
+let sndMode = 0;
+const sfxOn = () => sndMode >= 1;
+const musOn = () => sndMode >= 2;
+
 let actx = null, bgmMaster = null, bgmVoice = null, bgmPadBus = null;
 let bgmTimer = null, bgmAt = 0, bgmBeat = 0, bgmLast = 3;
+let sfxBus = null, audRev = null, bgmDuck = 1;
 
 /* 残響。短い雑音を減らしながら並べて、部屋の響きにする */
 function bgmReverb(ctx) {
@@ -6290,37 +6391,76 @@ function bgmTick() {
   }
 }
 
+/* 音の土台。音楽と効果音が、同じ響きを分けあう */
+function audioInit() {
+  if (actx) return true;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    actx = new AC();
+    const comp = actx.createDynamicsCompressor();
+    comp.connect(actx.destination);
+    audRev = bgmReverb(actx);
+    const wet = actx.createGain(); wet.gain.value = 0.55;
+    audRev.connect(wet); wet.connect(comp);
+
+    bgmMaster = actx.createGain(); bgmMaster.gain.value = 0.0001;
+    bgmVoice  = actx.createGain();
+    bgmPadBus = actx.createGain();
+    const lp = actx.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 1400;          // 和音はやわらかく
+    bgmPadBus.connect(lp);
+    lp.connect(bgmMaster); lp.connect(audRev);
+    bgmVoice.connect(bgmMaster); bgmVoice.connect(audRev);
+    bgmMaster.connect(comp);
+
+    sfxBus = actx.createGain(); sfxBus.gain.value = 1;
+    sfxBus.connect(comp);
+    const sw = actx.createGain(); sw.gain.value = 0.3;       // 効果音は響きひかえめ
+    sfxBus.connect(sw); sw.connect(audRev);
+
+    bgmAt = actx.currentTime + 0.2;
+    bgmBeat = 0;
+    return true;
+  } catch (e) { actx = null; return false; }
+}
+/* 眠っている音の時計を起こす。
+   resume() は投げずに「約束を断る」形で失敗することがあるので、
+   そちらも受けておかないと、browser の記録にエラーが残る */
+function audResume() {
+  if (!actx || !actx.resume || actx.state !== "suspended") return;
+  try {
+    const r = actx.resume();
+    if (r && r.catch) r.catch(() => {});
+  } catch (e) { /* 起こせなくても、鳴らないだけ */ }
+}
+function audSuspend() {
+  if (!actx || !actx.suspend) return;
+  try {
+    const r = actx.suspend();
+    if (r && r.catch) r.catch(() => {});
+  } catch (e) {}
+}
+
+/* 効果音を出す前に、毎回これを通す */
+function sfxReady() {
+  if (!sfxOn() || !audioInit()) return false;
+  audResume();
+  return true;
+}
+
 function bgmStart() {
   try {
-    if (!actx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) { bgmOn = false; return; }
-      actx = new AC();
-      bgmMaster = actx.createGain(); bgmMaster.gain.value = 0.0001;
-      bgmVoice  = actx.createGain();
-      bgmPadBus = actx.createGain();
-      const lp = actx.createBiquadFilter();
-      lp.type = "lowpass"; lp.frequency.value = 1400;        // 和音はやわらかく
-      const rev = bgmReverb(actx);
-      const wet = actx.createGain(); wet.gain.value = 0.55;
-      const comp = actx.createDynamicsCompressor();
-      bgmPadBus.connect(lp);
-      lp.connect(bgmMaster); lp.connect(rev);
-      bgmVoice.connect(bgmMaster); bgmVoice.connect(rev);
-      rev.connect(wet); wet.connect(bgmMaster);
-      bgmMaster.connect(comp); comp.connect(actx.destination);
-      bgmAt = actx.currentTime + 0.2;
-      bgmBeat = 0;
-    }
-    if (actx.state === "suspended" && actx.resume) actx.resume();
+    if (!audioInit()) { sndMode = Math.min(sndMode, 1); return; }
+    audResume();
     if (bgmAt < actx.currentTime) bgmAt = actx.currentTime + 0.2;
     const t = actx.currentTime;
     bgmMaster.gain.cancelScheduledValues(t);
     bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
-    bgmMaster.gain.linearRampToValueAtTime(BGM_VOL, t + 1.4);   // そっと入る
+    bgmMaster.gain.linearRampToValueAtTime(BGM_VOL * bgmDuck, t + 1.4);   // そっと入る
     if (!bgmTimer) bgmTimer = setInterval(bgmTick, 120);
     bgmTick();
-  } catch (e) { bgmOn = false; }     // 鳴らせなくても、ゲームは動く
+  } catch (e) { sndMode = Math.min(sndMode, 1); }   // 鳴らせなくても、ゲームは動く
 }
 
 function bgmStop() {
@@ -6334,37 +6474,209 @@ function bgmStop() {
   } catch (e) { /* 止まらなくても困らない */ }
 }
 
+const SND_FACE = ["🔇", "🔔", "🔊"];
+const SND_WORD = ["音を出す", "山場の音だけ鳴っています", "音楽も鳴っています"];
+
 function renderSnd() {
   const b = $("#btn-snd");
   if (!b) return;
-  b.textContent = bgmOn ? "🔊" : "🔈";
-  b.classList.toggle("on", bgmOn);
-  b.setAttribute("aria-pressed", bgmOn ? "true" : "false");
-  b.title = bgmOn ? "工房の音をとめる" : "工房の音を流す";
+  b.textContent = SND_FACE[sndMode];
+  b.classList.toggle("on", sndMode > 0);
+  b.setAttribute("aria-pressed", sndMode > 0 ? "true" : "false");
+  b.title = SND_WORD[sndMode] + "（押すと切りかわります）";
 }
 
-function bgmToggle() {
-  bgmOn = !bgmOn;
-  try { localStorage.setItem(BGM_KEY, bgmOn ? "1" : "0"); } catch (e) {}
-  if (bgmOn) bgmStart(); else bgmStop();
+function sndToggle() {
+  sndMode = (sndMode + 1) % 3;
+  try { localStorage.setItem(BGM_KEY, String(sndMode)); } catch (e) {}
+  if (musOn()) bgmStart(); else bgmStop();
+  if (sfxOn()) { sfxReady(); sfxHit(1, 1); }    // 切りかえたことが、耳でわかるように
   renderSnd();
 }
 
 function loadBgm() {
   /* はじめは鳴らさない。会場でとつぜん鳴ると困るので、
-     「前に流していた」人にだけ、最初に触れたときから流す */
-  let want = false;
-  try { want = localStorage.getItem(BGM_KEY) === "1"; } catch (e) {}
-  bgmOn = want;
+     「前に鳴らしていた」人にだけ、最初に触れたときから鳴らす */
+  let m = 0;
+  try {
+    const v = localStorage.getItem(BGM_KEY);
+    if (v === "1") m = 2;                        // 前の版（入／切）からの読みかえ
+    else if (v !== null) m = Math.max(0, Math.min(2, +v || 0));
+  } catch (e) {}
+  sndMode = m;
   renderSnd();
-  if (!want) return;
+  if (!m) return;
   const wake = () => {
     document.removeEventListener("pointerdown", wake);
     document.removeEventListener("keydown", wake);
-    if (bgmOn) bgmStart();
+    if (musOn()) bgmStart(); else if (sfxOn()) audioInit();
   };
   document.addEventListener("pointerdown", wake);
   document.addEventListener("keydown", wake);
+}
+
+/* ==========================================================
+   山場の効果音
+   ----------------------------------------------------------
+   こちらも音のファイルは持たない。その場で組み立てる。
+
+     ・手が決まるたび … 短い打音。決まりぐあいで高さと澄みが変わる
+     ・続けて決まると … 五音の階段を一段ずつのぼる。のっているのが耳でわかる
+     ・しくじると     … 低く、にぶい音。きつくはしない
+     ・遊んでいる間   … 心臓の音。終わりが近づくほど速くなる
+     ・終わったとき   … 出来ばえに応じたひとふし
+
+   10種のミニゲームぜんぶが actScore の ok / ng を通るので、
+   そこ一か所に差しこめば、全部に音がつく。
+   ========================================================== */
+
+/* 五音の階段（ヘ長調）。続けて決まるほど、上へ */
+const SFX_LADDER = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
+const sfxFreq = (semi) => 349.23 * Math.pow(2, semi / 12);   // F4 を根に
+
+/* 短い打音。q=決まりぐあい(0〜1)、step=階段の段 */
+function sfxHit(q, step) {
+  if (!sfxReady()) return;
+  const t = actx.currentTime;
+  const i = Math.max(0, Math.min(SFX_LADDER.length - 1, (step || 1) - 1));
+  const f = sfxFreq(SFX_LADDER[i]);
+  const good = Math.max(0, Math.min(1, q === undefined ? 1 : q));
+  const vol = 0.09 + good * 0.07;
+
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "sine"; o.frequency.value = f;
+  const o2 = actx.createOscillator(), g2 = actx.createGain();
+  o2.type = "triangle"; o2.frequency.value = f * 2;
+  g2.gain.value = 0.1 + good * 0.22;          // よく決まるほど、澄んで明るい
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16 + good * 0.22);
+  o.connect(g); o2.connect(g2); g2.connect(g); g.connect(sfxBus);
+  o.start(t); o.stop(t + 0.45);
+  o2.start(t); o2.stop(t + 0.45);
+}
+
+/* しくじり。低くにぶく、下がりながら消える */
+function sfxMiss() {
+  if (!sfxReady()) return;
+  const t = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "triangle";
+  o.frequency.setValueAtTime(174, t);
+  o.frequency.exponentialRampToValueAtTime(96, t + 0.22);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.1, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+  o.connect(g); g.connect(sfxBus);
+  o.start(t); o.stop(t + 0.3);
+}
+
+/* 心臓の音。ふたつで一組 */
+let sfxBeatTimer = null;
+let actProg = 0;              // 山場の進み具合（0〜1）
+
+function sfxThump(at, vol) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(72, at);
+  o.frequency.exponentialRampToValueAtTime(42, at + 0.12);
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.linearRampToValueAtTime(vol, at + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + 0.16);
+  o.connect(g); g.connect(sfxBus);
+  o.start(at); o.stop(at + 0.2);
+}
+
+function sfxTensionStart() {
+  sfxTensionStop();
+  actProg = 0;
+  if (!sfxReady()) return;
+  /* 音楽は、山場のあいだだけ下げる。心臓の音が通るように */
+  bgmDuck = 0.35;
+  if (musOn() && bgmMaster) {
+    const t = actx.currentTime;
+    bgmMaster.gain.cancelScheduledValues(t);
+    bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
+    bgmMaster.gain.linearRampToValueAtTime(BGM_VOL * bgmDuck, t + 0.5);
+  }
+  const beat = () => {
+    if (!actx || !sfxOn()) return;
+    const t = actx.currentTime + 0.02;
+    const near = Math.max(0, Math.min(1, actProg));
+    const vol = 0.05 + near * 0.05;           // 終わりが近いほど、強く
+    sfxThump(t, vol);
+    sfxThump(t + 0.15, vol * 0.68);
+    const wait = 900 - near * 480;            // 終わりが近いほど、速く
+    sfxBeatTimer = setTimeout(beat, wait);
+  };
+  beat();
+}
+
+function sfxTensionStop() {
+  if (sfxBeatTimer) { clearTimeout(sfxBeatTimer); sfxBeatTimer = null; }
+  if (bgmDuck === 1) return;
+  bgmDuck = 1;
+  if (actx && bgmMaster && musOn()) {
+    const t = actx.currentTime;
+    bgmMaster.gain.cancelScheduledValues(t);
+    bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
+    bgmMaster.gain.linearRampToValueAtTime(BGM_VOL, t + 1.0);
+  }
+}
+
+/* ひとふし鳴らす。点が高いほど、長く、高く、明るく */
+function sfxTune(notes, at0, vol, bright) {
+  notes.forEach((semi, i) => {
+    const at = at0 + i * 0.085;
+    const f = sfxFreq(semi);
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    const o2 = actx.createOscillator(), g2 = actx.createGain();
+    o2.type = "triangle"; o2.frequency.value = f * 2; g2.gain.value = bright;
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(vol, at + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + (i === notes.length - 1 ? 1.5 : 0.5));
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(sfxBus);
+    o.start(at); o.stop(at + 1.8);
+    o2.start(at); o2.stop(at + 1.8);
+  });
+}
+
+/* 山場が終わったとき */
+function sfxResult(score) {
+  sfxTensionStop();
+  if (!sfxReady()) return;
+  const t = actx.currentTime + 0.05;
+  if (score >= 90) {
+    sfxTune([0, 4, 7, 12, 16], t, 0.17, 0.4);          // やったー
+    sfxTune([19, 24], t + 0.46, 0.1, 0.5);             // きらり
+  } else if (score >= 70) {
+    sfxTune([0, 4, 7, 12], t, 0.14, 0.3);
+  } else if (score >= 45) {
+    sfxTune([0, 4, 7], t, 0.11, 0.2);
+  } else {
+    sfxTune([7, 4, 0], t, 0.1, 0.12);                  // そっと、下りる
+  }
+}
+
+/* 新しい設計図が来たとき。ゆっくり開く、明るいひとふし */
+function sfxBlueprint() {
+  if (!sfxReady()) return;
+  const t = actx.currentTime + 0.05;
+  [0, 7, 12, 16, 19, 24].forEach((semi, i) => {
+    const at = t + i * 0.13;
+    const f = sfxFreq(semi);
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    const o2 = actx.createOscillator(), g2 = actx.createGain();
+    o2.type = "triangle"; o2.frequency.value = f * 2; g2.gain.value = 0.35;
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(0.15, at + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 2.2);
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(sfxBus);
+    o.start(at); o.stop(at + 2.4);
+    o2.start(at); o2.stop(at + 2.4);
+  });
 }
 
 /* ==========================================================
@@ -8502,14 +8814,12 @@ function init() {
       faceDraw();
     });
   });
-  $("#btn-snd").addEventListener("click", bgmToggle);
+  $("#btn-snd").addEventListener("click", sndToggle);
   /* ほかの画面を見ているあいだは止めて、電池を食わないようにする */
   document.addEventListener("visibilitychange", () => {
     if (!actx) return;
-    try {
-      if (document.hidden) actx.suspend();
-      else if (bgmOn) actx.resume();
-    } catch (e) { /* 使えなくても困らない */ }
+    if (document.hidden) audSuspend();
+    else if (sndMode > 0) audResume();
   });
   $("#act-cancel").addEventListener("click", () => { if (actRunning) actRunning(); });
   /* ヘッダーの顔をタップしても職人を変えられる */
