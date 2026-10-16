@@ -919,6 +919,13 @@ footer{
   .mk-aura{ opacity:.35; }
 }
 
+/* 「見極めろ！」の見本。板の絵と言葉を、ひとかたまりで折り返す */
+.mk-leg{
+  display:inline-flex; align-items:center; gap:3px;
+  margin:2px 5px 0 0; white-space:nowrap; font-size:.68rem;
+}
+.mk-leg svg{ vertical-align:middle; }
+
 .act-say{
   text-align:center; font-size:.74rem; color:var(--brown-mid);
   min-height:1.5em; margin-top:7px; line-height:1.6;
@@ -3587,11 +3594,13 @@ const actHard = (lv) => 0.85 + (lv - 1) * 0.15;
    半透明も使わない。色は十六色に決めてある。
    ========================================================== */
 const MK_C = {
-  wall:"#f3e7cd", wallDk:"#e8cfa5", sky:"#cfe0ea",
-  woodH:"#f2cf9d", wood:"#dfa96c", woodM:"#c98d54", woodD:"#a9713f",
-  dark:"#6e4526", ink:"#3a2412",
-  gold:"#c9a24b", goldH:"#f0d87a", spark:"#fff6d0",
-  skin:"#e8b98c", green:"#7a9c6e", white:"#fffdf5", red:"#b8563e"
+  /* 工房の中。手元だけが明るく、奥は暗い */
+  night:"#1f1409", ink:"#2a1a0c", brd:"#4a2f18", dark:"#6e4526",
+  woodD:"#a9713f", woodM:"#c98d54", wood:"#dfa96c", woodH:"#f2cf9d",
+  paper:"#e8cfa5",
+  gold:"#c9a24b", goldH:"#f0d87a", spark:"#fff6d0", white:"#fffdf5",
+  sky:"#cfe0ea", hill:"#8aa39a", green:"#7a9c6e", gdark:"#4a5f42",
+  metal:"#2d4a5a", skin:"#e8b98c", red:"#b8563e"
 };
 const mkR = (x, y, w, h, c) =>
   `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
@@ -3617,24 +3626,31 @@ const mkNumW = (text, s) => String(text).length * 4 * s - s;
 
 /* 板。20×6ドット（60×18）。原点はまんなか。
    色が見分けられなくても形で分かるよう、節の板は右上の角を欠いてある */
+/* どの板にも、黒いふちを一周させる。暗い壁の前でも、かならず形が立つ */
+const mkEdge = (w, hh, c) =>
+  mkR(-w-3,-hh-3,w*2+6,3,c) + mkR(-w-3,hh,w*2+6,3,c) +
+  mkR(-w-3,-hh,3,hh*2,c) + mkR(w,-hh,3,hh*2,c);
+
 const MK_PLANK = {
   good:
+    mkEdge(30,9,MK_C.night) +
     mkR(-30,-9,60,18,MK_C.wood) + mkR(-30,-9,60,3,MK_C.woodH) +
     mkR(-30,6,60,3,MK_C.woodD) +
-    mkR(-30,-9,3,18,MK_C.dark) + mkR(27,-9,3,18,MK_C.dark) +
+    mkR(-30,-9,3,18,MK_C.woodD) + mkR(27,-9,3,18,MK_C.woodD) +
     mkR(-21,-3,18,3,MK_C.woodM) + mkR(6,-3,12,3,MK_C.woodM) +
     mkR(-15,3,21,3,MK_C.woodM),
   bad:
+    /* 右上の角が欠けている。色が見えなくても、形で分かる */
+    mkEdge(30,9,MK_C.night) + mkR(18,-12,15,6,MK_C.night) +
     mkR(-30,-9,48,3,MK_C.woodM) +
-    mkR(-30,-6,60,12,MK_C.woodD) + mkR(-30,6,60,3,MK_C.ink) +
-    mkR(-30,-6,3,15,MK_C.ink) + mkR(27,-6,3,15,MK_C.ink) +
-    mkR(-18,-6,18,12,MK_C.dark) + mkR(-15,-3,12,6,MK_C.ink) +
-    mkR(6,-3,15,9,MK_C.dark) + mkR(9,0,9,3,MK_C.ink),
+    mkR(-30,-6,60,12,MK_C.woodD) + mkR(-30,6,60,3,MK_C.brd) +
+    mkR(-18,-6,18,12,MK_C.brd) + mkR(-15,-3,12,6,MK_C.night) +
+    mkR(6,-3,15,9,MK_C.brd) + mkR(9,0,9,3,MK_C.night),
   gold:
+    mkEdge(30,9,MK_C.night) +
     mkR(-30,-9,60,18,MK_C.gold) + mkR(-30,-9,60,3,MK_C.goldH) +
-    mkR(-30,6,60,3,MK_C.dark) +
-    mkR(-30,-9,3,18,MK_C.dark) + mkR(27,-9,3,18,MK_C.dark) +
-    mkR(-21,-3,42,3,MK_C.goldH) +
+    mkR(-30,6,60,3,MK_C.woodD) +
+    mkR(-21,-3,42,3,MK_C.goldH) + mkR(-24,3,30,3,MK_C.woodD) +
     `<g class="mk-bl1">` + mkR(-24,-6,3,3,MK_C.spark) + mkR(12,0,3,3,MK_C.spark) + `</g>` +
     `<g class="mk-bl2">` + mkR(-3,-6,3,3,MK_C.spark) + mkR(18,-6,3,3,MK_C.spark) + `</g>`
 };
@@ -3645,59 +3661,151 @@ const MK_PHANTOM =
     mkR(-48,-21,96,6,MK_C.spark) + mkR(-48,15,96,6,MK_C.spark) +
     mkR(-48,-15,6,30,MK_C.spark) + mkR(42,-15,6,30,MK_C.spark) +
   `</g>` +
+  mkEdge(42,15,MK_C.night) +
   mkR(-42,-15,84,30,MK_C.goldH) +
   mkR(-42,-15,84,6,MK_C.white) + mkR(-42,9,84,6,MK_C.gold) +
-  mkR(-42,-15,3,30,MK_C.dark) + mkR(39,-15,3,30,MK_C.dark) +
   mkR(-33,0,45,3,MK_C.white) + mkR(18,-3,15,3,MK_C.white) +
   mkR(-24,6,39,3,MK_C.gold) +
   `<g class="mk-bl1">` + mkR(-36,-6,6,3,MK_C.white) + mkR(21,3,6,3,MK_C.white) + `</g>` +
   `<g class="mk-bl2">` + mkR(0,-6,6,3,MK_C.white) + mkR(-12,6,6,3,MK_C.white) + `</g>`;
 
-/* 工房。動きはない。奥に見えているだけのもの */
-const MK_STAGE =
-  mkR(0,0,300,300,MK_C.wall) +
-  /* 窓 */
-  mkR(24,51,69,63,MK_C.dark) + mkR(27,54,63,57,MK_C.sky) +
-  mkR(54,54,3,57,MK_C.dark) + mkR(27,78,63,3,MK_C.dark) +
-  mkR(18,111,81,6,MK_C.woodD) +
-  /* 棚と道具。壁と近い色にして、板の邪魔をしない */
-  mkR(192,66,90,3,MK_C.woodD) +
-  mkR(201,42,6,24,MK_C.wallDk) + mkR(195,36,18,6,MK_C.wallDk) +
-  mkR(222,45,33,21,MK_C.wallDk) + mkR(240,39,6,6,MK_C.wallDk) +
-  mkR(264,45,9,21,MK_C.wallDk) +
-  mkR(207,135,69,3,MK_C.woodD) +
-  mkR(213,117,15,18,MK_C.wallDk) + mkR(234,111,18,24,MK_C.wallDk) +
-  mkR(258,120,12,15,MK_C.wallDk) +
-  /* 床ぎわ */
-  mkR(0,198,300,3,MK_C.wallDk);
+/* 工房。動くものは何もない。奥に見えているだけのもの。
+   暗くしてあるのは、落ちてくる板をいちばん明るいものにするため */
+const MK_STAGE = (() => {
+  let o = mkR(0,0,300,300,MK_C.dark);
+  /* 板張りの壁。横目地を24ごとに */
+  for (let y = 36; y < 258; y += 24) o += mkR(0,y,300,3,MK_C.brd);
+  /* 柱 */
+  [0, 84, 207, 288].forEach(x => o += mkR(x,36,12,222,MK_C.brd));
+  [3, 87, 210, 291].forEach(x => o += mkR(x,36,3,222,MK_C.ink));
+  /* 梁 */
+  o += mkR(0,36,300,9,MK_C.brd) + mkR(0,42,300,3,MK_C.ink);
 
-/* 作業台 */
+  /* 吊りランプ。手元だけが明るい工房 */
+  o += mkR(147,45,6,15,MK_C.ink) +
+       mkR(132,60,36,6,MK_C.metal) + mkR(126,66,48,6,MK_C.metal) +
+       mkR(120,72,60,6,MK_C.metal) + mkR(120,78,60,3,MK_C.ink) +
+       mkR(141,78,18,6,MK_C.goldH) + mkR(144,84,12,3,MK_C.spark);
+
+  /* 窓。遠くに山と空 */
+  o += mkR(99,93,108,84,MK_C.ink) + mkR(102,96,102,78,MK_C.sky);
+  /* 遠くの山。段を踏んで、稜線に見えるように */
+  o += mkR(102,138,102,12,MK_C.hill);
+  o += mkR(108,132,36,6,MK_C.hill) + mkR(117,126,18,6,MK_C.hill) +
+       mkR(123,120,6,6,MK_C.hill);
+  o += mkR(156,132,33,6,MK_C.hill) + mkR(165,126,15,6,MK_C.hill);
+  o += mkR(102,150,102,24,MK_C.green) + mkR(102,150,102,3,MK_C.gdark);
+  o += mkR(114,159,15,3,MK_C.gdark) + mkR(168,165,18,3,MK_C.gdark);
+  /* 雲 */
+  o += mkR(111,105,21,3,MK_C.white) + mkR(117,102,12,3,MK_C.white) +
+       mkR(162,114,18,3,MK_C.white);
+  /* 桟 */
+  o += mkR(147,96,6,78,MK_C.ink) + mkR(102,129,102,6,MK_C.ink);
+  o += mkR(93,174,120,6,MK_C.woodD) + mkR(93,180,120,3,MK_C.ink);
+
+  /* 柱時計 */
+  /* 12ドットしかないので、印は入れず、針だけにする。そのほうが時計に見える */
+  o += mkR(219,90,36,36,MK_C.brd) + mkR(222,93,30,30,MK_C.woodD) +
+       mkR(225,96,24,24,MK_C.paper) +
+       mkR(237,99,3,12,MK_C.ink) + mkR(237,108,9,3,MK_C.ink);
+
+  /* 「職人魂」の掛け軸 */
+  o += mkR(258,84,33,96,MK_C.woodD) + mkR(261,90,27,84,MK_C.paper) +
+       mkR(258,84,33,6,MK_C.ink) + mkR(258,174,33,6,MK_C.ink) +
+       `<text x="274" y="118" text-anchor="middle" font-size="19" fill="${MK_C.ink}">職</text>` +
+       `<text x="274" y="142" text-anchor="middle" font-size="19" fill="${MK_C.ink}">人</text>` +
+       `<text x="274" y="166" text-anchor="middle" font-size="19" fill="${MK_C.ink}">魂</text>`;
+
+  /* 左の道具壁。鑿がならんでいる */
+  o += mkR(15,150,63,51,MK_C.brd) + mkR(15,150,63,3,MK_C.ink) +
+       mkR(15,156,63,3,MK_C.woodD);
+  for (let i = 0; i < 5; i++) {
+    const x = 21 + i * 12;
+    o += mkR(x,159,6,18,MK_C.sky) + mkR(x,177,6,12,MK_C.woodD) +
+         mkR(x,159,3,30,MK_C.ink);
+  }
+  /* 立てかけた板。受けるところ（230〜258）には何も置かない。
+     落ちてくる板と見まちがえないように */
+  o += mkR(15,183,69,12,MK_C.woodD) + mkR(15,183,69,3,MK_C.woodM) +
+       mkR(15,201,54,12,MK_C.woodD) + mkR(15,201,54,3,MK_C.woodM) +
+       mkR(15,195,69,3,MK_C.ink) + mkR(15,213,54,3,MK_C.ink);
+
+  /* 右の道具棚 */
+  o += mkR(222,183,66,39,MK_C.gdark) + mkR(222,183,66,3,MK_C.green) +
+       mkR(222,183,3,39,MK_C.green) +
+       mkR(228,198,54,3,MK_C.ink) + mkR(228,213,54,3,MK_C.ink) +
+       mkR(246,204,15,3,MK_C.gold) + mkR(246,189,15,3,MK_C.gold);
+
+  /* 受けるところは、わざと何も無い帯にしてある（222〜258） */
+  o += mkR(0,255,300,3,MK_C.ink);
+  return o;
+})();
+
+/* 工房のねこ。合言葉が「ねこあし」なので、一匹すわらせておく */
+const MK_CAT =
+  mkR(0,0,6,9,MK_C.paper) + mkR(18,0,6,9,MK_C.paper) +
+  mkR(0,0,6,3,MK_C.woodD) + mkR(18,0,6,3,MK_C.woodD) +
+  mkR(0,9,24,15,MK_C.paper) +
+  mkR(0,9,9,9,MK_C.woodD) + mkR(15,15,9,6,MK_C.woodD) +
+  mkR(3,15,3,3,MK_C.ink) + mkR(15,15,3,3,MK_C.ink) +
+  mkR(9,21,6,3,MK_C.woodD) +
+  mkR(0,24,24,9,MK_C.paper) + mkR(0,30,24,3,MK_C.woodD) +
+  mkR(24,12,6,21,MK_C.paper) + mkR(27,9,6,9,MK_C.woodD);
+
+/* 作業台。手前いっぱいに、どっしりと */
 const MK_BENCH =
-  mkR(0,258,300,3,MK_C.woodH) + mkR(0,261,300,9,MK_C.woodM) +
-  mkR(0,270,300,30,MK_C.woodD) +
-  mkR(21,270,21,30,MK_C.dark) + mkR(258,270,21,30,MK_C.dark) +
-  mkR(0,270,300,3,MK_C.dark) +
-  mkR(126,273,48,12,MK_C.dark) + mkR(132,276,36,6,MK_C.woodM);
+  mkR(0,258,300,3,MK_C.woodH) + mkR(0,261,300,12,MK_C.woodM) +
+  mkR(0,270,300,3,MK_C.woodD) +
+  mkR(0,273,300,27,MK_C.woodD) +
+  mkR(0,273,300,3,MK_C.ink) +
+  mkR(0,282,300,3,MK_C.brd) + mkR(0,294,300,3,MK_C.brd) +
+  mkR(18,273,24,27,MK_C.brd) + mkR(258,273,24,27,MK_C.brd) +
+  mkR(18,273,3,27,MK_C.ink) + mkR(258,273,3,27,MK_C.ink) +
+  /* 万力 */
+  mkR(120,276,45,15,MK_C.brd) + mkR(126,279,33,6,MK_C.woodM) +
+  mkR(138,291,9,9,MK_C.ink);
 
-/* 受け台を持つ職人。台といっしょに左右へ動く。原点は台のまんなか */
-const MK_MAN =
-  /* 台のはしをにぎる手 */
-  mkR(-42,-9,12,21,MK_C.skin) + mkR(30,-9,12,21,MK_C.skin) +
-  mkR(-42,12,12,6,MK_C.green) + mkR(30,12,12,6,MK_C.green) +
-  /* 腕から肩へ */
-  mkR(-36,18,12,12,MK_C.green) + mkR(24,18,12,12,MK_C.green) +
-  /* 帽子と顔 */
-  mkR(-15,6,30,6,MK_C.dark) + mkR(-18,12,36,3,MK_C.dark) +
-  mkR(-12,15,24,15,MK_C.skin) +
-  mkR(-6,21,3,3,MK_C.ink) + mkR(3,21,3,3,MK_C.ink) +
-  /* 肩 */
-  mkR(-24,30,48,15,MK_C.green) + mkR(-24,30,48,3,MK_C.wallDk);
+/* 受け台を持つ職人。台といっしょに左右へ動く。原点は台のまんなか。
+   顔は、工房に登録してあるあなたの職人の顔。合言葉を入れた方は、
+   入れてある写真がそのまま出る。まだ絵がそろっていないときだけ、
+   ドット絵の顔で代わりをする */
+function mkFaceURL() {
+  try {
+    const av = (state && state.player && state.player.avatar) || {};
+    const ph = (typeof facePhoto === "function") && facePhoto(av);
+    if (ph) return ph;
+    if (typeof avReady !== "undefined" && avReady) return avatarURL(av, 128);
+  } catch (e) { /* 顔が出せなくても、遊びは止めない */ }
+  return "";
+}
+function mkMan(face) {
+  return (
+    /* 台のはしをにぎる手 */
+    mkR(-42,-9,12,21,MK_C.skin) + mkR(30,-9,12,21,MK_C.skin) +
+    mkR(-42,-9,12,3,MK_C.night) + mkR(30,-9,12,3,MK_C.night) +
+    mkR(-42,12,12,6,MK_C.green) + mkR(30,12,12,6,MK_C.green) +
+    /* 腕から肩へ */
+    mkR(-36,18,12,12,MK_C.green) + mkR(24,18,12,12,MK_C.green) +
+    /* 肩（前掛け） */
+    mkR(-24,30,48,18,MK_C.green) + mkR(-24,30,48,3,MK_C.gdark) +
+    mkR(-24,30,3,18,MK_C.gdark) + mkR(21,30,3,18,MK_C.gdark) +
+    /* 顔 */
+    (face
+      ? `<image href="${face}" x="-23" y="3" width="46" height="46"
+           preserveAspectRatio="xMidYMid meet"/>`
+      : mkR(-15,6,30,6,MK_C.brd) + mkR(-18,12,36,3,MK_C.brd) +
+        mkR(-12,15,24,15,MK_C.skin) +
+        mkR(-6,21,3,3,MK_C.ink) + mkR(3,21,3,3,MK_C.ink))
+  );
+}
 
 /* 受け台 */
 const MK_CART =
-  mkR(-36,-12,72,6,MK_C.woodH) + mkR(-36,-6,72,15,MK_C.dark) +
-  mkR(-36,9,72,3,MK_C.ink) +
-  mkR(-36,-12,6,21,MK_C.ink) + mkR(30,-12,6,21,MK_C.ink);
+  mkR(-39,-15,78,3,MK_C.night) +
+  mkR(-36,-12,72,6,MK_C.woodH) + mkR(-36,-6,72,15,MK_C.woodD) +
+  mkR(-36,9,72,3,MK_C.night) +
+  mkR(-39,-12,6,24,MK_C.night) + mkR(33,-12,6,24,MK_C.night) +
+  mkR(-33,-12,6,21,MK_C.brd) + mkR(27,-12,6,21,MK_C.brd);
 
 /* よけたときに出す、小さな印 */
 const mkCheck = (c) =>
@@ -3746,6 +3854,7 @@ const CRAFT_ACTIONS = {
       svg.innerHTML =
         `<g id="mkWorld" shape-rendering="crispEdges">
            ${MK_STAGE}
+           <g transform="translate(249,222)">${MK_CAT}</g>
            <g id="mkItems"></g>
            ${MK_BENCH}
            <g id="mkMan"></g>
@@ -3761,7 +3870,7 @@ const CRAFT_ACTIONS = {
       const gChips = svg.querySelector("#mkChips");
       const gFx    = svg.querySelector("#mkFx");
       const gHud   = svg.querySelector("#mkHud");
-      gMan.innerHTML = MK_MAN;
+      gMan.innerHTML = mkMan(mkFaceURL());
       gCart.innerHTML = MK_CART;
 
       const drawCart = () => {
@@ -3872,9 +3981,20 @@ const CRAFT_ACTIONS = {
       /* ---------- 上の帯 ----------
          動かないところ（帯・板の印・砂時計）は一度きり。
          そのあとは、変わった数だけを描きかえる */
+      const hudBox = (x, w) =>
+        mkR(x,3,w,30,MK_C.gold) + mkR(x+3,6,w-6,24,MK_C.night);
+      /* 右よせで数を置く。桁が増えても、字とぶつからない */
+      const hudR = (t, right, s, col) => mkNum(t, right - mkNumW(t, s), 12, s, col);
+      const hudWord = (t, x) =>
+        `<text x="${x}" y="25" font-size="11" fill="${MK_C.gold}"
+           text-anchor="middle">${t}</text>`;
       gHud.innerHTML =
-        mkR(0,0,300,33,MK_C.ink) + mkR(0,30,300,3,MK_C.dark) +
-        mkR(9,12,21,6,MK_C.wood) + mkR(9,12,21,3,MK_C.woodH) +
+        mkR(0,0,300,36,MK_C.night) +
+        hudBox(3,102) + hudBox(108,93) + hudBox(204,93) +
+        /* 板の印 */
+        mkR(12,15,24,9,MK_C.night) + mkR(15,18,18,3,MK_C.woodH) +
+        mkR(15,21,18,3,MK_C.wood) +
+        hudWord("点", 92) + hudWord("連", 189) + hudWord("秒", 287) +
         `<g id="mkHS"></g><g id="mkHW"></g><g id="mkHC"></g><g id="mkHT"></g>`;
       const hS = svg.querySelector("#mkHS"), hW = svg.querySelector("#mkHW");
       const hC = svg.querySelector("#mkHC"), hT = svg.querySelector("#mkHT");
@@ -3882,32 +4002,27 @@ const CRAFT_ACTIONS = {
       const drawHud = () => {
         if (sc.hit !== wasS) {
           wasS = sc.hit;
-          hS.innerHTML = mkNum(sc.hit, 36, 9, 3, MK_C.woodH);
+          hS.innerHTML = hudR(sc.hit, 81, 3, MK_C.woodH);
         }
         if (wave !== wasW) {
           wasW = wave;
           let o = "";
           for (let i = 0; i < 3; i++)
-            o += mkR(90 + i * 9, 12, 6, 6, i <= wave ? MK_C.goldH : MK_C.dark);
+            o += mkR(117 + i * 9, 15, 6, 6, i <= wave ? MK_C.goldH : MK_C.brd);
           hW.innerHTML = o;
         }
         if (sc.combo !== wasC) {
           wasC = sc.combo;
           const cc = sc.combo >= 10 ? MK_C.spark : sc.combo >= 5 ? MK_C.goldH
                    : sc.combo >= 3 ? MK_C.green : MK_C.wood;
-          hC.innerHTML =
-            mkR(132,15,3,3,cc) + mkR(135,12,3,3,cc) + mkR(138,15,3,3,cc) +
-            mkNum(sc.combo, 147, 9, 3, cc);
+          hC.innerHTML = hudR(sc.combo, 177, 3, cc);
         }
         const t = Math.max(0, (END - Date.now()) / 1000);
         const ts = t.toFixed(1);
         if (ts !== wasT) {
           wasT = ts;
-          const tc = t <= 10 ? MK_C.red : MK_C.wall;
-          hT.innerHTML =
-            mkR(213,9,15,3,tc) + mkR(213,21,15,3,tc) +
-            mkR(216,12,9,3,tc) + mkR(219,15,3,3,tc) + mkR(216,18,9,3,tc) +
-            mkNum(ts, 300 - 9 - mkNumW(ts, 3), 9, 3, tc);
+          const tc = t <= 10 ? MK_C.red : MK_C.spark;
+          hT.innerHTML = hudR(ts, 276, 3, tc);
         }
       };
 
@@ -4040,7 +4155,17 @@ const CRAFT_ACTIONS = {
       };
       ui.onStop = () => { stopped = true; if (timer) clearInterval(timer); };
       ui.onTimeout = finish;
-      actBanner(ui, 1, 3, "節のある板は受けるな", sc);
+      /* はじめの3秒は「見極めろ！」。板の絵をそのまま並べて見せる */
+      const chip3 = (art, label) =>
+        `<span class="mk-leg"><svg viewBox="-36 -15 72 30" width="44" height="19"
+           shape-rendering="crispEdges">${art}</svg>${label}</span>`;
+      ui.setTip(`<b>見極めろ！</b>　` +
+        chip3(MK_PLANK.good, "受ける") +
+        chip3(MK_PLANK.gold, "受ける（二枚ぶん）") +
+        chip3(MK_PLANK.bad, "よける"));
+      setTimeout(() => {
+        if (!stopped && !finished) actBanner(ui, wave + 1, 3, "節のある板は受けるな", sc);
+      }, 3000);
       drawHud();
       nextAt = Date.now() + 400;
       timer = setInterval(step, 16);
