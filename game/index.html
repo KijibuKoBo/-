@@ -717,6 +717,28 @@ footer{
 }
 .skill-title.got .st-now{ color:var(--green-deep); }
 
+/* 称号の段（十段のはしご）。いまどこに立っているかが分かるように */
+.lad{ margin-top:6px; }
+.lad-row{
+  display:flex; align-items:baseline; gap:8px;
+  padding:4px 8px; border-radius:9px; font-size:.75rem; line-height:1.45;
+  border:1.5px solid transparent; opacity:.45;
+}
+.lad-row.done{ opacity:.95; }
+.lad-row.done .lad-n{ color:var(--green-deep); }
+.lad-row.now{
+  opacity:1; font-weight:bold;
+  border-color:var(--gold); background:linear-gradient(90deg,#f8edcf,#fffdf7);
+}
+.lad-n{ flex:0 0 2.1em; text-align:right; font-size:.66rem; color:var(--brown-soft); }
+.lad-name{ flex:1 1 auto; min-width:0; }
+.lad-need{ flex:0 0 auto; font-size:.63rem; color:var(--brown-mid); white-space:nowrap; }
+.lad-row.now .lad-need{ color:var(--brown); }
+.lad-note{
+  display:block; font-size:.63rem; font-weight:normal;
+  color:var(--brown-mid); margin-top:1px;
+}
+
 /* 図鑑から本物へ */
 .dex-real{
   display:flex; align-items:center; gap:8px; margin-top:7px;
@@ -4864,7 +4886,13 @@ const TRIVIA = [
   "ガラス棚のうしろに鏡を仕込むと、飾ったものが倍に見える。ちょっとした魔法じゃろ？"
 ];
 
-const LEVELS = [0, 30, 100, 250, 500, 1000];
+/* 経験の段。家具を全46種ひとつずつ作ると 4244 たまるので、
+   いちばん上はちょうど「ほぼ全部を一度は作った」ところに置いてある。
+   6段 1000止まりのころは、半分も作らないうちに頭打ちになっていた。
+
+   設計図の解放はレベル1〜6で起きる。そこまでは前より**早く**届くように
+   してあるので、遊びの中身が遅くなることはない（前 Lv6=1000 → いま 600）*/
+const LEVELS = [0, 25, 80, 180, 350, 600, 1000, 1600, 2600, 4200];
 /* ----------------------------------------------------------
    称号
    ----------------------------------------------------------
@@ -4873,8 +4901,18 @@ const LEVELS = [0, 30, 100, 250, 500, 1000];
      専門の称号 … 作った実績でふえる。並行して何枚でも持てる
      催しの称号 … 合言葉を入れた人が、そこから何をしたかで上がる
    ---------------------------------------------------------- */
-const LEVEL_TITLES = ["木工見習い", "若手の木工職人", "一人前の家具職人",
-                      "熟練の家具職人", "工房の匠", "伝説の木匠"];
+const LEVEL_TITLES = [
+  "木工見習い",       // Lv1
+  "木取りの弟子",     // Lv2
+  "若手の木工職人",   // Lv3
+  "一人前の家具職人", // Lv4
+  "彫りを知る職人",   // Lv5
+  "熟練の家具職人",   // Lv6
+  "工房の匠",         // Lv7
+  "名を知られた匠",   // Lv8
+  "木と語る匠",       // Lv9
+  "伝説の木匠"        // Lv10
+];
 
 /* 生涯の記録から数える小道具 */
 const logOf    = () => state.craftLog || { woods: {}, finishS: {}, hi: 0, total: 0 };
@@ -4900,16 +4938,33 @@ const skillNeed = (t) => typeof t.need === "function" ? t.need() : t.need;
 const hasSkillTitle = (t) => t.now() >= skillNeed(t);
 const skillTitlesGot = () => SKILL_TITLES.filter(hasSkillTitle);
 
-/* 催しの称号。レベルではなく、その日からの歩みで上がる */
+/* 催しの称号。合言葉を入れた人は、こちらの名で呼ばれる。
+   ふつうの成長と同じく10段あるが、要所で「催しの家具を会心に」が要る。
+   いちばん上は、催しの家具3台すべてを会心に仕上げたうえで最高レベル。
+
+   いまどこまで来ているかは、下から順に見て「届いているいちばん上」。
+   会心を先に取れば、レベルの段を飛びこして上がることもある */
 const HONOR_TITLES = [
-  { name: "記念日の見習い", note: "特別な日に工房を訪れ、職人への第一歩を踏み出した証",
+  { name: "記念日の見習い",   need: "合言葉を入れた", note: "特別な日に工房を訪れ、職人への第一歩を踏み出した証",
     ok: () => true },
-  { name: "祝祭の家具職人", note: "イベントで家具づくりを体験し、自分の手で一台を完成させた証",
+  { name: "祝祭の家具職人",   need: "家具を1台", note: "その日のうちに、自分の手で一台を仕上げた証",
     ok: () => (logOf().total || 0) >= 1 },
-  { name: "黄金の名匠",     note: "特別な経験を積み、工房から認められた職人の証",
+  { name: "小刀を授かりし者", need: "工房Lv3", note: "あの日の小刀が、手になじんできた職人",
+    ok: () => state.level >= 3 },
+  { name: "記念日の木工職人", need: "工房Lv4", note: "祝いの日から、腕を上げつづけている職人",
+    ok: () => state.level >= 4 },
+  { name: "黄金の名匠",       need: "催しの家具 会心1台", note: "催しの家具を一台、会心に仕上げた職人",
     ok: () => extraAces() >= 1 },
-  { name: "祝祭の伝説",     note: "特別な日の思い出とともに残る、イベント限定の最高称号",
-    ok: () => extraAces() >= 3 }
+  { name: "祝祭の熟練職人",   need: "工房Lv6", note: "催しの日を胸に、腕を磨きつづけた職人",
+    ok: () => state.level >= 6 },
+  { name: "記念日の匠",       need: "工房Lv7", note: "工房に欠かせぬ腕になった、あの日の職人",
+    ok: () => state.level >= 7 },
+  { name: "黄金の大匠",       need: "会心2台・Lv8", note: "催しの家具を二台、会心に仕上げた匠",
+    ok: () => extraAces() >= 2 && state.level >= 8 },
+  { name: "祝祭を継ぐ者",     need: "工房Lv9", note: "催しの日の技を、受け継ぐところまで来た匠",
+    ok: () => state.level >= 9 },
+  { name: "祝祭の伝説",       need: "会心3台・Lv10", note: "催しの家具を三台すべて会心に仕上げた、最高の称号",
+    ok: () => extraAces() >= 3 && state.level >= 10 }
 ];
 /* いま届いているうち、いちばん上のもの */
 const honorRank  = () => { let i = 0; HONOR_TITLES.forEach((h, n) => { if (h.ok()) i = n; }); return i; };
@@ -6297,6 +6352,9 @@ function finishCraft(exhibit) {
   const f = furnitureById(state.currentId);
   const rec = state.completed[p.fid];
   const firstTime = !rec;
+  /* 催しの称号は、この一台で段が上がることがある（会心なら段飛ばしも）。
+     上がったら名を呼んであげたいので、先に控えておく */
+  const honorBefore = eventOpen() ? honorRank() : -1;
 
   /* --- 図鑑登録（回数・最高品質・最高人気） --- */
   if (rec) {
@@ -6356,8 +6414,15 @@ function finishCraft(exhibit) {
     msg += `　……ふむ。なにか惜しい気がするのう。あと一つ、何かが違う。`;
   }
   if (leveledUp) {
-    msg += `　🏠 ${you()}、腕を上げたのう。工房レベルが ${state.level} じゃ！`;
+    msg += `　🏠 ${you()}、腕を上げたのう。工房レベル ${state.level}――「${levelTitle()}」じゃ！`;
     confetti();
+  }
+  /* 催しの称号が上がったときは、そちらの名を呼ぶ。
+     合言葉を入れた方の肩書きは、こちらが表に出る */
+  if (honorBefore >= 0 && honorRank() > honorBefore) {
+    const h = honorTitle();
+    msg += `　🎀 名札の字が変わったぞ。「${h.name}」――${h.note}。`;
+    if (!leveledUp) confetti();
   }
 
   /* 制作終了 */
@@ -8780,6 +8845,36 @@ function renderAbout() {
         ・端末の音量と、イヤホンの接続も見てください<br>
         ・まわりに人のいるところでは、音にお気をつけください</p>
     </div>
+    <div class="about-block">
+      <h4>🌱 成長の称号</h4>
+      <p>工房レベルが上がるにつれ、呼ばれ方が変わります。全10段。</p>
+      <div class="lad">
+        ${LEVEL_TITLES.map((n, i) => {
+          const lv = i + 1, done = state.level >= lv, now = state.level === lv;
+          return `<div class="lad-row${done ? " done" : ""}${now ? " now" : ""}">
+            <span class="lad-n">${done ? "✓" : ""}Lv${lv}</span>
+            <span class="lad-name">${esc(n)}</span>
+            <span class="lad-need">${i === 0 ? "はじまり" : "経験 " + LEVELS[i].toLocaleString()}</span>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+    ${eventOpen() ? `<div class="about-block honored">
+      <h4>🎀 催しの称号</h4>
+      <p>合言葉を入れた方だけの、もうひとつの道。こちらの名で呼ばれます。<br>
+        <b>催しの家具を会心（S）に仕上げる</b>と、段を飛びこして上がります。</p>
+      <div class="lad">
+        ${HONOR_TITLES.map((h, i) => {
+          const done = i <= honorRank(), now = i === honorRank();
+          return `<div class="lad-row${done ? " done" : ""}${now ? " now" : ""}">
+            <span class="lad-n">${done ? "✓" : ""}${i + 1}</span>
+            <span class="lad-name">${esc(h.name)}${
+              now ? `<span class="lad-note">${esc(h.note)}</span>` : ""}</span>
+            <span class="lad-need">${esc(h.need)}</span>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>` : ""}
     <div class="about-block">
       <h4>🎖 専門の称号</h4>
       <p>作った実績で増えていきます。何枚でも持てます。</p>
