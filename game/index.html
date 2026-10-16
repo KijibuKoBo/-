@@ -9431,17 +9431,23 @@ function init() {
     $("#btn-edit-avatar").addEventListener("click", () => {
       closeModal("about-modal"); openAvatarEditor(false);
     });
-    /* 山場のけいこ（?mg=1 のときだけ出ている） */
-    document.querySelectorAll("#about-body [data-plv]").forEach(b =>
-      b.addEventListener("click", () => {
-        practiceLv = +b.dataset.plv;
-        renderAbout();
-      }));
-    document.querySelectorAll("#about-body [data-mg]").forEach(b =>
-      b.addEventListener("click", () => {
-        closeModal("about-modal");
-        practiceAction(b.dataset.mg);
-      }));
+    /* 山場のけいこ（?mg=1 のときだけ出ている）。
+       難度をえらぶと renderAbout が中身を作りなおすので、
+       そのたびに付けなおさないと、山場のボタンが効かなくなる */
+    const wirePractice = () => {
+      document.querySelectorAll("#about-body [data-plv]").forEach(b =>
+        b.addEventListener("click", () => {
+          practiceLv = +b.dataset.plv;
+          renderAbout();
+          wirePractice();
+        }));
+      document.querySelectorAll("#about-body [data-mg]").forEach(b =>
+        b.addEventListener("click", () => {
+          closeModal("about-modal");
+          practiceAction(b.dataset.mg);
+        }));
+    };
+    wirePractice();
 
     const st = $("#btn-snd-test");
     if (st) st.addEventListener("click", () => {
