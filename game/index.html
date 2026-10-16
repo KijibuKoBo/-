@@ -982,7 +982,7 @@ footer{
 }
 .av-done:active{ transform:translateY(3px); box-shadow:0 1px 0 #5f7d55; }
 
-/* 集中力が心もとないときのチップ */
+/* 調子がすぐれないときのチップ */
 .chip.focus-low{ border-color:var(--red); color:var(--red); }
 
 /* 山場工程 */
@@ -1397,8 +1397,8 @@ header{ position:relative; }
     <span class="chip">💰 <span id="st-money">0</span>円</span>
     <span class="chip">🏠 Lv.<span id="st-level">1</span></span>
     <span class="chip">📅 <span id="st-day">1</span>日目</span>
-    <span class="chip">⏱ <span id="st-hours">8</span>h</span>
-    <span class="chip" id="chip-focus">🕯 <span id="st-focus">100</span></span>
+    <span class="chip" id="chip-clock">🕗 <span id="st-hours">8:00</span></span>
+    <span class="chip" id="chip-focus">🕯 <span id="st-focus">ふつう</span></span>
     <span class="chip">👥 のべ<span id="st-visitors">0</span>人</span>
   </div>
   <div class="lvbar"><i id="lv-fill"></i></div>
@@ -2174,7 +2174,7 @@ const MATERIALS = [
 
   /* ---------- 工房の消耗品 5種（買って、その場で使う） ----------
      fx … ききめの組。[種類, 量] をいくつでも書ける
-       focus   その場で集中力がもどる
+       focus   その場で調子が上がる
        hours   きょうの作業時間がのびる
        flaw    いま出ているしくじりが消える
        quality つぎに仕上げる一台の品質にのる
@@ -2200,19 +2200,19 @@ const MATERIALS = [
      松永工房は静岡の工房。昼に食べるもの、合間につまむもので手が戻る */
   { id: "mikan",  name: "温州みかん",    icon: "🍊", price: 180, type: "use", local: true,
     fx: [["focus", 12]], say: "みかんをひとつ剥いた。",
-    desc: "こたつでひとつ。手が止まったら、まずこれ。集中力+12" },
+    desc: "こたつでひとつ。手が止まったら、まずこれ。調子+12" },
   { id: "ocha",   name: "静岡茶",        icon: "🍵", price: 250, type: "use", local: true,
     fx: [["focus", 25]], say: "お茶をいれた。",
-    desc: "二煎目がいちばんうまい。工房の湯のみは、いつも減らない。集中力+25" },
+    desc: "二煎目がいちばんうまい。工房の湯のみは、いつも減らない。調子+25" },
   { id: "abekawa", name: "安倍川もち",   icon: "🍡", price: 320, type: "use", local: true,
     fx: [["quality", 4]], say: "きな粉で手がざらりとした。",
     desc: "きな粉と餡がひと折。甘いと、なぜか手が丁寧になる。つぎの一台の品質+4" },
   { id: "shirasu", name: "シラス丼",     icon: "🍚", price: 420, type: "use", local: true,
     fx: [["focus", 45]], say: "しらすを丼いっぱいかきこんだ。",
-    desc: "駿河湾の朝どれを、どんぶりに山ほど。集中力+45" },
+    desc: "駿河湾の朝どれを、どんぶりに山ほど。調子+45" },
   { id: "oden",   name: "静岡おでん",    icon: "🍢", price: 460, type: "use", local: true,
     fx: [["focus", 20], ["hours", 1]], say: "黒いつゆの串を二本。だし粉をたっぷり。",
-    desc: "黒はんぺんと牛すじ。体があたたまる。集中力+20・きょうの作業が1時間のびる" },
+    desc: "黒はんぺんと牛すじ。体があたたまる。調子+20・きょうの作業が1時間のびる" },
   { id: "sakuraebi", name: "桜えびのかき揚げ", icon: "🦐", price: 560, type: "use", local: true,
     fx: [["action", 5]], say: "揚げたてを塩で。",
     desc: "由比の桜えびを、衣を薄くまとわせて。つぎの山場の点が+5" },
@@ -3224,7 +3224,7 @@ const HOURS_PER_DAY = 8;
    家具を足すときは STEP_TYPE_OF に工程名を1行足すだけでよい。
      q      … 品質の増減（関数。毎回抽選するものもある）
      hours  … 消費する作業時間
-     focus  … 消費する集中力（1日 FOCUS_PER_DAY）
+     focus  … むかし消費していた集中力。いまは読んでいない（調子は作業で減らない）
      flaw   … 「しくじり」が出る確率。検品で取り返せる
    ---------------------------------------------------------- */
 const STEP_TYPES = {
@@ -4428,12 +4428,12 @@ const TOOLS = [
   { id: "normal", name: "いつもの道具", icon: "🔨", mult: 1, focus: 0,
     note: "ふだんどおり" },
   { id: "sharp",  name: "研ぎたての刃", icon: "✨", mult: 1.12, focus: 20,
-    note: "点が1.12倍。集中力を20よけいに使う" },
+    note: "点が1.12倍。気を使うので、調子が20さがる" },
   { id: "old",    name: "手になじんだ古い道具", icon: "🪵", mult: 0.92, focus: 0, safe: true,
     note: "点は0.92倍。そのかわり、しくじりが出ない" },
   /* 催しの日に来た人だけが持っている一本。合言葉を入れるまで出てこない */
   { id: "gift",   name: "あの日の小刀", icon: "🎀", mult: 1.06, focus: 0, event: true,
-    note: "点が1.06倍。集中力はふだんどおり" }
+    note: "点が1.06倍。調子はそのまま" }
 ];
 /* 催しの道具は、合言葉を入れていない職人には渡さない */
 const toolById = (id) => {
@@ -4478,7 +4478,7 @@ const CRITICAL_STEP = {
   rose_sofa: 1, powder_table: 1, rose_chair: 1
 };
 
-/* 集中力：1日ぶん。ていねいな手ほど多く食う */
+/* 調子の満ち値。朝ふった出目の上限でもある */
 const FOCUS_PER_DAY = 100;
 
 /* 通常工程ぜんぶで積み上げられる品質の枠。
@@ -4719,7 +4719,7 @@ const LATE_MULT   = 0.8;
      effectSlots    … 展示枠 +N
      effectSpeed    … 全工程の時間 -N 時間（最短1時間）
      effectVisitors … 来館者数 ×N
-     effectFocus    … 1日の集中力 +N
+     effectFocus    … 朝の調子の下限が上がる（悪い日が減る）
      effectHours    … 1日の作業時間 +N 時間
      effectShop     … 売店収入 ×N
      effectMatOff   … 材料の仕入れ値 -N（0.2 なら2割引。合計8割引まで）
@@ -4749,16 +4749,16 @@ const GEAR = [
     effectSpeed: 1, desc: "助っ人が下ごしらえ。全工程の時間-1時間（最短1時間）。" },
   { id: "makanai", name: "まかないの台所", icon: "🍲", price: 45000, cat: "time",
     unlock: { type: "level", v: 3 },
-    effectFocus: 20, desc: "昼にあたたかいものが食べられる。1日の集中力+20。" },
+    effectFocus: 20, desc: "昼にあたたかいものが食べられる。調子の悪い日が、ぐっと減る。" },
   { id: "asahi", name: "朝いちばんの灯り", icon: "🌅", price: 90000, cat: "time",
     unlock: { type: "level", v: 4 },
-    effectHours: 1, desc: "夜明け前から手が動かせる。1日の作業時間+1時間。" },
+    effectHours: 1, desc: "夜明け前から手が動かせる。始業が7:00になる（+1時間）。" },
   { id: "deshi", name: "見習いの弟子", icon: "🧑‍🔧", price: 180000, cat: "time",
     unlock: { type: "dex", v: 10 },
-    effectFocus: 30, desc: "雑用を引き受けてくれる。1日の集中力+30。" },
+    effectFocus: 30, desc: "雑用を引き受けてくれる。調子の悪い日が、ほぼ来なくなる。" },
   { id: "yonabe", name: "夜なべの作業灯", icon: "🕯️", price: 320000, cat: "time",
     unlock: { type: "dex", v: 16 },
-    effectHours: 2, desc: "手元だけを明るく照らす。1日の作業時間+2時間。" },
+    effectHours: 2, desc: "手元だけを明るく照らす。終業が19:00になる（+2時間）。" },
   { id: "third", name: "第三工房", icon: "🏗️", price: 750000, cat: "time",
     unlock: { type: "gear", v: "second" },
     effectSpeed: 1, desc: "もう一棟ふやす。全工程の時間、さらに-1時間。" },
@@ -4969,7 +4969,7 @@ let state = {
   level: 1,
   day: 1,
   hoursLeft: HOURS_PER_DAY,
-  focus: FOCUS_PER_DAY,           // きょうの残り集中力。ていねいな手ほど食う
+  focus: FOCUS_PER_DAY,           // きょうの調子。朝にきまる。作業では減らない
   totalVisitors: 0,               // のべ来館者（設計図解放にも使う）
   materials: { walnut: 0, oak: 2, cherry: 0, brass: 0, glass: 0, cloth: 2 },  // 最初の持ち材料
   currentId: null,                // 制作中の家具id
@@ -5057,7 +5057,7 @@ function load() {
     }
   }
   if (savedVer !== 6) {   // 第5章まで: 集中力・手帳・山場の記憶を補完
-    if (typeof state.focus !== "number") state.focus = FOCUS_PER_DAY;
+    if (typeof state.focus !== "number") state.focus = FOCUS_MAX;
     if (typeof state.flaws !== "number") state.flaws = 0;
     if (!state.tool) state.tool = "normal";
     if (!Array.isArray(state.notebook)) state.notebook = [];
@@ -5284,9 +5284,9 @@ const gearVisitorMult = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m
 const showSlots       = () => BASE_SLOTS + GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectSlots || 0), 0);
 const speedBonus      = () => GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectSpeed || 0), 0);
 const gearShopMult    = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * (g.effectShop || 1), 1);
-/* 1日ぶんの集中力と作業時間は、設備で伸びる */
-const focusPerDay = () => FOCUS_PER_DAY +
-  GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectFocus || 0), 0);
+/* 1日ぶんの作業時間は、設備で伸びる */
+/* 集中力の設備は、1日の持ち分ではなく「朝の出目の下限」を上げる。
+   あたたかい昼飯と、手伝ってくれる弟子がいれば、ひどい日は来ない */
 const hoursPerDay = () => HOURS_PER_DAY +
   GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectHours || 0), 0);
 /* 材料の仕入れ値。割引は合計8割までにしておく */
@@ -5407,16 +5407,98 @@ const dexTotal = () => allDexEntries().length;
 const dexFound = () => allDexEntries().filter(e => state.completed[e.id] && state.completed[e.id].count > 0).length;
 
 /* ==========================================================
+   工房の時計と、今日の調子
+   ----------------------------------------------------------
+   前は「時間」と「集中力」がどちらも“使うと減る持ち物”だったので、
+   かならず片方が余った。余っていたのは集中力のほうで、
+   どの打ち方でも時間が先に尽きるため、一度も効いていなかった。
+
+   そこで、種類を分けた。
+
+     時間   … 使うもの。8:00にはじまり、17:00に日が暮れる
+     集中力 … 今日の調子。朝にきまる。**作業では減らない**
+
+   調子が効くのは「ふつうの工程の出来」と「しくじりやすさ」だけ。
+   山場（ミニゲーム）の点には効かせない。自分がいま遊んでいるところが
+   さいころで動くと、うまくやっても報われない感じになるため。
+
+     腕（山場の出来） → 調子 → ふつうの工程の出来
+
+   という一方通行にしてある。
+   ========================================================== */
+
+/* ---------- 工房の時計 ---------- */
+const DAY_OPEN  = 8;    // ふだんの始業
+const DAY_CLOSE = 17;   // ふだんの終業
+const LUNCH     = 12;   // 12:00〜13:00 は昼休み。働くのは8時間
+
+/* 設備で始業が早まり、終業が延びる。
+   「朝いちばんの灯り」は朝のほう、「夜なべの作業灯」は夜のほう */
+const dayOpen  = () => DAY_OPEN  - (hasGear("asahi")  ? 1 : 0);
+const dayClose = () => DAY_CLOSE + (hasGear("yonabe") ? 2 : 0);
+
+/* きょう何時か。used = きょう働いた時間 */
+function clockAt(used) {
+  let h = dayOpen() + used;
+  if (h >= LUNCH) h += 1;               // 昼休みをまたいだぶん、ずらす
+  return h;
+}
+const clockText = (h) => String(h).padStart(2, "0") + ":00";
+/* いまの時刻 */
+const nowClock = () => clockAt(hoursPerDay() - state.hoursLeft);
+
+/* ---------- 今日の調子 ---------- */
+const FOCUS_MAX = 100;
+/* 朝の出目の下限。設備があるほど、ひどい日が来なくなる */
+const focusFloor = () => 20
+  + (hasGear("makanai") ? 15 : 0)
+  + (hasGear("deshi")   ? 10 : 0);
+
+/* 朝、ふり直す。まんなかが出やすいように二回ふって平均。
+   はじめの一日だけは、かならず良い日にする。催しでは15分しか
+   遊ばないので、最初が「ぼんやり」だとそれが印象のすべてになる */
+function rollFocus(day) {
+  if ((day || state.day) <= 1) return 85 + Math.floor(Math.random() * 16);
+  const lo = focusFloor();
+  const one = () => lo + Math.floor(Math.random() * (FOCUS_MAX - lo + 1));
+  return Math.round((one() + one()) / 2);
+}
+
+/* 四段。読むのは言葉のほうで、数字は添えもの */
+const FOCUS_BANDS = [
+  { min: 80, name: "冴えている",  mult: 1.15, flaw: -0.02, say: "きょうは手がよう動くぞ。" },
+  { min: 60, name: "ふつう",      mult: 1.00, flaw: 0,     say: "まずまず、いつもどおりじゃ。" },
+  { min: 40, name: "いまひとつ",  mult: 0.90, flaw: 0.02,  say: "どうも、今ひとつ乗らんな。" },
+  { min: 0,  name: "ぼんやり",    mult: 0.80, flaw: 0.05,  say: "……どうも、ぼんやりしておる。むりはせんことじゃ。" }
+];
+const focusBand = (v) => FOCUS_BANDS.find(b => (v === undefined ? state.focus : v) >= b.min)
+                      || FOCUS_BANDS[FOCUS_BANDS.length - 1];
+
+/* 山場の出来で、調子が動く。
+   上がるほうを厚く、下がるほうを薄く。しくじりで品質が下がった上に
+   調子まで落ちると、一度のしくじりが後まで尾を引いて立て直せない */
+function focusAfterAction(score) {
+  const d = score >= 90 ? 12 : score >= 70 ? 5 : score >= 45 ? 0 : -8;
+  if (!d) return "";
+  state.focus = Math.max(10, Math.min(FOCUS_MAX, state.focus + d));
+  return d > 0 ? `　（乗ってきた。調子+${d}）` : `　（調子-${-d}）`;
+}
+
+/* ==========================================================
    描画：ステータス
    ========================================================== */
 function renderStatus() {
   $("#st-money").textContent = state.money.toLocaleString();
   $("#st-level").textContent = state.level;
   $("#st-day").textContent = state.day;
-  $("#st-hours").textContent = state.hoursLeft;
-  $("#st-focus").textContent = state.focus;
-  /* 集中力が心もとなくなったら赤くする */
-  $("#chip-focus").classList.toggle("focus-low", state.focus < focusPerDay() * 0.3);
+  /* 時計。「あと何時間」ではなく、工房の何時かを出す */
+  $("#st-hours").textContent = clockText(nowClock());
+  $("#chip-clock").title =
+    `日暮れ（${clockText(dayClose())}）まで あと${state.hoursLeft}時間`;
+  const band = focusBand();
+  $("#st-focus").textContent = `${band.name} ${state.focus}`;
+  $("#chip-focus").classList.toggle("focus-low", band.mult < 1);
+  $("#chip-focus").title = `きょうの調子。ふつうの工程の出来が ×${band.mult.toFixed(2)}`;
   $("#st-visitors").textContent = state.totalVisitors.toLocaleString();
 
   const cur = LEVELS[state.level - 1];
@@ -5685,7 +5767,8 @@ function renderCraft() {
 
     /* 山場の工程は、選択肢ではなく自分の手で作る */
     if (act) {
-      const tired = state.focus < 30;
+      const band = focusBand();
+      const tired = band.mult < 1;
       $("#steps-area").innerHTML = chips + flawNoteOf() +
         `<div class="act-call">
           <div class="ac-head">🔥 ここが山場じゃ ——「${step.label}」</div>
@@ -5693,14 +5776,14 @@ function renderCraft() {
             "★".repeat(actLevel(f))}${"☆".repeat(3 - actLevel(f))} ${
             ACT_LEVEL_NAME[actLevel(f)]}</span></div>
           <div class="ac-sub">${act.tip}</div>
-          ${tired ? `<div class="ac-tired">⚠️ 集中力が足りん。手元が狂うぞ（腕前−15%）</div>` : ""}
+          ${tired ? `<div class="ac-tired">⚠️ きょうは<b>${band.name}</b>。山場の点には響かんが、ふだんの工程は鈍るぞ</div>` : ""}
           <div class="tool-row${toolsOpen().length > 3 ? " four" : ""}">${toolsOpen().map(t =>
             `<button class="tool-chip${state.tool === t.id ? " selected" : ""}${t.event ? " gift" : ""}" data-tool="${t.id}">
                ${t.icon} ${t.name}<span class="t-note">${t.note}</span></button>`).join("")}</div>
           <button class="act-go" id="btn-action">🖐 腕を見せる</button>
           <div class="act-skip" id="btn-skip-action">ふつうに作る（腕前は並・時間が2時間よけいにかかる）</div>
         </div>
-        <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて集中力を戻す）</div>`;
+        <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて、あしたの朝へ）</div>`;
       document.querySelectorAll(".tool-chip[data-tool]").forEach(b =>
         b.addEventListener("click", () => { state.tool = b.dataset.tool; save(); render(); }));
       $("#btn-action").addEventListener("click", () => runAction(step));
@@ -5718,15 +5801,16 @@ function renderCraft() {
       `<div class="choice-title">${step.icon} 「${step.label}」${isCrit ? "<b class=\"crit-tag\">🔥ここが山場</b>" : ""}<br><span class="ct-type">${stepType(step).name}の工程</span></div>
        <div class="choices">` +
       choicesForStep(step).map(ch => {
-        const short = state.focus < ch.focus;   // 集中力が足りない手は選べない
-        return `<button class="choice-btn ${ch.cls}" data-choice="${ch.id}" ${short ? "disabled" : ""}>
+        /* 手は時間しか食わない。調子はその日の腕の冴えで、使って減るものではない */
+        const h = effHours(ch);
+        return `<button class="choice-btn ${ch.cls}" data-choice="${ch.id}">
           <span class="c-icon">${ch.icon}</span>
           <span class="c-label">${ch.label}</span>
-          <span class="c-note">${short ? "集中力がたりない" : `⏱${effHours(ch)}h ／ 🕯${ch.focus}`}</span>
+          <span class="c-note">⏱${h}時間（${clockText(nowClock())}→${clockText(clockAt(hoursPerDay() - state.hoursLeft + h))}）</span>
         </button>`;
       }).join("") +
       `</div>
-       <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて集中力を戻す）</div>`;
+       <div class="rest-link" id="btn-rest">🌙 今日はここまでにする（残り${state.hoursLeft}時間を捨てて、あしたの朝へ）</div>`;
     document.querySelectorAll(".choice-btn:not([disabled])").forEach(b =>
       b.addEventListener("click", () => doStep(b.dataset.choice)));
     $("#btn-rest").addEventListener("click", restForToday);
@@ -5767,7 +5851,7 @@ const GUIDE_STEPS = [
   { sel: "#btn-action",
     say: "ここが<b>山場</b>じゃ。「腕を見せる」を押すと、おぬしの手で仕上げられる。" },
   { sel: ".choice-btn:not([disabled])",
-    say: "工程をひとつずつ進めるのじゃ。<b>ていねいにやるほど品質は上がる</b>が、時間と集中力を食う。" },
+    say: "工程をひとつずつ進めるのじゃ。<b>ていねいにやるほど品質は上がる</b>が、そのぶん時間を食う。" },
   { sel: "#btn-start:not([disabled])",
     say: "設計・木・仕上げで、できあがりの顔つきが変わる。決まったら<b>「制作をはじめる」</b>じゃ。" },
   { sel: "#btn-market", when: () => !!prep,
@@ -5840,11 +5924,12 @@ function doStep(choiceId) {
   showMessage(`${step.icon} ${step.label}中… ${choice.working}`);
 
   setTimeout(() => {
-    let delta = choice.q();
+    const band = focusBand();
+    let delta = choice.q() * band.mult;      // きょうの調子が、そのまま出来に乗る
     let note = "";
 
-    /* しくじり判定。急いだ手ほど出やすい */
-    if (choice.flaw && Math.random() < choice.flaw) {
+    /* しくじり判定。急いだ手ほど出やすい。ぼんやりした日は、すこし増える */
+    if (choice.flaw && Math.random() < Math.max(0, choice.flaw + band.flaw)) {
       delta -= 8;
       state.flaws++;
       note = "　……ありゃ、手がすべった。";
@@ -5866,16 +5951,15 @@ function doStep(choiceId) {
 
     state.quality = Math.max(0, Math.min(100, state.quality + delta));
     state.stepIndex++;
-    state.focus = Math.max(0, state.focus - choice.focus);
 
-    /* 時間経過。日が変わると集中力が戻り、来館者が来る */
+    /* 時間経過。日が変わると調子をふり直し、来館者が来る */
     state.craftUsed += hours;
     state.hoursLeft -= hours;
     let extra = "";
     while (state.hoursLeft <= 0) {
       state.hoursLeft += hoursPerDay();
       state.day++;
-      state.focus = focusPerDay();
+      state.focus = rollFocus();
       extra += dailyVisitors();
     }
     save();
@@ -6085,10 +6169,10 @@ function doAction(rawScore, skipped) {
   const step = f.steps[state.stepIndex];
   const type = STEP_TYPE_OF[step.label];
 
-  /* 集中力が切れていると、手元が狂う */
-  const tired = state.focus < 30;
+  /* 山場の点は、きょうの調子では動かさない。
+     ここは自分の手で出した点なので、さいころを混ぜない */
   const tool = toolById(state.tool);
-  let n = tired ? rawScore * 0.85 : rawScore;
+  let n = rawScore;
   if (!skipped) n *= tool.mult;                          // えらんだ道具のぶん
   if (!skipped) n += (state.craftBoost && state.craftBoost.action) || 0;   // 研ぎ石のぶん
   const score = Math.max(0, Math.min(100, Math.round(n)));
@@ -6098,7 +6182,12 @@ function doAction(rawScore, skipped) {
   if (score < 40 && !(tool.safe && !skipped)) state.flaws++;   // 古い道具なら、しくじらない
 
   state.stepIndex++;
-  state.focus = Math.max(0, state.focus - 30 - (skipped ? 0 : tool.focus));
+  /* 道具のぶんだけ、気を使う（研ぎたての刃は切れるが落ち着かない） */
+  if (!skipped && tool.focus) {
+    state.focus = Math.max(10, state.focus - tool.focus);
+  }
+  /* 出来しだいで、調子が動く。上がるほうを厚く、下がるほうを薄く */
+  const focusWord = skipped ? "" : focusAfterAction(score);
 
   /* 記録：家具ごとの自己ベストと、工程タイプごとの成績 */
   if (!skipped) {
@@ -6117,7 +6206,7 @@ function doAction(rawScore, skipped) {
   while (state.hoursLeft <= 0) {
     state.hoursLeft += hoursPerDay();
     state.day++;
-    state.focus = focusPerDay();
+    state.focus = rollFocus();
     extra += dailyVisitors();
   }
   save();
@@ -6126,7 +6215,7 @@ function doAction(rawScore, skipped) {
   let msg = skipped
     ? `${step.icon} ${step.msg}　手数をかけて、手堅く仕上げた。（腕前 ×${mult}・${hours}時間）${extra}`
     : `${step.icon} ${step.msg}　${step.label}は ${score}点。（腕前 ×${mult}・🔥山場・${hours}時間）${extra}`;
-  if (tired && !skipped) msg += "　……手が疲れておったな。";
+  msg += focusWord;
   msg += announceBP();
   showMessage(msg);
   maybeShowTrivia();
@@ -6140,16 +6229,17 @@ function doAction(rawScore, skipped) {
   }
 }
 
-/* 今日はここまで。残り時間を捨てて翌日へ（集中力が全回復する）
-   集中力が尽きたときの逃げ道であり、納期を削る代償でもある */
+/* 今日はここまで。残り時間を捨てて、あしたの朝へ。
+   あしたの調子をふり直す賭けであり、納期を削る代償でもある。
+   何も作っていないときに、日を進めてお客を呼ぶ手でもある */
 function restForToday() {
   state.craftUsed += state.hoursLeft;   // 残り時間は納期から差し引かれる
   state.hoursLeft = hoursPerDay();
   state.day++;
-  state.focus = focusPerDay();
+  state.focus = rollFocus();
   const extra = dailyVisitors();
   save();
-  showMessage(`🌙 道具を片づけて、今日はここまで。${extra}　よく休んだ。手が戻っておる。`, "back");
+  showMessage(`🌙 道具を片づけて、今日はここまで。${extra}`, "back");
   render();
 }
 
@@ -6160,7 +6250,8 @@ function dailyVisitors() {
   const bonusMult = SET_BONUSES.reduce((m, b) => m * (b.check(pieces) ? b.mult : 1), 1);
   const visitors = Math.max(1, Math.round((3 + popSum * 0.8) * gearVisitorMult()));
   state.totalVisitors += visitors;
-  let text = `　🌙 ${state.day}日目の朝じゃ。`;
+  const band = focusBand();
+  let text = `　🌅 ${state.day}日目の朝じゃ。${band.say}（${band.name} ${state.focus}）`;
   if (popSum > 0) {
     const income = Math.round(visitors * 12 * bonusMult * gearShopMult() / 10) * 10;
     state.money += income;
@@ -8113,17 +8204,17 @@ function useReady(m) {
   if ((state.materials[m.id] || 0) < 1) return "持っていない";
   /* ききめが1つでも通れば使える（おでんのように二つ効くものがあるので） */
   const live = (k) =>
-    k === "focus" ? state.focus < focusPerDay()
+    k === "focus" ? state.focus < FOCUS_MAX
     : k === "flaw" ? !!(state.currentId && state.flaws > 0)
     : true;
   if ((m.fx || []).some(([k]) => live(k))) return "";
   const only = (m.fx || []).map(([k]) => k);
-  return only.indexOf("focus") >= 0 ? "集中力は満ちている" : "いま、しくじりは無い";
+  return only.indexOf("focus") >= 0 ? "調子は申し分ない" : "いま、しくじりは無い";
 }
 
 /* ききめの文。どれだけ効いたかを、そのつど読める形で返す */
 const FX_WORD = {
-  focus:   (v) => `集中力が${v}もどった`,
+  focus:   (v) => `調子が${v}あがった`,
   hours:   (v) => `きょうの作業が${v}時間のびた`,
   flaw:    (v) => `しくじりが${v}つ消えた`,
   quality: (v) => `つぎの一台の品質+${v}`,
@@ -8141,7 +8232,7 @@ function useItem(id) {
   const done = [];
   (m.fx || []).forEach(([k, v]) => {
     if (k === "focus") {
-      const got = Math.min(focusPerDay(), state.focus + v) - state.focus;
+      const got = Math.min(FOCUS_MAX, state.focus + v) - state.focus;
       state.focus += got;
       if (got > 0) done.push(FX_WORD.focus(got));
     } else if (k === "hours") {
@@ -8169,8 +8260,8 @@ function renderGear() {
   if (gearVisitorMult() > 1) effects.push(`来館者×${gearVisitorMult().toFixed(2)}`);
   if (gearShopMult() > 1)    effects.push(`売店収入×${gearShopMult().toFixed(2)}`);
   if (speedBonus())          effects.push(`工程-${speedBonus()}h`);
-  if (hoursPerDay() > HOURS_PER_DAY) effects.push(`1日${hoursPerDay()}時間`);
-  if (focusPerDay() > FOCUS_PER_DAY) effects.push(`集中力${focusPerDay()}`);
+  if (hoursPerDay() > HOURS_PER_DAY) effects.push(`${clockText(dayOpen())}〜${clockText(dayClose())}`);
+  if (focusFloor() > 20) effects.push(`調子の下限${focusFloor()}`);
   if (gearMatOff() > 0)      effects.push(`仕入れ-${Math.round(gearMatOff() * 100)}%`);
   effects.push(`展示枠${showSlots()}`);
 
