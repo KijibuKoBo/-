@@ -907,6 +907,18 @@ footer{
   display:block; height:100%; width:0%; border-radius:999px;
   background:linear-gradient(90deg,var(--gold),#e0bf74); transition:width .18s;
 }
+/* ドット絵の明滅。steps() で、中間の明るさを作らない */
+@keyframes mkBl1{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
+@keyframes mkBl2{ 0%,49%{opacity:0} 50%,100%{opacity:1} }
+@keyframes mkAura{ 0%,49%{opacity:.55} 50%,100%{opacity:.18} }
+.mk-bl1{ animation:mkBl1 .36s steps(1,end) infinite; }
+.mk-bl2{ animation:mkBl2 .36s steps(1,end) infinite; }
+.mk-aura{ animation:mkAura .22s steps(1,end) infinite; }
+@media (prefers-reduced-motion: reduce){
+  .mk-bl1,.mk-bl2,.mk-aura{ animation:none; }
+  .mk-aura{ opacity:.35; }
+}
+
 .act-say{
   text-align:center; font-size:.74rem; color:var(--brown-mid);
   min-height:1.5em; margin-top:7px; line-height:1.6;
@@ -3567,14 +3579,148 @@ const actRand = (a, b) => a + Math.random() * (b - a);
 /* 難度 1〜3 を 0.85〜1.15 のつらさに直す */
 const actHard = (lv) => 0.85 + (lv - 1) * 0.15;
 
+/* ==========================================================
+   ドット絵の下ごしらえ（「木の目利き」で使う）
+   ----------------------------------------------------------
+   ファミコンの絵は、四角を置いていくだけでできている。
+   1ドット＝3。座標はすべて3の倍数にそろえ、曲線も、ぼかしも、
+   半透明も使わない。色は十六色に決めてある。
+   ========================================================== */
+const MK_C = {
+  wall:"#f3e7cd", wallDk:"#e8cfa5", sky:"#cfe0ea",
+  woodH:"#f2cf9d", wood:"#dfa96c", woodM:"#c98d54", woodD:"#a9713f",
+  dark:"#6e4526", ink:"#3a2412",
+  gold:"#c9a24b", goldH:"#f0d87a", spark:"#fff6d0",
+  skin:"#e8b98c", green:"#7a9c6e", white:"#fffdf5", red:"#b8563e"
+};
+const mkR = (x, y, w, h, c) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+
+/* 3×5ドットの数字。画面上の数は、ぜんぶこれで書く */
+const MK_GLYPH = {
+  "0":"111101101101111", "1":"010110010010111", "2":"111001111100111",
+  "3":"111001111001111", "4":"101101111001001", "5":"111100111001111",
+  "6":"111100111101111", "7":"111001010010010", "8":"111101111101111",
+  "9":"111101111001111", ".":"000000000000010", " ":"000000000000000"
+};
+function mkNum(text, x, y, s, col) {
+  let o = "", cx = x;
+  for (const ch of String(text)) {
+    const g = MK_GLYPH[ch];
+    if (g) for (let r = 0; r < 5; r++) for (let i = 0; i < 3; i++)
+      if (g[r * 3 + i] === "1") o += mkR(cx + i * s, y + r * s, s, s, col);
+    cx += 4 * s;
+  }
+  return o;
+}
+const mkNumW = (text, s) => String(text).length * 4 * s - s;
+
+/* 板。20×6ドット（60×18）。原点はまんなか。
+   色が見分けられなくても形で分かるよう、節の板は右上の角を欠いてある */
+const MK_PLANK = {
+  good:
+    mkR(-30,-9,60,18,MK_C.wood) + mkR(-30,-9,60,3,MK_C.woodH) +
+    mkR(-30,6,60,3,MK_C.woodD) +
+    mkR(-30,-9,3,18,MK_C.dark) + mkR(27,-9,3,18,MK_C.dark) +
+    mkR(-21,-3,18,3,MK_C.woodM) + mkR(6,-3,12,3,MK_C.woodM) +
+    mkR(-15,3,21,3,MK_C.woodM),
+  bad:
+    mkR(-30,-9,48,3,MK_C.woodM) +
+    mkR(-30,-6,60,12,MK_C.woodD) + mkR(-30,6,60,3,MK_C.ink) +
+    mkR(-30,-6,3,15,MK_C.ink) + mkR(27,-6,3,15,MK_C.ink) +
+    mkR(-18,-6,18,12,MK_C.dark) + mkR(-15,-3,12,6,MK_C.ink) +
+    mkR(6,-3,15,9,MK_C.dark) + mkR(9,0,9,3,MK_C.ink),
+  gold:
+    mkR(-30,-9,60,18,MK_C.gold) + mkR(-30,-9,60,3,MK_C.goldH) +
+    mkR(-30,6,60,3,MK_C.dark) +
+    mkR(-30,-9,3,18,MK_C.dark) + mkR(27,-9,3,18,MK_C.dark) +
+    mkR(-21,-3,42,3,MK_C.goldH) +
+    `<g class="mk-bl1">` + mkR(-24,-6,3,3,MK_C.spark) + mkR(12,0,3,3,MK_C.spark) + `</g>` +
+    `<g class="mk-bl2">` + mkR(-3,-6,3,3,MK_C.spark) + mkR(18,-6,3,3,MK_C.spark) + `</g>`
+};
+
+/* 幻の銘木。28×10ドット（84×30）。ひとまわり大きく、縁が明滅する */
+const MK_PHANTOM =
+  `<g class="mk-aura">` +
+    mkR(-48,-21,96,6,MK_C.spark) + mkR(-48,15,96,6,MK_C.spark) +
+    mkR(-48,-15,6,30,MK_C.spark) + mkR(42,-15,6,30,MK_C.spark) +
+  `</g>` +
+  mkR(-42,-15,84,30,MK_C.goldH) +
+  mkR(-42,-15,84,6,MK_C.white) + mkR(-42,9,84,6,MK_C.gold) +
+  mkR(-42,-15,3,30,MK_C.dark) + mkR(39,-15,3,30,MK_C.dark) +
+  mkR(-33,0,45,3,MK_C.white) + mkR(18,-3,15,3,MK_C.white) +
+  mkR(-24,6,39,3,MK_C.gold) +
+  `<g class="mk-bl1">` + mkR(-36,-6,6,3,MK_C.white) + mkR(21,3,6,3,MK_C.white) + `</g>` +
+  `<g class="mk-bl2">` + mkR(0,-6,6,3,MK_C.white) + mkR(-12,6,6,3,MK_C.white) + `</g>`;
+
+/* 工房。動きはない。奥に見えているだけのもの */
+const MK_STAGE =
+  mkR(0,0,300,300,MK_C.wall) +
+  /* 窓 */
+  mkR(24,51,69,63,MK_C.dark) + mkR(27,54,63,57,MK_C.sky) +
+  mkR(54,54,3,57,MK_C.dark) + mkR(27,78,63,3,MK_C.dark) +
+  mkR(18,111,81,6,MK_C.woodD) +
+  /* 棚と道具。壁と近い色にして、板の邪魔をしない */
+  mkR(192,66,90,3,MK_C.woodD) +
+  mkR(201,42,6,24,MK_C.wallDk) + mkR(195,36,18,6,MK_C.wallDk) +
+  mkR(222,45,33,21,MK_C.wallDk) + mkR(240,39,6,6,MK_C.wallDk) +
+  mkR(264,45,9,21,MK_C.wallDk) +
+  mkR(207,135,69,3,MK_C.woodD) +
+  mkR(213,117,15,18,MK_C.wallDk) + mkR(234,111,18,24,MK_C.wallDk) +
+  mkR(258,120,12,15,MK_C.wallDk) +
+  /* 床ぎわ */
+  mkR(0,198,300,3,MK_C.wallDk);
+
+/* 作業台 */
+const MK_BENCH =
+  mkR(0,258,300,3,MK_C.woodH) + mkR(0,261,300,9,MK_C.woodM) +
+  mkR(0,270,300,30,MK_C.woodD) +
+  mkR(21,270,21,30,MK_C.dark) + mkR(258,270,21,30,MK_C.dark) +
+  mkR(0,270,300,3,MK_C.dark) +
+  mkR(126,273,48,12,MK_C.dark) + mkR(132,276,36,6,MK_C.woodM);
+
+/* 受け台を持つ職人。台といっしょに左右へ動く。原点は台のまんなか */
+const MK_MAN =
+  /* 台のはしをにぎる手 */
+  mkR(-42,-9,12,21,MK_C.skin) + mkR(30,-9,12,21,MK_C.skin) +
+  mkR(-42,12,12,6,MK_C.green) + mkR(30,12,12,6,MK_C.green) +
+  /* 腕から肩へ */
+  mkR(-36,18,12,12,MK_C.green) + mkR(24,18,12,12,MK_C.green) +
+  /* 帽子と顔 */
+  mkR(-15,6,30,6,MK_C.dark) + mkR(-18,12,36,3,MK_C.dark) +
+  mkR(-12,15,24,15,MK_C.skin) +
+  mkR(-6,21,3,3,MK_C.ink) + mkR(3,21,3,3,MK_C.ink) +
+  /* 肩 */
+  mkR(-24,30,48,15,MK_C.green) + mkR(-24,30,48,3,MK_C.wallDk);
+
+/* 受け台 */
+const MK_CART =
+  mkR(-36,-12,72,6,MK_C.woodH) + mkR(-36,-6,72,15,MK_C.dark) +
+  mkR(-36,9,72,3,MK_C.ink) +
+  mkR(-36,-12,6,21,MK_C.ink) + mkR(30,-12,6,21,MK_C.ink);
+
+/* よけたときに出す、小さな印 */
+const mkCheck = (c) =>
+  mkR(-9,0,3,3,c) + mkR(-6,3,3,3,c) + mkR(-3,6,3,3,c) +
+  mkR(0,3,3,3,c) + mkR(3,0,3,3,c) + mkR(6,-3,3,3,c) + mkR(9,-6,3,3,c);
+
+/* 「木の目利き」の持ち時間。画面の時計と、外の時計でおなじ値を使う */
+const MEKIKI_LIMIT = 60000;
+/* 幻の銘木が、最終波にあらわれる確率 */
+const MK_PHANTOM_CHANCE = 0.4;
+
 const CRAFT_ACTIONS = {
 
   /* ================================================================
      ① 木の目利き（落ちもの）
      良い板だけを受け、節のある板はよける。金の銘木は二点ぶん。
+
+     絵はファミコンの作りにそろえてある（1ドット＝3・十六色・曲線なし）。
+     **採点・制限時間・難度・波の組み立ては、もとのまま一行も変えていない。**
+     足したのは、見た目と手ざわりと、点に一切かかわらない「幻の銘木」だけ。
      ================================================================ */
   mekiki: {
-    name: "木の目利き", limit: 60000,
+    name: "木の目利き", limit: MEKIKI_LIMIT,
     tip: "落ちてくる板を受け台で受ける。<b>節のある板は受けてはならん。</b>",
     start(svg, ui, done, lv) {
       const h = actHard(lv);
@@ -3589,36 +3735,132 @@ const CRAFT_ACTIONS = {
       let goodSpawned = 0;          // 満点の分母は「良い板の数」
       const items = [];
 
+      /* ---- ここから下は演出のための持ち物。採点には触らない ---- */
+      const NS = "http://www.w3.org/2000/svg";
+      const END = Date.now() + MEKIKI_LIMIT;
+      const chips = [], pops = [];
+      let frame = 0, shake = 0, shakeT = 0;
+      let stopped = false, finished = false;
+      let phantomRolled = false, phantomAt = 0, phantomGot = false;
+
       svg.innerHTML =
-        `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
-         <rect x="0" y="252" width="300" height="48" fill="#e8cfa5"/>
-         <g id="items"></g>
-         <g id="cart"><rect x="-34" y="-11" width="68" height="22" rx="6" fill="#8a5a30"/>
-           <rect x="-34" y="-11" width="68" height="8" rx="4" fill="#a9713f"/></g>`;
-      const gItems = svg.querySelector("#items"), gCart = svg.querySelector("#cart");
-      const drawCart = () => gCart.setAttribute("transform", `translate(${cart},244)`);
+        `<g id="mkWorld" shape-rendering="crispEdges">
+           ${MK_STAGE}
+           <g id="mkItems"></g>
+           ${MK_BENCH}
+           <g id="mkMan"></g>
+           <g id="mkCart"></g>
+           <g id="mkChips"></g>
+           <g id="mkFx"></g>
+         </g>
+         <g id="mkHud" shape-rendering="crispEdges"></g>`;
+      const gWorld = svg.querySelector("#mkWorld");
+      const gItems = svg.querySelector("#mkItems");
+      const gMan   = svg.querySelector("#mkMan");
+      const gCart  = svg.querySelector("#mkCart");
+      const gChips = svg.querySelector("#mkChips");
+      const gFx    = svg.querySelector("#mkFx");
+      const gHud   = svg.querySelector("#mkHud");
+      gMan.innerHTML = MK_MAN;
+      gCart.innerHTML = MK_CART;
+
+      const drawCart = () => {
+        gCart.setAttribute("transform", `translate(${cart},244)`);
+        gMan.setAttribute("transform", `translate(${cart},244)`);
+      };
       drawCart();
 
+      /* ---------- 画面のゆれ。短く、一瞬だけ ---------- */
+      const quake = (n) => { shake = n; shakeT = 6; };
+
+      /* ---------- 木くず ---------- */
+      const chip = (x, y, col, n, spread) => {
+        if (chips.length > 44) return;
+        for (let i = 0; i < n; i++) {
+          const el = document.createElementNS(NS, "rect");
+          el.setAttribute("width", Math.random() < .5 ? 3 : 6);
+          el.setAttribute("height", 3);
+          el.setAttribute("fill", col);
+          gChips.appendChild(el);
+          chips.push({ el, x, y, vx: actRand(-spread, spread), vy: actRand(-3.6, -1.1), t: 0 });
+        }
+      };
+
+      /* ---------- 浮かび上がる印（数字・✓） ---------- */
+      const pop = (html, x, y, w) => {
+        const g = document.createElementNS(NS, "g");
+        g.innerHTML = html;
+        g.setAttribute("transform", `translate(${x},${y})`);
+        gFx.appendChild(g);
+        pops.push({ el: g, x: Math.max(w / 2 + 6, Math.min(300 - w / 2 - 6, x)), y, t: 0 });
+      };
+      const popNum = (n, x, y, s, col) => {
+        const w = mkNumW(n, s), x0 = -w / 2;
+        /* 濃い影を一段ずらして置く。薄い壁の前でも数が読める */
+        pop(mkNum(n, x0 + s, s, s, MK_C.ink) + mkNum(n, x0, 0, s, col), x, y, w);
+      };
+
+      /* ---------- 職人コンボ。3・5・10 で段が変わる ---------- */
+      const comboFx = (c) => {
+        const col = c >= 10 ? MK_C.spark : c >= 5 ? MK_C.goldH : MK_C.green;
+        popNum(c, cart, 168, 9, col);
+        quake(c >= 10 ? 4 : 2);
+        sfxCombo(c);
+        if (c >= 10) {                       // 画面のふちが一瞬光る
+          const g = document.createElementNS(NS, "g");
+          g.innerHTML =
+            mkR(0,33,300,9,MK_C.ink) + mkR(0,291,300,9,MK_C.ink) +
+            mkR(0,33,9,267,MK_C.ink) + mkR(291,33,9,267,MK_C.ink) +
+            mkR(0,33,300,3,col) + mkR(0,297,300,3,col) +
+            mkR(0,33,3,267,col) + mkR(297,33,3,267,col);
+          gFx.appendChild(g);
+          setTimeout(() => g.remove(), 220);
+        }
+      };
+
+      /* ---------- 真ん中に出す帯（幻の銘木・結びの称号） ---------- */
+      const band = (big, small, col, ms) => {
+        const g = document.createElementNS(NS, "g");
+        g.innerHTML =
+          mkR(0,114,300,66,MK_C.ink) + mkR(0,114,300,3,col) + mkR(0,177,300,3,col) +
+          `<text x="150" y="149" text-anchor="middle" font-size="25" font-weight="bold"
+             fill="${col}" style="letter-spacing:.12em">${big}</text>` +
+          (small ? `<text x="150" y="170" text-anchor="middle" font-size="12"
+             fill="${MK_C.wall}">${small}</text>` : "");
+        gFx.appendChild(g);
+        if (ms) setTimeout(() => g.remove(), ms);
+        return g;
+      };
+
+      /* ---------- 板を出す（もとのまま） ---------- */
       const spawn = () => {
         const w = WAVES[wave];
         const bad = Math.random() < w.bad;
         const gold = !bad && Math.random() < .12;
         const x = actRand(40, 260);
-        const el = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        el.innerHTML = bad
-          ? `<rect x="-30" y="-9" width="60" height="18" rx="4" fill="#9a6435"/>
-             <ellipse cx="6" cy="0" rx="7" ry="5" fill="#4a2f18"/>
-             <ellipse cx="-14" cy="1" rx="4" ry="3" fill="#4a2f18"/>`
-          : gold
-            ? `<rect x="-30" y="-9" width="60" height="18" rx="4" fill="#d8b45e"/>
-               <path d="M-24 0 H24" stroke="#a97c14" stroke-width="2"/>`
-            : `<rect x="-30" y="-9" width="60" height="18" rx="4" fill="#dfa96c"/>
-               <path d="M-24 -3 H24 M-24 3 H24" stroke="#c98d54" stroke-width="1.6"/>`;
+        const el = document.createElementNS(NS, "g");
+        el.innerHTML = bad ? MK_PLANK.bad : gold ? MK_PLANK.gold : MK_PLANK.good;
         el.setAttribute("transform", `translate(${x},-20)`);
         gItems.appendChild(el);
         items.push({ el, x, y: -20, bad, gold, sp: w.sp * h * actRand(.9, 1.15) });
         spawned++;
         if (!bad) goodSpawned++;
+      };
+
+      /* ---------- 幻の銘木。最終波に一度だけ、低い確率で ----------
+         点にも、連続にも、分母にも入らない。受けても受けなくても
+         0〜100点はまったく変わらない。見つけた、という事実だけが残る */
+      const spawnPhantom = () => {
+        const el = document.createElementNS(NS, "g");
+        el.innerHTML = MK_PHANTOM;
+        const x = actRand(60, 240);
+        el.setAttribute("transform", `translate(${x},-30)`);
+        gItems.appendChild(el);
+        items.push({ el, x, y: -30, bad: false, gold: false, ph: true,
+                     sp: 1.25 * h * actRand(.95, 1.05) });
+        band("幻の銘木", "百年に一度の杢目じゃ。受けよ。", MK_C.spark, 1100);
+        sfxPhantom(false);
+        quake(3);
       };
 
       const resolveOne = () => {
@@ -3627,43 +3869,179 @@ const CRAFT_ACTIONS = {
         actBanner(ui, wave + 1, 3, "節のある板は受けるな", sc);
       };
 
+      /* ---------- 上の帯 ----------
+         動かないところ（帯・板の印・砂時計）は一度きり。
+         そのあとは、変わった数だけを描きかえる */
+      gHud.innerHTML =
+        mkR(0,0,300,33,MK_C.ink) + mkR(0,30,300,3,MK_C.dark) +
+        mkR(9,12,21,6,MK_C.wood) + mkR(9,12,21,3,MK_C.woodH) +
+        `<g id="mkHS"></g><g id="mkHW"></g><g id="mkHC"></g><g id="mkHT"></g>`;
+      const hS = svg.querySelector("#mkHS"), hW = svg.querySelector("#mkHW");
+      const hC = svg.querySelector("#mkHC"), hT = svg.querySelector("#mkHT");
+      let wasS = -1, wasW = -1, wasC = -1, wasT = "";
+      const drawHud = () => {
+        if (sc.hit !== wasS) {
+          wasS = sc.hit;
+          hS.innerHTML = mkNum(sc.hit, 36, 9, 3, MK_C.woodH);
+        }
+        if (wave !== wasW) {
+          wasW = wave;
+          let o = "";
+          for (let i = 0; i < 3; i++)
+            o += mkR(90 + i * 9, 12, 6, 6, i <= wave ? MK_C.goldH : MK_C.dark);
+          hW.innerHTML = o;
+        }
+        if (sc.combo !== wasC) {
+          wasC = sc.combo;
+          const cc = sc.combo >= 10 ? MK_C.spark : sc.combo >= 5 ? MK_C.goldH
+                   : sc.combo >= 3 ? MK_C.green : MK_C.wood;
+          hC.innerHTML =
+            mkR(132,15,3,3,cc) + mkR(135,12,3,3,cc) + mkR(138,15,3,3,cc) +
+            mkNum(sc.combo, 147, 9, 3, cc);
+        }
+        const t = Math.max(0, (END - Date.now()) / 1000);
+        const ts = t.toFixed(1);
+        if (ts !== wasT) {
+          wasT = ts;
+          const tc = t <= 10 ? MK_C.red : MK_C.wall;
+          hT.innerHTML =
+            mkR(213,9,15,3,tc) + mkR(213,21,15,3,tc) +
+            mkR(216,12,9,3,tc) + mkR(219,15,3,3,tc) + mkR(216,18,9,3,tc) +
+            mkNum(ts, 300 - 9 - mkNumW(ts, 3), 9, 3, tc);
+        }
+      };
+
+      /* ---------- 一こま ---------- */
       const step = () => {
+        frame++;
         const now = Date.now();
-        if (spawned < WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0) && now > nextAt) {
+        const need = WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0);
+
+        if (spawned < need && now > nextAt) {
           spawn(); nextAt = now + WAVES[wave].gap / h;
         }
+        /* 最終波に入ったとき、幻の銘木を出すかどうかを一度だけ決める */
+        if (wave === 2 && !phantomRolled) {
+          phantomRolled = true;
+          if (Math.random() < MK_PHANTOM_CHANCE)
+            phantomAt = now + 1800 + Math.random() * 2400;
+        }
+        if (phantomAt && now > phantomAt) { phantomAt = 0; spawnPhantom(); }
+
         for (let i = items.length - 1; i >= 0; i--) {
           const it = items[i];
           it.y += it.sp;
           it.el.setAttribute("transform", `translate(${it.x},${it.y})`);
-          const caught = it.y > 230 && it.y < 258 && Math.abs(it.x - cart) < 38;
+          const reach = it.ph ? 56 : 38;
+          const caught = it.y > 230 && it.y < 258 && Math.abs(it.x - cart) < reach;
           if (caught) {
-            if (it.bad) { sc.ng(); ui.say("⚠️ 節のある板を受けてしまった"); }
-            else { sc.ok(it.gold ? 2 : 1); ui.say(it.gold ? "✨ 銘木！" : "よい板じゃ"); resolveOne(); }
+            if (it.ph) {
+              phantomGot = true;
+              band("伝説の鑑定眼", "この目は、たしかじゃ。", MK_C.spark, 1300);
+              chip(it.x, 240, MK_C.spark, 14, 5.5);
+              chip(it.x, 240, MK_C.goldH, 10, 4);
+              quake(7); sfxPhantom(true);
+            } else if (it.bad) {
+              sc.ng();
+              chip(it.x, 240, MK_C.ink, 10, 5);      // 赤く光らせず、木片を散らす
+              chip(it.x, 240, MK_C.dark, 6, 3.5);
+              quake(5);
+            } else {
+              sc.ok(it.gold ? 2 : 1);
+              chip(it.x, 240, it.gold ? MK_C.goldH : MK_C.woodH, it.gold ? 10 : 6, 3.2);
+              if (it.gold) {
+                chip(it.x, 240, MK_C.spark, 6, 4.5);
+                popNum(2, it.x, 196, 6, MK_C.goldH);
+                quake(3); sfxGold();
+              } else quake(2);
+              const c = sc.combo;
+              if (c === 3 || c === 5 || c === 10 || (c > 10 && c % 5 === 0)) comboFx(c);
+              resolveOne();
+            }
             it.el.remove(); items.splice(i, 1);
             continue;
           }
           if (it.y > 300) {
-            if (!it.bad) { sc.ng(); ui.say("板を取り落とした"); resolveOne(); }
+            if (it.ph) {
+              /* 逃がしても、点は1点も減らない。ただ、惜しい */
+              band("……行ってしもうた", "", MK_C.woodD, 900);
+            } else if (!it.bad) {
+              sc.ng();
+              chip(it.x, 264, MK_C.woodD, 5, 2.6);
+              resolveOne();
+            } else {
+              /* よけた。点は動かないが、ちゃんと見ていた証に小さな印を出す */
+              pop(mkCheck(MK_C.ink) + `<g transform="translate(0,-3)">${mkCheck(MK_C.green)}</g>`,
+                  it.x, 246, 24);
+              sfxDodge();
+            }
             it.el.remove(); items.splice(i, 1);
           }
         }
-        const need = WAVES.slice(0, wave + 1).reduce((s, w) => s + w.n, 0);
-        if (spawned >= need && !items.length) {
-          if (wave < 2) { wave++; nextAt = Date.now() + 500; ui.say(`—— 第${wave + 1}波 ——`); }
-          else finish();
+
+        /* 木くず */
+        for (let i = chips.length - 1; i >= 0; i--) {
+          const k = chips[i];
+          k.vy += 0.24; k.x += k.vx; k.y += k.vy; k.t++;
+          k.el.setAttribute("x", k.x | 0); k.el.setAttribute("y", k.y | 0);
+          if (k.t > 40 || k.y > 306) { k.el.remove(); chips.splice(i, 1); }
+        }
+        /* 浮かぶ印。終わりぎわは、8ビットらしく点滅させて消す */
+        for (let i = pops.length - 1; i >= 0; i--) {
+          const q = pops[i];
+          q.t++; q.y -= 1.2;
+          q.el.setAttribute("transform", `translate(${q.x},${q.y | 0})`);
+          if (q.t > 22) q.el.setAttribute("opacity", (q.t >> 1) % 2 ? "0" : "1");
+          if (q.t > 34) { q.el.remove(); pops.splice(i, 1); }
+        }
+        /* 画面のゆれ */
+        if (shakeT > 0) {
+          shakeT--;
+          const a = shake * (shakeT / 6);
+          gWorld.setAttribute("transform", shakeT
+            ? `translate(${Math.round(actRand(-a, a))},${Math.round(actRand(-a, a))})`
+            : "translate(0,0)");
+        }
+        if (frame % 3 === 0) drawHud();
+
+        if (spawned >= need && !items.length && !phantomAt) {
+          if (wave < 2) {
+            wave++; nextAt = Date.now() + 500;
+            band(`第 ${wave + 1} 波`, wave === 2 ? "節が増えるぞ。よう見よ。" : "いくぞ。",
+                 MK_C.goldH, 900);
+          } else finish();
         }
       };
+
+      /* ---------- 結び ---------- */
+      const MK_TITLES = ["目利き見習い", "板を見る目", "銘木の目利き", "伝説の鑑定眼"];
       const finish = () => {
+        if (finished) return;
+        finished = true;
         if (timer) { clearInterval(timer); timer = null; }
         sc.setTotal(goodSpawned);
-        done(sc.value(), sc.word());
+        const v = sc.value();
+        ui.lock();
+        drawHud();
+        let tier = v >= 85 ? 3 : v >= 65 ? 2 : v >= 40 ? 1 : 0;
+        if (phantomGot) tier = Math.min(3, tier + 1);
+        band(MK_TITLES[tier],
+             `${v}点　いちばん長く続けたのは ${sc.best} 枚`,
+             tier >= 3 ? MK_C.spark : tier === 2 ? MK_C.goldH : MK_C.wood, 0);
+        setTimeout(() => {
+          if (stopped) return;
+          done(v, sc.word() + (phantomGot ? "　幻の銘木まで見抜きおったか。" : ""));
+        }, 1250);
       };
 
-      ui.onDown = ui.onPoint = (p) => { cart = Math.max(36, Math.min(264, p.x)); drawCart(); };
-      ui.onStop = () => { if (timer) clearInterval(timer); };
+      ui.onDown = ui.onPoint = (p) => {
+        cart = Math.max(36, Math.min(264, p.x));
+        drawCart();
+      };
+      ui.onStop = () => { stopped = true; if (timer) clearInterval(timer); };
       ui.onTimeout = finish;
       actBanner(ui, 1, 3, "節のある板は受けるな", sc);
+      drawHud();
       nextAt = Date.now() + 400;
       timer = setInterval(step, 16);
     }
@@ -6837,6 +7215,49 @@ function sfxTensionStop() {
     bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
     bgmMaster.gain.linearRampToValueAtTime(BGM_VOL, t + 1.0);
   }
+}
+
+/* ----------------------------------------------------------
+   「木の目利き」のための音。ほかの9種には鳴らない。
+   どれも sfxHit / sfxMiss とは別の口なので、既存の音は変わらない
+   ---------------------------------------------------------- */
+
+/* 職人コンボ。3・5・10 で音が増え、高くなる */
+function sfxCombo(c) {
+  if (!sfxReady()) return;
+  const t = actx.currentTime + 0.02;
+  if (c >= 10)      sfxTune([12, 16, 19, 24, 28], t, 0.12, 0.45);
+  else if (c >= 5)  sfxTune([7, 12, 16, 19], t, 0.11, 0.36);
+  else              sfxTune([0, 4, 7], t, 0.09, 0.26);
+}
+
+/* 金の銘木。短く、きらりと */
+function sfxGold() {
+  if (!sfxReady()) return;
+  sfxTune([19, 26], actx.currentTime + 0.02, 0.1, 0.5);
+}
+
+/* 節をよけた。点は動かないので、音も小さく、ごく短く */
+function sfxDodge() {
+  if (!sfxReady()) return;
+  const t = actx.currentTime;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "triangle";
+  o.frequency.setValueAtTime(sfxFreq(14), t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.035, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+  o.connect(g); g.connect(sfxBus);
+  o.start(t); o.stop(t + 0.12);
+}
+
+/* 幻の銘木。あらわれたとき（got=false）と、受けたとき（got=true） */
+function sfxPhantom(got) {
+  if (!sfxReady()) return;
+  const t = actx.currentTime + 0.02;
+  if (!got) { sfxTune([24, 19, 24, 28], t, 0.08, 0.6); return; }
+  sfxTune([0, 7, 12, 16, 19, 24, 28, 31], t, 0.13, 0.62);
+  sfxTune([36], t + 0.78, 0.1, 0.8);
 }
 
 /* ひとふし鳴らす。点が高いほど、長く、高く、明るく */
