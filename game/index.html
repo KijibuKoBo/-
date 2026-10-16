@@ -1359,6 +1359,30 @@ header{ position:relative; }
   width:58px; height:92px; opacity:.9; pointer-events:none;
 }
 .bp-kobo img{ width:100%; height:100%; object-fit:contain; display:block; }
+/* 音のボタンを押したとき、いま何になったかを出す */
+.snd-toast{
+  position:absolute; top:52px; right:8px; z-index:3;
+  font-size:.66rem; font-weight:bold; white-space:nowrap;
+  padding:6px 12px; border-radius:999px;
+  border:2px solid var(--brown-mid); background:var(--paper); color:var(--brown);
+  box-shadow:0 3px 8px rgba(107,74,47,.35);
+  pointer-events:none; animation:sndToast 2.4s ease forwards;
+}
+.snd-toast.warn{ border-color:var(--red); color:var(--red); }
+@keyframes sndToast{
+  0%{ opacity:0; transform:translateY(-7px); }
+  10%{ opacity:1; transform:none; }
+  78%{ opacity:1; }
+  100%{ opacity:0; }
+}
+.snd-test{
+  font-family:inherit; font-size:.72rem; font-weight:bold; color:var(--brown);
+  min-height:44px; padding:0 18px; border-radius:11px; cursor:pointer;
+  border:2px solid var(--brown-mid); margin:8px auto 0; display:block;
+  background:linear-gradient(180deg,#fffaf0,var(--cream-deep));
+  box-shadow:0 3px 0 var(--brown-mid);
+}
+.snd-test:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--brown-mid); }
 </style>
 </head>
 <body>
@@ -6476,6 +6500,39 @@ function bgmStop() {
 
 const SND_FACE = ["🔇", "🔔", "🔊"];
 const SND_WORD = ["音を出す", "山場の音だけ鳴っています", "音楽も鳴っています"];
+const SND_NOW  = ["🔇 消音にしました", "🔔 山場の音だけ", "🔊 音楽も鳴ります"];
+
+/* 押した結果を、その場で見せる。
+   三段あるので、押しても何も起きなかったように見えることがあった */
+function sndToast(text, warn) {
+  const h = document.querySelector("header");
+  if (!h) return;
+  const old = h.querySelector(".snd-toast");
+  if (old) old.remove();
+  const el = document.createElement("span");
+  el.className = "snd-toast" + (warn ? " warn" : "");
+  el.textContent = text;
+  h.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 2500);
+}
+
+/* 鳴ることを耳で確かめるための、短いひとふし */
+function sfxChime() {
+  if (!sfxReady()) return false;
+  sfxTune([0, 7, 12], actx.currentTime + 0.03, 0.15, 0.32);
+  return true;
+}
+
+/* 端末の都合で鳴らせないことがある。黙って終わらせない */
+function sndCheck() {
+  if (sndMode === 0) return;
+  setTimeout(() => {
+    if (sndMode === 0) return;
+    if (!actx || actx.state !== "running") {
+      sndToast("音が出せんかった。端末の消音を確かめておくれ", true);
+    }
+  }, 700);
+}
 
 function renderSnd() {
   const b = $("#btn-snd");
@@ -6490,8 +6547,10 @@ function sndToggle() {
   sndMode = (sndMode + 1) % 3;
   try { localStorage.setItem(BGM_KEY, String(sndMode)); } catch (e) {}
   if (musOn()) bgmStart(); else bgmStop();
-  if (sfxOn()) { sfxReady(); sfxHit(1, 1); }    // 切りかえたことが、耳でわかるように
+  if (sfxOn()) sfxChime();       // 切りかえたことが、耳でもわかるように
   renderSnd();
+  sndToast(SND_NOW[sndMode]);
+  sndCheck();
 }
 
 function loadBgm() {
@@ -8619,9 +8678,16 @@ function renderAbout() {
       <button class="foot-btn" id="btn-edit-avatar" style="max-width:200px;margin:8px auto 0;display:block;min-height:44px">🧑‍🔧 職人を変える</button>
     </div>
     <div class="about-block" style="text-align:center">
-      <h4>🔈 工房の音</h4>
-      <p style="text-align:center">右上のボタンで、静かな音楽が流れます。<br>
-        まわりに人のいるところでは、音にお気をつけください。</p>
+      <h4>${SND_FACE[sndMode]} 工房の音</h4>
+      <p style="text-align:center">右上のボタンを押すたび、三つをまわります。<br>
+        <b>🔇 消音</b> → <b>🔔 山場の音だけ</b> → <b>🔊 音楽も</b><br>
+        いまは <b>${esc(SND_WORD[sndMode])}</b>。</p>
+      <button class="snd-test" id="btn-snd-test">🔔 音を鳴らしてみる</button>
+      <p style="text-align:center;font-size:.66rem;margin-top:9px">
+        <b>鳴らないときは：</b><br>
+        ・iPhone・iPadは、本体の<b>消音スイッチ（マナーモード）</b>が入っていると鳴りません<br>
+        ・端末の音量と、イヤホンの接続も見てください<br>
+        ・まわりに人のいるところでは、音にお気をつけください</p>
     </div>
     <div class="about-block">
       <h4>🎖 専門の称号</h4>
@@ -8755,6 +8821,19 @@ function init() {
         closeModal("about-modal");
         practiceAction(b.dataset.mg);
       }));
+
+    const st = $("#btn-snd-test");
+    if (st) st.addEventListener("click", () => {
+      if (sndMode === 0) {         // 消音のままなら、まず山場の音を出す
+        sndMode = 1;
+        try { localStorage.setItem(BGM_KEY, "1"); } catch (e) {}
+        renderSnd();
+      }
+      const ok = sfxChime();
+      sndToast(ok ? "🔔 いま鳴らしたぞ" : "音が出せんかった", !ok);
+      sndCheck();
+      renderAbout();
+    });
 
     const gb = $("#btn-guide");
     if (gb) gb.addEventListener("click", () => {
