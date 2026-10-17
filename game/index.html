@@ -3693,6 +3693,14 @@ const MK_STAGE = mkImg(MK_ART.bg, 0, 0, 300, 300);
    絵は 212×589。ひろげた手のはしからはしが205、手のひらの高さが y=295。
    それを（0,244）に合わせると、下の数になる */
 const MK_MAN = { w: 81, h: 224, dx: -40, dy: -112 };
+/* 登録した似顔絵をのせるときは、体を小さく・顔を大きくして3頭身にする。
+   似顔絵はまるい大きな顔なので、描いてある職人（3.7頭身）の体のままだと
+   頭でっかちに見えてしまう。絵の中の寸法（あご160・手のひら295・
+   はしからはし205px）から、あごから下が頭ふたつぶんになる縮尺を出した。
+   描いてある髭の職人のほうは、もとの形のまま触らない */
+const MK_MAN3 = { w: 70, h: 194, dx: -35, dy: -97 };
+/* ひろげた手は67、受けられる幅は76。板は70あるので、はしで受けても
+   ちゃんと手にかかって見える */
 function mkFaceURL() {
   try {
     const av = (state && state.player && state.player.avatar) || {};
@@ -3707,9 +3715,10 @@ function mkMan(face) {
   if (!face) return mkImg(MK_ART.man, M.dx, M.dy, M.w, M.h);
   /* 首から上を消してある絵に、登録した顔をのせる。
      大きさと位置は、似顔絵の頭（256のうち 32〜216 / 64〜223）から逆算 */
-  return mkImg(MK_ART.man_body, M.dx, M.dy, M.w, M.h) +
-         `<image class="mk-face" href="${face}" x="-40" y="-122"
-            width="84" height="84" preserveAspectRatio="xMidYMid meet"/>`;
+  const S = MK_MAN3;
+  return mkImg(MK_ART.man_body, S.dx, S.dy, S.w, S.h) +
+         `<image class="mk-face" href="${face}" x="-55" y="-144"
+            width="114" height="114" preserveAspectRatio="xMidYMid meet"/>`;
 }
 
 /* よけたときに出す、小さな印 */
