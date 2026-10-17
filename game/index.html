@@ -4103,12 +4103,20 @@ const CRAFT_ACTIONS = {
   /* ================================================================
      ② 木取り（詰めこみパズル）
      一枚の板から、節をよけて部材を切り出す。置ける場所を見つける遊び。
+
+     **採点・制限時間・3波の枚数・節の数は、もとのまま一字も変えていない。**
+     変えたのは、考えられる形にしたことと、見た目と手ざわり。
+
+     理不尽な詰みを作らないために、盤は「先に解を置いてから、
+     余ったマスにだけ節を置く」作りかたにしてある。さらに、どの部材も
+     置けなくなったときは、板を一枚替える（点は動かない）。
      ================================================================ */
   kidori: {
     name: "木取り", limit: 45000,
-    tip: "板から部材を切り出す。<b>節にかかってはならん。</b>部材の形を見て、置ける所を押すのじゃ。",
+    tip: "下の部材を押してえらび、板の<b>置きたい所を押す</b>。<b>緑なら取れる・赤は取れん。</b>節をよけるのじゃ。",
     start(svg, ui, done, lv) {
-      const COLS = 8, ROWS = 6, CELL = 30, OX = 30, OY = 48;
+      const COLS = 8, ROWS = 6, CELL = 27, OX = 42, OY = 54;
+      const BW = COLS * CELL, BH = ROWS * CELL;
       const SHAPES = [
         { n: "扉板", w: 2, h: 3 }, { n: "側板", w: 1, h: 4 }, { n: "天板", w: 3, h: 1 },
         { n: "棚板", w: 3, h: 2 }, { n: "鏡板", w: 2, h: 2 }, { n: "台輪", w: 4, h: 1 }
@@ -4116,76 +4124,447 @@ const CRAFT_ACTIONS = {
       const WAVES = [2, 3, 4];
       const TOTAL = WAVES.reduce((a, b) => a + b, 0);
       const sc = actScore(TOTAL);
-      let wave = 0, left = 0, cur = null, grid = [], knots = [];
 
-      const newBoard = () => {
-        grid = new Array(COLS * ROWS).fill(0);
-        knots = [];
-        const kn = 2 + wave + Math.round(lv * .8);
-        for (let i = 0; i < kn; i++) {
-          const k = (Math.random() * COLS * ROWS) | 0;
-          if (grid[k] === 0) { grid[k] = -1; knots.push(k); }
-        }
-        left = WAVES[wave];
-        nextShape();
-        draw();
-      };
-      const nextShape = () => {
-        const pool = SHAPES.filter(s => s.w <= COLS && s.h <= ROWS);
-        cur = pool[(Math.random() * pool.length) | 0];
-      };
-      const canPlace = (c, r) => {
-        if (!cur || c < 0 || r < 0 || c + cur.w > COLS || r + cur.h > ROWS) return false;
-        for (let y = 0; y < cur.h; y++) for (let x = 0; x < cur.w; x++)
-          if (grid[(r + y) * COLS + c + x] !== 0) return false;
+      const NS = "http://www.w3.org/2000/svg";
+      let wave = 0, grid = [], tray = [], sel = null, ghost = null;
+      let placed = [], allPlaced = [], locked = true, finished = false, stopped = false;
+      let shake = 0, shakeT = 0, flash = null, pops = [], timer = null;
+
+      const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+      const fits = (g, pc, c, r) => {
+        if (c < 0 || r < 0 || c + pc.w > COLS || r + pc.h > ROWS) return false;
+        for (let y = 0; y < pc.h; y++) for (let x = 0; x < pc.w; x++)
+          if (g[(r + y) * COLS + c + x] !== 0) return false;
         return true;
       };
-      const draw = () => {
-        let cells = "";
-        for (let i = 0; i < COLS * ROWS; i++) {
-          const c = i % COLS, r = (i / COLS) | 0;
-          const v = grid[i];
-          const fill = v === -1 ? "#6e4526" : v > 0 ? "#9dbb8f" : "#dfa96c";
-          cells += `<rect x="${OX + c * CELL}" y="${OY + r * CELL}" width="${CELL - 2}"
-            height="${CELL - 2}" rx="3" fill="${fill}"/>`;
-          if (v === -1) cells += `<ellipse cx="${OX + c * CELL + 14}" cy="${OY + r * CELL + 14}"
-            rx="8" ry="6" fill="#4a2f18"/>`;
-        }
-        const pw = cur ? cur.w * 26 : 0, ph = cur ? cur.h * 26 : 0;
-        svg.innerHTML =
-          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
-           <rect x="${OX - 6}" y="${OY - 6}" width="${COLS * CELL + 8}" height="${ROWS * CELL + 8}"
-             rx="8" fill="#8a5a30"/>${cells}
-           <text x="150" y="36" text-anchor="middle" font-size="15" fill="#8a6446">
-             あと ${left} 枚　きょうの部材 ↓</text>
-           <g transform="translate(${150 - pw / 2},${OY + ROWS * CELL + 14})">
-             ${cur ? Array.from({ length: cur.w * cur.h }, (_, k) =>
-               `<rect x="${(k % cur.w) * 26}" y="${((k / cur.w) | 0) * 26}" width="24" height="24"
-                 rx="3" fill="#c9a24b"/>`).join("") : ""}
-           </g>`;
+      const stamp = (g, pc, c, r, v) => {
+        for (let y = 0; y < pc.h; y++) for (let x = 0; x < pc.w; x++)
+          g[(r + y) * COLS + c + x] = v;
+      };
+      const spotsFor = (g, pc) => {
+        const out = [];
+        for (let r = 0; r <= ROWS - pc.h; r++) for (let c = 0; c <= COLS - pc.w; c++)
+          if (fits(g, pc, c, r)) out.push([c, r]);
+        return out;
       };
 
-      ui.onDown = (p) => {
-        const c = Math.floor((p.x - OX) / CELL), r = Math.floor((p.y - OY) / CELL);
-        if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
-        if (!canPlace(c, r)) {
-          sc.ng(); ui.say("そこは取れん（節か、ほかの部材にかかっておる）");
-          draw(); actBanner(ui, wave + 1, 3, "節をよけて部材を取る", sc);
-          return;
+      /* ---------- 盤を作る ----------
+         ① 先に、ぜんぶの部材を置いてみる（これが「解」）
+         ② 解に使わなかったマスにだけ、節を置く
+         これで「ぜんぶ置ける並べかたが、少なくとも一つある」ことが保証される */
+      const buildBoard = (pieces, knotCount) => {
+        for (let attempt = 0; attempt < 300; attempt++) {
+          const g = new Array(COLS * ROWS).fill(0);
+          let ok = true;
+          for (const pc of shuffle(pieces.slice())) {
+            const cand = spotsFor(g, pc);
+            if (!cand.length) { ok = false; break; }
+            const [c, r] = cand[(Math.random() * cand.length) | 0];
+            stamp(g, pc, c, r, 1);
+          }
+          if (!ok) continue;
+          const free = [];
+          for (let i = 0; i < COLS * ROWS; i++) if (g[i] === 0) free.push(i);
+          if (free.length < knotCount) continue;
+          shuffle(free);
+          const board = new Array(COLS * ROWS).fill(0);
+          free.slice(0, knotCount).forEach(i => board[i] = -1);
+          return board;
         }
-        for (let y = 0; y < cur.h; y++) for (let x = 0; x < cur.w; x++)
-          grid[(r + y) * COLS + c + x] = 1;
-        sc.ok(); left--;
-        ui.say(`「${cur.n}」を取った`);
+        /* ここには来ない見こみだが、来ても遊びは止めない */
+        const board = new Array(COLS * ROWS).fill(0);
+        return board;
+      };
+
+      const knotCount = () => 2 + wave + Math.round(lv * 0.8);
+
+      const newWave = () => {
+        tray = [];
+        const pool = shuffle(SHAPES.slice());
+        for (let i = 0; i < WAVES[wave]; i++) tray.push(pool[i % pool.length]);
+        grid = buildBoard(tray, knotCount());
+        placed = []; sel = null; ghost = null;
+        showPreview();
+      };
+
+      /* 板を替える。どの部材も置けなくなったときだけ。点は動かない */
+      const swapBoard = () => {
+        grid = buildBoard(tray, knotCount());
+        placed = []; sel = null; ghost = null;
+        banner("板を替えよう", "この板では、もう取れん。点は減らん。", MK_C.goldH, 1100);
+        draw();
+      };
+
+      /* ---------- 波のはじめ：部材を見せて、考える間をつくる ---------- */
+      let preview = 0;
+      const showPreview = () => {
+        preview = Date.now() + 1400;
+        locked = true;
+        draw();
+      };
+
+      /* ---------- 描く ----------
+         マスごとに木目を刻むと、ちらちらして盤が読めない。
+         木目は板を横切る一本の線にして、「一枚の板」に見えるようにする */
+      const boardArt = () => {
+        let o = mkR(OX, OY, BW, BH, MK_C.wood);
+        /* 板を横切る木目。行ごとに、決まった形で */
+        for (let r = 0; r < ROWS; r++) {
+          const y = OY + r * CELL;
+          o += mkR(OX, y, BW, 3, MK_C.woodH);
+          const a = (r * 37) % 5, b2 = (r * 53) % 7;
+          o += mkR(OX + 6 + a * 6, y + 9, BW - 24 - b2 * 6, 3, MK_C.woodM);
+          if (r % 2 === 0) o += mkR(OX + 18 + b2 * 9, y + 15, Math.max(24, BW / 2), 3, MK_C.woodM);
+          o += mkR(OX, y + CELL - 3, BW, 3, MK_C.woodD);
+        }
+        /* マスの切れ目。うっすらと */
+        for (let c = 1; c < COLS; c++)
+          o += `<rect x="${OX + c * CELL}" y="${OY}" width="1.5" height="${BH}"
+                  fill="${MK_C.woodD}" opacity=".45"/>`;
+        /* 節。太い輪郭で、はっきりと */
+        for (let i = 0; i < COLS * ROWS; i++) {
+          if (grid[i] !== -1) continue;
+          const c = i % COLS, r = (i / COLS) | 0;
+          const x = OX + c * CELL, y = OY + r * CELL;
+          o += mkR(x + 3, y + 3, CELL - 6, CELL - 6, MK_C.night) +
+               mkR(x + 6, y + 6, CELL - 12, CELL - 12, MK_C.brd) +
+               mkR(x + 9, y + 9, CELL - 18, CELL - 18, MK_C.night);
+        }
+        return o;
+      };
+
+      const pieceArt = (pc, x, y, cell, fill, top, edge) =>
+        mkR(x - 3, y - 3, pc.w * cell + 6, pc.h * cell + 6, edge) +
+        mkR(x, y, pc.w * cell, pc.h * cell, fill) +
+        mkR(x, y, pc.w * cell, 3, top) +
+        mkR(x, y + pc.h * cell - 3, pc.w * cell, 3, edge) +
+        /* 木目を一本 */
+        mkR(x + 3, y + Math.floor(pc.h * cell / 2 / 3) * 3, pc.w * cell - 6, 3, top);
+
+      const trayY = OY + BH + 18;
+      const trayBox = (k) => {
+        const n = Math.max(1, tray.length);
+        const w = Math.min(66, Math.floor(252 / n / 3) * 3);
+        const gap = 6, total = n * w + (n - 1) * gap;
+        return { x: Math.round((300 - total) / 2 / 3) * 3 + k * (w + gap), w };
+      };
+
+      const draw = () => {
+        let o = mkR(0, 0, 300, 300, MK_C.paper);
+        /* 上の帯 */
+        o += mkR(0, 0, 300, 33, MK_C.night) +
+             `<text x="12" y="23" font-size="13" fill="${MK_C.goldH}">第 ${wave + 1} 波</text>`;
+        for (let i = 0; i < 3; i++)
+          o += mkR(78 + i * 9, 12, 6, 6, i <= wave ? MK_C.goldH : MK_C.brd);
+        o += `<text x="288" y="23" font-size="13" text-anchor="end" fill="${MK_C.spark}">あと ${
+          tray.length} 枚</text>`;
+        /* 板のわく */
+        o += mkR(OX - 9, OY - 9, BW + 18, BH + 18, MK_C.night) +
+             mkR(OX - 6, OY - 6, BW + 12, BH + 12, MK_C.brd);
+        o += boardArt();
+        /* 取った部材 */
+        placed.forEach(pp => {
+          o += pieceArt(pp.pc, OX + pp.c * CELL, OY + pp.r * CELL, CELL,
+                        MK_C.gold, MK_C.goldH, MK_C.night);
+          o += `<text x="${OX + pp.c * CELL + pp.pc.w * CELL / 2}" y="${
+            OY + pp.r * CELL + pp.pc.h * CELL / 2 + 5}" font-size="11" text-anchor="middle"
+            fill="${MK_C.night}">${pp.pc.n}</text>`;
+        });
+        /* いま置こうとしている所。緑なら取れる・赤は取れん */
+        if (ghost && sel) {
+          const good = fits(grid, sel, ghost.c, ghost.r);
+          const col = good ? MK_C.green : MK_C.red;
+          o += `<g opacity="0.62">` +
+               pieceArt(sel, OX + ghost.c * CELL, OY + ghost.r * CELL, CELL,
+                        col, good ? "#a8c89a" : "#d98a76", MK_C.night) + `</g>`;
+          /* 角に印を出して、どこに落ちるかを確かめやすくする */
+          const gx = OX + ghost.c * CELL, gy = OY + ghost.r * CELL;
+          const gw = sel.w * CELL, gh = sel.h * CELL;
+          [[gx, gy], [gx + gw - 6, gy], [gx, gy + gh - 6], [gx + gw - 6, gy + gh - 6]]
+            .forEach(([px, py]) => o += mkR(px, py, 6, 6, col));
+        }
+        /* 下の部材置き場 */
+        o += mkR(0, trayY - 12, 300, 300 - trayY + 12, "#f3e7cd");
+        o += mkR(0, trayY - 12, 300, 3, MK_C.woodD);
+        tray.forEach((pc, k) => {
+          const b = trayBox(k), on = sel === pc;
+          const cell = Math.max(6, Math.min(15, Math.floor(Math.min(
+            (b.w - 12) / pc.w, 39 / pc.h) / 3) * 3));
+          const px = b.x + Math.round((b.w - pc.w * cell) / 2 / 3) * 3;
+          const py = trayY + 3 + Math.round((42 - pc.h * cell) / 2 / 3) * 3;
+          o += mkR(b.x, trayY, b.w, 60, on ? MK_C.goldH : MK_C.paper);
+          o += mkR(b.x + 3, trayY + 3, b.w - 6, 54, on ? "#fff6d0" : MK_C.paper);
+          o += pieceArt(pc, px, py, cell, on ? MK_C.goldH : MK_C.gold,
+                        MK_C.spark, MK_C.night);
+          o += `<text x="${b.x + b.w / 2}" y="${trayY + 56}" font-size="10"
+            text-anchor="middle" fill="${MK_C.ink}">${pc.n}</text>`;
+        });
+        if (!sel && tray.length)
+          o += `<text x="150" y="${trayY - 3}" font-size="11" text-anchor="middle"
+            fill="${MK_C.dark}">↓ まず、取る部材をえらぶ</text>`;
+
+        svg.innerHTML = `<g id="kdW" shape-rendering="crispEdges">${o}</g>
+                         <g id="kdFx" shape-rendering="crispEdges"></g>`;
+        gFx = svg.querySelector("#kdFx");
+        gW  = svg.querySelector("#kdW");
+        drawFx();
+      };
+
+      let gFx = null, gW = null;
+
+      /* ---------- 演出 ---------- */
+      const banner = (big, small, col, ms) => {
+        flash = { big, small, col, until: Date.now() + ms };
+      };
+      const pop = (text, x, y, col) => pops.push({ text, x, y, col, t: 0 });
+      const quake = (n) => { shake = n; shakeT = 7; };
+
+      const drawFx = () => {
+        if (!gFx) return;
+        let o = "";
+        if (flash && Date.now() < flash.until) {
+          o += mkR(0, 117, 300, 60, MK_C.night) +
+               mkR(0, 117, 300, 3, flash.col) + mkR(0, 174, 300, 3, flash.col) +
+               `<text x="150" y="146" text-anchor="middle" font-size="21" font-weight="bold"
+                  fill="${flash.col}">${flash.big}</text>` +
+               (flash.small ? `<text x="150" y="166" text-anchor="middle" font-size="11"
+                  fill="${MK_C.paper}">${flash.small}</text>` : "");
+        } else if (flash) flash = null;
+        pops.forEach(q => {
+          o += `<text x="${q.x}" y="${q.y - q.t * 0.9}" text-anchor="middle" font-size="15"
+                  font-weight="bold" stroke="${MK_C.night}" stroke-width="4"
+                  paint-order="stroke" fill="${q.col}"
+                  opacity="${q.t > 26 ? ((q.t >> 1) % 2 ? 0 : 1) : 1}">${q.text}</text>`;
+        });
+        if (preview > Date.now()) {
+          o += mkR(0, 0, 300, 300, MK_C.night) ;
+          o += `<text x="150" y="60" text-anchor="middle" font-size="22" font-weight="bold"
+                  fill="${MK_C.goldH}">第 ${wave + 1} 波</text>`;
+          o += `<text x="150" y="84" text-anchor="middle" font-size="12"
+                  fill="${MK_C.paper}">この${tray.length}枚を、節をよけて取る</text>`;
+          const n = tray.length;
+          const cw = Math.floor(264 / n / 3) * 3;
+          tray.forEach((pc, k) => {
+            const cell = Math.max(9, Math.min(21, Math.floor(Math.min(
+              (cw - 12) / pc.w, 84 / pc.h) / 3) * 3));
+            const bx = Math.round((300 - n * cw) / 2 / 3) * 3 + k * cw;
+            const px = bx + Math.round((cw - pc.w * cell) / 2 / 3) * 3;
+            const py = 108 + Math.round((90 - pc.h * cell) / 2 / 3) * 3;
+            o += pieceArt(pc, px, py, cell, MK_C.gold, MK_C.goldH, MK_C.brd);
+            o += `<text x="${bx + cw / 2}" y="${216}" font-size="12" text-anchor="middle"
+                    fill="${MK_C.spark}">${pc.n}</text>`;
+          });
+          o += `<text x="150" y="252" text-anchor="middle" font-size="11"
+                  fill="${MK_C.wood}">押すと、すぐ始まる</text>`;
+        }
+        gFx.innerHTML = o;
+      };
+
+      /* ---------- 置く ---------- */
+      const sideScore = (pc, c, r) => {
+        /* まわりがどれだけ埋まっているか。「ぴったり」の判定に使う（点には関わらない） */
+        let touch = 0, total = 0;
+        for (let x = 0; x < pc.w; x++) {
+          [[c + x, r - 1], [c + x, r + pc.h]].forEach(([cc, rr]) => {
+            total++;
+            if (cc < 0 || rr < 0 || cc >= COLS || rr >= ROWS) touch++;
+            else if (grid[rr * COLS + cc] !== 0) touch++;
+          });
+        }
+        for (let y = 0; y < pc.h; y++) {
+          [[c - 1, r + y], [c + pc.w, r + y]].forEach(([cc, rr]) => {
+            total++;
+            if (cc < 0 || rr < 0 || cc >= COLS || rr >= ROWS) touch++;
+            else if (grid[rr * COLS + cc] !== 0) touch++;
+          });
+        }
+        return touch / Math.max(1, total);
+      };
+      const nearKnot = (pc, c, r) => {
+        for (let y = -1; y <= pc.h; y++) for (let x = -1; x <= pc.w; x++) {
+          const cc = c + x, rr = r + y;
+          if (cc < 0 || rr < 0 || cc >= COLS || rr >= ROWS) continue;
+          if (grid[rr * COLS + cc] === -1) return true;
+        }
+        return false;
+      };
+
+      const place = (pc, c, r) => {
+        const tight = sideScore(pc, c, r);
+        const beside = nearKnot(pc, c, r);
+        stamp(grid, pc, c, r, 1);
+        placed.push({ pc, c, r, t: 0 });
+        allPlaced.push({ pc, c, r });            /* 組み上がりでは、三波ぶんを全部使う */
+        tray.splice(tray.indexOf(pc), 1);
+        sel = null; ghost = null;
+        sc.ok();                                   /* ← 採点はもとのまま */
         ui.progress(sc.hit / TOTAL);
-        if (left > 0) { nextShape(); draw(); }
-        else if (wave < 2) { wave++; setTimeout(newBoard, 400); draw(); }
-        else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 350); }
+        sfxClack();
+        quake(2);
+        const cx = OX + c * CELL + pc.w * CELL / 2, cy = OY + r * CELL - 3;
+        /* ここから下は点に関わらない、ごほうびの演出だけ */
+        if (beside && tight >= 0.6) {
+          pop("名取り！", cx, cy, MK_C.spark); sfxChord([12, 16, 19, 24], .1, .4);
+        } else if (tight >= 0.75) {
+          pop("ぴったり", cx, cy, MK_C.goldH); sfxChord([7, 12, 16], .09, .34);
+        } else if (beside) {
+          pop("節をよけた", cx, cy, MK_C.green);
+        }
+        actBanner(ui, wave + 1, 3, "節をよけて部材を取る", sc);
+
+        if (tray.length === 0) {
+          if (wave < 2) { wave++; setTimeout(() => { if (!stopped && !finished) newWave(); }, 500); }
+          else { finish(); return; }
+        } else if (!tray.some(p => spotsFor(grid, p).length)) {
+          setTimeout(() => { if (!stopped && !finished) swapBoard(); }, 420);
+        }
+        draw();
+      };
+
+      /* ---------- 結び：取った部材が、家具に組み上がる ---------- */
+      const ASSEMBLE = [
+        { x: 69, y: 72, w: 162, h: 18 },   // 天板
+        { x: 69, y: 90, w: 18, h: 120 },   // 側板（左）
+        { x: 213, y: 90, w: 18, h: 120 },  // 側板（右）
+        { x: 87, y: 90, w: 126, h: 36 },   // 鏡板
+        { x: 87, y: 126, w: 126, h: 18 },  // 棚板
+        { x: 87, y: 144, w: 126, h: 18 },  // 棚板
+        { x: 87, y: 162, w: 63, h: 48 },   // 扉板（左）
+        { x: 150, y: 162, w: 63, h: 48 },  // 扉板（右）
+        { x: 69, y: 210, w: 162, h: 18 }   // 台輪
+      ];
+      const assemble = (onEnd) => {
+        locked = true;
+        const parts = allPlaced.map((pp, i) => ({
+          from: { x: OX + pp.c * CELL, y: OY + pp.r * CELL,
+                  w: pp.pc.w * CELL, h: pp.pc.h * CELL },
+          to: ASSEMBLE[i % ASSEMBLE.length]
+        }));
+        if (!parts.length) { onEnd(); return; }
+        let t = 0;
+        const step2 = () => {
+          t += 1 / 36;
+          const e = t < 1 ? 1 - Math.pow(1 - t, 3) : 1;
+          let o = mkR(0, 0, 300, 300, MK_C.night);
+          o += `<text x="150" y="42" text-anchor="middle" font-size="17" font-weight="bold"
+                  fill="${MK_C.goldH}">${t < 1 ? "組んでみよう" : "組み上がった！"}</text>`;
+          parts.forEach(p => {
+            const q = (a, b) => Math.round((a + (b - a) * e) / 3) * 3;
+            const x = q(p.from.x, p.to.x), y = q(p.from.y, p.to.y);
+            const w = q(p.from.w, p.to.w), h = q(p.from.h, p.to.h);
+            o += mkR(x - 3, y - 3, w + 6, h + 6, MK_C.ink) +
+                 mkR(x, y, w, h, MK_C.gold) + mkR(x, y, w, 3, MK_C.goldH) +
+                 mkR(x, y + h - 3, w, 3, MK_C.woodD);
+          });
+          if (t >= 1) {
+            o += `<text x="150" y="258" text-anchor="middle" font-size="12"
+                    fill="${MK_C.paper}">この板から、家具が生まれる</text>`;
+          }
+          svg.innerHTML = `<g shape-rendering="crispEdges">${o}</g>`;
+          if (t < 1) requestAnimationFrame(step2);
+          else { sfxChord([0, 4, 7, 12, 16, 19], .12, .45);
+                 setTimeout(onEnd, 850); }
+        };
+        step2();
+      };
+
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        if (timer) { clearInterval(timer); timer = null; }
+        ui.lock();
+        assemble(() => { if (!stopped) done(sc.value(), sc.word()); });
+      };
+
+      /* ---------- 指 ---------- */
+      const inTray = (p) => p.y >= trayY - 12;
+      const trayHit = (p) => {
+        for (let k = 0; k < tray.length; k++) {
+          const b = trayBox(k);
+          if (p.x >= b.x && p.x <= b.x + b.w) return tray[k];
+        }
+        return null;
+      };
+      const toCell = (p, pc) => {
+        /* 指の位置を、部材のまん中に合わせる。はしでも置けるように丸める */
+        const c = Math.round((p.x - OX - pc.w * CELL / 2) / CELL);
+        const r = Math.round((p.y - OY - pc.h * CELL / 2) / CELL);
+        return { c: Math.max(0, Math.min(COLS - pc.w, c)),
+                 r: Math.max(0, Math.min(ROWS - pc.h, r)) };
+      };
+
+      let onBoard = false;
+      ui.onDown = (p) => {
+        if (preview > Date.now()) { preview = 0; locked = false; draw(); return; }
+        if (locked) return;
+        onBoard = false;
+        if (inTray(p)) { const t = trayHit(p); if (t) { sel = t; ghost = null; sfxDodge(); draw(); } return; }
+        if (!sel) { banner("まず部材をえらぶ", "下の板を押すのじゃ", MK_C.wood, 900); drawFx(); return; }
+        onBoard = true;
+        ghost = toCell(p, sel);
+        draw();
+      };
+      ui.onPoint = (p) => {
+        if (locked || !onBoard || !sel) return;
+        const g = toCell(p, sel);
+        if (!ghost || g.c !== ghost.c || g.r !== ghost.r) { ghost = g; draw(); }
+      };
+      ui.onUp = (p) => {
+        if (locked || !onBoard || !sel || !ghost) { onBoard = false; return; }
+        onBoard = false;
+        /* 板の外で指を離したら、何も起きない（置きまちがいを防ぐ逃げ道） */
+        if (p.x < OX - 12 || p.x > OX + BW + 12 || p.y < OY - 12 || p.y > OY + BH + 12) {
+          ghost = null; draw(); return;
+        }
+        if (fits(grid, sel, ghost.c, ghost.r)) { place(sel, ghost.c, ghost.r); }
+        else {
+          sc.ng();                                  /* ← 採点はもとのまま */
+          const onKnot = (() => {
+            for (let y = 0; y < sel.h; y++) for (let x = 0; x < sel.w; x++) {
+              const i = (ghost.r + y) * COLS + ghost.c + x;
+              if (grid[i] === -1) return true;
+            }
+            return false;
+          })();
+          banner("そこは取れん", onKnot ? "節にかかっておる" : "ほかの部材と重なっておる",
+                 MK_C.red, 950);
+          sfxMiss(); quake(5);
+          ghost = null; draw();
+        }
         actBanner(ui, wave + 1, 3, "節をよけて部材を取る", sc);
       };
-      ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
+
+      ui.onStop = () => { stopped = true; if (timer) clearInterval(timer); };
+      ui.onTimeout = () => {
+        if (finished) return;
+        finished = true;
+        if (timer) clearInterval(timer);
+        done(sc.value(), "時間切れじゃ。" + sc.word());
+      };
+
+      /* 一こま。演出とゆれだけを進める */
+      timer = setInterval(() => {
+        if (preview && Date.now() >= preview) { preview = 0; locked = false; draw(); }
+        let need = false;
+        if (pops.length) {
+          pops.forEach(q => q.t++);
+          pops = pops.filter(q => q.t < 34);
+          need = true;
+        }
+        if (flash) need = true;
+        if (shakeT > 0) {
+          shakeT--;
+          const a = shake * (shakeT / 7);
+          if (gW) gW.setAttribute("transform", shakeT
+            ? `translate(${Math.round(actRand(-a, a))},${Math.round(actRand(-a, a))})`
+            : "translate(0,0)");
+        }
+        if (need) drawFx();
+      }, 16);
+
       actBanner(ui, 1, 3, "節をよけて部材を取る", sc);
-      newBoard();
+      newWave();
     }
   },
 
@@ -7353,6 +7732,36 @@ function sfxCombo(c) {
   else              sfxTune([0, 4, 7], t, 0.09, 0.26);
 }
 
+/* いまから、ひとふし。時刻の出しかたを一か所にまとめておく */
+function sfxChord(notes, vol, bright) {
+  if (!sfxReady()) return;
+  sfxTune(notes, actx.currentTime + 0.02, vol, bright);
+}
+
+/* 木工の「カチッ」。木と木が、きちんと納まる音 */
+function sfxClack() {
+  if (!sfxReady()) return;
+  const t = actx.currentTime;
+  /* 短い当たり音（高いほうの木） */
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = "triangle";
+  o.frequency.setValueAtTime(880, t);
+  o.frequency.exponentialRampToValueAtTime(420, t + 0.045);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.085, t + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+  o.connect(g); g.connect(sfxBus); o.start(t); o.stop(t + 0.12);
+  /* 低いほうの、木の胴鳴り */
+  const o2 = actx.createOscillator(), g2 = actx.createGain();
+  o2.type = "sine";
+  o2.frequency.setValueAtTime(196, t + 0.012);
+  o2.frequency.exponentialRampToValueAtTime(132, t + 0.14);
+  g2.gain.setValueAtTime(0.0001, t + 0.012);
+  g2.gain.linearRampToValueAtTime(0.06, t + 0.02);
+  g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+  o2.connect(g2); g2.connect(sfxBus); o2.start(t + 0.012); o2.stop(t + 0.2);
+}
+
 /* 金の銘木。短く、きらりと */
 function sfxGold() {
   if (!sfxReady()) return;
@@ -7382,8 +7791,11 @@ function sfxPhantom(got) {
   sfxTune([36], t + 0.78, 0.1, 0.8);
 }
 
-/* ひとふし鳴らす。点が高いほど、長く、高く、明るく */
+/* ひとふし鳴らす。点が高いほど、長く、高く、明るく。
+   音を消しているときは actx が無いので、ここで必ず止める
+   （呼ぶ側の守りに任せていたら、木取りで落ちた） */
 function sfxTune(notes, at0, vol, bright) {
+  if (!sfxReady()) return;
   notes.forEach((semi, i) => {
     const at = at0 + i * 0.085;
     const f = sfxFreq(semi);
