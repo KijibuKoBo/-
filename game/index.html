@@ -1049,6 +1049,14 @@ body.solo #action-modal .modal{ box-shadow:var(--shadow); }
 .ct-type{ font-size:.64rem; font-weight:normal; color:var(--brown-soft); letter-spacing:.08em; }
 
 /* しくじりの警告 */
+/* 手ごとの、時間以外の見出し */
+.c-grade{
+  display:block; font-size:.62rem; color:var(--brown-mid); margin-top:2px;
+}
+.c-risk, .c-perk{ display:block; font-size:.58rem; margin-top:1px; line-height:1.4; }
+.c-risk{ color:var(--red); }
+.c-perk{ color:var(--green-deep); }
+
 .flaw-note{
   text-align:center; font-size:.7rem; color:var(--red);
   background:#f9ece8; border:1.5px dashed var(--red);
@@ -3288,29 +3296,29 @@ const HOURS_PER_DAY = 8;
 const STEP_TYPES = {
   kidori: { name: "木取り", choices: [
     { id:"a", label:"木目を読む", icon:"👁", cls:"choice-teinei",
-      time:750, hours:3, focus:30, q:()=>14, flaw:0.15,
+      time:750, hours:3, focus:30, q:()=>14, flaw:0.04,
       working:"板を光にかざして…",
       kobo:["木の顔をよう見ておるな。","その板は当たりじゃ。","木目を読める職人は伸びるぞ。"] },
     { id:"b", label:"素直に取る", icon:"🙂", cls:"",
-      time:380, hours:2, focus:12, q:()=>7, flaw:0.05,
+      time:380, hours:2, focus:12, q:()=>10, flaw:0.08,
       working:"墨を打って…",
       kobo:["無難でよろしい。","堅実じゃな。"] },
     { id:"c", label:"歩留まり優先", icon:"💨", cls:"",
-      time:140, hours:1, focus:5, q:()=>2, flaw:0.15, saveMaterial:0.25,
+      time:140, hours:1, focus:5, q:()=>7, flaw:0.18, saveMaterial:0.25,
       working:"さっと木取り！",
       kobo:["材料は浮くがのう…","端材が減るのは良いことじゃ。"] }
   ]},
   kumi: { name: "組立", choices: [
     { id:"a", label:"仕口を締める", icon:"🔨", cls:"choice-teinei",
-      time:750, hours:3, focus:30, q:()=>14, flaw:0.05,
+      time:750, hours:3, focus:30, q:()=>14, flaw:0.04,
       working:"こつ、こつ、こつ…",
       kobo:["がたつき一つない。見事じゃ。","そこを締めておくと十年もつぞ。"] },
     { id:"b", label:"手順どおり", icon:"🙂", cls:"",
-      time:380, hours:2, focus:12, q:()=>7, flaw:0.08,
+      time:380, hours:2, focus:12, q:()=>10, flaw:0.08,
       working:"順番に組んで…",
       kobo:["よいペースじゃ。","手順を守るのも技のうち。"] },
     { id:"c", label:"早く組む", icon:"💨", cls:"",
-      time:140, hours:1, focus:5, q:()=>1+Math.floor(Math.random()*9), flaw:0.3,
+      time:140, hours:1, focus:5, q:()=>5+Math.floor(Math.random()*5), flaw:0.22,
       working:"ばたばたと！",
       kobo:["おっと、そこは大丈夫かの。","勢いがあるのう。"] }
   ]},
@@ -3320,53 +3328,53 @@ const STEP_TYPES = {
       working:"粗い紙から、細かい紙へ…",
       kobo:["その手ざわり、絹のようじゃ。","順に上げるのが近道じゃよ。"] },
     { id:"b", label:"ひととおり", icon:"🙂", cls:"",
-      time:380, hours:2, focus:12, q:()=>7, flaw:0.05,
+      time:380, hours:2, focus:12, q:()=>10, flaw:0.06,
       working:"しゃっ、しゃっ…",
       kobo:["まずまずじゃ。","悪くない仕上がりじゃな。"] },
     { id:"c", label:"ざっと当てる", icon:"💨", cls:"",
-      time:140, hours:1, focus:5, q:()=>3, flaw:0.25,
+      time:140, hours:1, focus:5, q:()=>7, flaw:0.2,
       working:"ざっ、ざっ！",
       kobo:["塗るときにばれるぞ〜。","うむ、まあ…急ぎならの。"] }
   ]},
   hori: { name: "彫刻", choices: [
     { id:"a", label:"彫り込む", icon:"🗡", cls:"choice-teinei",
-      time:800, hours:3, focus:35, q:()=>16, flaw:0.1,
+      time:800, hours:3, focus:35, q:()=>16, flaw:0.05,
       working:"息を止めて、一刀…",
       kobo:["おお、花が咲いたようじゃ。","彫りは工房の看板じゃからのう。"] },
     { id:"b", label:"控えめに", icon:"🙂", cls:"",
-      time:380, hours:2, focus:14, q:()=>8, flaw:0.08,
+      time:380, hours:2, focus:14, q:()=>12, flaw:0.09,
       working:"そっと刃を入れて…",
       kobo:["ひかえめも品があってよい。","上品じゃな。"] },
     { id:"c", label:"型どおり", icon:"💨", cls:"",
-      time:140, hours:1, focus:6, q:()=>3, flaw:0.2,
+      time:140, hours:1, focus:6, q:()=>8, flaw:0.2,
       working:"型をなぞって！",
       kobo:["型も悪くはないがの…","彫りは急ぐと出るぞ。"] }
   ]},
   hari: { name: "張り", choices: [
     { id:"a", label:"しわなく張る", icon:"🪡", cls:"choice-teinei",
-      time:750, hours:3, focus:28, q:()=>14, flaw:0.05,
+      time:750, hours:3, focus:28, q:()=>14, flaw:0.04,
       working:"布を引いて、留めて…",
       kobo:["ぴんと張っておる。気持ちがよいのう。","布は正直じゃ。よう張れておる。"] },
     { id:"b", label:"ふつうに張る", icon:"🙂", cls:"",
-      time:380, hours:2, focus:12, q:()=>7, flaw:0.08,
+      time:380, hours:2, focus:12, q:()=>10, flaw:0.08,
       working:"とん、とん…",
       kobo:["よろしい。","きれいに納まったな。"] },
     { id:"c", label:"留めるだけ", icon:"💨", cls:"",
-      time:140, hours:1, focus:5, q:()=>2, flaw:0.25,
+      time:140, hours:1, focus:5, q:()=>7, flaw:0.2,
       working:"ぱぱっと！",
       kobo:["しわが寄っておらぬか？","座ればわかるぞ〜。"] }
   ]},
   kanagu: { name: "金具", choices: [
     { id:"a", label:"面を揃える", icon:"📐", cls:"choice-teinei",
-      time:700, hours:2, focus:24, q:()=>12, flaw:0.03,
+      time:700, hours:3, focus:24, q:()=>12, flaw:0.03,
       working:"きっちり、まっすぐ…",
       kobo:["一分の狂いもない。","金具は正面から見られるからのう。"] },
     { id:"b", label:"取り付ける", icon:"🙂", cls:"",
-      time:380, hours:1, focus:10, q:()=>6, flaw:0.07,
+      time:380, hours:2, focus:10, q:()=>9, flaw:0.07,
       working:"ねじを回して…",
       kobo:["問題なしじゃ。","うむ、付いたな。"] },
     { id:"c", label:"手早く留める", icon:"💨", cls:"",
-      time:140, hours:1, focus:4, q:()=>1+Math.floor(Math.random()*7), flaw:0.3,
+      time:140, hours:1, focus:4, q:()=>6+Math.floor(Math.random()*4), flaw:0.2,
       working:"きゅっきゅっ！",
       kobo:["ねじ山をなめておらぬか。","急ぐと真鍮は傷むぞ。"] }
   ]},
@@ -3376,11 +3384,11 @@ const STEP_TYPES = {
       working:"塗って、乾かして、また塗って…",
       kobo:["深い色が出たのう。","塗りは焦らぬ者が勝つ。"] },
     { id:"b", label:"一度塗り", icon:"🙂", cls:"",
-      time:380, hours:2, focus:12, q:()=>7, flaw:0.06,
+      time:380, hours:2, focus:12, q:()=>10, flaw:0.06,
       working:"すうっと伸ばして…",
       kobo:["よい艶じゃ。","素直な仕上がりじゃな。"] },
     { id:"c", label:"乾かし急ぎ", icon:"💨", cls:"",
-      time:140, hours:1, focus:5, q:()=>1+Math.floor(Math.random()*10), flaw:0.35,
+      time:140, hours:1, focus:5, q:()=>7+Math.floor(Math.random()*4), flaw:0.22,
       working:"扇いで乾かす！",
       kobo:["ムラが出ておらぬか…","塗料は待ってくれんぞ。"] }
   ]},
@@ -3390,7 +3398,7 @@ const STEP_TYPES = {
       working:"裏まで、ひっくり返して…",
       kobo:["最後に見直す者が、良い職人じゃ。","念には念を、じゃな。"] },
     { id:"b", label:"ざっと見る", icon:"🙂", cls:"",
-      time:380, hours:1, focus:8, q:()=>3, flaw:0,
+      time:380, hours:1, focus:8, q:()=>4, flaw:0,
       working:"ひととおり眺めて…",
       kobo:["まあ、よかろう。","うむ、問題なさそうじゃ。"] },
     { id:"c", label:"省く", icon:"💨", cls:"",
@@ -3437,6 +3445,8 @@ const STEP_TYPE_OF = {
   "海図を貼る":"hari",
   "飾りを彫る":"hori", "尖塔を彫る":"hori"
 };
+/* choices の focus は、調子が「使って減る持ち物」だったころの名残り。
+   いまは一日の調子なので、工程では減らない。参照していない */
 const stepType = (step) => STEP_TYPES[STEP_TYPE_OF[step.label] || "kumi"];
 const choicesForStep = (step) => stepType(step).choices;
 
@@ -5160,7 +5170,7 @@ const LATE_MULT   = 0.8;
      effectQ        … 素材の品質 +N
      effectPrice    … 納品価格 ×N
      effectSlots    … 展示枠 +N
-     effectSpeed    … 全工程の時間 -N 時間（最短1時間）
+     effectFree     … 一台につき、最初の N 工程が時間ゼロになる
      effectVisitors … 来館者数 ×N
      effectFocus    … 朝の調子の下限が上がる（悪い日が減る）
      effectHours    … 1日の作業時間 +N 時間
@@ -5189,7 +5199,7 @@ const GEAR = [
   /* ---------- 時間と集中 ---------- */
   { id: "second", name: "第二工房", icon: "🏭", price: 25000, cat: "time",
     unlock: { type: "level", v: 3 },
-    effectSpeed: 1, desc: "助っ人が下ごしらえ。全工程の時間-1時間（最短1時間）。" },
+    effectFree: 1, desc: "助っ人が下ごしらえ。一台につき、最初の1工程がただになる。" },
   { id: "makanai", name: "まかないの台所", icon: "🍲", price: 45000, cat: "time",
     unlock: { type: "level", v: 3 },
     effectFocus: 20, desc: "昼にあたたかいものが食べられる。調子の悪い日が、ぐっと減る。" },
@@ -5204,7 +5214,7 @@ const GEAR = [
     effectHours: 2, desc: "手元だけを明るく照らす。終業が19:00になる（+2時間）。" },
   { id: "third", name: "第三工房", icon: "🏗️", price: 750000, cat: "time",
     unlock: { type: "gear", v: "second" },
-    effectSpeed: 1, desc: "もう一棟ふやす。全工程の時間、さらに-1時間。" },
+    effectFree: 1, desc: "もう一棟ふやす。ただになる工程が、さらに1つ増える。" },
 
   /* ---------- 見せる・売る ---------- */
   { id: "showroom", name: "ショールーム増築", icon: "🖼", price: 12000, cat: "show",
@@ -5758,7 +5768,10 @@ const gearQualityBonus = () => GEAR.filter(g => hasGear(g.id)).reduce((s, g) => 
 const gearPriceMult   = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * (g.effectPrice || 1), 1);
 const gearVisitorMult = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * (g.effectVisitors || 1), 1);
 const showSlots       = () => BASE_SLOTS + GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectSlots || 0), 0);
-const speedBonus      = () => GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectSpeed || 0), 0);
+/* 助っ人の下ごしらえ。一台につき、最初のいくつかの工程が時間ゼロになる。
+   前は「全工程 −1時間」だったが、引き算は三つの手の値段差そのものを潰す
+   （3/2/1 → 2/1/1 → 1/1/1）。差を残したまま効かせるために、こうした */
+const freeSteps = () => GEAR.filter(g => hasGear(g.id)).reduce((s, g) => s + (g.effectFree || 0), 0);
 const gearShopMult    = () => GEAR.filter(g => hasGear(g.id)).reduce((m, g) => m * (g.effectShop || 1), 1);
 /* 1日ぶんの作業時間は、設備で伸びる */
 /* 集中力の設備は、1日の持ち分ではなく「朝の出目の下限」を上げる。
@@ -5789,7 +5802,10 @@ function gearCondLabel(g) {
   }
   return "";
 }
-const effHours = (choice) => Math.max(1, choice.hours - speedBonus());
+/* いま取りかかっている工程が、助っ人の下ごしらえぶんに入っているか */
+const stepIsFree = () => state.stepIndex < freeSteps();
+const effHours = (choice) =>
+  stepIsFree() ? 0 : choice.hours;
 
 function calcRank(score) {
   for (const r of ["S", "A", "B"]) if (score >= RANKS[r].min) return r;
@@ -6276,13 +6292,25 @@ function renderCraft() {
     $("#steps-area").innerHTML = chips + flawNoteOf() +
       `<div class="choice-title">${step.icon} 「${step.label}」${isCrit ? "<b class=\"crit-tag\">🔥ここが山場</b>" : ""}<br><span class="ct-type">${stepType(step).name}の工程</span></div>
        <div class="choices">` +
-      choicesForStep(step).map(ch => {
+      choicesForStep(step).map((ch, i) => {
         /* 手は時間しか食わない。調子はその日の腕の冴えで、使って減るものではない */
         const h = effHours(ch);
+        const clock = h === 0
+          ? `⏱ <b>ただ</b>（助っ人が下ごしらえ）`
+          : `⏱${h}時間（${clockText(nowClock())}→${clockText(clockAt(hoursPerDay() - state.hoursLeft + h))}）`;
+        /* 時間だけでは、何を差し出しているのか分からない。
+           仕上がり・しくじりやすさ・おまけも、押す前に見せる */
+        const grade = ["たっぷり", "ほどほど", "わずか"][i] || "ほどほど";
+        const risk = (ch.flaw + focusBand().flaw) >= 0.15
+          ? `<span class="c-risk">⚠ 手がすべりやすい</span>` : "";
+        const perk = ch.saveMaterial ? `<span class="c-perk">🪵 材料が戻ることがある</span>`
+                   : ch.repair      ? `<span class="c-perk">🩹 しくじりを1つ直せる</span>` : "";
         return `<button class="choice-btn ${ch.cls}" data-choice="${ch.id}">
           <span class="c-icon">${ch.icon}</span>
           <span class="c-label">${ch.label}</span>
-          <span class="c-note">⏱${h}時間（${clockText(nowClock())}→${clockText(clockAt(hoursPerDay() - state.hoursLeft + h))}）</span>
+          <span class="c-note">${clock}</span>
+          <span class="c-grade">仕上がり <b>${grade}</b></span>
+          ${risk}${perk}
         </button>`;
       }).join("") +
       `</div>
@@ -6442,7 +6470,7 @@ function doStep(choiceId) {
 
     const sign = delta >= 0 ? `+${delta}` : `${delta}`;
     let msg = `${step.icon} ${step.msg}${note}　${pick(choice.kobo)}`
-      + `（品質${sign}${isCrit ? "・🔥山場" : ""}・${hours}時間・🕯${choice.focus}）${extra}`;
+      + `（品質${sign}${isCrit ? "・🔥山場" : ""}・${hours === 0 ? "ただ" : hours + "時間"}）${extra}`;
     msg += announceBP();
     showMessage(msg);
     maybeShowTrivia();
@@ -6725,7 +6753,8 @@ function doAction(rawScore, skipped) {
   }
 
   /* 時間経過。アクションをとばすと、手堅いぶん時間が余計にかかる */
-  const hours = Math.max(1, (skipped ? 5 : 3) - speedBonus());
+  /* 山場は職人の仕事。助っ人の下ごしらえには入らない */
+  const hours = skipped ? 5 : 3;
   state.craftUsed += hours;
   state.hoursLeft -= hours;
   let extra = "";
@@ -8838,7 +8867,7 @@ function renderGear() {
   if (gearPriceMult() > 1)   effects.push(`納品価格×${gearPriceMult().toFixed(2)}`);
   if (gearVisitorMult() > 1) effects.push(`来館者×${gearVisitorMult().toFixed(2)}`);
   if (gearShopMult() > 1)    effects.push(`売店収入×${gearShopMult().toFixed(2)}`);
-  if (speedBonus())          effects.push(`工程-${speedBonus()}h`);
+  if (freeSteps())           effects.push(`最初の${freeSteps()}工程がただ`);
   if (hoursPerDay() > HOURS_PER_DAY) effects.push(`${clockText(dayOpen())}〜${clockText(dayClose())}`);
   if (focusFloor() > 20) effects.push(`調子の下限${focusFloor()}`);
   if (gearMatOff() > 0)      effects.push(`仕入れ-${Math.round(gearMatOff() * 100)}%`);
