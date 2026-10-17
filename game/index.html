@@ -926,6 +926,23 @@ footer{
 }
 .mk-leg img{ vertical-align:middle; }
 
+/* ?mg=<山場の名前> … その山場だけを遊ぶときの画面。
+   工房も、見出しも、足もともぜんぶ畳んで、盤だけを真ん中に置く */
+body.solo > header,
+body.solo > main,
+body.solo > #steps-area,
+body.solo > #bottom-space,
+body.solo > #guide,
+body.solo > footer{ display:none !important; }
+body.solo{ background:var(--cream); }
+body.solo #action-modal{ background:transparent; }
+body.solo #action-modal .modal{ box-shadow:var(--shadow); }
+.solo-row{ display:flex; gap:8px; justify-content:center; margin:10px 0 2px; }
+.solo-note{
+  text-align:center; font-size:.68rem; color:var(--brown-soft); margin-top:10px;
+}
+.solo-note a{ color:var(--brown-mid); }
+
 .act-say{
   text-align:center; font-size:.74rem; color:var(--brown-mid);
   min-height:1.5em; margin-top:7px; line-height:1.6;
@@ -6537,14 +6554,61 @@ const practiceOpen = () => {
   try { return new URLSearchParams(location.search).get("mg") === "1"; }
   catch (e) { return false; }
 };
+/* ?mg=mekiki のように山場の名前を書くと、その一本だけの画面になる。
+   ?mg=1 はこれまでどおり、工房の中に十種のけいこを出すだけ */
+const soloKey = () => {
+  try {
+    const v = new URLSearchParams(location.search).get("mg");
+    return (v && v !== "1" && CRAFT_ACTIONS[v]) ? v : null;
+  } catch (e) { return null; }
+};
 let practiceLv = 1;
 
 function practiceAction(key) {
   const act = CRAFT_ACTIONS[key];
   if (!act) return;
   const lv = practiceLv;
-  $("#act-title").textContent = `🔥 ${act.name}　${"★".repeat(lv)}　けいこ`;
+  /* 一本だけの画面では「けいこ」とは言わない。それ自体が遊びなので */
+  $("#act-title").textContent =
+    `🔥 ${act.name}　${"★".repeat(lv)}` + (soloKey() ? "" : "　けいこ");
   playAction(act, lv, (score, comment) => showPracticeResult(key, score, comment));
+}
+
+/* 一本だけの画面の、とびら。やめたときも、ここへ戻る */
+function soloHome(key) {
+  const act = CRAFT_ACTIONS[key];
+  $("#act-title").textContent = `🔥 ${act.name}`;
+  $("#act-tip").innerHTML = act.tip;
+  $("#act-tip").hidden = false;
+  $("#act-svg").style.display = "none";
+  $(".act-stage").style.display = "none";
+  $(".act-bar-wrap").style.display = "none";
+  $("#act-say").textContent = "";
+  const r = $("#act-result");
+  r.hidden = false;
+  r.innerHTML =
+    `<p style="text-align:center;margin:4px 0 2px">${
+       esc(ACT_KIND[key] || "")}の遊び。一本だけの腕だめしです。</p>
+     ${soloLevels()}
+     <div class="finish-row" style="margin-top:4px">
+       <button class="deliver-btn" id="solo-go">はじめる</button>
+     </div>
+     ${SOLO_FOOT}`;
+  soloWire(key);
+  $("#solo-go").addEventListener("click", () => practiceAction(key));
+  openModal("action-modal");
+}
+/* 難度のえらび。えらび直しても、いまの画面のまま */
+const soloLevels = () =>
+  `<div class="solo-row">${[1,2,3].map(n =>
+    `<button class="opt-chip${practiceLv === n ? " selected" : ""}" data-slv="${n}">${
+      "★".repeat(n)}<span class="o-note">${ACT_LEVEL_NAME[n]}</span></button>`).join("")}</div>`;
+const SOLO_FOOT =
+  `<p class="solo-note">点は記録に残りません。<br>
+     <a href="./">工房ぜんぶで遊ぶ</a></p>`;
+function soloWire(key) {
+  document.querySelectorAll("#act-result [data-slv]").forEach(b =>
+    b.addEventListener("click", () => { practiceLv = +b.dataset.slv; soloHome(key); }));
 }
 
 function showPracticeResult(key, score, comment) {
@@ -6561,13 +6625,16 @@ function showPracticeResult(key, score, comment) {
   r.innerHTML =
     `<div class="act-score">${score}<span class="unit">点</span></div>
      <div class="act-henry">${esc(grade)}　${esc(comment)}</div>
-     <p class="ev-note">けいこなので、記録には残らん。</p>
+     ${soloKey() ? soloLevels() : `<p class="ev-note">けいこなので、記録には残らん。</p>`}
      <div class="finish-row">
        <button class="deliver-btn" id="pr-again">もう一度</button>
-       <button class="exhibit-btn" id="pr-back">ほかの山場へ</button>
-     </div>`;
+       ${soloKey() ? "" : `<button class="exhibit-btn" id="pr-back">ほかの山場へ</button>`}
+     </div>
+     ${soloKey() ? SOLO_FOOT : ""}`;
+  if (soloKey()) soloWire(key);
   $("#pr-again").addEventListener("click", () => practiceAction(key));
-  $("#pr-back").addEventListener("click", () => {
+  const back = $("#pr-back");
+  if (back) back.addEventListener("click", () => {
     closeModal("action-modal"); renderAbout(); openModal("about-modal");
   });
 }
@@ -9527,7 +9594,12 @@ function init() {
     if (document.hidden) audSuspend();
     else if (sndMode > 0) audResume();
   });
-  $("#act-cancel").addEventListener("click", () => { if (actRunning) actRunning(); });
+  $("#act-cancel").addEventListener("click", () => {
+    if (actRunning) actRunning();
+    /* 一本だけの画面は、ここで閉じると何も残らない。とびらへ戻す */
+    const k = soloKey();
+    if (k) setTimeout(() => soloHome(k), 0);
+  });
   /* ヘッダーの顔をタップしても職人を変えられる */
   $("#player-face").addEventListener("click", () => openAvatarEditor(false));
   $("#av-done").addEventListener("click", saveAvatar);
@@ -9545,6 +9617,16 @@ function init() {
   });
 
   render();
+
+  /* ?mg=<山場の名前> … その一本だけを遊ぶ。工房も名前も通らない */
+  const solo = soloKey();
+  if (solo) {
+    document.body.classList.add("solo");
+    document.title = CRAFT_ACTIONS[solo].name + "｜松永工房";
+    practiceAction(solo);
+    return;
+  }
+
   if (!state.player.name) {
     /* はじめての起動：まず自分の職人をこしらえてもらう */
     showMessage("ようこそ、松永工房へ。……そうじゃ、まだあんたのことを聞いておらんかった。");
