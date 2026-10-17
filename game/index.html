@@ -3699,8 +3699,9 @@ const MK_MAN = { w: 81, h: 224, dx: -40, dy: -112 };
    はしからはし205px）から、あごから下が頭ふたつぶんになる縮尺を出した。
    描いてある髭の職人のほうは、もとの形のまま触らない */
 const MK_MAN3 = { w: 70, h: 194, dx: -35, dy: -97 };
-/* 顔の高さは80（枠129のうち、顔がしめるぶん）。あごの位置は動かさず、
-   頭だけが上へ伸びる */
+/* 顔の高さは103（枠166のうち、顔がしめるぶん）。あごの位置は動かさず、
+   頭だけが上下する。この大きさは、いただいた四面図の等身（帽子のてっぺん〜
+   ひげの下 307 ／ 全体 732 ＝ 2.4頭身）に合わせて出した */
 /* ひろげた手は67、受けられる幅は76。板は70あるので、はしで受けても
    ちゃんと手にかかって見える */
 function mkFaceURL() {
@@ -3719,8 +3720,8 @@ function mkMan(face) {
      大きさと位置は、似顔絵の頭（256のうち 32〜216 / 64〜223）から逆算 */
   const S = MK_MAN3;
   return mkImg(MK_ART.man_body, S.dx, S.dy, S.w, S.h) +
-         `<image class="mk-face" href="${face}" x="-62" y="-157"
-            width="129" height="129" preserveAspectRatio="xMidYMid meet"/>`;
+         `<image class="mk-face" href="${face}" x="-80" y="-189"
+            width="166" height="166" preserveAspectRatio="xMidYMid meet"/>`;
 }
 
 /* よけたときに出す、小さな印 */
