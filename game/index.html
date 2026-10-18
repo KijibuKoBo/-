@@ -1057,6 +1057,11 @@ body.solo #action-modal .modal{ box-shadow:var(--shadow); }
 .c-risk{ color:var(--red); }
 .c-perk{ color:var(--green-deep); }
 
+/* 納期を過ぎたときの、ひとこと */
+.mult-row.late{
+  color:var(--red); font-weight:bold; margin-top:3px;
+}
+
 .flaw-note{
   text-align:center; font-size:.7rem; color:var(--red);
   background:#f9ece8; border:1.5px dashed var(--red);
@@ -5326,6 +5331,26 @@ function stepScale(f) {
    0点なら0.55倍、100点なら1.10倍。準備が完璧でも、ここで崩れる */
 const skillMult = (score) => 0.55 + Math.max(0, Math.min(100, score)) / 100 * 0.55;
 
+/* 素材・設備・設計・仕上げ・下駄の「仕立て」。
+   ----------------------------------------------------------
+   前は、これを土台に足していた。すると設備を+20ぶん買っただけで
+   土台が100を越え、通常工程の35点がまるごと天井に消えて、
+   ていねいに打っても手早く打っても同じ結果になっていた。
+
+   掛け算にすると、工程の積み上げは必ず効く。良い素材と良い設備ほど、
+   ていねいに打った甲斐も大きくなる。 */
+const PREP_DIV = 260;
+function prepBonus() {
+  const c = state.craft;
+  if (!c) return 0;
+  const d = designById(c.design), w = materialById(c.wood), fin = finishById(c.finish);
+  return gearQualityBonus() + ((state.craftBoost && state.craftBoost.quality) || 0)
+    + (d ? d.q : 0) + (w ? (w.q || 0) : 0) + (fin ? fin.q : 0);
+}
+const prepMult = () => 1 + prepBonus() / PREP_DIV;
+/* 画面に出す「土台」。工程の積み上げに、仕立てを掛けたもの */
+const baseQuality = () => Math.max(0, Math.min(100, Math.round(state.quality * prepMult())));
+
 /* ----------------------------------------------------------
    来館者
    展示した家具を見てひとこと言っていく。
@@ -5893,17 +5918,21 @@ function load() {
     }
   });
   if (typeof state.quality !== "number") state.quality = state.stepIndex;
+  /* 版は「これより古ければ直す」で見る。「N でなければ直す」にすると、
+     新しいセーブでも途中のブロックを通ってしまい、ひらくたびに直されてしまう */
+  const sv = typeof savedVer === "number" ? savedVer : 0;
+
   if (savedVer === undefined) {   // 第1・2章: 品質を100点制へ換算
     state.quality = state.currentId
       ? Math.max(0, Math.min(100, BASE_QUALITY + state.quality * 6)) : 0;
   }
-  if (savedVer !== 4 && savedVer !== 5) {   // 第3章まで: 時間・設備を補完
+  if (sv < 4) {   // 第3章まで: 時間・設備を補完
     if (typeof state.day !== "number") state.day = 1;
     if (typeof state.hoursLeft !== "number") state.hoursLeft = HOURS_PER_DAY;
     if (!Array.isArray(state.gear)) state.gear = [];
     state.craftUsed = state.currentId ? state.stepIndex * 2 : 0;
   }
-  if (savedVer !== 5 && savedVer !== 6) {   // 第4章まで: 材料・展示・来館者を補完
+  if (sv < 5) {   // 第4章まで: 材料・展示・来館者を補完
     Object.values(state.completed).forEach(rec => {
       if (rec && typeof rec === "object") {
         if (rec.bestScore === undefined) rec.bestScore = null;
@@ -5921,7 +5950,7 @@ function load() {
       state.craft = { design: "classic", wood: "oak", finish: "natural" };
     }
   }
-  if (savedVer !== 6) {   // 第5章まで: 集中力・手帳・山場の記憶を補完
+  if (sv < 6) {   // 第5章まで: 集中力・手帳・山場の記憶を補完
     if (typeof state.focus !== "number") state.focus = FOCUS_MAX;
     if (typeof state.flaws !== "number") state.flaws = 0;
     if (!state.tool) state.tool = "normal";
@@ -5935,7 +5964,7 @@ function load() {
     });
     state.ver = 6;
   }
-  if (savedVer !== 7) {   // 第6章まで: 職人の名前と顔を用意する
+  if (sv < 7) {   // 第6章まで: 職人の名前と顔を用意する
     if (!state.player || typeof state.player !== "object") state.player = {};
     if (typeof state.player.name !== "string") state.player.name = "";
     if (!state.player.avatar || typeof state.player.avatar !== "object") {
@@ -5943,16 +5972,16 @@ function load() {
     }
     state.ver = 7;
   }
-  if (savedVer !== 8) {   // 第7章まで: 職人アクションの記録欄を用意する
+  if (sv < 8) {   // 第7章まで: 職人アクションの記録欄を用意する
     if (!state.actionBest || typeof state.actionBest !== "object") state.actionBest = {};
     if (!state.actionStats || typeof state.actionStats !== "object") state.actionStats = {};
     state.ver = 8;
   }
-  if (savedVer !== 9) {   // 第8章まで: 山場の出来を覚える欄を用意する
+  if (sv < 9) {   // 第8章まで: 山場の出来を覚える欄を用意する
     if (state.actionScore === undefined) state.actionScore = null;
     state.ver = 9;
   }
-  if (savedVer !== 10) {  // 第9章: 章・道具を用意する
+  if (sv < 10) {  // 第9章: 章・道具を用意する
     if (!state.tool) state.tool = "normal";
     /* 章の条件ができる前に作った家具は、Aランク以上なら「会心」として引き継ぐ。
        納期を守ったかどうかは記録に残っていないので、作り手に有利なほうに寄せる */
@@ -5963,13 +5992,13 @@ function load() {
     });
     state.ver = 10;
   }
-  if (savedVer !== 11) {  // 第10章: 催しの合言葉を置く場所を用意する
+  if (sv < 11) {  // 第10章: 催しの合言葉を置く場所を用意する
     if (!state.event || typeof state.event !== "object") state.event = {};
   }
-  if (savedVer !== 12) {  // 第11章: 消耗品を置く場所を用意する
+  if (sv < 12) {  // 第11章: 消耗品を置く場所を用意する
     if (!state.boost || typeof state.boost !== "object") clearBoost();
   }
-  if (savedVer !== 13) {  // 第12章: 生涯の記録をためはじめる
+  if (sv < 13) {  // 第12章: 生涯の記録をためはじめる
     /* 既定の state には craftLog があるので「state にない」では判定できない。
        セーブのほうに入っていなかったときだけ、過去のぶんを拾う */
     if (saved && (!saved.craftLog || typeof saved.craftLog !== "object")) {
@@ -5985,12 +6014,12 @@ function load() {
       });
     }
   }
-  if (savedVer !== 15) {  // 第14章: はじめの一台の案内
+  if (sv < 15) {  // 第14章: はじめの一台の案内
     /* すでに一台でも作っている職人には、いまさら案内を出さない。
        まっさらな職人にだけ出す */
     if (typeof state.guide !== "number") state.guide = firstDone() ? 2 : 1;
   }
-  if (savedVer !== 14) {  // 第13章: 似顔絵を、工房の絵に描きかえる
+  if (sv < 14) {  // 第13章: 似顔絵を、工房の絵に描きかえる
     /* 顔の部品がそっくり入れかわったので、番号の指す先を読みかえる。
        今の顔にいちばん近いものへ移し、無いもの（つるりなど）は既定にもどす */
     const av = state.player && state.player.avatar;
@@ -6006,18 +6035,18 @@ function load() {
       av.art = 1;                                             // 読みかえ済みの印
     }
   }
-  if (savedVer !== 16) {  // 第15章: ドールハウスの置き場を用意する
+  if (sv < 16) {  // 第15章: ドールハウスの置き場を用意する
     if (!state.room || typeof state.room !== "object") state.room = { bg: "petit", sets: {} };
     if (!state.room.sets || typeof state.room.sets !== "object") state.room.sets = {};
   }
-  if (savedVer !== 17) {  // 第16章: 見ている部屋を、番号から id に改める
+  if (sv < 17) {  // 第16章: 見ている部屋を、番号から id に改める
     /* 実物の部屋を先頭に足したので、番号のままだと指す先がずれる。
        並べ方は部屋の id で持っているので、そちらは無事 */
     if (state.room && typeof state.room.bg === "number") {
       state.room.bg = ["day", "attic", "green", "night"][state.room.bg] || "petit";
     }
   }
-  if (savedVer !== 18) {  // 第17章: 絵の部屋を、写真の部屋に差しかえた
+  if (sv < 18) {  // 第17章: 絵の部屋を、写真の部屋に差しかえた
     /* 床の高さが変わったので、置いてあるものを同じぶんだけ下げる。
        そうしないと、床から浮いて見える */
     const moved = { day: 0.86 - 0.667, attic: 0.86 - 0.70,
@@ -6033,10 +6062,19 @@ function load() {
   if (!state.craftBoost || typeof state.craftBoost !== "object") {
     state.craftBoost = { quality: 0, pop: 0, action: 0 };
   }
-  /* 移行の条件はどれも「savedVer !== N」なので、新しいセーブでも途中の
-     ブロックを通ってしまい、state.ver が巻き戻ることがあった。
-     ぜんぶ通したあとで、版は必ず最新にそろえる */
-  state.ver = 18;
+  if (sv < 19) {  // 第18章: 素材と設備を、足し算から掛け算に改めた
+    /* 作りかけの家具があれば、素地を新しい数えかたに直す。
+       それまでの積み上げぶんは、工程の進みぐあいから見つもる */
+    if (state.currentId) {
+      const f0 = furnitureById(state.currentId);
+      const normal = f0 ? Math.max(1, f0.steps.length - 1) : 1;
+      state.quality = BASE_QUALITY +
+        Math.round(STEP_BUDGET * Math.min(1, (state.stepIndex || 0) / normal));
+    }
+  }
+
+  /* 版は、ぜんぶ通したあとで必ず最新にそろえる */
+  state.ver = 19;
 }
 
 /* ==========================================================
@@ -6510,10 +6548,9 @@ function renderPrep() {
     /* 消耗品の下駄は、ここで一台ぶん使い切る */
     state.craftBoost = { quality: boostOf("quality"), pop: boostOf("pop"), action: boostOf("action") };
     clearBoost();
-    /* 土台＝素材50＋設備＋設計・素材・仕上げの補正。
-       ここに通常工程の判断が積み上がり、最後に山場の腕前が掛かる */
-    state.quality = BASE_QUALITY + gearQualityBonus() + state.craftBoost.quality
-      + designById(prep.design).q + materialById(prep.wood).q + finishById(prep.finish).q;
+    /* 素地は 50 から。ここに通常工程の判断が積み上がり（最大+35）、
+       素材と設備の「仕立て」が掛かり、最後に山場の腕前が掛かる */
+    state.quality = BASE_QUALITY;
     prep = null;
     save();
     hideTrivia();
@@ -6536,12 +6573,15 @@ function currentPiece() {
   const v = matchRecipe();
   /* 土台（判断の積み上げ）に、山場の腕前が掛かって品質が決まる。
      山場をまだ通っていなければ、土台そのままを見せる */
-  const base = Math.round(state.quality);
+  const base = baseQuality();
   const score = state.actionScore === null
     ? base
     : Math.max(0, Math.min(100, Math.round(base * skillMult(state.actionScore))));
-  const rank = calcRank(score);
   const onTime = state.craftUsed <= f.deadline;
+  /* 納期を過ぎた家具は、どんなに良くても「とても良いできばえ」止まり。
+     木取りから仕上げまで、急いだ跡はどこかに出る */
+  let rank = calcRank(score);
+  if (!onTime && rank === "S") rank = "A";
   const d = designById(c.design), w = materialById(c.wood), fin = finishById(c.finish);
   const pop = Math.max(1, f.basePop + (v ? v.popBonus : 0) + d.pop + (w.pop || 0) + fin.pop
     + RANKS[rank].popBonus + ((state.craftBoost && state.craftBoost.pop) || 0));
@@ -6568,14 +6608,18 @@ function renderCraft() {
   const total = f.steps.length;
   const done = state.stepIndex >= total;
   const pct = Math.round((state.stepIndex / total) * 100);
-  /* 土台（判断の積み上げ）と、山場の腕前を分けて見せる */
-  const base = Math.round(state.quality);
+  /* 土台（工程の積み上げ × 仕立て）と、山場の腕前を分けて見せる */
+  const raw = Math.round(state.quality);
+  const pm = prepMult();
+  const base = baseQuality();
   const hasAct = state.actionScore !== null;
   const score = hasAct
     ? Math.max(0, Math.min(100, Math.round(base * skillMult(state.actionScore))))
     : base;
   const qPct = Math.max(0, Math.min(100, score));
-  const rank = calcRank(score);
+  let rank = calcRank(score);
+  const late = state.craftUsed > f.deadline;
+  if (late && rank === "S") rank = "A";
 
   const remain = f.deadline - state.craftUsed;
   const deadlineChip = remain >= 0
@@ -6599,9 +6643,12 @@ function renderCraft() {
         <span>${score}点</span>
         ${rankBadge(rank)}
       </div>
-      ${hasAct
-        ? `<div class="mult-row">土台 ${base}点 × 🔥腕前 <b>×${skillMult(state.actionScore).toFixed(2)}</b>（山場 ${state.actionScore}点）</div>`
-        : `<div class="mult-row">🔥山場の出来で、この土台に <b>×0.55〜×1.10</b> が掛かる</div>`}
+      <div class="mult-row">工程 ${raw}点 × 🪵仕立て <b>×${pm.toFixed(2)}</b>${
+        hasAct
+          ? ` × 🔥腕前 <b>×${skillMult(state.actionScore).toFixed(2)}</b>（山場 ${state.actionScore}点）`
+          : `　🔥山場の出来で、さらに <b>×0.55〜×1.10</b>`}</div>
+      ${late ? `<div class="mult-row late">⏰ 納期を ${
+        state.craftUsed - f.deadline} 時間すぎた ── 売値は2割引き、会心にもならん</div>` : ""}
     </div>`;
 
   /* 山場工程は、その家具を一度作っていれば見える */
@@ -7074,8 +7121,9 @@ function showActionResult(score, comment) {
   $("#act-say").textContent = "";
   const r = $("#act-result");
   r.hidden = false;
-  /* この出来が家具にどう効くのかを、その場で見せる */
-  const base = Math.round(state.quality);
+  /* この出来が家具にどう効くのかを、その場で見せる。
+     土台は、工程の積み上げに仕立てを掛けたもの（制作画面と同じ数） */
+  const base = baseQuality();
   const mult = skillMult(score);
   const proj = Math.max(0, Math.min(100, Math.round(base * mult)));
   const restSteps = f.steps.length - 1 - state.stepIndex;
@@ -7158,8 +7206,12 @@ function doAction(rawScore, skipped) {
   if (state.stepIndex >= f.steps.length) {
     confetti();
     const pc = currentPiece();
+    const over = state.craftUsed - f.deadline;
     showMessage(`🎉 「${pc.name}」完成じゃ！ 品質${pc.score}点、${RANKS[pc.rank].label}`
-      + `${pc.onTime ? "　期日内じゃ！" : ""}${pc.secret ? "　…おや、これはただの家具ではないぞ…！" : ""}`);
+      + (pc.onTime
+          ? (isAce(pc) ? "　期日内じゃ！ 会心の一台じゃ。" : "　期日内じゃ！")
+          : `　……ただ、納期を ${over} 時間すぎた。売値は2割引き、会心にもならん。`)
+      + `${pc.secret ? "　…おや、これはただの家具ではないぞ…！" : ""}`);
   }
 }
 
