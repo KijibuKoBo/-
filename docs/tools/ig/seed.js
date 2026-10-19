@@ -17,7 +17,7 @@ module.exports = async function seed(p) {
       exp: 1750, level: 7, money: 184000, day: 23, hoursLeft: 6,
       guide: 2, focus: 88, flaws: 0, tool: "normal",
       completed,
-      player: { name: "賢", avatar: state.player.avatar },
+      player: { name: "くるみ", avatar: state.player.avatar },
       event: { doll: { day: "2026-11-08" } },
       gear: GEAR.slice(0, 4).map(g => g.id),
       materials: { walnut: 3, oak: 6, cherry: 4, brass: 5, glass: 3, cloth: 4 },
