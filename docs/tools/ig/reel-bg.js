@@ -8,8 +8,8 @@ fs.mkdirSync(path.join(D, 'reel'), { recursive: true });
 const SEGS = [
   { t: "山場は、あなたの手で", s: "光る帯に重なった瞬間、その板を叩く" },
   { t: "節のある板は、よける", s: "良い板だけを、受け台で受ける" },
-  { t: "出てくる家具は、ぜんぶ本物", s: "写真のまま、図鑑にしました" },
-  { t: "作った家具は、お部屋へ", s: "本物のドールハウスに、並べられます" }
+  { t: "家具は46種、ぜんぶ架空", s: "8種には「本物があります」の印つき" },
+  { t: "作った家具は、お部屋へ", s: "本物の Petit.Continue も、並べられます" }
 ];
 const URLTXT = "kijibukobo.github.io/-/game/";
 
@@ -56,7 +56,7 @@ const html = `<!doctype html><meta charset="utf-8"><style>${css}</style>` +
   `<div class="r end">
      <div class="kick">松永工房クラフトストーリー</div>
      <div class="big">工房が、<br>ゲームになりました。</div>
-     <div class="mid">静岡の小さな工房がつくる<br>ドール家具が、そのまま出てきます。</div>
+     <div class="mid">静岡の小さな家具工房から。<br>本物のドール家具も、置けます。</div>
      <div class="u"><span>${URLTXT}</span></div>
      <div class="note">ブラウザで、無料で、登録なしで</div>
    </div>`;
