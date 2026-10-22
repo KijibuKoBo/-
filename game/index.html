@@ -5413,121 +5413,155 @@ const CRAFT_ACTIONS = {
 
   /* ================================================================
      ⑩ 塗装（量の見きわめ）
-     面をなでるたびに塗料が乗る。目安の線でちょうど止める。
+     板をなでているあいだ、塗料は乗りつづける。
+     赤い線に届いたところで、指を離す。離したところで決まる。
 
-     **一塗りで上がる量は、どの板でも同じ**（板の高さの 1/7）。
-     赤い線は「あと何回ぶんか」を、そのまま背の高さで語っている。
-     だから板の下に数字は出さない。目で測って、自分で決める遊び。
+     タップで数えるのではない。**止めどきを、目で見て決める**遊び。
+       ・なでている間だけ乗る（手を止めれば、塗料も止まる）
+       ・線を越えたら、その場で「垂れた」
+       ・線に届かずに離したら「薄い」
+       ・となりの板へすべらせると、いまの板はそこで決まってしまう
+     許される幅は波ごとに狭くなる（4.5 → 3.4 → 2.5）。
 
      絵は松永工房さんの水彩。工房の作業台に、白木の板が四枚立ててある。
      板の位置は絵から測ってある（x 52.9 / 105.5 / 160.8 / 212.7・y 90.0〜196.8）。
      第1波は三面なので、右の一枚は手つかずのまま残る。
-     **採点・制限時間・難度・波の組み立ては、もとのまま一行も変えていない。**
-     足したのは、絵と塗りの見えかただけ。
+     **採点・制限時間・波の組み立ては、もとのまま一行も変えていない。**
      ================================================================ */
   tosou: {
     name: "塗装", limit: 45000,
-    tip: "面をなでると塗料が乗る。<b>赤い線に届いたところで止める</b>。一塗りの量は、どの板でも同じじゃ。",
+    tip: "板を指で<b>なでつづける</b>と塗料が乗る。<b>赤い線に届いたら、指を離す</b>。となりへすべらせると、その板はそこで決まるぞ。",
     start(svg, ui, done, lv) {
       const h = actHard(lv);
       const WAVES = [3, 4, 4];
       const TOTAL = WAVES.reduce((a, b) => a + b, 0);
       const sc = actScore(TOTAL);
-      let wave = 0, panels = [], last = -1;
+      let wave = 0, panels = [];
 
-      /* ---- 絵から測った板の場所。ここから下は見た目だけ ---- */
+      /* ---- 絵から測った板の場所。ここから下は見た目と手ざわり ---- */
       const BOARD = [
         { x: 52.9, w: 33.0 }, { x: 105.5, w: 33.3 },
         { x: 160.8, w: 32.8 }, { x: 212.7, w: 33.0 }
       ];
       const TOP = 90.0, BOT = 196.8, HH = BOT - TOP;
-      /* 一塗りで上がる量。どの板でも同じにしてあるから、
-         線の高さを見れば「あと何回」が読める */
+      /* 線の高さの刻み。線は need 段ぶんの高さに引く */
       const STEP = HH / 7;
+      /* 一秒なでると、これだけ乗る */
+      const RATE = 26;
+      /* 許される幅。波ごとに狭くなる（難度でさらに狭まる） */
+      const TOLS = [4.5, 3.4, 2.5];
+      let active = -1, lastT = 0, lastP = null;
       /* ---- ここまで ---- */
 
+      const tolNow = () => TOLS[wave] / h;
       const build = () => {
         const n = WAVES[wave];
         panels = Array.from({ length: n }, (_, i) => ({
           i, got: 0,
           need: 2 + ((Math.random() * (2 + wave)) | 0),
-          done: false, over: false
+          done: false, over: false, thin: false
         }));
-        last = -1;
+        active = -1; lastP = null;
         draw();
       };
       const draw = () => {
+        const tol = tolNow();
         svg.innerHTML =
           `<image href="${TS_ART.bg}" x="0" y="0" width="300" height="300"/>
            <text x="150" y="26" text-anchor="middle" font-size="14" fill="#6b4a2f"
                  stroke="#fffdf5" stroke-width="3.2" paint-order="stroke" font-weight="bold"
-                 >面をなでて、線のところで止める</text>` +
+                 >なでつづけて、線のところで指を離す</text>` +
           panels.map((p) => {
             const b = BOARD[p.i];
-            const fill = Math.min(HH, p.got * STEP);
+            const fill = Math.min(HH, p.got);
             const lineY = BOT - p.need * STEP;
-            /* 塗りは木地を透かす。塗るほど濃くなる */
-            const dens = Math.min(1, p.got / Math.max(1, p.need));
+            const settled = p.done || p.over || p.thin;
+            const dens = Math.min(1, p.got / Math.max(1, p.need * STEP));
             const col = p.over ? "#7d4a22" : "#a9682f";
             const op = (p.over ? .5 : .2 + dens * .22).toFixed(2);
-            /* 垂れ。塗りすぎた面にだけ、三すじ流れる */
+            /* 垂れ。塗りすぎた板にだけ、三すじ流れる */
             const drip = p.over ? [0.26, 0.52, 0.76].map((t, k) => {
-              const dx = b.x + b.w * t, dy = TOP + HH - fill;
+              const dx = b.x + b.w * t, dy = BOT - fill;
               const len = 10 + k * 5;
               return `<path d="M${dx} ${dy} l0 ${len}" stroke="#6f4522" stroke-width="2.4"
                         stroke-linecap="round" opacity=".55"/>
                       <circle cx="${dx}" cy="${dy + len}" r="1.9" fill="#6f4522" opacity=".55"/>`;
             }).join("") : "";
-            return `<rect x="${b.x}" y="${TOP + HH - fill}" width="${b.w}" height="${fill}"
+            return `<rect x="${b.x}" y="${BOT - fill}" width="${b.w}" height="${fill}"
                       fill="${col}" opacity="${op}"/>
                     ${drip}
                     ${p.done ? `<rect x="${b.x - 1}" y="${TOP - 1}" width="${b.w + 2}"
                       height="${HH + 2}" fill="none" stroke="#7a9c6e" stroke-width="2.4"
                       rx="2" opacity=".9"/>` : ""}
+                    ${!settled ? `<rect x="${b.x - 4}" y="${lineY - tol}" width="${b.w + 8}"
+                      height="${tol * 2}" fill="#b8563e" opacity=".14"/>` : ""}
                     <line x1="${b.x - 4}" y1="${lineY}" x2="${b.x + b.w + 4}" y2="${lineY}"
                       stroke="#fffdf5" stroke-width="4.6" opacity=".75"/>
                     <line x1="${b.x - 4}" y1="${lineY}" x2="${b.x + b.w + 4}" y2="${lineY}"
                       stroke="#b8563e" stroke-width="2.4"/>
-                    ${p.over || p.done ? `<text x="${b.x + b.w / 2}" y="${BOT + 15}"
+                    ${settled ? `<text x="${b.x + b.w / 2}" y="${BOT + 15}"
                       text-anchor="middle" font-size="11.5"
-                      fill="${p.over ? "#b8563e" : "#5f8a52"}"
+                      fill="${p.done ? "#5f8a52" : "#b8563e"}"
                       stroke="#fffdf5" stroke-width="3" paint-order="stroke" font-weight="bold"
-                      >${p.over ? "垂れた" : "ちょうど"}</text>` : ""}`;
+                      >${p.over ? "垂れた" : p.thin ? "薄い" : "ちょうど"}</text>` : ""}`;
           }).join("") +
           `<text x="150" y="290" text-anchor="middle" font-size="12" fill="#8a6446"
                  stroke="#fffdf5" stroke-width="3" paint-order="stroke"
-                 >指をすべらせると、となりの面にも乗ってしまうぞ</text>`;
+                 >なでている間だけ乗る。離したところで決まる</text>`;
       };
 
-      ui.onDown = () => { last = -1; };
-      ui.onPoint = (p) => {
-        if (p.y < TOP || p.y > BOT) return;
-        let i = -1;
-        for (let k = 0; k < panels.length; k++) {
-          const b = BOARD[k];
-          if (p.x >= b.x && p.x <= b.x + b.w) { i = k; break; }
-        }
-        if (i < 0) return;
-        if (i === last) return;
-        last = i;
+      /* 一枚ぶんの決着。ここだけが点に触る */
+      const settle = (i) => {
         const pan = panels[i];
-        if (pan.over) return;
-        pan.got++;
-        if (pan.got === pan.need) { pan.done = true; sc.ok(); ui.say("✨ ちょうど良い厚みじゃ"); }
-        else if (pan.got > pan.need) {
-          pan.over = true; pan.done = false; sc.ng(); ui.say("⚠️ 塗りすぎて垂れた");
-        }
+        if (!pan || pan.done || pan.over || pan.thin) return;
+        if (pan.got < 0.6) return;              // さわっただけ。まだ決めない
+        const tol = tolNow();
+        const diff = pan.got - pan.need * STEP;
+        if (Math.abs(diff) <= tol) { pan.done = true; sc.ok(); ui.say("✨ ちょうど良い厚みじゃ"); }
+        else if (diff > 0) { pan.over = true; sc.ng(); ui.say("⚠️ 塗りすぎて垂れた"); }
+        else { pan.thin = true; sc.ng(); ui.say("⚠️ 薄い。木地が透けておる"); }
         draw();
-        const fin = panels.filter(x => x.done || x.over).length;
         ui.progress((sc.hit + sc.miss) / TOTAL);
-        actBanner(ui, wave + 1, 3, "線でちょうど止める", sc);
+        actBanner(ui, wave + 1, 3, "線のところで離す", sc);
+        const fin = panels.filter(x => x.done || x.over || x.thin).length;
         if (fin === panels.length) {
+          active = -1;
           if (wave < 2) { wave++; setTimeout(build, 500); ui.say(`—— 第${wave + 1}波 ——`); }
           else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 450); }
         }
       };
+      const boardAt = (p) => {
+        if (p.y < TOP || p.y > BOT) return -1;
+        for (let k = 0; k < panels.length; k++) {
+          const b = BOARD[k];
+          if (p.x >= b.x && p.x <= b.x + b.w) return k;
+        }
+        return -1;
+      };
+
+      ui.onDown = (p) => {
+        active = boardAt(p);
+        lastT = Date.now(); lastP = p;
+      };
+      ui.onPoint = (p) => {
+        const now = Date.now();
+        const dt = Math.min(0.05, (now - lastT) / 1000);
+        const moved = lastP ? Math.hypot(p.x - lastP.x, p.y - lastP.y) : 0;
+        lastT = now; lastP = p;
+        const here = boardAt(p);
+        /* となりへすべった。いまの板は、そこで決まってしまう */
+        if (here !== active) { if (active >= 0) settle(active); active = here; return; }
+        if (active < 0) return;
+        const pan = panels[active];
+        if (!pan || pan.done || pan.over || pan.thin) return;
+        if (moved < 0.4) return;                // 手が止まれば、塗料も止まる
+        pan.got += dt * RATE;
+        if (pan.got - pan.need * STEP > tolNow()) { settle(active); active = -1; return; }
+        draw();
+      };
+      ui.onUp = () => { if (active >= 0) settle(active); active = -1; lastP = null; };
       ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
-      actBanner(ui, 1, 3, "線でちょうど止める", sc);
+      actBanner(ui, 1, 3, "線のところで離す", sc);
       build();
     }
   }
