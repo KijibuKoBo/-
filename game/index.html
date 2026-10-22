@@ -5415,6 +5415,10 @@ const CRAFT_ACTIONS = {
      ⑩ 塗装（量の見きわめ）
      面をなでるたびに塗料が乗る。目安の線でちょうど止める。
 
+     **一塗りで上がる量は、どの板でも同じ**（板の高さの 1/7）。
+     赤い線は「あと何回ぶんか」を、そのまま背の高さで語っている。
+     だから板の下に数字は出さない。目で測って、自分で決める遊び。
+
      絵は松永工房さんの水彩。工房の作業台に、白木の板が四枚立ててある。
      板の位置は絵から測ってある（x 52.9 / 105.5 / 160.8 / 212.7・y 90.0〜196.8）。
      第1波は三面なので、右の一枚は手つかずのまま残る。
@@ -5423,7 +5427,7 @@ const CRAFT_ACTIONS = {
      ================================================================ */
   tosou: {
     name: "塗装", limit: 45000,
-    tip: "面をなでると塗料が乗る。<b>線のところでちょうど止める</b>。塗りすぎると垂れるぞ。",
+    tip: "面をなでると塗料が乗る。<b>赤い線に届いたところで止める</b>。一塗りの量は、どの板でも同じじゃ。",
     start(svg, ui, done, lv) {
       const h = actHard(lv);
       const WAVES = [3, 4, 4];
@@ -5437,6 +5441,9 @@ const CRAFT_ACTIONS = {
         { x: 160.8, w: 32.8 }, { x: 212.7, w: 33.0 }
       ];
       const TOP = 90.0, BOT = 196.8, HH = BOT - TOP;
+      /* 一塗りで上がる量。どの板でも同じにしてあるから、
+         線の高さを見れば「あと何回」が読める */
+      const STEP = HH / 7;
       /* ---- ここまで ---- */
 
       const build = () => {
@@ -5457,9 +5464,8 @@ const CRAFT_ACTIONS = {
                  >面をなでて、線のところで止める</text>` +
           panels.map((p) => {
             const b = BOARD[p.i];
-            const full = Math.max(1, p.need + 2);
-            const fill = Math.min(1, p.got / full) * HH;
-            const lineY = TOP + HH - (p.need / full) * HH;
+            const fill = Math.min(HH, p.got * STEP);
+            const lineY = BOT - p.need * STEP;
             /* 塗りは木地を透かす。塗るほど濃くなる */
             const dens = Math.min(1, p.got / Math.max(1, p.need));
             const col = p.over ? "#7d4a22" : "#a9682f";
@@ -5482,14 +5488,15 @@ const CRAFT_ACTIONS = {
                       stroke="#fffdf5" stroke-width="4.6" opacity=".75"/>
                     <line x1="${b.x - 4}" y1="${lineY}" x2="${b.x + b.w + 4}" y2="${lineY}"
                       stroke="#b8563e" stroke-width="2.4"/>
-                    <text x="${b.x + b.w / 2}" y="${BOT + 15}" text-anchor="middle" font-size="11.5"
-                      fill="${p.over ? "#b8563e" : p.done ? "#5f8a52" : "#6b4a2f"}"
+                    ${p.over || p.done ? `<text x="${b.x + b.w / 2}" y="${BOT + 15}"
+                      text-anchor="middle" font-size="11.5"
+                      fill="${p.over ? "#b8563e" : "#5f8a52"}"
                       stroke="#fffdf5" stroke-width="3" paint-order="stroke" font-weight="bold"
-                      >${p.over ? "垂れた" : p.done ? "ちょうど" : p.got + "/" + p.need}</text>`;
+                      >${p.over ? "垂れた" : "ちょうど"}</text>` : ""}`;
           }).join("") +
           `<text x="150" y="290" text-anchor="middle" font-size="12" fill="#8a6446"
                  stroke="#fffdf5" stroke-width="3" paint-order="stroke"
-                 >塗り終えた面は、もう触らぬこと</text>`;
+                 >指をすべらせると、となりの面にも乗ってしまうぞ</text>`;
       };
 
       ui.onDown = () => { last = -1; };
