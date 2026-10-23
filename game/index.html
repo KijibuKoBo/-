@@ -3749,6 +3749,85 @@ const MEKIKI_LIMIT = 60000;
 /* 幻の銘木が、最終波にあらわれる確率 */
 const MK_PHANTOM_CHANCE = 0.4;
 
+/* 組立（部材さがし）の絵。**まだ絵は届いていない。**
+   届いたら、ここに data URI を入れるだけで、下の仮の図形と入れ替わる。
+     bg      … 机いっぱいの散らばり（300x260 のところへ敷く）
+     ita_l 板材（長）/ ita_s 板材（短）/ maru 丸棒 / ashi 脚 / chou 蝶番
+     hiki 取っ手 / nobu ノブ / casta キャスター / neji ねじ / kana L金具
+     kaku 角材 / sankaku 三角板
+   絵は**まんなかで切り抜いた透過**にしておくこと。向きは水平・正面でよい
+   （遊びのほうで、ひとつずつ傾けて散らす）。 */
+const PT_ART = {};
+
+/* 部材の寸法と呼び名。絵が来るまでは、この大きさで仮の図形を描く */
+const PT_KINDS = [
+  { k: "ita_l",   n: "板材（長）", w: 54, h: 16 },
+  { k: "ita_s",   n: "板材（短）", w: 34, h: 15 },
+  { k: "maru",    n: "丸棒",       w: 46, h: 11 },
+  { k: "ashi",    n: "脚",         w: 16, h: 40 },
+  { k: "chou",    n: "蝶番",       w: 25, h: 17 },
+  { k: "hiki",    n: "取っ手",     w: 31, h: 15 },
+  { k: "nobu",    n: "ノブ",       w: 19, h: 19 },
+  { k: "casta",   n: "キャスター", w: 19, h: 23 },
+  { k: "neji",    n: "ねじ",       w: 23, h: 10 },
+  { k: "kana",    n: "L金具",      w: 21, h: 21 },
+  { k: "kaku",    n: "角材",       w: 25, h: 19 },
+  { k: "sankaku", n: "三角板",     w: 25, h: 22 }
+];
+
+/* 仮の図形。絵が届いたら使われなくなるが、消さずに残しておく。
+   絵のない部材を足したときに、ここが受け皿になる */
+const PT_SHAPE = {
+  ita_l: (w, h) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="2"
+      fill="#d9b87a" stroke="#a9813f" stroke-width="1.4"/>
+    <path d="M${-w / 2 + 3} ${-h / 6} h${w - 6} M${-w / 2 + 3} ${h / 6} h${w - 6}"
+      stroke="#bb9353" stroke-width="1" fill="none" opacity=".8"/>`,
+  ita_s: (w, h) => PT_SHAPE.ita_l(w, h),
+  maru: (w, h) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${h / 2}"
+      fill="#e0c088" stroke="#a9813f" stroke-width="1.4"/>
+    <ellipse cx="${w / 2 - h / 2}" cy="0" rx="${h / 3.4}" ry="${h / 2.3}" fill="#c9a263"/>`,
+  ashi: (w, h) => `<path d="M${-w / 2 + 2} ${-h / 2} h${w - 4} l-1.5 ${h * .18}
+      q-${w * .3} ${h * .1} 0 ${h * .2} l1 ${h * .22}
+      q-${w * .22} ${h * .12} 0 ${h * .2} l1.5 ${h * .18} h${-w + 4}
+      l1.5 ${-h * .18} q${w * .22} ${-h * .08} 0 ${-h * .2}
+      l1 ${-h * .22} q${w * .3} ${-h * .1} 0 ${-h * .2} z"
+      fill="#b4843c" stroke="#8a5f28" stroke-width="1.3"/>`,
+  chou: (w, h) => `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="2"
+      fill="#9aa5ae" stroke="#5f6a74" stroke-width="1.3"/>
+    <path d="M0 ${-h / 2} v${h}" stroke="#5f6a74" stroke-width="1.6"/>
+    ${[-1, 1].map(sx => [-1, 1].map(sy =>
+      `<circle cx="${sx * w * .28}" cy="${sy * h * .24}" r="1.7" fill="#5f6a74"/>`).join("")).join("")}`,
+  hiki: (w, h) => `<path d="M${-w / 2} ${h / 2 - 2} v-3 q0 ${-h + 6} ${w / 2} ${-h + 6}
+      q${w / 2} 0 ${w / 2} ${h - 6} v3" fill="none" stroke="#c9a24b" stroke-width="3.4"
+      stroke-linecap="round"/>`,
+  nobu: (w, h) => `<ellipse cx="0" cy="${-h * .1}" rx="${w / 2}" ry="${h * .34}" fill="#cfa63f"/>
+    <rect x="${-w * .16}" y="${h * .1}" width="${w * .32}" height="${h * .3}" fill="#a97c14"/>
+    <ellipse cx="${-w * .16}" cy="${-h * .22}" rx="${w * .16}" ry="${h * .1}" fill="#e6c76f"/>`,
+  casta: (w, h) => `<rect x="${-w * .34}" y="${-h / 2}" width="${w * .68}" height="${h * .26}"
+      rx="1.6" fill="#9aa5ae" stroke="#5f6a74" stroke-width="1.2"/>
+    <path d="M${-w * .3} ${-h * .22} v${h * .3} M${w * .3} ${-h * .22} v${h * .3}"
+      stroke="#7b8794" stroke-width="2.4"/>
+    <circle cx="0" cy="${h * .18}" r="${h * .3}" fill="#6e5a4a" stroke="#4a3b2e" stroke-width="1.3"/>
+    <circle cx="0" cy="${h * .18}" r="${h * .1}" fill="#b9a68f"/>`,
+  neji: (w, h) => `<ellipse cx="${-w / 2 + h * .45}" cy="0" rx="${h * .45}" ry="${h / 2}"
+      fill="#aab4bd" stroke="#5f6a74" stroke-width="1.2"/>
+    <path d="M${-w / 2 + h * .45} ${-h / 2} v${h}" stroke="#5f6a74" stroke-width="1.2"/>
+    <path d="M${-w / 2 + h * .8} 0 L${w / 2} 0" stroke="#9aa5ae" stroke-width="${h * .5}"
+      stroke-linecap="round"/>
+    <path d="M${-w / 2 + h} ${-h * .2} l${w * .5} 0" stroke="#6e7a85" stroke-width=".9"/>`,
+  kana: (w, h) => `<path d="M${-w / 2} ${-h / 2} h${w * .34} v${h * .66} h${w * .66}
+      v${h * .34} h${-w} z" fill="#8a95a0" stroke="#5f6a74" stroke-width="1.3"/>
+    <circle cx="${-w * .33}" cy="${-h * .22}" r="1.8" fill="#5f6a74"/>
+    <circle cx="${w * .22}" cy="${h * .33}" r="1.8" fill="#5f6a74"/>`,
+  kaku: (w, h) => `<path d="M${-w / 2} ${-h / 2 + h * .26} l${w * .3} ${-h * .26}
+      h${w * .7} v${h * .74} l${-w * .3} ${h * .26} h${-w * .7} z"
+      fill="#d2ad70" stroke="#a9813f" stroke-width="1.3"/>
+    <path d="M${-w / 2} ${-h / 2 + h * .26} h${w * .7} l${w * .3} ${-h * .26}
+      M${w * .2} ${-h / 2 + h * .26} v${h * .74}" fill="none" stroke="#a9813f" stroke-width="1.1"/>`,
+  sankaku: (w, h) => `<path d="M${-w / 2} ${h / 2} h${w} l${-w} ${-h} z"
+      fill="#d9b87a" stroke="#a9813f" stroke-width="1.4"/>`
+};
+
 /* 研磨の絵。松永工房さんの水彩。作業台を真上から見ている。
    面の四つの顔（荒れた・平ら・つやの出た・削りすぎ）は同じ木目・同じ大きさ。
    作業台は 900x900（長い絵のまんなかを四角に切ってある）。画面いっぱいに敷き、
@@ -5203,82 +5282,175 @@ const CRAFT_ACTIONS = {
   },
 
   /* ================================================================
-     ⑦ 組立（形合わせ）
-     部材を正しい窪みへ運ぶ。形と大きさで見分ける。
+     ⑦ 組立（部材さがし）
+     机いっぱいに散らばった部材から、**言われたものを見つけて押す**。
+     似たものが混じっているので、形をよく見ないと取り違える。
+
+     上の帯が「見つける部材」。見つけると札に印が付く。
+     三つの波で 3→4→5 個。ぜんぶで12個。持ち時間は45秒。
+     ヒントは三回まで。押すと、まだの部材のところが光る。
+
+     絵はまだ届いていない。PT_ART に入れれば、仮の図形と入れ替わる。
      ================================================================ */
   kumi: {
     name: "組立", limit: 45000,
-    tip: "下の部材を押してから、<b>合う窪みを押す</b>。形と大きさを見て選ぶのじゃ。",
+    tip: "上の帯に出た部材を、机の中から<b>見つけて押す</b>。似たものが混じっておるぞ。ヒントは三回まで。",
     start(svg, ui, done, lv) {
+      const h = actHard(lv);
       const WAVES = [3, 4, 5];
       const TOTAL = WAVES.reduce((a, b) => a + b, 0);
       const sc = actScore(TOTAL);
-      const FORMS = [
-        { w: 54, h: 30, n: "横框" }, { w: 30, h: 60, n: "たて框" },
-        { w: 44, h: 44, n: "鏡板" }, { w: 70, h: 22, n: "台輪" },
-        { w: 24, h: 24, n: "だぼ" }, { w: 36, h: 52, n: "扉板" }
-      ];
-      let wave = 0, slots = [], picked = -1;
+
+      /* 机のひろさ。上の帯は「見つける部材」の札に使う */
+      const BAR = 42, X0 = 8, X1 = 292, Y0 = BAR + 8, Y1 = 292;
+      /* ヒントの札の居場所。ここには部材を置かない */
+      const HX = 272, HY = BAR + 20;
+
+      let wave = 0, items = [], want = [], hints = 3, ring = null, ringT = null, busy = false;
+
+      const label = () => `${want.filter(d => d.found).length} / ${want.length} 見つけた`;
+      /* 絵があれば絵、なければ仮の図形。どちらも中心ぞろえ */
+      const artOf = (k, w, ht) => PT_ART[k]
+        ? `<image href="${PT_ART[k]}" x="${-w / 2}" y="${-ht / 2}" width="${w}" height="${ht}"/>`
+        : (PT_SHAPE[k] ? PT_SHAPE[k](w, ht) : "");
 
       const build = () => {
         const n = WAVES[wave];
-        const pool = FORMS.slice().sort(() => Math.random() - .5).slice(0, n);
-        slots = pool.map((f, i) => ({
-          ...f, i, filled: false,
-          sx: 40 + (i % 3) * 78, sy: 60 + ((i / 3) | 0) * 78
+        const pool = PT_KINDS.slice().sort(() => Math.random() - .5);
+        want = pool.slice(0, n).map(d => ({ ...d, found: false }));
+        /* まぎらわしい相手は、探していない部材から。探すものは机に一つだけ */
+        const rest = pool.slice(n);
+        const total = Math.round((22 + wave * 7) * h);
+        const list = want.map(d => ({ ...d, want: true }));
+        for (let i = list.length; i < total; i++) {
+          const d = rest[i % rest.length];
+          list.push({ ...d, want: false });
+        }
+        items = list.sort(() => Math.random() - .5).map(d => ({
+          ...d, r: Math.max(d.w, d.h) / 2, a: actRand(-28, 28), done: false
         }));
-        const order = slots.map(s => s.i).sort(() => Math.random() - .5);
-        slots.forEach(s => { s.tray = order.indexOf(s.i); });
-        picked = -1;
+        scatter();
+        ring = null;
+        busy = false;
         draw();
       };
+
+      /* 重ならないように散らす。何度か試して、どうしても空かなければ諦めて置く */
+      const scatter = () => {
+        const put = [];
+        items.forEach(it => {
+          let best = null;
+          for (let t = 0; t < 240; t++) {
+            const x = actRand(X0 + it.r, X1 - it.r);
+            const y = actRand(Y0 + it.r, Y1 - it.r);
+            if (Math.hypot(x - HX, y - HY) < 36) continue;
+            if (put.some(o => Math.hypot(x - o.x, y - o.y) < (it.r + o.r) * .84)) continue;
+            best = { x, y }; break;
+          }
+          if (!best) best = { x: actRand(X0 + it.r, X1 - it.r), y: actRand(Y0 + it.r, Y1 - it.r) };
+          it.x = best.x; it.y = best.y;
+          put.push(it);
+        });
+      };
+
       const draw = () => {
-        const holes = slots.map(s => `
-          <rect x="${s.sx - s.w / 2}" y="${s.sy - s.h / 2}" width="${s.w}" height="${s.h}" rx="4"
-            fill="${s.filled ? "#a9713f" : "#6e4526"}" stroke="#8a5a30" stroke-width="2"/>`).join("");
-        const tray = slots.filter(s => !s.filled).map(s => {
-          const x = 36 + s.tray * 58;
-          const sel = picked === s.i;
-          return `<g><rect x="${x - s.w * .36}" y="${236 - s.h * .36}" width="${s.w * .72}"
-            height="${s.h * .72}" rx="3" fill="${sel ? "#d8b45e" : "#c9a24b"}"
-            stroke="${sel ? "#a97c14" : "#b08a63"}" stroke-width="${sel ? 3 : 1.6}"/></g>`;
+        /* 見つける部材の札 */
+        const cards = want.map((d, i) => {
+          const x = 150 + (i - (want.length - 1) / 2) * 58;
+          const sc2 = Math.min(1, 22 / Math.max(d.w, d.h));
+          return `<g data-k="${d.k}" opacity="${d.found ? ".45" : "1"}">
+              <g transform="translate(${x} 15) scale(${sc2})">${artOf(d.k, d.w, d.h)}</g>
+              <text x="${x}" y="33" text-anchor="middle" font-size="8" fill="#6b4a2f"
+                stroke="#fffdf5" stroke-width="2.2" paint-order="stroke"
+                >${d.n}</text>
+              ${d.found ? `<path d="M${x - 9} 15 l5 6 l11 -13" fill="none" stroke="#5f8a52"
+                stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
+            </g>`;
         }).join("");
+
+        /* 机の上。見つけた部材には、みどりの輪を掛ける */
+        const table = items.map(it => `<g data-k="${it.k}" data-x="${it.x.toFixed(1)}"
+            data-y="${it.y.toFixed(1)}" transform="translate(${it.x} ${it.y}) rotate(${it.a})"
+            opacity="${it.done ? ".5" : "1"}">${artOf(it.k, it.w, it.h)}</g>` +
+          (it.done ? `<circle cx="${it.x}" cy="${it.y}" r="${it.r + 3}" fill="none"
+            stroke="#5f8a52" stroke-width="2.4" opacity=".9"/>` : "")).join("");
+
         svg.innerHTML =
-          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
-           <rect x="16" y="34" width="268" height="168" rx="12" fill="#8a5a30"/>${holes}
-           <rect x="16" y="208" width="268" height="60" rx="10" fill="#f3e7cd"/>${tray}
-           <text x="150" y="26" text-anchor="middle" font-size="14" fill="#8a6446">窪みに合う部材を入れる</text>`;
+          (PT_ART.bg
+            ? `<image href="${PT_ART.bg}" x="0" y="${BAR}" width="300" height="${300 - BAR}"/>`
+            : `<rect x="0" y="${BAR}" width="300" height="${300 - BAR}" fill="#cdab79"/>
+               <rect x="0" y="${BAR}" width="300" height="${300 - BAR}" fill="none"/>`) +
+          `<rect x="0" y="0" width="300" height="${BAR}" fill="#f6ecd8"/>
+           <rect x="0" y="${BAR - 1.4}" width="300" height="1.4" fill="#d8c29a"/>` +
+          cards + table +
+          (ring ? `<circle cx="${ring.x}" cy="${ring.y}" r="30" fill="none"
+             stroke="#e0b53a" stroke-width="3.2">
+               <animate attributeName="r" from="34" to="14" dur="0.9s" fill="freeze"/>
+               <animate attributeName="opacity" from=".95" to="0" dur="0.9s" fill="freeze"/>
+             </circle>` : "") +
+          /* ヒントの札。いちばん上に置く */
+          `<g opacity="${hints > 0 ? "1" : ".4"}">
+             <circle cx="${HX}" cy="${HY}" r="14" fill="#fdf6e6" stroke="#b08a63" stroke-width="1.6"/>
+             <text x="${HX}" y="${HY + 4.5}" text-anchor="middle" font-size="12"
+               fill="#8a6446" font-weight="bold">${hints}</text>
+             <text x="${HX}" y="${HY + 24}" text-anchor="middle" font-size="7.5" fill="#8a6446"
+               stroke="#fffdf5" stroke-width="2" paint-order="stroke">ヒント</text>
+           </g>`;
+      };
+
+      const hint = () => {
+        if (hints <= 0) { ui.say("ヒントはもう無いぞ"); return; }
+        const yet = items.find(it => it.want && !it.done);
+        if (!yet) return;
+        hints--;
+        ring = { x: yet.x, y: yet.y };
+        draw();
+        if (ringT) clearTimeout(ringT);
+        ringT = setTimeout(() => { ring = null; draw(); }, 950);
+        ui.say("そのあたりじゃ");
       };
 
       ui.onDown = (p) => {
-        if (p.y > 206) {
-          const cand = slots.filter(s => !s.filled);
-          let best = -1, bd = 1e9;
-          cand.forEach(s => { const d = Math.abs(p.x - (36 + s.tray * 58)); if (d < bd) { bd = d; best = s.i; } });
-          if (bd < 34) { picked = best; draw(); ui.say(`「${slots.find(s => s.i === picked).n}」を持った`); }
+        if (busy) return;                            // 波の切りかわりぎわ。取りこぼしの罠を作らない
+        if (p.y < BAR) return;                       // 上の帯は札だけ。押しても何も起きない
+        if (Math.hypot(p.x - HX, p.y - HY) < 17) { hint(); return; }
+        /* いちばん近いものを拾う。小さな部材も押せるよう、少し広めに取る */
+        let hit = null, hd = 1e9;
+        items.forEach(it => {
+          if (it.done) return;
+          const d = Math.hypot(p.x - it.x, p.y - it.y);
+          if (d < Math.max(it.r + 5, 13) && d < hd) { hd = d; hit = it; }
+        });
+        if (!hit) { ui.say("はて、そこには何もないが"); return; }
+        if (!hit.want) {
+          sc.ng();
+          ui.say(`⚠️ それは「${hit.n}」じゃ。今は要らぬ`);
+          actBanner(ui, wave + 1, 3, label(), sc);
           return;
         }
-        if (picked < 0) { ui.say("まず下から部材を選ぶのじゃ"); return; }
-        const hit = slots.find(s => !s.filled &&
-          Math.abs(p.x - s.sx) < s.w / 2 + 12 && Math.abs(p.y - s.sy) < s.h / 2 + 12);
-        if (!hit) { ui.say("窪みを押すのじゃ"); return; }
-        if (hit.i === picked) {
-          hit.filled = true; sc.ok(); picked = -1;
-          ui.say("かちり、と入った");
-          ui.progress(sc.hit / TOTAL);
-          draw();
-          if (slots.every(s => s.filled)) {
-            if (wave < 2) { wave++; setTimeout(build, 450); ui.say(`—— 第${wave + 1}波 ——`); }
-            else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 400); }
+        hit.done = true;
+        const card = want.find(d => d.k === hit.k);
+        if (card) card.found = true;
+        sc.ok();
+        ui.say(`✨ 「${hit.n}」を見つけた`);
+        ui.progress(sc.hit / TOTAL);
+        actBanner(ui, wave + 1, 3, label(), sc);
+        draw();
+        if (want.every(d => d.found)) {
+          busy = true;
+          if (wave < 2) {
+            wave++;
+            setTimeout(build, 500);
+            ui.say(`—— 第${wave + 1}波 ——`);
+          } else {
+            ui.lock();
+            setTimeout(() => done(sc.value(), sc.word()), 450);
           }
-        } else {
-          sc.ng(); picked = -1; draw();
-          ui.say("⚠️ 形が合わん");
         }
-        actBanner(ui, wave + 1, 3, "部材を選んで窪みへ", sc);
       };
+      ui.onStop = () => { if (ringT) clearTimeout(ringT); };
       ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
-      actBanner(ui, 1, 3, "部材を選んで窪みへ", sc);
+      actBanner(ui, 1, 3, "0 / 3 見つけた", sc);
       build();
     }
   },
@@ -7377,12 +7549,18 @@ function playAction(act, lv, onDone) {
   sfxTensionStart();
 
   let ended = false, tick = null, down = false;
+  /* 言われたことは、しばらく時計の横に残しておく。
+     残り時間で毎度上書きしてしまうと、せっかくの一言が一瞬で消える */
+  let sayNow = "", sayUntil = 0;
   const ui = {
     progress: (r) => {
       actProg = Math.max(0, Math.min(1, r));     // 心臓の音を、終わりに向けて速める
       $("#act-bar").style.width = Math.min(100, r * 100) + "%";
     },
-    say: (t) => { $("#act-say").textContent = t; },
+    say: (t) => {
+      sayNow = t; sayUntil = Date.now() + 1600;
+      $("#act-say").textContent = t;
+    },
     setTip: (html) => { $("#act-tip").innerHTML = html; },
     /* 遊びが終わった合図。結果を見せるまでに少し間を置くので、
        そのあいだの指の動きまで数えてしまわないよう、受けつけをやめる */
@@ -7435,7 +7613,8 @@ function playAction(act, lv, onDone) {
         clearInterval(tick); tick = null;
         if (ui.onTimeout) ui.onTimeout(); else finish(0, "時間切れじゃ。");
       } else {
-        ui.say(`のこり ${(left / 1000).toFixed(1)} 秒`);
+        const msg = Date.now() < sayUntil ? `　${sayNow}` : "";
+        $("#act-say").textContent = `のこり ${(left / 1000).toFixed(1)} 秒${msg}`;
       }
     }, 100);
   }
