@@ -5413,14 +5413,17 @@ const CRAFT_ACTIONS = {
 
   /* ================================================================
      ⑩ 塗装（量の見きわめ）
-     板をなでているあいだ、塗料は乗りつづける。
+     板を押さえているあいだ、塗料は乗りつづける。
      赤い線に届いたところで、指を離す。離したところで決まる。
 
      タップで数えるのではない。**止めどきを、目で見て決める**遊び。
-       ・なでている間だけ乗る（手を止めれば、塗料も止まる）
+       ・押さえている間ずっと乗る（指は動かさなくてよい）
+       ・板の列なら、**下の台を押さえてもよい**。指で板が隠れない
        ・線を越えたら、その場で「垂れた」
        ・線に届かずに離したら「薄い」
        ・となりの板へすべらせると、いまの板はそこで決まってしまう
+     押さえているあいだ、刷毛の音が鳴る。線に近いほど高くなるので、
+     指で板が隠れていても、耳で分かる。
      許される幅は波ごとに狭くなる（4.5 → 3.4 → 2.5）。
 
      絵は松永工房さんの水彩。工房の作業台に、白木の板が四枚立ててある。
@@ -5430,7 +5433,7 @@ const CRAFT_ACTIONS = {
      ================================================================ */
   tosou: {
     name: "塗装", limit: 45000,
-    tip: "板を指で<b>なでつづける</b>と塗料が乗る。<b>赤い線に届いたら、指を離す</b>。となりへすべらせると、その板はそこで決まるぞ。",
+    tip: "板か、<b>その下の台を押さえている間</b>、塗料が乗りつづける。<b>赤い線に届いたら、指を離す</b>。となりの板へすべらせると、その板はそこで決まるぞ。",
     start(svg, ui, done, lv) {
       const h = actHard(lv);
       const WAVES = [3, 4, 4];
@@ -5446,11 +5449,11 @@ const CRAFT_ACTIONS = {
       const TOP = 90.0, BOT = 196.8, HH = BOT - TOP;
       /* 線の高さの刻み。線は need 段ぶんの高さに引く */
       const STEP = HH / 7;
-      /* 一秒なでると、これだけ乗る */
+      /* 一秒押さえると、これだけ乗る */
       const RATE = 26;
       /* 許される幅。波ごとに狭くなる（難度でさらに狭まる） */
       const TOLS = [4.5, 3.4, 2.5];
-      let active = -1, lastT = 0, lastP = null;
+      let active = -1, lastT = 0, tick = null;
       /* ---- ここまで ---- */
 
       const tolNow = () => TOLS[wave] / h;
@@ -5461,7 +5464,7 @@ const CRAFT_ACTIONS = {
           need: 2 + ((Math.random() * (2 + wave)) | 0),
           done: false, over: false, thin: false
         }));
-        active = -1; lastP = null;
+        active = -1; stopTick();
         draw();
       };
       const draw = () => {
@@ -5470,22 +5473,24 @@ const CRAFT_ACTIONS = {
           `<image href="${TS_ART.bg}" x="0" y="0" width="300" height="300"/>
            <text x="150" y="26" text-anchor="middle" font-size="14" fill="#6b4a2f"
                  stroke="#fffdf5" stroke-width="3.2" paint-order="stroke" font-weight="bold"
-                 >なでつづけて、線のところで指を離す</text>` +
+                 >押さえて、線のところで指を離す</text>` +
           panels.map((p) => {
             const b = BOARD[p.i];
             const fill = Math.min(HH, p.got);
             const lineY = BOT - p.need * STEP;
             const settled = p.done || p.over || p.thin;
             const dens = Math.min(1, p.got / Math.max(1, p.need * STEP));
-            const col = p.over ? "#7d4a22" : "#a9682f";
-            const op = (p.over ? .5 : .2 + dens * .22).toFixed(2);
+            /* アンティークの古色。重ねるほど深く沈む */
+            const col = p.over ? "#4e2d14" : "#6b3f1c";
+            const op = (p.over ? .78 : .34 + dens * .34).toFixed(2);
             /* 垂れ。塗りすぎた板にだけ、三すじ流れる */
             const drip = p.over ? [0.26, 0.52, 0.76].map((t, k) => {
               const dx = b.x + b.w * t, dy = BOT - fill;
               const len = 10 + k * 5;
-              return `<path d="M${dx} ${dy} l0 ${len}" stroke="#6f4522" stroke-width="2.4"
-                        stroke-linecap="round" opacity=".55"/>
-                      <circle cx="${dx}" cy="${dy + len}" r="1.9" fill="#6f4522" opacity=".55"/>`;
+              /* 濃い古色に沈むので、垂れはさらに暗く落とす。でないと見えぬ */
+              return `<path d="M${dx} ${dy} l0 ${len}" stroke="#241305" stroke-width="2.8"
+                        stroke-linecap="round" opacity=".85"/>
+                      <circle cx="${dx}" cy="${dy + len}" r="2.1" fill="#241305" opacity=".85"/>`;
             }).join("") : "";
             return `<rect x="${b.x}" y="${BOT - fill}" width="${b.w}" height="${fill}"
                       fill="${col}" opacity="${op}"/>
@@ -5507,7 +5512,7 @@ const CRAFT_ACTIONS = {
           }).join("") +
           `<text x="150" y="290" text-anchor="middle" font-size="12" fill="#8a6446"
                  stroke="#fffdf5" stroke-width="3" paint-order="stroke"
-                 >なでている間だけ乗る。離したところで決まる</text>`;
+                 >台を押さえてもよい。離したところで決まる</text>`;
       };
 
       /* 一枚ぶんの決着。ここだけが点に触る */
@@ -5530,36 +5535,62 @@ const CRAFT_ACTIONS = {
           else { ui.lock(); setTimeout(() => done(sc.value(), sc.word()), 450); }
         }
       };
+      /* どの板の受け持ちか。板の高さだけでなく、**その下の台まで**受ける。
+         指で板を隠さずに塗れるように */
       const boardAt = (p) => {
-        if (p.y < TOP || p.y > BOT) return -1;
+        if (p.y < TOP) return -1;
         for (let k = 0; k < panels.length; k++) {
           const b = BOARD[k];
           if (p.x >= b.x && p.x <= b.x + b.w) return k;
         }
-        return -1;
+        return -1;                              // 板と板のあいだは、受けない
+      };
+
+      /* 押さえているあいだ、塗料は乗りつづける。指は動かさなくてよい */
+      const stopTick = () => {
+        if (tick) { clearInterval(tick); tick = null; }
+        sfxBrushStop();
+      };
+      const flow = () => {
+        const now = Date.now();
+        const dt = Math.min(0.05, (now - lastT) / 1000);
+        lastT = now;
+        const pan = active >= 0 ? panels[active] : null;
+        if (!pan || pan.done || pan.over || pan.thin) { stopTick(); return; }
+        pan.got += dt * RATE;
+        /* 刷毛の音を、線に近いほど高くする。指で板が隠れても耳で分かる */
+        sfxBrushLevel(pan.got / Math.max(1, pan.need * STEP));
+        if (pan.got - pan.need * STEP > tolNow()) {
+          const i = active; active = -1; stopTick(); settle(i); return;
+        }
+        draw();
+      };
+      const startTick = () => {
+        lastT = Date.now();
+        if (!tick) tick = setInterval(flow, 16);
+        sfxBrushStart();
       };
 
       ui.onDown = (p) => {
         active = boardAt(p);
-        lastT = Date.now(); lastP = p;
+        if (active >= 0) startTick(); else stopTick();
       };
       ui.onPoint = (p) => {
-        const now = Date.now();
-        const dt = Math.min(0.05, (now - lastT) / 1000);
-        const moved = lastP ? Math.hypot(p.x - lastP.x, p.y - lastP.y) : 0;
-        lastT = now; lastP = p;
         const here = boardAt(p);
+        if (here === active) return;
         /* となりへすべった。いまの板は、そこで決まってしまう */
-        if (here !== active) { if (active >= 0) settle(active); active = here; return; }
-        if (active < 0) return;
-        const pan = panels[active];
-        if (!pan || pan.done || pan.over || pan.thin) return;
-        if (moved < 0.4) return;                // 手が止まれば、塗料も止まる
-        pan.got += dt * RATE;
-        if (pan.got - pan.need * STEP > tolNow()) { settle(active); active = -1; return; }
-        draw();
+        const was = active;
+        active = here;
+        if (was >= 0) settle(was);
+        if (active >= 0) startTick(); else stopTick();
       };
-      ui.onUp = () => { if (active >= 0) settle(active); active = -1; lastP = null; };
+      ui.onUp = () => {
+        const was = active;
+        active = -1;
+        stopTick();
+        if (was >= 0) settle(was);
+      };
+      ui.onStop = stopTick;
       ui.onTimeout = () => done(sc.value(), "時間切れじゃ。" + sc.word());
       actBanner(ui, 1, 3, "線のところで離す", sc);
       build();
@@ -8098,6 +8129,51 @@ function sfxTensionStop() {
     bgmMaster.gain.setValueAtTime(Math.max(0.0001, bgmMaster.gain.value), t);
     bgmMaster.gain.linearRampToValueAtTime(BGM_VOL, t + 1.0);
   }
+}
+
+/* ----------------------------------------------------------
+   「塗装」のための音。押さえているあいだ鳴りつづけ、
+   塗料が線に近づくほど高くなる。指で板が隠れても、耳で分かる
+   ---------------------------------------------------------- */
+let tsBrush = null;
+function sfxBrushStart() {
+  sfxBrushStop();
+  if (!sfxReady()) return;
+  const t = actx.currentTime;
+  /* 刷毛の音。ざらついた雑音を細く絞って、ゆっくり流す */
+  const len = Math.floor(actx.sampleRate * 0.5);
+  const buf = actx.createBuffer(1, len, actx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.6;
+  const src = actx.createBufferSource();
+  src.buffer = buf; src.loop = true;
+  const bp = actx.createBiquadFilter();
+  bp.type = "bandpass"; bp.frequency.value = 760; bp.Q.value = 0.9;
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.03, t + 0.07);
+  src.connect(bp); bp.connect(g); g.connect(sfxBus);
+  src.start(t);
+  tsBrush = { src, bp, g };
+}
+/* v は 0〜1。線に近いほど 1。音が高く、少し強くなる */
+function sfxBrushLevel(v) {
+  if (!tsBrush || !actx) return;
+  const t = actx.currentTime, k = Math.max(0, Math.min(1.2, v));
+  tsBrush.bp.frequency.setTargetAtTime(700 + k * 1600, t, 0.04);
+  tsBrush.g.gain.setTargetAtTime(0.026 + k * 0.022, t, 0.06);
+}
+function sfxBrushStop() {
+  if (!tsBrush) return;
+  const b = tsBrush; tsBrush = null;
+  if (!actx) return;
+  const t = actx.currentTime;
+  try {
+    b.g.gain.cancelScheduledValues(t);
+    b.g.gain.setValueAtTime(Math.max(0.0001, b.g.gain.value), t);
+    b.g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    b.src.stop(t + 0.14);
+  } catch (e) { /* もう止まっていた */ }
 }
 
 /* ----------------------------------------------------------
