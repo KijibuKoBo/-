@@ -307,6 +307,24 @@
     "消したいキノコを おしてね": "Tap the mushroom to remove",
     "🌀 まぜ直す": "🌀 Reshuffle", "✂ 1つ消す": "✂ Remove one",
     "📳 ふるえ ON": "📳 Vibration ON", "📳 ふるえ OFF": "📳 Vibration OFF",
+    /* きのこウォッチ（ゲームウォッチ風） */
+    "きのこウォッチ": "Kinoko Watch",
+    "きのこウォッチ ｜ イワオトキノコ": "Kinoko Watch ｜ IWAO to KINOKO",
+    "昭和のゲームウォッチ風。迷路のキノコを全部食べて次の面へ。カ・クモ・ハチ・ヘビ・クマから逃げ、熊鈴で追い払え。":
+      "An old-school LCD handheld. Eat every mushroom in the maze to reach the next stage; flee the mosquito, spider, hornet, snake and bear, and ring the bear bell to scare them off.",
+    "昭和のゲームウォッチ風。迷路のキノコを全部食べて次の面へ。カ・クモ・ハチ・ヘビ・クマから逃げ、熊鈴を鳴らせばクマは立ち止まり、ほかの生きものは逃げていく。":
+      "An old-school LCD handheld. Clear the maze of mushrooms to advance. Ring the bear bell: the bear stops dead, everything else runs away.",
+    "を動かし、": " to move Iwao, and ",
+    "と次の面へ。": " to reach the next stage.",
+    "十字キー": "D-pad", "迷路のキノコを全部食べる": "eat every mushroom in the maze",
+    "キーボードは": "On a keyboard: ", "ではじめます。": " to start.",
+    "🔔 熊鈴": "🔔 Bear bell", "🍄 赤いキノコ": "🍄 Red mushroom", "☠ 毒キノコ": "☠ Poison mushroom",
+    "カ・クモ": "Mosquito / Spider", "ハチ": "Hornet", "ヘビ": "Snake", "クマ": "Bear",
+    "0.5 減る": "−0.5 life", "1 減る": "−1 life", "2 減る": "−2 life",
+    "3 減る（当たったら終わり）": "−3 life (one touch ends the game)",
+    "たいりょくが 1 もどる（3つまで）": "Restores 1 life (up to 3)",
+    "はじめ": "start", "おと": "sound",
+    "あそぶ ▶": "Games ▶",
     "ふるえは、はじけた時などに動きます。": "Your phone buzzes when a mushroom bursts.",
     "※ iPhone・iPad は、ふるえに対応していない場合があります（押して確かめてください）。":
       "* iPhone and iPad may not support vibration — tap the button to find out.",

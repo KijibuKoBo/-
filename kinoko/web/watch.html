@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>きのこウォッチ ｜ イワオトキノコ</title>
+  <meta name="description" content="昭和のゲームウォッチ風。迷路のキノコを全部食べて次の面へ。カ・クモ・ハチ・ヘビ・クマから逃げ、熊鈴で追い払え。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --body:#e8e0cf; --body2:#cfc5b0; --edge:#8d8370; --lcd:#9fae8e; --seg:#242a1f; --red:#b0342a; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+    html,body{ margin:0; padding:0; background:#2a2a28; color:#2b2a25;
+               font-family:"Noto Sans JP",sans-serif; overscroll-behavior:none; }
+    .topbar{ display:flex; align-items:center; justify-content:space-between; padding:10px 16px;
+             background:#16271f; color:#f1ede2; }
+    .topbar a{ color:#c9a86a; text-decoration:none; font-size:14px; }
+    .brandlogo{ display:block; width:auto; height:26px; }
+    @media (max-width:520px){ .brandlogo{ height:21px; } }
+    .wrap{ max-width:460px; margin:0 auto; padding:14px 10px 40px; }
+
+    /* ===== ゲームウォッチ本体 ===== */
+    .unit{ background:linear-gradient(170deg,var(--body),var(--body2));
+           border-radius:26px; padding:14px 14px 10px; box-shadow:0 0 0 2px var(--edge), 0 14px 32px rgba(0,0,0,.5);
+           position:relative; }
+    .unit__top{ display:flex; align-items:baseline; justify-content:space-between; padding:0 6px 8px; }
+    .unit__ttl{ font-family:"DotGothic16",monospace; font-size:17px; letter-spacing:.14em; color:#5a5243; }
+    .unit__sub{ font-size:9px; letter-spacing:.26em; color:#857b67; }
+    .screen{ background:#6f7d60; border-radius:12px; padding:9px; box-shadow:inset 0 3px 10px rgba(0,0,0,.45); }
+    canvas{ display:block; width:100%; height:auto; border-radius:5px; background:var(--lcd);
+            image-rendering:pixelated; touch-action:none; }
+    .unit__bot{ display:flex; align-items:center; justify-content:space-between; padding:10px 4px 0; gap:8px; }
+
+    /* 十字キー */
+    .dpad{ position:relative; width:104px; height:104px; flex:none; touch-action:none; }
+    .dpad i{ position:absolute; background:#3a362e; border-radius:5px; pointer-events:none; }
+    .dpad i.h{ left:0; top:36px; width:104px; height:32px; }
+    .dpad i.v{ left:36px; top:0; width:32px; height:104px; }
+    .dpad b{ position:absolute; left:44px; top:44px; width:16px; height:16px; border-radius:50%; background:#524c41; pointer-events:none; }
+    .dpad .dk{ position:absolute; border:none; background:transparent; padding:0; cursor:pointer; }
+    .dpad .dk::after{ content:""; position:absolute; left:50%; top:50%; width:0; height:0;
+                      transform:translate(-50%,-50%); border:8px solid transparent; }
+    .dk--l{ left:0;  top:30px; width:44px; height:44px; } .dk--l::after{ border-right-color:#8a8373; margin-left:-4px; }
+    .dk--r{ left:60px;top:30px; width:44px; height:44px; } .dk--r::after{ border-left-color:#8a8373; margin-left:4px; }
+    .dk--u{ left:30px;top:0;  width:44px; height:44px; } .dk--u::after{ border-bottom-color:#8a8373; margin-top:-4px; }
+    .dk--d{ left:30px;top:60px;width:44px; height:44px; } .dk--d::after{ border-top-color:#8a8373; margin-top:4px; }
+    .dk--l.is-on::after{ border-right-color:#f0e3a8; } .dk--r.is-on::after{ border-left-color:#f0e3a8; }
+    .dk--u.is-on::after{ border-bottom-color:#f0e3a8; } .dk--d.is-on::after{ border-top-color:#f0e3a8; }
+
+    .pads{ display:flex; flex-direction:column; gap:7px; align-items:flex-end; }
+    .ab{ display:flex; gap:9px; }
+    .ab button{ width:58px; height:58px; border-radius:50%; border:none; background:var(--red); color:#fff;
+                font-family:"DotGothic16",monospace; font-size:13px; cursor:pointer;
+                box-shadow:inset 0 -5px 0 rgba(0,0,0,.26), 0 3px 0 #7d241c; }
+    .ab button:active{ transform:translateY(2px); box-shadow:inset 0 -3px 0 rgba(0,0,0,.26); }
+    .ab span{ display:block; font-size:9px; }
+    .mini{ display:flex; gap:6px; }
+    .mini button{ font-family:"DotGothic16",monospace; font-size:11px; background:#d8d0bd; color:#4a443a;
+                  border:1px solid #a9a08b; border-radius:7px; padding:5px 10px; cursor:pointer; }
+    .mini button.is-on{ background:#5f7a4e; color:#f3efe3; border-color:#4a6140; }
+
+    .hint{ color:#b7b2a4; font-size:12px; line-height:1.75; margin:14px 2px 0; }
+    .hint b{ color:#e8e0cf; }
+    .tbl{ width:100%; border-collapse:collapse; margin:10px 0 0; font-size:12px; color:#cfcabb; }
+    .tbl th,.tbl td{ border:1px solid #4a473f; padding:5px 8px; text-align:left; }
+    .tbl th{ background:#3a3833; color:#e8e0cf; white-space:nowrap; }
+  </style>
+  <script src="kinoko-api.js?v=20261025-0900"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html"><img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr width="720" height="218" /></a>
+    <a href="game.html">あそぶ ▶</a>
+  </header>
+
+  <main class="wrap">
+    <div class="unit">
+      <div class="unit__top">
+        <span class="unit__ttl">きのこウォッチ</span>
+        <span class="unit__sub">IWAO&nbsp;TO&nbsp;KINOKO</span>
+      </div>
+      <div class="screen"><canvas id="cv" width="432" height="486"></canvas></div>
+      <div class="unit__bot">
+        <div class="dpad">
+          <i class="h"></i><i class="v"></i><b></b>
+          <button class="dk dk--u" id="kU" aria-label="うえ"></button>
+          <button class="dk dk--l" id="kL" aria-label="ひだり"></button>
+          <button class="dk dk--r" id="kR" aria-label="みぎ"></button>
+          <button class="dk dk--d" id="kD" aria-label="した"></button>
+        </div>
+        <div class="pads">
+          <div class="mini">
+            <button id="gA" class="is-on">GAME A</button>
+            <button id="gB">GAME B</button>
+          </div>
+          <div class="ab">
+            <div style="text-align:center"><button id="bStart">START</button><span>はじめ</span></div>
+            <div style="text-align:center"><button id="bSnd">♪</button><span>おと</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint">
+      <b>十字キー</b>で巖さんを動かし、<b>迷路のキノコを全部食べる</b>と次の面へ。<br>
+      キーボードは <b>← → ↑ ↓</b>、<b>Enter</b> ではじめます。
+    </p>
+
+    <table class="tbl">
+      <tr><th>🔔 熊鈴</th><td>鳴らすと <b>クマは立ち止まり</b>、ほかの生きものは <b>逃げていく</b>（8秒）</td></tr>
+      <tr><th>🍄 赤いキノコ</th><td>たいりょくが 1 もどる（3つまで）</td></tr>
+      <tr><th>☠ 毒キノコ</th><td>食べると 0.5 減る。<b>食べなくても面はクリアできる</b></td></tr>
+    </table>
+    <table class="tbl">
+      <tr><th>カ・クモ</th><td>0.5 減る</td></tr>
+      <tr><th>ハチ</th><td>1 減る</td></tr>
+      <tr><th>ヘビ</th><td>2 減る</td></tr>
+      <tr><th>クマ</th><td>3 減る（当たったら終わり）</td></tr>
+    </table>
+    <p class="hint">※ あそび用です。本物の採集は図鑑・専門家で確認を。</p>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+    var $ = function (s) { return document.querySelector(s); };
+    var cv = $("#cv"), ctx = cv.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    /* ---------- 画面のかたち ---------- */
+    var COLS = 13, ROWS = 11, CELL = 32;
+    var OX = 8, OY = 92;                         // 迷路の左上
+    var W = cv.width, H = cv.height;
+    var LCD = "#9fae8e", SEG = "#242a1f";
+    var GHOST = "rgba(36,42,31,.09)";            // 液晶の「消えている部分」
+
+    /* ---------- 迷路（#=かべ .=キノコ ' '=道） ---------- */
+    var MAZES = [
+      ["#############",
+       "#...........#",
+       "#.##.###.##.#",
+       "#.#.......#.#",
+       "#...#.#.#...#",
+       "##.##...##.##",
+       "#...#.#.#...#",
+       "#.#.......#.#",
+       "#.##.###.##.#",
+       "#...........#",
+       "#############"],
+      ["#############",
+       "#.....#.....#",
+       "#.###.#.###.#",
+       "#.#.......#.#",
+       "#.#.##.##.#.#",
+       "#.....#.....#",
+       "#.#.##.##.#.#",
+       "#.#.......#.#",
+       "#.###.#.###.#",
+       "#.....#.....#",
+       "#############"],
+      ["#############",
+       "#...#...#...#",
+       "#.#.#.#.#.#.#",
+       "#.#...#...#.#",
+       "#.#####.###.#",
+       "#...........#",
+       "#.###.#####.#",
+       "#.#...#...#.#",
+       "#.#.#.#.#.#.#",
+       "#...#...#...#",
+       "#############"],
+      ["#############",
+       "#...........#",
+       "#.#########.#",
+       "#.#.......#.#",
+       "#.#.#####.#.#",
+       "#.#.#...#.#.#",
+       "#.#.#.#.#.#.#",
+       "#.#...#...#.#",
+       "#.#####.###.#",
+       "#.........#.#",
+       "#############"]
+    ];
+
+    /* ---------- ドット絵（8×8） ---------- */
+    function P(a) { return a; }
+    var SPR = {
+      iwao1: P(["..####..",".######.","########","..####..",".##..##.","..####..","..#..#..",".##..##."]),
+      iwao2: P(["..####..",".######.","########","..####..",".##..##.","..####..","..####..","..#..#.."]),
+      mush:  P(["........","..####..",".######.","########","..####..","...##...","...##...","..####.."]),
+      heal:  P(["...##...","..####..",".######.","########","..####..","...##...","..####..","..####.."]),
+      bell:  P(["...##...","..####..",".######.",".######.","########","########","........","...##..."]),
+      ka:    P(["........",".#....#.","..#..#..","..####..","...##...","...##...","..#..#..","........"]),
+      kumo:  P(["........","#..##..#",".#.##.#.","..####..",".######.","..####..",".#.##.#.","#..##..#"]),
+      hachi: P(["........",".#....#.","..####..",".######.",".#.##.#.",".######.",".#.##.#.","..####.."]),
+      hebi:  P(["..####..",".##..##.",".##.....","..####..","....##..",".##..##.","..####..","........"]),
+      kuma:  P(["##....##","##....##",".######.","########","#.####.#","########",".######.",".##..##."])
+    };
+    function sprite(map, px, py, s, col) {
+      ctx.fillStyle = col || SEG;
+      for (var r = 0; r < map.length; r++) {
+        var row = map[r];
+        for (var c = 0; c < row.length; c++) {
+          if (row[c] !== "#") continue;
+          ctx.fillRect(px + c * s, py + r * s, s, s);
+        }
+      }
+    }
+    function cellPx(x, y) { return [OX + x * CELL, OY + y * CELL]; }
+    function drawAt(map, x, y, col, scale) {
+      var p = cellPx(x, y), s = scale || 3, pad = (CELL - 8 * s) / 2;
+      sprite(map, p[0] + pad, p[1] + pad, s, col);
+    }
+
+    /* ---------- 音（ゲームウォッチの電子音） ---------- */
+    var AC = null, sound = true;
+    try { sound = localStorage.getItem("kinoko_watch_snd") !== "0"; } catch (e) {}
+    function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+                    if (AC && AC.state === "suspended") AC.resume(); return AC; }
+    function beep(f, d, vol) {
+      if (!sound) return; var a = ac(); if (!a) return;
+      var o = a.createOscillator(), g = a.createGain();
+      o.type = "square"; o.frequency.value = f;
+      g.gain.value = (vol == null ? .06 : vol);
+      g.gain.exponentialRampToValueAtTime(.0005, a.currentTime + d);
+      o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + d + .01);
+    }
+    function tune(list) { var t = 0; list.forEach(function (n) { setTimeout(function () { beep(n[0], n[1]); }, t); t += n[2] || 90; }); }
+    var SFX = {
+      eat:   function () { beep(1180, .035, .05); },
+      heal:  function () { tune([[880,.08],[1175,.08],[1568,.14]]); },
+      bell:  function () { tune([[1568,.07],[1319,.07],[1568,.07],[2093,.16]]); },
+      poison:function () { tune([[320,.09],[240,.13]]); },
+      hurt:  function () { tune([[300,.1],[220,.12],[160,.2]]); },
+      clear: function () { tune([[784,.1],[988,.1],[1319,.1],[1568,.22]]); },
+      over:  function () { tune([[392,.16],[311,.16],[262,.16],[196,.42]]); },
+      start: function () { tune([[1047,.07],[1319,.07],[1568,.16]]); }
+    };
+
+    /* ---------- 状態 ---------- */
+    var DIRS = { l: [-1, 0], r: [1, 0], u: [0, -1], d: [0, 1] };
+    var mode = "title";                 // title / play / clear / over
+    var hard = false;                   // GAME B
+    var G = {};
+    var hi = 0; try { hi = Number(localStorage.getItem("kinoko_watch_hi") || 0) || 0; } catch (e) {}
+
+    /* 面ごとの顔ぶれ。あとの面ほど賑やかになる */
+    function stagePlan(n) {
+      var list = [];
+      list.push("ka");
+      if (n >= 2) list.push("kumo");
+      if (n >= 3) list.push("hachi");
+      if (n >= 4) list.push("hebi");
+      if (n >= 5) list.push("kuma");
+      if (n >= 6) list.push("ka");
+      if (n >= 7) list.push("hachi");
+      if (n >= 9) list.push("hebi");
+      return list;
+    }
+    var FOE = {
+      ka:    { spr: "ka",    dmg: 0.5, step: 170, move: "wander", name: "カ" },
+      kumo:  { spr: "kumo",  dmg: 0.5, step: 240, move: "patrol", name: "クモ" },
+      hachi: { spr: "hachi", dmg: 1.0, step: 140, move: "dash",   name: "ハチ" },
+      hebi:  { spr: "hebi",  dmg: 2.0, step: 230, move: "chase",  name: "ヘビ" },
+      kuma:  { spr: "kuma",  dmg: 3.0, step: 360, move: "chase",  name: "クマ" }
+    };
+
+    function walkable(x, y) {
+      return x >= 0 && y >= 0 && x < COLS && y < ROWS && G.wall[y][x] === 0;
+    }
+    function paths() {
+      var a = [];
+      for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) if (!G.wall[y][x]) a.push([x, y]);
+      return a;
+    }
+    function far(from, n) {                      // 遠いマスから n 個えらぶ
+      var a = paths().map(function (p) { return { p: p, d: Math.abs(p[0] - from[0]) + Math.abs(p[1] - from[1]) }; });
+      a.sort(function (q, r) { return r.d - q.d; });
+      return a.slice(0, Math.max(n * 3, 6)).sort(function () { return Math.random() - .5; }).slice(0, n).map(function (o) { return o.p; });
+    }
+
+    function buildStage(n) {
+      var m = MAZES[(n - 1) % MAZES.length];
+      G.wall = []; G.item = [];
+      for (var y = 0; y < ROWS; y++) {
+        G.wall.push([]); G.item.push([]);
+        for (var x = 0; x < COLS; x++) {
+          var ch = m[y][x];
+          G.wall[y].push(ch === "#" ? 1 : 0);
+          G.item[y].push(ch === "." ? "mush" : null);
+        }
+      }
+      G.px = 6; G.py = 5;                        // 巖さんの出発点
+      G.item[G.py][G.px] = null;
+      // 熊鈴（2つ）・回復キノコ・毒キノコ
+      var spots = far([G.px, G.py], 2 + 1 + Math.min(4, n - 1));
+      var k = 0;
+      G.item[spots[k][1]][spots[k][0]] = "bell"; k++;
+      if (spots[k]) { G.item[spots[k][1]][spots[k][0]] = "bell"; k++; }
+      if (n >= 2 && spots[k]) { G.item[spots[k][1]][spots[k][0]] = "heal"; k++; }
+      for (var i = 0; i < Math.min(4, n - 1); i++) {
+        if (spots[k]) { G.item[spots[k][1]][spots[k][0]] = "poison"; k++; }
+      }
+      G.left = 0;
+      for (var yy = 0; yy < ROWS; yy++) for (var xx = 0; xx < COLS; xx++) if (G.item[yy][xx] === "mush") G.left++;
+      // 生きもの
+      var corners = [[1, 1], [COLS - 2, 1], [1, ROWS - 2], [COLS - 2, ROWS - 2], [1, 5], [COLS - 2, 5]];
+      G.foes = stagePlan(n).map(function (kind, i) {
+        var c = corners[i % corners.length];
+        return { kind: kind, x: c[0], y: c[1], dir: "l", t: 0, frame: 0 };
+      });
+      G.dir = null; G.want = null; G.frame = 0; G.stepT = 0;
+    }
+
+    function reset() {
+      G = { stage: 1, score: 0, life: 3, bell: 0, inv: 0, msg: "", msgT: 0, noHit: true, flash: 0 };
+      buildStage(1);
+    }
+    reset();
+
+    function start() {
+      mode = "play"; ac();
+      G.stage = 1; G.score = 0; G.life = 3; G.bell = 0; G.inv = 0; G.noHit = true;
+      buildStage(1); say("ステージ 1");
+      SFX.start();
+    }
+    function say(t) { G.msg = t; G.msgT = 1.6; }
+
+    /* ---------- 動き ---------- */
+    function playerSpeed() { return hard ? 115 : 145; }
+    function foeSpeed(f) { return FOE[f.kind].step * (hard ? .8 : 1) * (1 - Math.min(.3, (G.stage - 1) * .04)); }
+
+    function tryMove(d) {
+      var v = DIRS[d]; if (!v) return false;
+      var nx = G.px + v[0], ny = G.py + v[1];
+      if (!walkable(nx, ny)) return false;
+      G.px = nx; G.py = ny; G.frame ^= 1;
+      pick();
+      return true;
+    }
+    function pick() {
+      var it = G.item[G.py][G.px];
+      if (!it) return;
+      G.item[G.py][G.px] = null;
+      if (it === "mush") {
+        G.left--; G.score += 10; SFX.eat();
+        if (G.left <= 0) stageClear();
+      } else if (it === "heal") {
+        G.score += 50;
+        if (G.life < 3) { G.life = Math.min(3, G.life + 1); say("たいりょく かいふく"); }
+        else { G.score += 100; say("まんたん +100"); }
+        SFX.heal();
+      } else if (it === "bell") {
+        G.score += 100; G.bell = 8; say("熊鈴！ みんな逃げる"); SFX.bell();
+      } else if (it === "poison") {
+        say("毒キノコ…"); SFX.poison(); damage(0.5, true);
+      }
+    }
+    function damage(n, quiet) {
+      if (G.inv > 0) return;
+      G.life = Math.round((G.life - n) * 2) / 2;
+      G.inv = 1.6; G.noHit = false; G.flash = .4;
+      if (!quiet) SFX.hurt();
+      if (G.life <= 0) { G.life = 0; gameOver(); }
+    }
+    function stageClear() {
+      mode = "clear";
+      var bonus = 300 + Math.round(G.life * 100) + (G.noHit ? 500 : 0);
+      G.score += bonus;
+      say(G.noHit ? "名人！ +" + bonus : "クリア！ +" + bonus);
+      SFX.clear();
+      setTimeout(function () {
+        if (mode !== "clear") return;
+        G.stage++; G.bell = 0; G.inv = 0; G.noHit = true;
+        buildStage(G.stage); mode = "play"; say("ステージ " + G.stage);
+      }, 2000);
+    }
+    function gameOver() {
+      mode = "over";
+      if (G.score > hi) { hi = G.score; try { localStorage.setItem("kinoko_watch_hi", String(hi)); } catch (e) {} }
+      SFX.over();
+    }
+
+    function foeStep(f) {
+      var kind = FOE[f.kind];
+      if (G.bell > 0 && f.kind === "kuma") return;          // クマは立ち止まる
+      var opts = [];
+      for (var d in DIRS) { var v = DIRS[d]; if (walkable(f.x + v[0], f.y + v[1])) opts.push(d); }
+      if (!opts.length) return;
+      var back = { l: "r", r: "l", u: "d", d: "u" }[f.dir];
+      var fwd = opts.filter(function (d) { return d !== back; });
+      var pool = fwd.length ? fwd : opts;
+      var d;
+      if (G.bell > 0) {                                      // 鈴が鳴っている間は逃げる
+        d = pool.reduce(function (best, dd) {
+          var v = DIRS[dd], s = Math.abs(f.x + v[0] - G.px) + Math.abs(f.y + v[1] - G.py);
+          return (best === null || s > best.s) ? { d: dd, s: s } : best;
+        }, null).d;
+      } else if (kind.move === "chase") {
+        d = pool.reduce(function (best, dd) {
+          var v = DIRS[dd], s = Math.abs(f.x + v[0] - G.px) + Math.abs(f.y + v[1] - G.py);
+          return (best === null || s < best.s) ? { d: dd, s: s } : best;
+        }, null).d;
+        if (Math.random() < .15) d = pool[(Math.random() * pool.length) | 0];   // たまに迷う
+      } else if (kind.move === "dash") {
+        d = (opts.indexOf(f.dir) >= 0) ? f.dir : pool[(Math.random() * pool.length) | 0];
+      } else if (kind.move === "patrol") {
+        d = (opts.indexOf(f.dir) >= 0 && Math.random() < .72) ? f.dir : pool[(Math.random() * pool.length) | 0];
+      } else {
+        d = pool[(Math.random() * pool.length) | 0];
+      }
+      var vv = DIRS[d];
+      f.dir = d; f.x += vv[0]; f.y += vv[1]; f.frame ^= 1;
+    }
+
+    function touching() {
+      for (var i = 0; i < G.foes.length; i++) {
+        var f = G.foes[i];
+        if (f.x === G.px && f.y === G.py) return f;
+      }
+      return null;
+    }
+
+    /* ---------- 入力 ---------- */
+    var held = { l: false, r: false, u: false, d: false }, dkEl = {};
+    function setHold(k, v) { held[k] = v; if (dkEl[k]) dkEl[k].classList.toggle("is-on", v); }
+    function clearHold() { ["l", "r", "u", "d"].forEach(function (k) { setHold(k, false); }); }
+    function press(k) {
+      if (mode === "title" || mode === "over") { start(); return; }
+      G.want = k;
+    }
+    /* あそんでいる最中の START は、うっかり押しても最初に戻らないように
+       「2回つづけて押したときだけ」やり直す */
+    var startTap = 0;
+    function pushStart() {
+      ac();
+      if (mode === "title" || mode === "over") { start(); return; }
+      var now = Date.now();
+      if (now - startTap < 1400) { startTap = 0; start(); }
+      else { startTap = now; say("もう一度おすと やり直し"); }
+    }
+    function bindKey(el, k) {
+      dkEl[k] = el;
+      el.addEventListener("pointerdown", function (e) { e.preventDefault(); ac(); setHold(k, true); press(k); });
+      el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    }
+    bindKey($("#kU"), "u"); bindKey($("#kL"), "l"); bindKey($("#kR"), "r"); bindKey($("#kD"), "d");
+    ["pointerup", "pointercancel"].forEach(function (ev) { window.addEventListener(ev, clearHold); });
+    window.addEventListener("blur", clearHold);
+
+    var KEY = { arrowleft: "l", arrowright: "r", arrowup: "u", arrowdown: "d", a: "l", d: "r", w: "u", s: "d" };
+    window.addEventListener("keydown", function (e) {
+      var k = KEY[e.key.toLowerCase()];
+      if (k) { e.preventDefault(); setHold(k, true); press(k); return; }
+      if (e.key === "Enter") { pushStart(); }
+    });
+    window.addEventListener("keyup", function (e) { var k = KEY[e.key.toLowerCase()]; if (k) setHold(k, false); });
+
+    /* 画面を指でなぞっても動かせる */
+    var sw = null;
+    cv.addEventListener("pointerdown", function (e) { ac(); sw = { x: e.clientX, y: e.clientY };
+      if (mode === "title" || mode === "over") start(); });
+    cv.addEventListener("pointermove", function (e) {
+      if (!sw) return;
+      var dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+      if (Math.abs(dx) < 18 && Math.abs(dy) < 18) return;
+      press(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "r" : "l") : (dy > 0 ? "d" : "u"));
+      sw = { x: e.clientX, y: e.clientY };
+    });
+    cv.addEventListener("pointerup", function () { sw = null; });
+
+    $("#bStart").addEventListener("pointerdown", function (e) { e.preventDefault(); pushStart(); });
+    $("#gA").addEventListener("click", function () { hard = false; $("#gA").classList.add("is-on"); $("#gB").classList.remove("is-on"); });
+    $("#gB").addEventListener("click", function () { hard = true; $("#gB").classList.add("is-on"); $("#gA").classList.remove("is-on"); });
+    var sndBtn = $("#bSnd");
+    function updSnd() { sndBtn.textContent = sound ? "♪" : "♪̸"; sndBtn.style.opacity = sound ? 1 : .55; }
+    updSnd();
+    sndBtn.addEventListener("click", function () {
+      sound = !sound; try { localStorage.setItem("kinoko_watch_snd", sound ? "1" : "0"); } catch (e) {}
+      updSnd(); if (sound) beep(1200, .06);
+    });
+
+    /* ---------- 更新 ---------- */
+    var last = 0;
+    function update(dt) {
+      if (G.msgT > 0) { G.msgT -= dt; if (G.msgT <= 0) G.msg = ""; }
+      if (G.flash > 0) G.flash -= dt;
+      if (mode !== "play") return;
+      if (G.inv > 0) G.inv -= dt;
+      if (G.bell > 0) G.bell = Math.max(0, G.bell - dt);
+
+      // 巖さん：キーを押しっぱなしでも進む
+      G.stepT += dt * 1000;
+      var iv = playerSpeed();
+      while (G.stepT >= iv) {
+        G.stepT -= iv;
+        var d = G.want || G.dir;
+        if (!held[d] && !G.want) {
+          var h = ["l", "r", "u", "d"].filter(function (k) { return held[k]; });
+          if (h.length) d = h[0];
+        }
+        if (d && tryMove(d)) { G.dir = d; G.want = null; }
+        else if (G.want && G.dir && tryMove(G.dir)) { /* 曲がれないので直進 */ }
+        else { G.want = null; }
+        if (mode !== "play") break;
+      }
+      // 生きもの
+      for (var i = 0; i < G.foes.length; i++) {
+        var f = G.foes[i];
+        f.t += dt * 1000;
+        var fv = foeSpeed(f);
+        while (f.t >= fv) { f.t -= fv; foeStep(f); }
+      }
+      var hit = touching();
+      if (hit && G.inv <= 0) {
+        say(FOE[hit.kind].name + "に やられた");
+        damage(FOE[hit.kind].dmg);
+      }
+    }
+
+    /* ---------- 描画 ---------- */
+    function text(s, x, y, size, col, align) {
+      ctx.font = 'bold ' + size + 'px "DotGothic16", monospace';
+      ctx.textAlign = align || "left"; ctx.textBaseline = "top";
+      ctx.fillStyle = col || SEG; ctx.fillText(s, x, y);
+    }
+    function clock() {
+      var d = new Date(), hh = String(d.getHours()).padStart(2, "0"), mm = String(d.getMinutes()).padStart(2, "0");
+      return hh + (d.getSeconds() % 2 ? " " : ":") + mm;
+    }
+    function drawLife() {
+      for (var i = 0; i < 3; i++) {
+        var x = 8 + i * 26, y = 36, full = G.life - i;
+        ctx.fillStyle = GHOST; ctx.fillRect(x, y, 20, 18);
+        if (full <= 0) continue;
+        ctx.fillStyle = SEG;
+        ctx.fillRect(x, y, full >= 1 ? 20 : 10, 18);
+      }
+    }
+    function draw() {
+      ctx.fillStyle = LCD; ctx.fillRect(0, 0, W, H);
+
+      /* 上の表示まわり */
+      text("SCORE", 8, 8, 12, SEG);
+      text(String(G.score).padStart(6, "0"), 58, 6, 18, SEG);
+      text("HI " + String(hi).padStart(6, "0"), W - 8, 10, 12, SEG, "right");
+      drawLife();
+      text("ステージ " + G.stage, 92, 38, 14, SEG);
+      text(clock(), W - 8, 36, 16, SEG, "right");
+      // 熊鈴の残り
+      ctx.fillStyle = GHOST; ctx.fillRect(8, 64, W - 16, 10);
+      if (G.bell > 0) { ctx.fillStyle = SEG; ctx.fillRect(8, 64, (W - 16) * (G.bell / 8), 10);
+        text("🔔", 8, 62, 12, LCD); }
+      text(hard ? "GAME B" : "GAME A", W - 8, 60, 11, SEG, "right");
+
+      /* 迷路：壁はベタ塗り、ふつうのキノコは小さな粒にして通路を読みやすく */
+      for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) {
+        var p = cellPx(x, y);
+        if (G.wall[y][x]) {
+          ctx.fillStyle = SEG;
+          ctx.fillRect(p[0] + 1, p[1] + 1, CELL - 2, CELL - 2);
+          continue;
+        }
+        var it = G.item[y][x];
+        if (it === "mush") drawAt(SPR.mush, x, y, SEG, 2);
+        else if (it === "heal") drawAt(SPR.heal, x, y, SEG, 3);
+        else if (it === "bell") drawAt(SPR.bell, x, y, SEG, 3);
+        else if (it === "poison") {
+          drawAt(SPR.mush, x, y, SEG, 2);
+          ctx.strokeStyle = SEG; ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(p[0] + 6, p[1] + 6); ctx.lineTo(p[0] + CELL - 6, p[1] + CELL - 6);
+          ctx.moveTo(p[0] + CELL - 6, p[1] + 6); ctx.lineTo(p[0] + 6, p[1] + CELL - 6);
+          ctx.stroke();
+        } else {
+          drawAt(SPR.mush, x, y, GHOST, 2);          // 食べたあとの「消えた液晶」
+        }
+      }
+
+      /* 生きもの */
+      for (var i = 0; i < G.foes.length; i++) {
+        var f = G.foes[i];
+        var faint = (G.bell > 0 && f.kind === "kuma") ? ((Date.now() >> 8) % 2 ? GHOST : SEG) : SEG;
+        drawAt(SPR[FOE[f.kind].spr], f.x, f.y, faint, 3);
+      }
+
+      /* 巖さん */
+      if (!(G.inv > 0 && ((Date.now() >> 7) % 2))) {
+        drawAt(G.frame ? SPR.iwao2 : SPR.iwao1, G.px, G.py, SEG, 3);
+        if (G.dir) {                                   // 向いている方に小さな印
+          var pp = cellPx(G.px, G.py), m = { l: [3, 14], r: [CELL - 9, 14], u: [14, 3], d: [14, CELL - 9] }[G.dir];
+          ctx.fillStyle = SEG; ctx.fillRect(pp[0] + m[0], pp[1] + m[1], 6, 6);
+        }
+      }
+
+      /* ことば */
+      var msgY = OY + ROWS * CELL + 6;
+      ctx.fillStyle = GHOST; ctx.fillRect(8, msgY, W - 16, 28);
+      if (G.msg) text(G.msg, W / 2, msgY + 5, 17, SEG, "center");
+
+      /* 画面全体の合図 */
+      if (G.flash > 0) { ctx.fillStyle = "rgba(36,42,31,.35)"; ctx.fillRect(0, 0, W, H); }
+
+      if (mode === "title") {
+        ctx.fillStyle = "rgba(159,174,142,.92)"; ctx.fillRect(0, 0, W, H);
+        text("きのこウォッチ", W / 2, 130, 30, SEG, "center");
+        text("迷路のキノコを ぜんぶ食べよう", W / 2, 180, 15, SEG, "center");
+        text("カ・クモ・ハチ・ヘビ・クマ に注意", W / 2, 206, 15, SEG, "center");
+        text("🔔 熊鈴で みんな逃げる", W / 2, 232, 15, SEG, "center");
+        drawAt(SPR.iwao1, 4, 7, SEG, 3); drawAt(SPR.mush, 6, 7, SEG, 2); drawAt(SPR.bell, 8, 7, SEG, 3);
+        if ((Date.now() >> 9) % 2) text("PUSH START", W / 2, 330, 22, SEG, "center");
+        text("HI " + String(hi).padStart(6, "0"), W / 2, 380, 14, SEG, "center");
+      }
+      if (mode === "over") {
+        ctx.fillStyle = "rgba(159,174,142,.93)"; ctx.fillRect(0, 0, W, H);
+        text("GAME OVER", W / 2, 150, 30, SEG, "center");
+        text("ステージ " + G.stage + " まで", W / 2, 200, 17, SEG, "center");
+        text("とくてん " + G.score, W / 2, 232, 20, SEG, "center");
+        if (G.score >= hi && G.score > 0) text("ハイスコア こうしん！", W / 2, 266, 16, SEG, "center");
+        if ((Date.now() >> 9) % 2) text("PUSH START", W / 2, 330, 22, SEG, "center");
+      }
+    }
+
+    function loop(now) {
+      var dt = last ? Math.min(.08, (now - last) / 1000) : 1 / 60;
+      last = now;
+      update(dt); draw();
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  })();
+  </script>
+
+  <script src="i18n.js?v=20261025-0900"></script>
+</body>
+</html>
