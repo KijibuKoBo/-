@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ドール家具の贈り物｜キャッチゲーム</title>
+<style>
+:root{--ink:#5c3924;--paper:#fff4d9;--wood:#b8793f;--red:#b94d3d}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#ead4a6;color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+body{display:flex;align-items:center;justify-content:center}
+#shell{position:relative;height:min(100dvh,900px);width:min(100vw,506px);aspect-ratio:9/16;
+  background:#f8e8c5;overflow:hidden;box-shadow:0 0 0 7px #8a4b2b,0 0 0 12px #e5c28a;border-radius:18px}
+/* 遊ぶところ。指で押さえている間、画面を動かさず、長押しの札も出さない */
+#game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none;
+  -webkit-tap-highlight-color:transparent;outline:none}
+#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:rgba(255,244,217,.84);text-align:center}
+.panel{width:100%;border:3px solid #a96c36;border-radius:20px;background:#fff3d6;padding:22px 18px;
+  box-shadow:inset 0 0 0 4px #e7c48a,0 8px 0 #8e542d}
+h1{font-size:clamp(28px,8vw,42px);line-height:1.25;margin:0 0 8px;letter-spacing:.04em}
+.sub{font-size:15px;line-height:1.8;margin:10px 0 14px}
+.legend{font-size:13px;line-height:1.7;margin:0 0 14px;padding:8px 10px;border-radius:12px;background:#fbe9c4}
+.legend b{color:#9a5b30}
+button{border:0;border-radius:999px;background:#b94d3d;color:#fff9e9;font-weight:800;font-size:20px;
+  padding:14px 30px;box-shadow:0 5px 0 #783629;cursor:pointer}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #783629}
+.small{font-size:12px;opacity:.85;margin-top:12px;line-height:1.6}
+.best{font-size:15px;margin-top:12px;font-weight:700}
+.newbest{display:inline-block;margin-left:6px;padding:2px 10px;border-radius:999px;background:#ffd65e;color:#6b3f12;font-size:13px}
+</style>
+</head>
+<body>
+<div id="shell">
+<canvas id="game" width="450" height="800" aria-label="ドール家具の贈り物ゲーム"></canvas>
+<div id="overlay">
+ <div class="panel">
+  <div style="font-size:44px;margin-bottom:2px">🎁 🪑 🧸</div>
+  <h1>ドール家具の<br>贈り物</h1>
+  <div style="font-weight:700;color:#9a5b30">ちいさな家具屋さんのキャッチゲーム</div>
+  <p class="sub">空からパラシュートで降りてくる<br>お菓子やおもちゃを、かごで受けとめよう。</p>
+  <div class="legend">
+   <b>ふつう</b>：キャンディ・チョコ・ビスケット・リボン・野球帽<br>
+   <b>ぬいぐるみ</b>：クマ・恐竜（少し高得点）<br>
+   <b>レア（大喜び）</b>：ドール家具 5種（100点）
+  </div>
+  <button id="start">あそぶ！</button>
+  <div class="best">最高記録 <span id="bestStart">0</span></div>
+  <div class="small">画面の左・右を押しつづけると、その方へ動きます<br>キーボードは ← → と A D、はじめは スペース</div>
+ </div>
+</div>
+</div>
+<script>
+(() => {
+'use strict';
+
+/* ==========================================================
+   ドール家具の贈り物 ── パラシュート型のキャッチゲーム
+   ----------------------------------------------------------
+   操作  … 画面の左右を押しつづけると、その方へ子どもが動く
+   取り逃しは3回まで（ハートが0になると終わり）
+   難しさは時間で増える（落ちる速さ・同時に降る数・レアの出やすさ）
+   ========================================================== */
+
+const W = 450, H = 800;
+const OUT = '#6b4226';
+const KEY_BEST = 'dollGiftBest';
+
+const cv = document.getElementById('game');
+const mainCtx = cv.getContext('2d');
+let ctx = mainCtx;
+const overlay = document.getElementById('overlay');
+
+/* 背景は一度だけ描いて、毎フレームは貼るだけにする */
+const bgCv = document.createElement('canvas');
+bgCv.width = W; bgCv.height = H;
+const bgCtx = bgCv.getContext('2d');
+
+/* 落ちてくるものの置き場（x の中心）。五列に分けて、重ならないように落とす */
+const LANES = [62, 147, 225, 303, 388];
+/* かご（子どもが持っている）の縁は y=672。そこを通ったものだけ受けられる */
+const CATCH_Y0 = 640, CATCH_Y1 = 690, MISS_Y = 704, CATCH_DX = 52;
+const CANOPY = ['#f4a6a0', '#a8d5b4', '#a9c8ec'];
+
+const NORMAL = [
+  { k: 'candy',   p: 10 }, { k: 'choco',  p: 10 }, { k: 'biscuit', p: 10 },
+  { k: 'ribbon',  p: 10 }, { k: 'cap',    p: 10 },
+  { k: 'bear',    p: 15 }, { k: 'dino',   p: 15 }
+];
+const RARE = [
+  { k: 'chair', p: 100 }, { k: 'table', p: 100 }, { k: 'chest', p: 100 },
+  { k: 'bed',   p: 100 }, { k: 'shelf', p: 100 }
+];
+const RARE_NAME = { chair: 'いす', table: 'ローテーブル', chest: 'チェスト', bed: 'ベッド', shelf: '本棚' };
+
+/* ---------- 手ざわり（時間で決まる。テストもここを見る） ---------- */
+const fallSpeed = (t) => Math.min(330, 120 + t * 2.2);            // px/秒
+const spawnGap  = (t) => Math.max(0.75, 1.9 - t * 0.012);         // 秒
+function groupSize(t) {                                            // 一度に降る数
+  const r = Math.random();
+  if (t < 20) return 1;
+  if (t < 45) return r < 0.35 ? 2 : 1;
+  if (t < 80) return r < 0.6 ? 2 : 1;
+  return r < 0.3 ? 3 : (r < 0.8 ? 2 : 1);
+}
+const rareChance = (t) => Math.min(0.12, 0.05 + t * 0.0007);
+
+/* ---------- 小さな道具 ---------- */
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+function loadBest() { try { return +(localStorage.getItem(KEY_BEST) || 0) || 0; } catch (e) { return 0; } }
+function saveBest(v) { try { localStorage.setItem(KEY_BEST, String(v)); } catch (e) { /* 保存できなくても遊べる */ } }
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+}
+function sparkle(x, y, s, col) {
+  ctx.fillStyle = col; ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.quadraticCurveTo(x, y, x + s, y); ctx.quadraticCurveTo(x, y, x, y + s);
+  ctx.quadraticCurveTo(x, y, x - s, y); ctx.quadraticCurveTo(x, y, x, y - s);
+  ctx.fill();
+}
+function heart(x, y, r, col) {
+  ctx.fillStyle = col; ctx.beginPath();
+  ctx.arc(x - r * 0.5, y - r * 0.2, r * 0.55, 0, Math.PI * 2);
+  ctx.arc(x + r * 0.5, y - r * 0.2, r * 0.55, 0, Math.PI * 2);
+  ctx.moveTo(x - r * 1.02, y - r * 0.05); ctx.lineTo(x, y + r * 0.95); ctx.lineTo(x + r * 1.02, y - r * 0.05);
+  ctx.fill();
+}
+
+/* ---------- 背景（水彩の作業場の雰囲気。一度だけ描く） ---------- */
+function paintBackground() {
+  let g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#fbeccc'); g.addColorStop(0.7, '#f3d7a6'); g.addColorStop(1, '#e6c088');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  /* 窓 */
+  rr(46, 92, 358, 300, 14); ctx.fillStyle = '#b9824c'; ctx.fill();
+  g = ctx.createLinearGradient(0, 100, 0, 380);
+  g.addColorStop(0, '#b8e0e6'); g.addColorStop(1, '#fff1cc');
+  rr(60, 106, 330, 272, 6); ctx.fillStyle = g; ctx.fill();
+  /* 遠くのおもちゃの家の屋根 */
+  [[92, '#e8b7a1'], [158, '#c9dfc0'], [240, '#e8c9a0'], [318, '#b8d4e0']].forEach(([x, c]) => {
+    ctx.fillStyle = c; ctx.beginPath();
+    ctx.moveTo(x - 30, 370); ctx.lineTo(x, 320); ctx.lineTo(x + 30, 370); ctx.closePath(); ctx.fill();
+    ctx.fillRect(x - 24, 370, 48, 22);
+  });
+  /* 雲 */
+  ctx.fillStyle = '#fff9e9';
+  [[120, 150], [150, 140], [176, 152], [300, 196], [328, 186], [352, 198]].forEach(([x, y]) => {
+    ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
+  });
+  /* 窓わく */
+  ctx.fillStyle = '#f9e5b9';
+  ctx.fillRect(218, 106, 10, 272); ctx.fillRect(60, 240, 330, 10);
+
+  /* 左右の棚 */
+  [[0, 40], [410, 40]].forEach(([x, w]) => {
+    rr(x, 150, w, 410, 4); ctx.fillStyle = '#b77b48'; ctx.fill();
+    for (let y = 210; y < 560; y += 92) { ctx.fillStyle = '#e4b87a'; ctx.fillRect(x, y, w, 8); }
+  });
+  ctx.font = '24px serif';
+  ctx.fillText('🧸', 6, 196); ctx.fillText('🏠', 8, 300); ctx.fillText('🌿', 9, 392);
+  ctx.fillText('📦', 414, 196); ctx.fillText('🪴', 414, 300); ctx.fillText('🧸', 414, 392);
+
+  /* 床 */
+  g = ctx.createLinearGradient(0, 560, 0, H);
+  g.addColorStop(0, '#d7a46f'); g.addColorStop(1, '#b97c4b');
+  ctx.fillStyle = g; ctx.fillRect(0, 556, W, H - 556);
+  ctx.strokeStyle = '#b57b4b'; ctx.lineWidth = 2;
+  for (let y = 580; y < H; y += 42) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  /* ラグ */
+  ctx.beginPath(); ctx.ellipse(225, 700, 196, 56, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#e9b778'; ctx.fill(); ctx.strokeStyle = '#bd824a'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(225, 700, 170, 42, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = '#f7dda8'; ctx.lineWidth = 4; ctx.stroke();
+
+  /* 看板のタイトル */
+  rr(18, 18, 262, 56, 16); ctx.fillStyle = '#fff3d7'; ctx.fill();
+  ctx.strokeStyle = '#a76b38'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#754524'; ctx.font = 'bold 21px system-ui, sans-serif';
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  ctx.fillText('ドール家具の贈り物', 32, 47);
+}
+ctx = bgCtx; paintBackground(); ctx = mainCtx;
+
+/* ---------- 落ちてくるもの（パラシュートつき） ---------- */
+function shape(fill, path) {
+  ctx.beginPath(); path(); ctx.fillStyle = fill; ctx.fill();
+  ctx.lineWidth = 1.8; ctx.strokeStyle = OUT; ctx.stroke();
+}
+const ICON = {
+  candy() {
+    shape('#f7a7a0', () => { ctx.moveTo(-13, 0); ctx.lineTo(-27, -9); ctx.lineTo(-27, 9); ctx.closePath(); });
+    shape('#f7a7a0', () => { ctx.moveTo(13, 0); ctx.lineTo(27, -9); ctx.lineTo(27, 9); ctx.closePath(); });
+    shape('#fff3e2', () => ctx.ellipse(0, 0, 14, 10.5, 0, 0, Math.PI * 2));
+    ctx.strokeStyle = '#e8716d'; ctx.lineWidth = 2.6; ctx.beginPath();
+    ctx.moveTo(-5, -9); ctx.lineTo(-5, 9); ctx.moveTo(5, -9); ctx.lineTo(5, 9); ctx.stroke();
+  },
+  choco() {
+    shape('#7a4a2b', () => ctx.roundRect ? ctx.roundRect(-16, -12, 32, 24, 3) : ctx.rect(-16, -12, 32, 24));
+    ctx.strokeStyle = '#5a3620'; ctx.lineWidth = 1.4; ctx.beginPath();
+    ctx.moveTo(-5.5, -12); ctx.lineTo(-5.5, 12); ctx.moveTo(5.5, -12); ctx.lineTo(5.5, 12);
+    ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
+  },
+  biscuit() {
+    shape('#e7b96e', () => ctx.arc(0, 0, 16, 0, Math.PI * 2));
+    ctx.strokeStyle = '#c58f47'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#b77a3a';
+    for (let i = 0; i < 6; i++) {
+      const a = i / 6 * Math.PI * 2;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 7, Math.sin(a) * 7, 1.6, 0, Math.PI * 2); ctx.fill();
+    }
+  },
+  ribbon() {
+    shape('#d9566b', () => ctx.ellipse(-9, -3, 9, 7, -0.4, 0, Math.PI * 2));
+    shape('#d9566b', () => ctx.ellipse(9, -3, 9, 7, 0.4, 0, Math.PI * 2));
+    shape('#b5394f', () => ctx.arc(0, -2, 4.5, 0, Math.PI * 2));
+    shape('#d9566b', () => { ctx.moveTo(-3, 2); ctx.lineTo(-8, 14); ctx.lineTo(-3, 12); ctx.closePath(); });
+    shape('#d9566b', () => { ctx.moveTo(3, 2); ctx.lineTo(8, 14); ctx.lineTo(3, 12); ctx.closePath(); });
+  },
+  cap() {
+    shape('#3f6aa8', () => ctx.ellipse(0, -2, 17, 13, 0, Math.PI, 0));
+    shape('#2f5288', () => ctx.ellipse(6, 3, 19, 5, -0.1, 0, Math.PI * 2));
+    shape('#f3e9d2', () => ctx.arc(0, -14, 2.4, 0, Math.PI * 2));
+  },
+  bear() {
+    shape('#b98452', () => ctx.arc(-10, -18, 5.5, 0, Math.PI * 2));
+    shape('#b98452', () => ctx.arc(10, -18, 5.5, 0, Math.PI * 2));
+    shape('#b98452', () => ctx.arc(0, -6, 14, 0, Math.PI * 2));
+    shape('#c99a6a', () => ctx.ellipse(0, 12, 12, 13, 0, 0, Math.PI * 2));
+    ctx.fillStyle = '#4a3426';
+    ctx.beginPath(); ctx.arc(-5, -8, 1.8, 0, Math.PI * 2); ctx.arc(5, -8, 1.8, 0, Math.PI * 2); ctx.fill();
+    shape('#d9566b', () => { ctx.moveTo(0, 4); ctx.lineTo(-8, 0); ctx.lineTo(-8, 8); ctx.closePath(); });
+    shape('#d9566b', () => { ctx.moveTo(0, 4); ctx.lineTo(8, 0); ctx.lineTo(8, 8); ctx.closePath(); });
+  },
+  dino() {
+    shape('#7fb27a', () => ctx.ellipse(0, 2, 16, 12, 0, 0, Math.PI * 2));
+    shape('#7fb27a', () => ctx.arc(12, -6, 9, 0, Math.PI * 2));
+    shape('#7fb27a', () => { ctx.moveTo(-14, 4); ctx.lineTo(-26, -2); ctx.lineTo(-12, -6); ctx.closePath(); });
+    shape('#e9c77a', () => { ctx.moveTo(-6, -10); ctx.lineTo(-2, -18); ctx.lineTo(2, -10); ctx.closePath(); });
+    shape('#e9c77a', () => { ctx.moveTo(4, -10); ctx.lineTo(8, -18); ctx.lineTo(12, -10); ctx.closePath(); });
+    ctx.fillStyle = '#4a3426'; ctx.beginPath(); ctx.arc(15, -8, 1.8, 0, Math.PI * 2); ctx.fill();
+  },
+  /* ドール家具（レア）。ドールハウスの大きさを、かごに入る大きさに縮めて描く */
+  chair() {
+    shape('#b47a45', () => ctx.roundRect ? ctx.roundRect(-13, -24, 6, 30, 2) : ctx.rect(-13, -24, 6, 30));
+    shape('#b47a45', () => ctx.roundRect ? ctx.roundRect(-13, -24, 26, 8, 2) : ctx.rect(-13, -24, 26, 8));
+    shape('#b47a45', () => ctx.roundRect ? ctx.roundRect(-13, 4, 26, 6, 2) : ctx.rect(-13, 4, 26, 6));
+    shape('#c94f4a', () => ctx.roundRect ? ctx.roundRect(-10, -2, 20, 5, 2) : ctx.rect(-10, -2, 20, 5));
+    shape('#9a5f33', () => ctx.rect(-12, 10, 4, 14));
+    shape('#9a5f33', () => ctx.rect(8, 10, 4, 14));
+  },
+  table() {
+    shape('#c9925a', () => ctx.ellipse(0, -6, 22, 7, 0, 0, Math.PI * 2));
+    shape('#a8703e', () => ctx.rect(-3, 1, 6, 16));
+    shape('#a8703e', () => ctx.ellipse(0, 18, 12, 3.5, 0, 0, Math.PI * 2));
+  },
+  chest() {
+    shape('#a86b3c', () => ctx.roundRect ? ctx.roundRect(-18, -22, 36, 44, 3) : ctx.rect(-18, -22, 36, 44));
+    shape('#c48350', () => ctx.rect(-15, -19, 30, 11));
+    shape('#c48350', () => ctx.rect(-15, -6, 30, 11));
+    shape('#c48350', () => ctx.rect(-15, 7, 30, 11));
+    ctx.fillStyle = '#f1d18a';
+    [-13.5, -0.5, 12.5].forEach((y) => { ctx.beginPath(); ctx.arc(0, y, 2.2, 0, Math.PI * 2); ctx.fill(); });
+  },
+  bed() {
+    shape('#9a6236', () => ctx.rect(-22, -20, 6, 32));
+    shape('#9a6236', () => ctx.rect(20, 0, 4, 12));
+    shape('#9a6236', () => ctx.rect(-22, 4, 44, 8));
+    shape('#f1e6d4', () => ctx.roundRect ? ctx.roundRect(-16, -5, 36, 9, 2) : ctx.rect(-16, -5, 36, 9));
+    ctx.fillStyle = '#5b86b3';
+    [-10, -3, 4, 11].forEach((x) => { ctx.beginPath(); ctx.arc(x, -0.5, 1.8, 0, Math.PI * 2); ctx.fill(); });
+  },
+  shelf() {
+    shape('#4f7a64', () => ctx.rect(-17, -24, 34, 48));
+    ctx.fillStyle = '#6f9a82';
+    ctx.fillRect(-17, -4, 34, 3); ctx.fillRect(-17, 12, 34, 3);
+    [['#d9566b', -14, -20], ['#e9c77a', -9, -20], ['#a9c8ec', -4, -20], ['#f4a6a0', -14, -2],
+     ['#e9c77a', -9, -2], ['#fff3e2', -4, -2], ['#a9c8ec', -14, 14], ['#d9566b', -9, 14]]
+      .forEach(([c, x, y]) => { ctx.fillStyle = c; ctx.fillRect(x, y, 4, 9); });
+  }
+};
+
+function drawItem(it) {
+  const x = it.bx + Math.sin(it.sway) * 5, y = it.y;
+  ctx.save();
+  ctx.translate(x, y);
+  /* パラシュートのひも */
+  ctx.strokeStyle = 'rgba(107,66,38,.55)'; ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(-22, -30); ctx.lineTo(-7, -6); ctx.moveTo(22, -30); ctx.lineTo(7, -6);
+  ctx.stroke();
+  /* 傘 */
+  const cols = it.rare ? ['#ffe27a', '#f2b53c'] : [CANOPY[it.uid % 3], '#fff7e6'];
+  ctx.beginPath(); ctx.arc(0, -30, 23, Math.PI, 0); ctx.closePath();
+  ctx.fillStyle = cols[0]; ctx.fill();
+  ctx.strokeStyle = OUT; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.strokeStyle = cols[1]; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(0, -53); ctx.lineTo(0, -30); ctx.stroke();
+  /* レアは、まわりがほんのり光る */
+  if (it.rare) {
+    ctx.globalAlpha = 0.35; ctx.fillStyle = '#ffd65e';
+    ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    sparkle(-26, -6, 4, '#fff6c9'); sparkle(26, 8, 3.5, '#fff6c9');
+  }
+  ICON[it.k]();
+  ctx.restore();
+}
+
+/* ---------- 子ども（かごを持っている） ---------- */
+function drawChild() {
+  const lift = st.jump > 0 ? -Math.abs(Math.sin((st.jump / 0.8) * Math.PI)) * 36 : 0;
+  const x = st.px;
+  ctx.save();
+  ctx.translate(x, lift);
+  /* かげ */
+  ctx.fillStyle = 'rgba(90,50,20,.18)';
+  ctx.beginPath(); ctx.ellipse(0, 744, 46, 9, 0, 0, Math.PI * 2); ctx.fill();
+  /* 足 */
+  ctx.fillStyle = '#4a5a7a';
+  rr(-14, 706, 11, 36, 4); ctx.fill(); rr(3, 706, 11, 36, 4); ctx.fill();
+  /* つなぎ（胴） */
+  ctx.fillStyle = '#6f93b8'; rr(-24, 650, 48, 62, 12); ctx.fill();
+  ctx.fillStyle = '#f7efe0'; rr(-20, 640, 40, 22, 8); ctx.fill();
+  /* 両手（喜んでいるときは上げる） */
+  ctx.strokeStyle = '#f3cfa3'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+  const up = st.face === 'wow' || st.face === 'happy';
+  ctx.beginPath();
+  ctx.moveTo(-18, 652); ctx.lineTo(up ? -30 : -26, up ? 612 : 680);
+  ctx.moveTo(18, 652); ctx.lineTo(up ? 30 : 26, up ? 612 : 680);
+  ctx.stroke();
+  /* 頭と髪 */
+  ctx.fillStyle = '#f3cfa3'; ctx.beginPath(); ctx.arc(0, 618, 26, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#7a4a2c'; ctx.beginPath(); ctx.arc(0, 612, 27, Math.PI, 0); ctx.fill();
+  /* 帽子 */
+  ctx.fillStyle = '#6e7f5d';
+  ctx.beginPath(); ctx.ellipse(0, 598, 28, 10, 0, Math.PI, 0); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(12, 600, 16, 4, 0, 0, Math.PI * 2); ctx.fill();
+  /* 顔 */
+  ctx.strokeStyle = '#4a3426'; ctx.fillStyle = '#4a3426'; ctx.lineWidth = 2.2;
+  const f = st.face;
+  if (f === 'happy') {
+    ctx.beginPath(); ctx.arc(-9, 620, 3.4, Math.PI, 0); ctx.arc(9, 620, 3.4, Math.PI, 0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 628, 6, 0, Math.PI); ctx.fill();
+  } else if (f === 'wow') {
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-9, 619, 4.8, 0, Math.PI * 2); ctx.arc(9, 619, 4.8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#4a3426'; ctx.beginPath(); ctx.arc(-9, 619, 2.2, 0, Math.PI * 2); ctx.arc(9, 619, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 632, 4.5, 0, Math.PI * 2); ctx.fill();
+  } else if (f === 'sad') {
+    ctx.beginPath(); ctx.arc(-9, 620, 2.4, 0, Math.PI * 2); ctx.arc(9, 620, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-14, 610); ctx.lineTo(-5, 613); ctx.moveTo(14, 610); ctx.lineTo(5, 613); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 642, 6, Math.PI * 1.2, Math.PI * 1.8); ctx.stroke();
+    ctx.fillStyle = '#9bc4e8'; ctx.beginPath(); ctx.ellipse(12, 630, 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.arc(-9, 620, 2.4, 0, Math.PI * 2); ctx.arc(9, 620, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 626, 7, Math.PI * 0.15, Math.PI * 0.85); ctx.stroke();
+  }
+  /* ほっぺ */
+  ctx.fillStyle = 'rgba(232,130,120,.4)';
+  ctx.beginPath(); ctx.arc(-16, 630, 4, 0, Math.PI * 2); ctx.arc(16, 630, 4, 0, Math.PI * 2); ctx.fill();
+  /* かご（縁は y=672） */
+  ctx.fillStyle = '#c99257'; ctx.strokeStyle = '#8e5a2c'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(0, 672, 48, 22, 0, 0, Math.PI); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#f1ce8c'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(0, 672, 48, 7, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+
+/* ---------- 演出の粒、画面の文字札、上の表示 ---------- */
+function burst(x, y, n, cols, speed, life) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, v = speed * (0.4 + Math.random() * 0.6);
+    st.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - speed * 0.4,
+      life, max: life, c: pick(cols), s: 3 + Math.random() * 3 });
+  }
+}
+function updateParts(dt) {
+  st.parts.forEach((p) => { p.vy += 420 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+  st.parts = st.parts.filter((p) => p.life > 0);
+}
+function drawParts() {
+  st.parts.forEach((p) => { ctx.globalAlpha = Math.max(0, p.life / p.max); sparkle(p.x, p.y, p.s, p.c); });
+  ctx.globalAlpha = 1;
+}
+function setToast(text, col, t, big) { st.toast = { text, col, t, big: !!big }; }
+function drawToast() {
+  const tt = st.toast;
+  if (!tt) return;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, tt.t / 0.3);
+  ctx.font = tt.big ? 'bold 24px system-ui, sans-serif' : 'bold 20px system-ui, sans-serif';
+  const w = Math.max(190, ctx.measureText(tt.text).width + 44);
+  rr(W / 2 - w / 2, 506, w, 46, 22);
+  ctx.fillStyle = 'rgba(255,247,226,.96)'; ctx.fill();
+  ctx.strokeStyle = tt.col; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = tt.col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(tt.text, W / 2, 529);
+  ctx.restore();
+}
+function drawHud() {
+  rr(296, 18, 140, 58, 14); ctx.fillStyle = '#fff3d7'; ctx.fill();
+  ctx.strokeStyle = '#a76b38'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = '#754524'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = 'bold 14px system-ui, sans-serif'; ctx.fillText('SCORE', 310, 38);
+  ctx.font = 'bold 26px ui-monospace, monospace'; ctx.fillText(String(st.score).padStart(5, '0'), 310, 64);
+  for (let i = 0; i < 3; i++) heart(332 + i * 36, 104, 10, i < st.lives ? '#e0604f' : '#e8d6b8');
+  if (st.combo >= 3) {
+    rr(18, 84, 150, 38, 13); ctx.fillStyle = '#ffdf7a'; ctx.fill();
+    ctx.strokeStyle = '#b77b32'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#78471e'; ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.fillText('コンボ ' + st.combo + '　×2', 30, 109);
+  }
+  if (st.flash > 0) {
+    ctx.globalAlpha = Math.min(0.5, st.flash);
+    ctx.fillStyle = '#fff3c4'; ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ==========================================================
+   状態と、まわし方
+   ========================================================== */
+let uidSeq = 0;
+const st = {
+  mode: 'ready', t: 0, score: 0, lives: 3, combo: 0, catches: 0, rareCount: 0,
+  items: [], px: W / 2, move: 0, spawnIn: 0.5,
+  face: 'idle', faceT: 0, jump: 0, flash: 0, toast: null, parts: [],
+  best: loadBest()
+};
+
+function makeItem(def, rare, bx, y) {
+  return { k: def.k, p: def.p, rare, bx, y, sway: Math.random() * 6.28, uid: uidSeq++ };
+}
+function spawnGroup() {
+  const n = groupSize(st.t);
+  const lanes = LANES.map((_, i) => i).sort(() => Math.random() - 0.5).slice(0, n);
+  lanes.forEach((li) => {
+    const rare = Math.random() < rareChance(st.t);
+    const def = rare ? pick(RARE) : pick(NORMAL);
+    st.items.push(makeItem(def, rare, LANES[li] + (Math.random() * 16 - 8), 120));
+  });
+}
+
+function catchItem(it) {
+  const mult = st.combo >= 3 ? 2 : 1;
+  st.score += it.p * mult;
+  st.combo++;
+  st.catches++;
+  if (it.rare) {
+    st.rareCount++;
+    st.face = 'wow'; st.faceT = 1.4;
+    st.jump = 0.8; st.flash = 0.35;
+    burst(it.bx, 660, 26, ['#ffd65e', '#fff3b0', '#f2a65a', '#ffffff'], 300, 1.1);
+    setToast('わぁ！ ' + RARE_NAME[it.k] + ' だ！', '#9a5d12', 1.8, true);
+  } else {
+    st.face = 'happy'; st.faceT = 0.55;
+    burst(it.bx, 660, 8, ['#f7a7a0', '#a8d5b4', '#a9c8ec', '#fff3b0'], 160, 0.7);
+    if (st.combo === 3) setToast('いい調子！ コンボ！', '#9b5a2d', 0.9);
+    else if (st.combo % 5 === 0) setToast('コンボ ' + st.combo + '！', '#9b5a2d', 0.9);
+    else setToast('やったー！', '#9b5a2d', 0.9);
+  }
+}
+function missItem(it) {
+  st.lives--;
+  st.combo = 0;
+  st.face = 'sad'; st.faceT = 0.9;
+  burst(it.bx, 700, 6, ['#9bb8d8', '#cfe3f5'], 90, 0.6);
+  setToast('あ… おちちゃった', '#8a4b3a', 1.0);
+  if (st.lives <= 0) endGame();
+}
+
+function update(dt) {
+  st.t += dt;
+  st.faceT = Math.max(0, st.faceT - dt);
+  if (st.faceT === 0 && st.face !== 'idle') st.face = 'idle';
+  st.jump = Math.max(0, st.jump - dt);
+  st.flash = Math.max(0, st.flash - dt);
+  if (st.toast) { st.toast.t -= dt; if (st.toast.t <= 0) st.toast = null; }
+
+  st.px = clamp(st.px + st.move * 360 * dt, 48, W - 48);
+
+  st.spawnIn -= dt;
+  if (st.spawnIn <= 0) {
+    spawnGroup();
+    st.spawnIn = spawnGap(st.t) * (0.92 + Math.random() * 0.16);
+  }
+
+  const v = fallSpeed(st.t);
+  for (let i = st.items.length - 1; i >= 0; i--) {
+    const it = st.items[i];
+    it.y += v * dt; it.sway += dt * 2;
+    if (it.y >= CATCH_Y0 && it.y <= CATCH_Y1 && Math.abs(it.bx - st.px) < CATCH_DX) {
+      st.items.splice(i, 1);
+      catchItem(it);
+    } else if (it.y > MISS_Y) {
+      st.items.splice(i, 1);
+      missItem(it);
+      if (st.mode !== 'playing') return;
+    }
+  }
+}
+
+/* ---------- 画面と、ゲームの流れ ---------- */
+function render() {
+  ctx.drawImage(bgCv, 0, 0);
+  st.items.forEach(drawItem);
+  drawChild();
+  drawParts();
+  drawHud();
+  drawToast();
+}
+
+let last = 0;
+function frame(now) {
+  const dt = Math.min(0.04, (now - (last || now)) / 1000);
+  last = now;
+  if (st.mode === 'playing') update(dt);
+  updateParts(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+
+function start() {
+  Object.assign(st, {
+    mode: 'playing', t: 0, score: 0, lives: 3, combo: 0, catches: 0, rareCount: 0,
+    items: [], px: W / 2, move: 0, spawnIn: 0.5, face: 'idle', faceT: 0, jump: 0, flash: 0, toast: null
+  });
+  st.parts = [];
+  overlay.style.display = 'none';
+}
+
+function endGame() {
+  st.mode = 'over';
+  st.move = 0;
+  st.items = [];
+  const isNew = st.score > 0 && st.score > st.best;
+  st.best = Math.max(st.best, st.score);
+  saveBest(st.best);
+  const msg = st.score >= 1000 ? 'すてきな家具屋さんだね！'
+    : st.score >= 300 ? 'いい家具がそろったね！' : 'また挑戦してみよう！';
+  overlay.innerHTML =
+    `<div class="panel">
+       <div style="font-size:44px">🎁 🧸</div>
+       <h1>おつかれさま！</h1>
+       <p class="sub">今回のスコア<br><strong style="font-size:38px">${st.score}</strong><br>
+         キャッチ ${st.catches}こ ・ レア ${st.rareCount}こ<br><br>
+         最高記録：<strong>${st.best}</strong>${isNew ? '<span class="newbest">新記録！</span>' : ''}<br><br>${msg}</p>
+       <button id="again">もういちど</button>
+       <div class="small">取り逃しは3回まで。ドール家具をたくさん受けとめよう</div>
+     </div>`;
+  overlay.style.display = 'flex';
+  document.getElementById('again').onclick = start;
+}
+
+document.getElementById('start').onclick = start;
+document.getElementById('bestStart').textContent = String(st.best);
+
+/* ---------- 操作：画面の左右を押しつづける ---------- */
+let pressing = false;
+const sideOf = (e) => {
+  const r = cv.getBoundingClientRect();
+  return (e.clientX - r.left) < r.width / 2 ? -1 : 1;
+};
+cv.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  pressing = true;
+  st.move = sideOf(e);
+});
+cv.addEventListener('pointermove', (e) => {
+  if (pressing) st.move = sideOf(e);
+});
+const release = () => { pressing = false; st.move = 0; };
+window.addEventListener('pointerup', release);
+window.addEventListener('pointercancel', release);
+window.addEventListener('blur', release);
+
+const KEY_DIR = { ArrowLeft: -1, a: -1, ArrowRight: 1, d: 1 };
+document.addEventListener('keydown', (e) => {
+  if (e.key in KEY_DIR) { st.move = KEY_DIR[e.key]; e.preventDefault(); }
+  if (e.key === ' ' && st.mode !== 'playing' && !e.repeat) { start(); e.preventDefault(); }
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key in KEY_DIR) st.move = 0;
+});
+
+/* 長押しの札・文字選択・画像の引きずりを、遊ぶところの上で止める */
+const shell = document.getElementById('shell');
+['contextmenu', 'selectstart', 'dragstart'].forEach((ev) => {
+  shell.addEventListener(ev, (e) => e.preventDefault());
+});
+
+/* テスト用の窓。読むだけ。遊びには使わない */
+window.__dollGift = {
+  snapshot() {
+    return {
+      mode: st.mode, t: st.t, score: st.score, lives: st.lives, combo: st.combo,
+      catches: st.catches, rareCount: st.rareCount, px: st.px, face: st.face,
+      best: st.best, toast: st.toast ? st.toast.text : null,
+      items: st.items.map((i) => ({ k: i.k, bx: i.bx, y: i.y, rare: i.rare }))
+    };
+  },
+  spawn(k, bx, y) {
+    const rare = RARE.some((r) => r.k === k);
+    const def = [...NORMAL, ...RARE].find((d) => d.k === k);
+    st.items.push(makeItem(def, rare, bx, y));
+  },
+  move(m) { st.move = m; },
+  tune: { fallSpeed, spawnGap, groupSize, rareChance }
+};
+
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
