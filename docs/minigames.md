@@ -912,3 +912,49 @@ CRAFT_ACTIONS に キー を1つ足す
 ---
 
 最終更新: 2026-10-20（全10種・バージョン77 時点）
+
+---
+
+## 8. スマホで、手が切れないようにする
+
+長押しすると、ブラウザが勝手に**「文字を選ぶ」「画像を保存する」の札**を出します。
+二度叩くと**拡大**し、二本指でも**拡大**します。
+どれも、遊んでいる最中に起きると**手が切れます**。
+とくに⑩塗装は「押さえつづける」遊びなので、札が出た時点で終わりです。
+
+遊ぶところ（`.act-stage`・`.room-stage`・`.avf-stage`・`.doll-prev`）に、
+四つまとめて掛けてあります。
+
+| 指定 | 止めるもの |
+|---|---|
+| `touch-action:none` | 画面送り・二度叩きの拡大・二本指の拡大 |
+| `-webkit-touch-callout:none` | iPhone の「長押しで出る札」 |
+| `user-select:none`（`-webkit-` も） | なぞった跡が文字選択になること |
+| `-webkit-user-drag:none` | 絵を指で引きずって持ち出すこと |
+
+`-webkit-user-select` は**古い iPhone では前置きがないと効かない**ので、両方書いています。
+
+CSS だけでは Android の長押しが残ることがあるので、JS でも止めています。
+
+```js
+const PLAY_AREA = ".act-stage, .room-stage, .avf-stage, .doll-prev";
+["contextmenu", "selectstart", "dragstart"].forEach((ev) => {
+  document.addEventListener(ev, (e) => {
+    if (e.target.closest && e.target.closest(PLAY_AREA)) e.preventDefault();
+  }, { passive: false });
+});
+```
+
+**遊ぶところの上だけ**で止めています。画面ぜんたいで止めると、
+童話のページで右クリックも使えなくなるためです。
+
+絵は `pointer-events:none` にして、指は `svg` そのものが受けます。
+ただし**人形の部屋の家具（`.rp`）は除きます**。あちらは一つずつ掴んで動かすので、
+絵が指を受けなければ動かせません。
+
+画面ぜんたいの拡大（`user-scalable=no`）は**かけていません**。
+目の悪い方が文章を大きくできなくなるためです。遊ぶところの上では
+`touch-action:none` が効くので、それで足ります。
+
+`touchtest.js` が、この六つを見張ります。あわせて、**二秒押さえつづけたとき
+塗料が乗りつづけるか**も、本物の指の合図で確かめています。

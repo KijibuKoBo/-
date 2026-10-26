@@ -59,7 +59,10 @@ body{
   touch-action:manipulation;
   overflow-x:hidden;
   display:flex; flex-direction:column;
-  user-select:none;
+  /* 長押しで「文字を選ぶ」「画像を保存する」の札が出ると、操作が途切れる。
+     古い iPhone は -webkit- を付けないと効かないので、両方書いておく */
+  user-select:none; -webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
 
 /* ---------- ヘッダー ---------- */
@@ -892,6 +895,21 @@ footer{
   text-align:center; margin-bottom:8px;
 }
 .act-tip b{ color:var(--brown); }
+/* 遊ぶところ。指でなぞる・押さえつづける間、ブラウザに横から手を出させない。
+     touch-action:none      … 画面送り・二本指の拡大・二度叩きの拡大を止める
+     touch-callout:none     … iPhone の「長押しで出る札」を止める
+     user-select:none       … なぞった跡が「文字の選択」にならないようにする
+     user-drag:none         … 絵を指で引きずって持ち出せないようにする
+   塗装のように**押さえつづける**遊びでは、どれが欠けても手が切れる */
+.act-stage, .room-stage, .avf-stage, .doll-prev{
+  -webkit-touch-callout:none;
+  user-select:none; -webkit-user-select:none;
+  -webkit-user-drag:none;
+}
+/* 山場の絵は、ぜんぶ下じき。指は svg そのものが受ける。
+   人形の部屋の絵（.rp）は、ひとつずつ掴んで動かすので、ここには入れない */
+.act-stage img, .act-stage image{ -webkit-user-drag:none; pointer-events:none; }
+.room-stage img, .room-stage image{ -webkit-user-drag:none; }
 .act-stage{
   width:100%; max-width:320px; margin:0 auto;
   aspect-ratio:1/1; border-radius:16px; overflow:hidden;
@@ -6522,6 +6540,17 @@ function load() {
    ヘルパー
    ========================================================== */
 const $ = (sel) => document.querySelector(sel);
+
+/* 指で長く押さえたとき、ブラウザが割りこんでくるのを止める。
+   CSS だけでは Android の「長押しの札」や、絵の引きずりが残ることがある。
+   遊ぶところの上だけで止める（文章のところは、これまでどおり） */
+const PLAY_AREA = ".act-stage, .room-stage, .avf-stage, .doll-prev";
+["contextmenu", "selectstart", "dragstart"].forEach((ev) => {
+  document.addEventListener(ev, (e) => {
+    const t = e.target;
+    if (t && t.closest && t.closest(PLAY_AREA)) e.preventDefault();
+  }, { passive: false });
+});
 const furnitureById = (id) => FURNITURE.find(f => f.id === id);
 const materialById = (id) => MATERIALS.find(m => m.id === id);
 const designById = (id) => DESIGNS.find(d => d.id === id) || DESIGNS[0];
