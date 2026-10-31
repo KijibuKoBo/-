@@ -3502,63 +3502,6 @@ function actPoint(svg, e) {
 const actDist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp100 = (n) => Math.max(0, Math.min(100, Math.round(n)));
 
-/* ----------------------------------------------------------
-   彫刻の文様
-   一筆でなぞれる形だけを使う。points() が採点用の通過点、
-   dense() が下絵として描くなめらかな線。
-   文様を足すときは、この2つを返す項目を1つ増やすだけでよい。
-   ---------------------------------------------------------- */
-const CARVE_PATTERNS = {
-
-  /* 唐草：うねって伸び、先で渦を巻く。工房の定番の彫り */
-  vine: {
-    label: "唐草文様 ── つるの根もとから、渦の先まで",
-    curve(t) {
-      if (t < 0.62) {                      // うねりながら右上へ伸びる茎
-        const u = t / 0.62;
-        return { x: 44 + u * 141,
-                 y: 214 - u * 100 - Math.sin(u * Math.PI) * 34 };
-      }
-      const u = (t - 0.62) / 0.38;         // 先端で内へ巻きこむ
-      const a = Math.PI + u * Math.PI * 1.85;
-      const r = 30 - u * 21;
-      return { x: 215 + Math.cos(a) * r, y: 114 + Math.sin(a) * r };
-    },
-    points() { const o = []; for (let i = 0; i <= 15; i++) o.push(this.curve(i / 15)); return o; },
-    dense()  { const o = []; for (let i = 0; i <= 90; i++) o.push(this.curve(i / 90)); return o; },
-    /* 茎に添える葉。なぞる対象ではなく、彫りらしく見せるための飾り */
-    decor: `<path d="M96 176 q-22 -8 -26 -28 q22 3 30 22 Z" fill="#8a5a30" opacity=".3"/>
-            <path d="M140 138 q6 -23 26 -30 q-3 22 -21 32 Z" fill="#8a5a30" opacity=".3"/>
-            <path d="M74 214 q-20 6 -32 -6 q17 -11 33 -1 Z" fill="#8a5a30" opacity=".26"/>`
-  },
-
-  /* 花文様：五弁の花。中心を五度くぐる、彫りごたえのある一筆 */
-  rose: {
-    label: "花文様 ── 中心を通って、花びらを五枚",
-    labelY: 294,
-    curve(t) {
-      const a = t * Math.PI * 4;           // 五弁が閉じるまで
-      const r = 84 * Math.cos(2.5 * a);
-      return { x: 150 + Math.cos(a) * r, y: 152 + Math.sin(a) * r };
-    },
-    points() { const o = []; for (let i = 0; i <= 21; i++) o.push(this.curve(i / 21)); return o; },
-    dense()  { const o = []; for (let i = 0; i <= 160; i++) o.push(this.curve(i / 160)); return o; },
-    decor: `<circle cx="150" cy="152" r="9" fill="#8a5a30" opacity=".3"/>
-            <circle cx="150" cy="152" r="112" fill="none" stroke="#8a5a30"
-              stroke-width="2" opacity=".2" stroke-dasharray="4 7"/>`
-  }
-};
-
-/* どの家具でどの文様を彫るか。彫刻の山場を持つ家具だけ書けばよい */
-const CARVE_PATTERN = {
-  mitsudan: "vine", dresser: "rose",
-  balcony_chair: "vine",   // アイアンの渦
-  mantelpiece: "vine",     // 上框の蔓草
-  bed_arch: "rose",        // ゴシックアーチの透かし
-  birdcage_stand: "vine",  // 真鍮線を編んだ籠
-  oak_dresser: "rose"      // 鏡の上の冠の飾り
-};
-
 /* ==========================================================
    ミニゲーム（職人アクション）10種
    ----------------------------------------------------------
@@ -4886,86 +4829,240 @@ const CRAFT_ACTIONS = {
   },
 
   /* ================================================================
-     ⑤ 彫刻（一筆なぞり）
-     下絵を一筆でなぞる。三つの文様を続けて彫る。離すと彫り直し。
+     ⑤ 彫刻（彫り抜けの迷路）
+     板に彫られた溝を、タップで回してつなぐ。入り口から出口まで、
+     刃が通れるようになったら脱出。三枚の板を続けて彫り抜く。
+
+     溝は四方向のどこへ開くかで決まる。タップすると、その一枚が
+     時計まわりに 90 度回る。正しい向きに戻った溝は「ちょうど」。
+     正しい向きを崩せば、その分の点をひかれる。
+     節（ふし）は動かせない。ふさがった所は、回り道で抜ける。
      ================================================================ */
   hori: {
     name: "彫刻", limit: 50000,
-    tip: "下絵の線を<b>一筆でなぞる</b>。線から離れると彫りが浅くなる。",
+    tip: "板の<b>溝をタップ</b>して回し、入り口から出口まで刃が通るようにつなげ。<b>節</b>は動かせん。正しい向きに戻すと点が入り、崩すと引かれるぞ。",
     start(svg, ui, done, lv) {
-      const h = actHard(lv);
-      const kind = CARVE_PATTERN[state.currentId] || "vine";
-      const pat = CARVE_PATTERNS[kind];
-      const ROUNDS = 3;
-      const sc = actScore(ROUNDS * 22);
-      let round = 0, pts = [], near = [], drawn = [], ok = 0, judging = false, over = false;
+      const SIZES = [[4, 4, 6, 9], [5, 4, 7, 10], [5, 5, 8, 11]];   // [列, 段, 短い溝, 長い溝]
+      const KNOTS = [1, 2, 2];                                       // 板ごとの節の数（lv3 では一つ増える）
+      const N = 1, E = 2, S = 4, W = 8;
+      const DIRS = [[N, 0, -1], [E, 1, 0], [S, 0, 1], [W, -1, 0]];
+      const OPP = { [N]: S, [S]: N, [E]: W, [W]: E };
+      const rotOnce = (m) => ((m << 1) | (m >> 3)) & 15;             // 時計まわりに 90 度
+      const rotN = (m, k) => { for (let i = 0; i < k; i++) m = rotOnce(m); return m; };
+      const bitTo = (x, y, nx, ny) => (nx > x ? E : nx < x ? W : ny > y ? S : N);
+      const rnd = (n) => Math.floor(Math.random() * n);
 
-      const setup = () => {
-        if (over) return 0;
-        pts = pat.points();
-        near = new Array(pts.length).fill(1e9);
-        drawn = [];
-        const scaleLabel = ["ゆっくりで良い", "少し細い線じゃ", "いちばん細い線じゃ"][round];
-        const tol = [30, 24, 18][round] / h;
-        svg.innerHTML =
-          `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
-           <rect x="18" y="18" width="264" height="264" rx="16" fill="#c98d54"/>
-           ${pat.decor}
-           <path d="${pat.dense().map((p, i) => (i ? "L" : "M") + p.x + " " + p.y).join(" ")}"
-             stroke="#8a5a30" stroke-width="${tol * .9}" fill="none" opacity=".28"
-             stroke-linecap="round" stroke-linejoin="round"/>
-           <path id="carve" d="" stroke="#f2cf9d" stroke-width="5" fill="none"
-             stroke-linecap="round" stroke-linejoin="round"/>
-           <circle id="tip" cx="-50" cy="-50" r="6" fill="#fffdf5" stroke="#8a5a30" stroke-width="2"/>
-           <text x="150" y="294" text-anchor="middle" font-size="13" fill="#8a6446">${scaleLabel}</text>`;
-        judging = false;
-        actBanner(ui, round + 1, ROUNDS, "下絵を一筆でなぞる", sc);
-        return tol;
-      };
-      let tol = setup();
-
-      const judge = () => {
-        if (judging || round >= ROUNDS) return;   // 1回につき一度だけ採点する
-        judging = true;
-        let good = 0;
-        near.forEach(d => { if (d < tol) good++; });
-        const got = Math.round(good / pts.length * 22);
-        for (let i = 0; i < got; i++) sc.ok();
-        for (let i = got; i < 22; i++) sc.ng(0.35);
-        ok += good / pts.length;
-        ui.progress((round + 1) / ROUNDS);
-        round++;
-        if (round < ROUNDS) { setTimeout(() => { if (!over) tol = setup(); }, 450); ui.say(`${Math.round(good / pts.length * 100)}% 彫れた`); }
-        else setTimeout(() => { if (!over) done(sc.value(),
-          ok / ROUNDS > .85 ? "刃先が迷っておらん。見事じゃ。"
-            : ok / ROUNDS > .6 ? "おおむね下絵のとおりじゃ。" : "線から外れすぎじゃのう。"); }, 400);
+      /* 入り口の段から出口の段まで、迷わずに歩く道を一本、無作為に掘る */
+      const digPath = (cols, rows, sr, er, minLen, maxLen) => {
+        const seen = new Set(), path = [];
+        let found = null, steps = 0;
+        const walk = (x, y) => {
+          if (found || ++steps > 20000) return;
+          const key = y * cols + x;
+          path.push([x, y]); seen.add(key);
+          if (x === cols - 1 && y === er) {
+            if (path.length >= minLen && path.length <= maxLen) found = path.slice();
+          } else {
+            const order = DIRS.slice().sort(() => Math.random() - 0.5);
+            for (const [, dx, dy] of order) {
+              const nx = x + dx, ny = y + dy;
+              if (nx < 0 || ny < 0 || nx >= cols || ny >= rows || seen.has(ny * cols + nx)) continue;
+              walk(nx, ny);
+              if (found) return;
+            }
+          }
+          if (!found) { path.pop(); seen.delete(key); }
+        };
+        walk(0, sr);
+        return found;
       };
 
-      ui.onDown = (p) => { drawn = [p]; };
-      ui.onPoint = (p) => {
-        svg.querySelector("#tip").setAttribute("cx", p.x);
-        svg.querySelector("#tip").setAttribute("cy", p.y);
-        drawn.push(p);
-        svg.querySelector("#carve").setAttribute("d",
-          drawn.map((q, i) => (i ? "L" : "M") + q.x.toFixed(1) + " " + q.y.toFixed(1)).join(" "));
-        pts.forEach((c, i) => {
-          const d = actDist(p, c);
-          if (d < near[i]) near[i] = d;
-        });
-        let good = 0; near.forEach(d => { if (d < tol) good++; });
-        if (good >= pts.length) judge();
-      };
-      ui.onUp = () => { if (round < ROUNDS) judge(); };
-      ui.onTimeout = () => {
-        judging = false;
-        if (round < ROUNDS) judge();          // いまの回を締める
-        while (round < ROUNDS) {              // 残りの回は未達として締める
-          for (let i = 0; i < 22; i++) sc.ng(0.35);
-          round++;
+      /* 入り口から、つながる溝をたどる。出口に出られるかどうかを返す */
+      const flood = (wv) => {
+        const { cols, rows, cells, sr, er } = wv;
+        const start = sr * cols;
+        const seen = new Map([[start, -1]]);
+        const q = [start];
+        let escaped = false;
+        if (!(cells[start].m & W)) return { escaped, seen };
+        for (let k = 0; k < q.length; k++) {
+          const i = q[k], c = cells[i];
+          if (c.x === cols - 1 && c.y === er && (c.m & E)) escaped = true;
+          for (const [d, dx, dy] of DIRS) {
+            if (!(c.m & d)) continue;
+            const nx = c.x + dx, ny = c.y + dy;
+            if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+            const j = ny * cols + nx;
+            if (seen.has(j) || !(cells[j].m & OPP[d])) continue;
+            seen.set(j, i); q.push(j);
+          }
         }
-        over = true;
-        done(sc.value(), "時間切れじゃ。" + sc.word());
+        return { escaped, seen };
       };
+
+      /* 一枚の板を作る。出口に最初から届いていたら、作り直す */
+      const build = (w) => {
+        const [cols, rows, lo, hi] = SIZES[w];
+        let path = null, sr = 0, er = 0;
+        while (!path) {
+          sr = rnd(rows); er = rnd(rows);
+          path = digPath(cols, rows, sr, er, lo, hi);
+        }
+        const cells = [];
+        for (let i = 0; i < cols * rows; i++) {
+          cells.push({ i, x: i % cols, y: (i / cols) | 0, sol: null, m: 0, knot: false, path: false, hit: false });
+        }
+        /* 正しい向き。入り口は左、出口は右へ開く */
+        path.forEach(([x, y], k) => {
+          let s = 0;
+          s |= k === 0 ? W : bitTo(x, y, path[k - 1][0], path[k - 1][1]);
+          s |= k === path.length - 1 ? E : bitTo(x, y, path[k + 1][0], path[k + 1][1]);
+          const c = cells[y * cols + x];
+          c.path = true; c.sol = s;
+        });
+        /* 節は、道の外に置く。動かせず、通れもしない */
+        const free = cells.filter((c) => !c.path).sort(() => Math.random() - 0.5);
+        const nk = Math.min(free.length, KNOTS[w] + (lv >= 3 ? 1 : 0));
+        free.slice(0, nk).forEach((c) => { c.knot = true; });
+        /* 崩しておく。道の溝は、最初から正しい向きではないように。
+           回す数が少なくて済むよう、一度回ったものを多めにする */
+        cells.forEach((c) => {
+          if (c.knot) { c.m = 0; return; }
+          if (c.path) {
+            let m;
+            do { m = rotN(c.sol, Math.random() < 0.6 ? 3 : 2); } while (m === c.sol);
+            c.m = m;
+          } else {
+            c.m = 1 + rnd(14);                       // よけ道の溝。どこへ開くかは無作為
+          }
+        });
+        const cs = Math.min(240 / cols, 240 / rows);
+        return {
+          cols, rows, cells, sr, er, path, cs,
+          ox: (300 - cols * cs) / 2, oy: (300 - rows * cs) / 2 + 6, escaped: false
+        };
+      };
+      const makeWave = (w) => {
+        let wv;
+        do { wv = build(w); } while (flood(wv).escaped);
+        return wv;
+      };
+
+      const waves = [0, 1, 2].map(makeWave);
+      const TOTAL = waves.reduce((a, wv) => a + wv.path.length, 0);
+      const sc = actScore(TOTAL);
+      let wave = 0, busy = false, carver = null;
+      const cur = () => waves[wave];
+
+      const draw = () => {
+        const wv = cur();
+        const { cols, rows, cells, cs, ox, oy, sr, er } = wv;
+        const lit = flood(wv).seen;
+        const gx = (x) => ox + x * cs, gy = (y) => oy + y * cs;
+        let g = `<rect x="0" y="0" width="300" height="300" fill="#fdf6e6"/>
+          <rect x="${ox - 10}" y="${oy - 10}" width="${cols * cs + 20}" height="${rows * cs + 20}"
+            rx="14" fill="#8a5a30"/>`;
+        cells.forEach((c) => {
+          const x = gx(c.x), y = gy(c.y), mx = x + cs / 2, my = y + cs / 2;
+          const on = lit.has(c.i);
+          g += `<g data-i="${c.i}" data-m="${c.m}" data-sol="${c.sol === null ? "" : c.sol}"
+              data-knot="${c.knot ? 1 : 0}">`;
+          g += `<rect x="${x + 2}" y="${y + 2}" width="${cs - 4}" height="${cs - 4}" rx="7"
+              fill="${c.knot ? "#b98452" : "#d9a86c"}" stroke="#b07a44" stroke-width="1.2"/>`;
+          if (c.knot) {
+            g += `<circle cx="${mx}" cy="${my}" r="${cs * 0.34}" fill="#7a4a2a" stroke="#5a3418" stroke-width="1.5"/>
+              <circle cx="${mx}" cy="${my}" r="${cs * 0.22}" fill="none" stroke="#9a6a3c" stroke-width="1.2"/>
+              <circle cx="${mx}" cy="${my}" r="${cs * 0.07}" fill="#4a2a12"/>`;
+          } else if (c.m) {
+            let dd = "";
+            DIRS.forEach(([d, dx, dy]) => {
+              if (c.m & d) dd += `M${mx} ${my}L${mx + dx * (cs / 2 + 2)} ${my + dy * (cs / 2 + 2)}`;
+            });
+            const outer = on ? "#e0b04a" : "#6a3d1c", inner = on ? "#fff3c0" : "#b8864f";
+            g += `<path d="${dd}" stroke="${outer}" stroke-width="${cs * 0.3}" stroke-linecap="round" fill="none"/>
+              <path d="${dd}" stroke="${inner}" stroke-width="${cs * 0.1}" stroke-linecap="round" fill="none" opacity=".85"/>
+              <circle cx="${mx}" cy="${my}" r="${cs * 0.15}" fill="${outer}"/>`;
+          }
+          g += `</g>`;
+        });
+        /* 入り口（左）と出口（右）。出口に出られると金色になる */
+        g += `<text x="${ox - 17}" y="${gy(sr) + cs / 2 + 5}" text-anchor="middle" font-size="14"
+            font-weight="bold" fill="#8a6446">入</text>`;
+        g += `<text x="${ox + cols * cs + 17}" y="${gy(er) + cs / 2 + 5}" text-anchor="middle" font-size="14"
+            font-weight="bold" fill="${wv.escaped ? "#b8860b" : "#8a6446"}">出</text>`;
+        if (carver !== null) {
+          const c = cells[carver];
+          g += `<circle cx="${gx(c.x) + cs / 2}" cy="${gy(c.y) + cs / 2}" r="${cs * 0.17}"
+            fill="#fff7d6" stroke="#6a3d1c" stroke-width="2"/>`;
+        }
+        g += `<text x="150" y="22" text-anchor="middle" font-size="13" fill="#6b4a2f"
+            stroke="#fffdf5" stroke-width="3" paint-order="stroke">溝をつないで、刃を出口へ</text>
+          <text x="150" y="292" text-anchor="middle" font-size="12" fill="#8a6446"
+            stroke="#fffdf5" stroke-width="3" paint-order="stroke">押すと溝が回る。節はそのまま</text>`;
+        svg.innerHTML = g;
+      };
+
+      /* 脱出。刃が、つないだ溝をたどって出ていく */
+      const solve = (f) => {
+        busy = true;
+        const wv = cur();
+        wv.cells.forEach((c) => { if (c.path && !c.hit) { c.hit = true; sc.ok(); } });
+        ui.progress(sc.hit / TOTAL);
+        const route = [];
+        for (let i = wv.er * wv.cols + wv.cols - 1; i >= 0; i = f.seen.get(i)) route.unshift(i);
+        let k = 0;
+        const step = () => {
+          carver = route[k];
+          draw();
+          k++;
+          if (k < route.length) { setTimeout(step, 70); return; }
+          setTimeout(() => {
+            carver = null;
+            wv.escaped = true;
+            draw();
+            if (wave < 2) {
+              ui.say(`—— 脱出！ 次の板へ ——`);
+              setTimeout(() => {
+                wave++; busy = false; draw();
+                actBanner(ui, wave + 1, 3, "溝をつないで、刃を出口へ", sc);
+              }, 700);
+            } else {
+              ui.say("脱出できた！");
+              ui.lock();
+              setTimeout(() => done(sc.value(), sc.word()), 500);
+            }
+          }, 260);
+        };
+        step();
+      };
+
+      ui.onDown = (p) => {
+        if (busy) return;
+        const wv = cur();
+        const x = Math.floor((p.x - wv.ox) / wv.cs), y = Math.floor((p.y - wv.oy) / wv.cs);
+        if (x < 0 || y < 0 || x >= wv.cols || y >= wv.rows) return;
+        const c = wv.cells[y * wv.cols + x];
+        if (c.knot) { ui.say("節じゃ。ここは動かせん"); return; }
+        const wasOk = c.sol !== null && c.m === c.sol;
+        c.m = rotOnce(c.m);
+        const isOk = c.sol !== null && c.m === c.sol;
+        if (isOk && !c.hit) {
+          c.hit = true; sc.ok();
+          ui.say("✨ 溝がそろった");
+        } else if (wasOk && !isOk) {
+          sc.ng();
+          ui.say("⚠️ 向きをくずした");
+        }
+        sfxClack();
+        ui.progress(sc.hit / TOTAL);
+        actBanner(ui, wave + 1, 3, "溝をつないで、刃を出口へ", sc);
+        draw();
+        const f = flood(wv);
+        if (f.escaped) solve(f);
+      };
+      ui.onTimeout = () => { busy = true; done(sc.value(), "時間切れじゃ。" + sc.word()); };
+      actBanner(ui, 1, 3, "溝をつないで、刃を出口へ", sc);
+      draw();
     }
   },
 
@@ -5745,7 +5842,7 @@ const ACT_LEVEL_NAME = ["", "ふつう", "むずかしい", "いちばんむず�
 /* けいこの一覧に出す、遊びの種類。どんな手つきを使うかの目印 */
 const ACT_KIND = {
   mekiki: "落ちもの", kidori: "詰めこみ", nokogiri: "間合い", rhythm: "拍",
-  hori: "一筆なぞり", kenma: "追いかけ", kumi: "形合わせ", hari: "はらう",
+  hori: "迷路の脱出", kenma: "追いかけ", kumi: "形合わせ", hari: "はらう",
   kanagu: "角度合わせ", tosou: "量の見きわめ"
 };
 
