@@ -306,6 +306,16 @@
     "しまうキノコを おしてね": "Tap the mushroom to stash",
     "消したいキノコを おしてね": "Tap the mushroom to remove",
     "🌀 まぜ直す": "🌀 Reshuffle", "✂ 1つ消す": "✂ Remove one",
+    /* キノコの絵（アート） */
+    "キノコの絵": "Mushroom art", "絵": "Art",
+    "アート ｜ イワオトキノコ": "Art ｜ IWAO to KINOKO",
+    "長岡の森のキノコから思い浮かべた絵を並べた部屋。タップすると大きく見られます。":
+      "A room of pictures imagined from the mushrooms of the Nagaoka woods. Tap one to see it large.",
+    "キノコの姿から思い浮かべた絵を、少しずつ並べています。":
+      "Pictures imagined from the shapes of mushrooms, added a few at a time.",
+    "絵は、記録したキノコから思い浮かべて作ったものです。写真ではありません。":
+      "These pictures were imagined from the recorded mushrooms. They are not photographs.",
+    "まだ絵がありません。": "No pictures yet.",
     "📳 ふるえ ON": "📳 Vibration ON", "📳 ふるえ OFF": "📳 Vibration OFF",
     /* きのこウォッチ（ゲームウォッチ風） */
     "きのこウォッチ": "Kinoko Watch",

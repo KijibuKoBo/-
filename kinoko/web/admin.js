@@ -18,6 +18,8 @@ const RECORDS_PATH = "kinoko/web/data/records.json";
 const COLUMNS_PATH = "kinoko/web/data/columns.json";
 const GOODS_PATH   = "kinoko/web/data/goods.json";
 const GOODS_DIR    = "kinoko/web/data/goods";
+const ART_PATH     = "kinoko/web/data/art.json";
+const ART_DIR      = "kinoko/web/data/art";
 const DIARY_PATH   = "kinoko/web/data/diary.json";
 const PHOTO_DIR = "kinoko/web/data/photos";
 
@@ -522,6 +524,30 @@ function bindExtras() {
   $("#goodsPhotoBox")?.addEventListener("click", (e) => {
     if (e.target.dataset.act === "del") { goodsPhoto = null; renderGoodsPhoto(); }
   });
+  // アート
+  $("#artSelect")?.addEventListener("change", (e) => {
+    const it = (artCfg?.items || []).find((x) => x.id === e.target.value);
+    it ? fillArtForm(it) : clearArtForm();
+  });
+  $("#artReset")?.addEventListener("click", () => { $("#artSelect").value = ""; clearArtForm(); });
+  $("#a_file")?.addEventListener("change", onArtFileSelected);
+  $("#artPhotoBox")?.addEventListener("click", (e) => {
+    if (e.target.dataset.act === "del") { artPic = null; renderArtPic(); }
+  });
+  $("#artPublish")?.addEventListener("click", publishArt);
+  $("#artDelete")?.addEventListener("click", () => deleteArt());
+  $("#artListBody")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    const id = btn.closest(".adm-grow")?.dataset.id;
+    if (!id) return;
+    if (btn.dataset.act === "del") { deleteArt(id); return; }
+    const it = (artCfg?.items || []).find((x) => x.id === id);
+    if (!it) return;
+    $("#artSelect").value = id; fillArtForm(it);
+    $("#a_title").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
   $("#goodsPublish")?.addEventListener("click", publishGoods);
   $("#goodsDelete")?.addEventListener("click", () => deleteGoods());
   $("#goodsListBody")?.addEventListener("click", (e) => {
@@ -574,6 +600,7 @@ function switchTab(tab) {
   if (tab === "visits") loadVisits();
   if (tab === "posts") loadPosts();
   if (tab === "goods") loadGoods();
+  if (tab === "art") loadArt();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -933,6 +960,203 @@ function postCard(p) {
 
   c.appendChild(b);
   return c;
+}
+
+/* ================= アート（生成したイラスト） ================= */
+let artCfg = null, artPic = null, artLoaded = false;
+
+async function loadArt(force) {
+  if (artLoaded && !force) return;
+  artLoaded = true;
+  try {
+    const r = await fetch("data/art.json?t=" + Date.now(), { cache: "no-store" });
+    artCfg = await r.json();
+  } catch {
+    artCfg = { intro: "", items: [] };
+  }
+  $("#a_intro").value = artCfg.intro || "";
+  refreshArtSelect();
+  clearArtForm();
+}
+
+function artLabel(it) { return it.title || "（題名なし）"; }
+
+function refreshArtSelect() {
+  const sel = $("#artSelect"), cur = sel.value;
+  const items = artCfg.items || [];
+  sel.innerHTML = `<option value="">＋ 新しい絵を飾る</option>`;
+  items.forEach((it, i) => {
+    const o = document.createElement("option");
+    o.value = it.id;
+    o.textContent = `${i + 1}. ${artLabel(it)}`;
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+  renderArtList();
+}
+
+function renderArtList() {
+  const box = $("#artListBody");
+  if (!box) return;
+  const items = artCfg.items || [];
+  if (!items.length) {
+    box.innerHTML = `<p class="adm-note">まだ絵がありません。下でえらんで「飾る」を押してください。</p>`;
+    return;
+  }
+  box.innerHTML = items.map((it, i) => `
+      <div class="adm-grow" data-id="${esc(it.id)}">
+        <span class="adm-grow__no">${i + 1}</span>
+        <span class="adm-grow__img" style="background-image:url('${esc(it.thumb || it.image)}')"></span>
+        <span class="adm-grow__txt">
+          <b>${esc(artLabel(it))}</b>
+          <small>${esc(it.date || "")}</small>
+        </span>
+        <span class="adm-grow__btns">
+          <button type="button" class="btn-outline btn-sm" data-act="edit">直す</button>
+          <button type="button" class="btn-outline btn-sm btn-danger" data-act="del">🗑 外す</button>
+        </span>
+      </div>`).join("");
+}
+
+function setArtMode(it) {
+  const m = $("#artMode"), btn = $("#artPublish");
+  if (!m) return;
+  if (it) {
+    m.hidden = false;
+    m.textContent = `いま「${artLabel(it)}」を直しています。公開するとこの絵が置きかわります。`;
+    if (btn) btn.textContent = "🎨 この絵を直して公開";
+  } else {
+    m.hidden = true; m.textContent = "";
+    if (btn) btn.textContent = "🎨 新しい絵として飾る";
+  }
+}
+
+function fillArtForm(it) {
+  setArtMode(it);
+  $("#a_title").value = it.title || "";
+  $("#a_date").value = it.date || "";
+  $("#a_note").value = it.note || "";
+  artPic = it.image ? { kind: "existing", path: it.image, thumb: it.thumb || it.image } : null;
+  renderArtPic();
+  $("#artDelete").hidden = false;
+  status("#artStatus", "");
+}
+
+function clearArtForm() {
+  setArtMode(null);
+  ["a_title", "a_note"].forEach((id) => { $("#" + id).value = ""; });
+  $("#a_date").value = today();
+  artPic = null; renderArtPic();
+  $("#artDelete").hidden = true;
+  status("#artStatus", "");
+}
+
+function renderArtPic() {
+  const box = $("#artPhotoBox");
+  if (!artPic) {
+    box.innerHTML = `<p class="adm-note adm-photolist__empty">絵はまだえらばれていません。</p>`;
+    return;
+  }
+  const src = artPic.kind === "new" ? `data:image/jpeg;base64,${artPic.thumbB64 || artPic.b64}` : (artPic.thumb || artPic.path);
+  box.innerHTML = `<div class="adm-pcard is-main">
+      <div class="adm-pcard__img" style="background-image:url('${src}')"></div>
+      <div class="adm-pcard__ctrl"><button type="button" data-act="del">🗑 外す</button></div>
+    </div>`;
+}
+
+async function onArtFileSelected(e) {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  status("#artStatus", "絵を読み込んでいます…");
+  try {
+    // 大きい版と、一覧用の小さい版の2枚を作る
+    artPic = {
+      kind: "new",
+      b64: await compressImage(f, 1600, 0.86),
+      thumbB64: await compressImage(f, 600, 0.84)
+    };
+    renderArtPic();
+    status("#artStatus", "");
+  } catch { status("#artStatus", "絵を読み込めませんでした", "err"); }
+}
+
+function nextArtId() {
+  let max = 0;
+  (artCfg.items || []).forEach((it) => {
+    const m = /(\d+)$/.exec(it.id || "");
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  });
+  return "a" + String(max + 1).padStart(3, "0");
+}
+
+async function publishArt() {
+  if (!cfg.token) { openSettings(); status("#artStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
+  const title = $("#a_title").value.trim();
+  if (!title) { status("#artStatus", "題名を入れてください", "err"); return; }
+  if (!artPic) { status("#artStatus", "絵をえらんでください", "err"); return; }
+  const editingId = $("#artSelect").value;
+  const id = editingId || nextArtId();
+  setBusy2("#artPublish", "#artProgress", true);
+  try {
+    progress2("#artProgress", "最新データを取得中…");
+    const file = await ghGet(ART_PATH);
+    if (!file) throw new Error("art.json が見つかりません");
+    const json = JSON.parse(b64decode(file.content));
+    json.items = json.items || [];
+    json.intro = $("#a_intro").value.trim();
+
+    let image = "", thumb = "";
+    if (artPic.kind === "new") {
+      const stamp = Date.now();
+      progress2("#artProgress", "絵をアップロード中…（1/2）");
+      await ghPut(`${ART_DIR}/art-${id}-${stamp}.jpg`, artPic.b64, `アート: ${title}`);
+      image = `data/art/art-${id}-${stamp}.jpg`;
+      progress2("#artProgress", "絵をアップロード中…（2/2）");
+      await ghPut(`${ART_DIR}/art-${id}-${stamp}-s.jpg`, artPic.thumbB64, `アート(小): ${title}`);
+      thumb = `data/art/art-${id}-${stamp}-s.jpg`;
+    } else {
+      image = artPic.path; thumb = artPic.thumb || artPic.path;
+    }
+
+    const rec = { id, title, note: $("#a_note").value.trim(), date: $("#a_date").value, image, thumb };
+    const ex = json.items.find((x) => x.id === id);
+    if (ex) Object.assign(ex, rec); else json.items.unshift(rec);   // 新しい絵が先頭
+
+    progress2("#artProgress", "保存中…");
+    await ghPut(ART_PATH, b64encode(JSON.stringify(json, null, 2) + "\n"),
+                `アート: ${title} を${ex ? "更新" : "追加"}`, file.sha);
+    artCfg = json; refreshArtSelect(); $("#artSelect").value = id; fillArtForm(rec);
+    setBusy2("#artPublish", "#artProgress", false);
+    status("#artStatus", `✅ 「${title}」を飾りました。1〜2分でHPに出ます。`, "ok");
+  } catch (e) {
+    setBusy2("#artPublish", "#artProgress", false);
+    status("#artStatus", "✗ 失敗：" + e.message, "err");
+  }
+}
+
+async function deleteArt(id) {
+  if (typeof id !== "string" || !id) id = $("#artSelect").value;
+  if (!id) { status("#artStatus", "先に外したい絵をえらんでください", "err"); return; }
+  if (!cfg.token) { openSettings(); status("#artStatus", "先に ⚙設定 で GitHub トークンを登録してください", "err"); return; }
+  const it = (artCfg.items || []).find((x) => x.id === id);
+  if (!confirm(`「${it ? artLabel(it) : id}」を外しますか？\n（もとに戻せません）`)) return;
+  setBusy2("#artPublish", "#artProgress", true);
+  try {
+    progress2("#artProgress", "最新データを取得中…");
+    const file = await ghGet(ART_PATH);
+    if (!file) throw new Error("art.json が見つかりません");
+    const json = JSON.parse(b64decode(file.content));
+    if (!(json.items || []).some((x) => x.id === id)) throw new Error("その絵はすでにありません");
+    json.items = (json.items || []).filter((x) => x.id !== id);
+    progress2("#artProgress", "保存中…");
+    await ghPut(ART_PATH, b64encode(JSON.stringify(json, null, 2) + "\n"), `アート: ${id} を外す`, file.sha);
+    artCfg = json; refreshArtSelect(); $("#artSelect").value = ""; clearArtForm();
+    setBusy2("#artPublish", "#artProgress", false);
+    status("#artStatus", `✅ 「${it ? it.title : id}」を外しました。`, "ok");
+  } catch (e) {
+    setBusy2("#artPublish", "#artProgress", false);
+    status("#artStatus", "✗ 失敗：" + e.message, "err");
+  }
 }
 
 /* ---------------- グッズ ---------------- */

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>アート ｜ イワオトキノコ</title>
+  <meta name="description" content="長岡の森のキノコから思い浮かべた絵を並べた部屋。タップすると大きく見られます。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --ink:#f1ece0; --sub:#9b958a; --line:#2e2c28; --gold:#c9a86a;
+      --serif:"Shippori Mincho",serif; --sans:"Noto Sans JP",sans-serif; --latin:"Cormorant Garamond",serif;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{ margin:0; padding:0; }
+    body{ background:#0b0b0a; color:var(--ink); font-family:var(--sans); line-height:1.8;
+          -webkit-font-smoothing:antialiased; }
+    [hidden]{ display:none !important; }
+
+    .topbar{ position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between;
+             padding:12px 18px; background:rgba(11,11,10,.92); backdrop-filter:blur(8px);
+             border-bottom:1px solid var(--line); }
+    .topbar a{ color:var(--gold); text-decoration:none; font-size:.86rem; }
+    .brandlogo{ display:block; width:auto; height:26px; }
+    @media (max-width:620px){ .brandlogo{ height:21px; } }
+
+    .wrap{ max-width:1100px; margin:0 auto; padding:40px 18px 80px; }
+    .head{ text-align:center; margin:0 0 40px; }
+    .head__en{ font-family:var(--latin); letter-spacing:.34em; font-size:.82rem; color:var(--gold); }
+    .head__ja{ font-family:var(--serif); font-size:clamp(1.7rem,5vw,2.4rem); margin:10px 0 14px; letter-spacing:.08em; }
+    .head__d{ color:var(--sub); font-size:.9rem; margin:0 auto; max-width:40em; }
+
+    /* 絵を並べる（縦長・横長が混ざってもきれいに積む） */
+    .grid{ columns:3 300px; column-gap:22px; }
+    @media (max-width:760px){ .grid{ columns:2 150px; column-gap:14px; } }
+    .card{ break-inside:avoid; margin:0 0 22px; cursor:zoom-in; display:block; width:100%;
+           background:none; border:0; padding:0; text-align:left; color:inherit; }
+    @media (max-width:760px){ .card{ margin-bottom:14px; } }
+    .card__img{ display:block; width:100%; height:auto; border-radius:10px;
+                border:1px solid var(--line); background:#121210;
+                transition:transform .35s ease, border-color .35s ease; }
+    .card:hover .card__img{ transform:translateY(-3px); border-color:#4a443a; }
+    .card__t{ font-family:var(--serif); font-size:.94rem; margin:10px 2px 2px; letter-spacing:.04em; }
+    .card__d{ font-size:.76rem; color:var(--sub); margin:0 2px; }
+
+    .empty{ text-align:center; color:var(--sub); font-size:.9rem; padding:60px 0; }
+
+    /* 大きく見る */
+    .view{ position:fixed; inset:0; z-index:80; background:rgba(5,5,4,.97);
+           display:flex; flex-direction:column; align-items:center; justify-content:center;
+           padding:54px 16px 24px; }
+    .view img{ max-width:100%; max-height:74vh; width:auto; height:auto; border-radius:8px; }
+    .view__cap{ text-align:center; margin:16px auto 0; max-width:44em; }
+    .view__t{ font-family:var(--serif); font-size:1.1rem; letter-spacing:.06em; }
+    .view__n{ font-size:.82rem; color:var(--sub); margin:6px 0 0; }
+    .view__x{ position:absolute; top:12px; right:14px; width:42px; height:42px; border-radius:50%;
+              border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--ink);
+              font-size:20px; cursor:pointer; }
+    .view__nav{ position:absolute; top:50%; transform:translateY(-50%); width:46px; height:70px;
+                border:0; background:rgba(255,255,255,.06); color:var(--ink); font-size:22px; cursor:pointer; border-radius:8px; }
+    .view__nav--p{ left:8px; } .view__nav--n{ right:8px; }
+    @media (max-width:620px){ .view__nav{ width:38px; height:58px; font-size:18px; } }
+
+    .footer{ border-top:1px solid var(--line); padding:34px 18px 50px; text-align:center; }
+    .footer__nav{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin:0 0 14px; }
+    .footer__nav a{ color:var(--sub); text-decoration:none; font-family:var(--latin); font-size:.84rem; letter-spacing:.06em; }
+    .footer__note{ color:#6d675d; font-size:.72rem; margin:0; }
+  </style>
+  <script src="kinoko-api.js?v=20261111-0900"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html"><img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr width="720" height="218" /></a>
+    <a href="index.html">← ホームへ</a>
+  </header>
+
+  <main class="wrap">
+    <div class="head">
+      <div class="head__en">ART</div>
+      <h1 class="head__ja">キノコの絵</h1>
+      <p class="head__d" id="intro"></p>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>まだ絵がありません。</p>
+  </main>
+
+  <footer class="footer">
+    <nav class="footer__nav">
+      <a href="index.html" data-en="HOME">ホーム</a>
+      <a href="zukan.html" data-en="ZUKAN">図鑑</a>
+      <a href="nikki.html" data-en="DIARY">採集日誌</a>
+      <a href="game.html" data-en="GAME">あそぶ</a>
+      <a href="goods.html" data-en="GOODS">グッズ</a>
+    </nav>
+    <p class="footer__note">絵は、記録したキノコから思い浮かべて作ったものです。写真ではありません。</p>
+  </footer>
+
+  <div class="view" id="view" hidden>
+    <button class="view__x" id="vx" aria-label="とじる">✕</button>
+    <button class="view__nav view__nav--p" id="vp" aria-label="まえ">‹</button>
+    <button class="view__nav view__nav--n" id="vn" aria-label="つぎ">›</button>
+    <img id="vimg" alt="" />
+    <div class="view__cap">
+      <div class="view__t" id="vt"></div>
+      <p class="view__n" id="vn2"></p>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+    var $ = function (s) { return document.querySelector(s); };
+    var items = [], cur = 0;
+
+    fetch("data/art.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        if (!cfg) throw new Error("読み込めません");
+        if (cfg.intro) $("#intro").textContent = cfg.intro;
+        items = cfg.items || [];
+        if (!items.length) { $("#empty").hidden = false; return; }
+        var grid = $("#grid");
+        items.forEach(function (it, i) {
+          var b = document.createElement("button");
+          b.className = "card"; b.type = "button";
+          var im = document.createElement("img");
+          im.className = "card__img";
+          im.src = it.thumb || it.image;
+          im.alt = it.title || "キノコの絵";
+          im.loading = "lazy";
+          b.appendChild(im);
+          if (it.title) { var t = document.createElement("div"); t.className = "card__t"; t.textContent = it.title; b.appendChild(t); }
+          if (it.date)  { var d = document.createElement("p");  d.className = "card__d"; d.textContent = it.date; b.appendChild(d); }
+          b.addEventListener("click", function () { open(i); });
+          grid.appendChild(b);
+        });
+      })
+      .catch(function () { $("#empty").hidden = false; });
+
+    function open(i) {
+      cur = (i + items.length) % items.length;
+      var it = items[cur];
+      $("#vimg").src = it.image || it.thumb;
+      $("#vimg").alt = it.title || "キノコの絵";
+      $("#vt").textContent = it.title || "";
+      $("#vn2").textContent = [it.note, it.date].filter(Boolean).join("　/　");
+      $("#view").hidden = false;
+      document.body.style.overflow = "hidden";
+      var many = items.length > 1;
+      $("#vp").hidden = !many; $("#vn").hidden = !many;
+    }
+    function close() { $("#view").hidden = true; $("#vimg").src = ""; document.body.style.overflow = ""; }
+
+    $("#vx").addEventListener("click", close);
+    $("#vp").addEventListener("click", function (e) { e.stopPropagation(); open(cur - 1); });
+    $("#vn").addEventListener("click", function (e) { e.stopPropagation(); open(cur + 1); });
+    $("#view").addEventListener("click", function (e) { if (e.target === $("#view") || e.target.id === "vimg") close(); });
+    window.addEventListener("keydown", function (e) {
+      if ($("#view").hidden) return;
+      if (e.key === "Escape") close();
+      if (e.key === "ArrowLeft") open(cur - 1);
+      if (e.key === "ArrowRight") open(cur + 1);
+    });
+    if (window.Kinoko && Kinoko.hit) Kinoko.hit();
+  })();
+  </script>
+
+  <script src="i18n.js?v=20261111-0900"></script>
+</body>
+</html>
