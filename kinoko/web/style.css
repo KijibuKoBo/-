@@ -762,3 +762,7 @@ html[data-lang="en"] .footer__nav a { letter-spacing: .18em; }
 .song__lyrics { white-space: pre-wrap; font-family: var(--serif); font-size: .92rem; line-height: 2; color: #e6e1d4; margin: 14px 0 0; }
 @media (max-width: 900px) { .song-sec { margin-left: 0; } }
 @media (max-width: 560px) { .song { flex-direction: column; align-items: stretch; text-align: center; } .song__cover { margin: 0 auto; } }
+.song__list { list-style: none; padding: 0; margin: 14px 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.song__list button { background: none; border: 1px solid rgba(255,255,255,.28); color: #e6e1d4; border-radius: 99px; padding: 5px 14px; font-size: .8rem; cursor: pointer; }
+.song__list li.is-on button { background: var(--gold); border-color: var(--gold); color: #1c241d; font-weight: 700; }
+@media (max-width: 560px) { .song__list { justify-content: center; } }

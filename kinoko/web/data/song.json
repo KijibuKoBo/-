@@ -1,8 +1,10 @@
 {
-  "_説明": "テーマソング。src に data/song/ のファイル名を入れると、トップページに視聴欄が出ます。空のあいだは出ません。",
-  "title": "イワオトキノコのうた",
+  "_説明": "テーマソング。tracks に曲を並べるとトップに視聴欄が出ます。2曲以上なら曲の一覧も出ます。",
+  "heading": "イワオトキノコのうた",
   "credit": "テーマソング",
-  "src": "",
   "cover": "data/art/art-001-s.jpg",
-  "lyrics": ""
+  "tracks": [
+    { "title": "その1", "src": "data/song/theme-1.mp3", "lyrics": "" },
+    { "title": "その2", "src": "data/song/theme-2.mp3", "lyrics": "" }
+  ]
 }

@@ -306,7 +306,7 @@
     "しまうキノコを おしてね": "Tap the mushroom to stash",
     "消したいキノコを おしてね": "Tap the mushroom to remove",
     "🌀 まぜ直す": "🌀 Reshuffle", "✂ 1つ消す": "✂ Remove one",
-    "テーマソング": "Theme song", "イワオトキノコのうた": "The Iwao to Kinoko song",
+    "テーマソング": "Theme song", "その1": "Take 1", "その2": "Take 2", "イワオトキノコのうた": "The Iwao to Kinoko song",
     "歌詞を見る": "Show lyrics", "歌詞をとじる": "Hide lyrics",
     /* キノコの絵（アート） */
     "キノコの絵": "Mushroom art", "絵": "Art",
