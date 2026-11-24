@@ -18,11 +18,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  # 1) サイトを組み立てて、GitHub に預ける
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -47,6 +45,15 @@ jobs:
         with:
           path: '.'
 
+  # 2) 預けたものを公開する（別の段に分けるのが GitHub 公式のやり方。
+  #    同じ段で続けて公開すると、預けた直後でまだ見つからず失敗することがある）
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
