@@ -25,10 +25,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       # 家具ゲームは1枚のHTMLなので、ブラウザが古いものを握ったままになりやすい。
       # 公開のたびに版の番号を焼きこみ、小さな version.json を置いておく。
@@ -43,10 +43,10 @@ jobs:
 
       # リポジトリ全体をそのまま公開（kinoko も既存アプリも両方残す）
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
