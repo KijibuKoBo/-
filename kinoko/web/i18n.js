@@ -306,6 +306,11 @@
     "しまうキノコを おしてね": "Tap the mushroom to stash",
     "消したいキノコを おしてね": "Tap the mushroom to remove",
     "🌀 まぜ直す": "🌀 Reshuffle", "✂ 1つ消す": "✂ Remove one",
+    "🏛 美術館を歩いて見る": "🏛 Walk through the museum", "キノコの美術館": "Mushroom museum",
+    "一覧で見る ▦": "View as grid ▦", "一覧で見る": "View as grid", "おわり": "The end",
+    "ご来館ありがとうございました": "Thank you for visiting",
+    "画面を上へなぞると、奥へすすみます": "Swipe up to walk deeper into the gallery",
+    "キノコの美術館 ｜ イワオトキノコ": "Mushroom museum ｜ IWAO to KINOKO",
     "テーマソング": "Theme song", "その1": "Take 1", "その2": "Take 2", "イワオトキノコのうた": "The Iwao to Kinoko song",
     "歌詞を見る": "Show lyrics", "歌詞をとじる": "Hide lyrics",
     /* キノコの絵（アート） */

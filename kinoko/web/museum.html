@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>キノコの美術館 ｜ イワオトキノコ</title>
+  <meta name="description" content="キノコの絵を、美術館の廊下を歩くように見て回る。左右の壁に飾られた絵のあいだを、奥へ奥へ。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --ink:#f1ece0; --sub:#a9a294; --gold:#c9a86a; --serif:"Shippori Mincho",serif; --latin:"Cormorant Garamond",serif; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{ margin:0; height:100%; overflow:hidden; background:#000; color:var(--ink);
+               font-family:"Noto Sans JP",sans-serif; overscroll-behavior:none; }
+    [hidden]{ display:none !important; }
+
+    /* ===== 舞台 ===== */
+    #scene{ position:fixed; inset:0; perspective:700px; perspective-origin:50% 50%; overflow:hidden; touch-action:none; cursor:grab; }
+    #scene:active{ cursor:grabbing; }
+    #world{ position:absolute; left:50%; top:50%; width:0; height:0; transform-style:preserve-3d; }
+    #world > *{ position:absolute; left:0; top:0; transform-style:preserve-3d; backface-visibility:hidden; }
+
+    /* 壁・床・天井 */
+    .wall{ background:
+             linear-gradient(to bottom, #15110d 0%, #2a221a 38%, #2a221a 74%, #1a140f 74.6%, #120e0a 100%); }
+    .wall::after{ content:""; position:absolute; left:0; right:0; top:74%; height:2px; background:#3c3125; }
+    .floor{ background:
+             linear-gradient(to right, transparent 0 34%, #3a1714 34% 66%, transparent 66%),
+             repeating-linear-gradient(to right, #1d140d 0 46px, #241910 46px 48px);
+            }
+    .floor::after{ content:""; position:absolute; inset:0;
+             background:linear-gradient(to right, transparent 0 34%, rgba(201,168,106,.18) 34.3%, transparent 34.6%, transparent 65.4%, rgba(201,168,106,.18) 65.7%, transparent 66%); }
+    .ceil{ background:#0c0a08; }
+    .ceil::after{ content:""; position:absolute; left:47%; width:6%; top:0; bottom:0; background:rgba(255,236,200,.05); }
+
+    /* 絵を照らす明かり（壁の上） */
+    .glow{ background:radial-gradient(ellipse 50% 50% at 50% 40%, rgba(255,222,170,.22), rgba(255,210,150,.06) 60%, transparent 100%); pointer-events:none; }
+    .pool{ background:radial-gradient(ellipse at center, rgba(255,214,160,.16), transparent 68%); pointer-events:none; }
+
+    /* 額縁 */
+    .frame{ cursor:pointer; padding:7px; border-radius:2px;
+            background:linear-gradient(135deg,#b08a4c,#e3c58a 30%,#8a6a35 55%,#d9b876 80%,#7c5d2c);
+            box-shadow:0 0 0 1px #3a2c16, 0 18px 40px rgba(0,0,0,.65); }
+    .frame img{ display:block; width:100%; height:100%; object-fit:contain; background:#000;
+                box-shadow:inset 0 0 0 1px rgba(0,0,0,.6); pointer-events:none; user-select:none; -webkit-user-drag:none; }
+    .frame{ transform-style:preserve-3d; }
+    .frame .glow{ position:absolute; left:-18%; top:-30%; width:136%; height:150%; transform:translateZ(-3px); }
+    .frame .plate{ position:absolute; left:50%; top:100%; margin-top:16px; transform:translateX(-50%); width:max-content; max-width:240px; }
+    .plate{ background:#e9e1cf; color:#2b241a; font-family:var(--serif); font-size:13px; line-height:1.4;
+            padding:6px 10px; text-align:center; border-radius:1px; box-shadow:0 2px 6px rgba(0,0,0,.5); pointer-events:none; }
+    .plate small{ display:block; font-family:var(--latin); font-size:10px; color:#6b5f4c; letter-spacing:.08em; }
+    .endwall{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+              background:radial-gradient(ellipse at 50% 40%, #2a221a, #120e0a 70%); }
+    .endwall h2{ font-family:var(--serif); font-size:44px; letter-spacing:.2em; margin:0 0 14px; color:#e9dfc8; }
+    .endwall p{ font-size:18px; color:#a9a294; margin:0 0 26px; }
+    .endwall a{ color:#1c1409; background:var(--gold); text-decoration:none; font-size:20px; padding:12px 30px; border-radius:99px; }
+
+    /* ===== 画面の上に重ねるもの ===== */
+    .bar{ position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between;
+          padding:max(12px,env(safe-area-inset-top)) 16px 12px; background:linear-gradient(to bottom, rgba(0,0,0,.7), transparent); pointer-events:none; }
+    .bar > *{ pointer-events:auto; }
+    .bar a{ color:var(--gold); text-decoration:none; font-size:.86rem; }
+    .brandlogo{ display:block; height:22px; width:auto; }
+    .ttl{ position:fixed; top:56px; left:0; right:0; z-index:20; text-align:center; pointer-events:none; transition:opacity .8s; }
+    .ttl b{ display:block; font-family:var(--serif); font-size:clamp(1.3rem,4.4vw,2rem); letter-spacing:.14em; font-weight:600; }
+    .ttl span{ font-family:var(--latin); letter-spacing:.3em; color:var(--gold); font-size:.8rem; }
+    .hint{ position:fixed; left:0; right:0; bottom:calc(92px + env(safe-area-inset-bottom)); z-index:20; text-align:center;
+           font-size:.82rem; color:var(--sub); pointer-events:none; transition:opacity .8s; }
+    .ctl{ position:fixed; left:0; right:0; bottom:max(16px,env(safe-area-inset-bottom)); z-index:20;
+          display:flex; justify-content:center; align-items:center; gap:14px; pointer-events:none; }
+    .ctl > *{ pointer-events:auto; }
+    .ctl button{ width:56px; height:56px; border-radius:50%; border:1px solid rgba(201,168,106,.5); background:rgba(20,16,12,.72);
+                 color:var(--ink); font-size:20px; cursor:pointer; backdrop-filter:blur(4px); touch-action:none; }
+    .ctl button:active{ background:rgba(201,168,106,.35); }
+    .count{ min-width:74px; text-align:center; font-family:var(--latin); font-size:1.05rem; letter-spacing:.1em; color:var(--sub); }
+
+    /* 大きく見る */
+    .view{ position:fixed; inset:0; z-index:40; background:rgba(4,3,2,.95); display:flex; flex-direction:column;
+           align-items:center; justify-content:center; padding:56px 16px 24px; }
+    .view img{ max-width:100%; max-height:74vh; border-radius:4px; box-shadow:0 0 0 6px #b99657, 0 20px 60px rgba(0,0,0,.8); }
+    .view__t{ font-family:var(--serif); font-size:1.15rem; letter-spacing:.06em; margin-top:22px; }
+    .view__n{ font-size:.84rem; color:var(--sub); margin:6px auto 0; max-width:40em; text-align:center; line-height:1.8; }
+    .view__x{ position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:50%; border:1px solid #3a342c;
+              background:rgba(255,255,255,.06); color:var(--ink); font-size:20px; cursor:pointer; }
+    .noscript{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  </style>
+  <script src="kinoko-api.js?v=20261124-1500"></script>
+</head>
+<body>
+  <div id="scene"><div id="world"></div></div>
+
+  <div class="bar">
+    <a href="index.html"><img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr /></a>
+    <a href="art.html">一覧で見る ▦</a>
+  </div>
+  <div class="ttl" id="ttl"><span>GALLERY</span><b>キノコの美術館</b></div>
+  <p class="hint" id="hint">画面を上へなぞると、奥へすすみます</p>
+  <div class="ctl">
+    <button id="back" aria-label="もどる">▼</button>
+    <span class="count" id="count"></span>
+    <button id="fwd" aria-label="すすむ">▲</button>
+  </div>
+
+  <div class="view" id="view" hidden>
+    <button class="view__x" id="vx" aria-label="とじる">✕</button>
+    <img id="vimg" alt="" />
+    <div class="view__t" id="vt"></div>
+    <p class="view__n" id="vn"></p>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+    var $ = function (id) { return document.getElementById(id); };
+    var world = $("world");
+    var P = 700;                 // 目から画面までの距離（perspective と同じ）
+    var SP = 640;                // 絵と絵の間隔（奥行き）
+    var START = 760;             // 最初の絵までの距離
+    var T = 640;                 // 壁・床を区切る長さ
+    var HW, HH;                  // 廊下の半分の幅・半分の高さ
+    var items = [], frames = [], tiles = [], cam = 0, target = 0, maxCam = 0, endZ = 0;
+
+    function place(el, w, h, x, y, z, ry, rx) {
+      el.style.width = w + "px"; el.style.height = h + "px";
+      el.style.transform = "translate3d(" + (x - w / 2) + "px," + (y - h / 2) + "px," + z + "px)" +
+                           (ry ? " rotateY(" + ry + "deg)" : "") + (rx ? " rotateX(" + rx + "deg)" : "");
+    }
+    function mk(cls, html) { var d = document.createElement("div"); d.className = cls; if (html) d.innerHTML = html; world.appendChild(d); return d; }
+
+    function sizeHall() {
+      var w = window.innerWidth, h = window.innerHeight;
+      var portrait = h > w;
+      HW = portrait ? 300 : Math.min(560, Math.max(420, w * .42));
+      HH = portrait ? Math.min(420, h * .48) : Math.min(380, h * .5);
+    }
+
+    function build() {
+      world.innerHTML = ""; frames = []; tiles = [];
+      sizeHall();
+      var n = items.length;
+      endZ = -(START + n * SP + 420);
+      maxCam = -endZ - P - 260;
+      // 壁・床・天井を区切って並べる（目の後ろに回ったものは隠せるように）
+      for (var z = 400; z > endZ; z -= T) {
+        var zc = z - T / 2;
+        var L = mk("wall"), R = mk("wall"), F = mk("floor"), C = mk("ceil");
+        place(L, T, HH * 2, -HW, 0, zc, 90);
+        place(R, T, HH * 2,  HW, 0, zc, -90);
+        place(F, HW * 2, T, 0,  HH, zc, 0, 90);
+        place(C, HW * 2, T, 0, -HH, zc, 0, -90);
+        tiles.push({ els: [L, R, F, C], z: zc });
+      }
+      // 奥の壁
+      var end = mk("endwall", '<h2>おわり</h2><p>ご来館ありがとうございました</p><a href="art.html">一覧で見る</a>');
+      place(end, HW * 2, HH * 2, 0, 0, endZ);
+      tiles.push({ els: [end], z: endZ, keep: true });
+      end.querySelector("a").style.pointerEvents = "auto";
+
+      // 絵（左右交互）。壁にぴったり付けると横から見ることになり見えにくいので、
+      // 手前の辺を壁に付けたまま、奥の辺を通路側へ開いて、こちらへ向ける
+      var portrait = window.innerHeight > window.innerWidth;
+      var A = portrait ? 56 : 70;                 // 壁からの開き（90で壁にぴったり）
+      var maxH = HH * (portrait ? .78 : .95), maxW = portrait ? HW * .92 : SP * .62;
+      items.forEach(function (it, i) {
+        var side = i % 2 ? 1 : -1;
+        var z = -(START + i * SP);
+        var r = (it.w && it.h) ? it.w / it.h : 1;
+        var fh = maxH, fw = fh * r;
+        if (fw > maxW) { fw = maxW; fh = fw / r; }
+        var y = -HH * .12, W = fw + 14, Hh = fh + 14;
+        var zNear = z + W / 2;                        // 手前の辺（壁に付く側）
+        var pool = mk("pool"); place(pool, HW * .9, W * 1.2, side * HW * .55, HH - 1, z, 0, 90);
+        var fr = mk("frame", '<div class="glow"></div><img alt="" draggable="false" />' +
+                 '<div class="plate">' + (it.title ? escapeHTML(it.title) : "") + "<small>No." + (i + 1) + "</small></div>");
+        var im = fr.querySelector("img"); im.src = it.image || it.thumb; im.alt = it.title || "";
+        fr.style.width = W + "px"; fr.style.height = Hh + "px";
+        if (side < 0) {   // 左の壁：左の辺を軸にする
+          fr.style.transformOrigin = "0% 50%";
+          fr.style.transform = "translate3d(" + (-HW + 2) + "px," + (y - Hh / 2) + "px," + zNear + "px) rotateY(" + A + "deg)";
+        } else {          // 右の壁：右の辺を軸にする
+          fr.style.transformOrigin = "100% 50%";
+          fr.style.transform = "translate3d(" + (HW - 2 - W) + "px," + (y - Hh / 2) + "px," + zNear + "px) rotateY(" + (-A) + "deg)";
+        }
+        fr.addEventListener("click", function () { if (!moved) open(i); });
+        frames.push({ els: [pool, fr], z: z, i: i });
+      });
+      update(true);
+    }
+    function escapeHTML(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+    /* 距離に応じて暗くし、目の後ろに回ったものは隠す */
+    function shade(list, z, zFar) {
+      var dist = P - (z + cam);                 // 目からの距離
+      var vis = (zFar === undefined ? dist : P - (zFar + cam)) > 40;
+      var o = vis ? Math.max(0, Math.min(1, 1.15 - dist / 4600)) : 0;
+      for (var k = 0; k < list.length; k++) {
+        list[k].style.visibility = vis ? "visible" : "hidden";
+        list[k].style.opacity = o.toFixed(3);
+      }
+    }
+    var lastCam = null;
+    function update(force) {
+      if (!force && lastCam !== null && Math.abs(cam - lastCam) < .05) return;
+      lastCam = cam;
+      var bob = Math.sin(cam / 95) * Math.min(3, Math.abs(vel) * .25);   // 歩くときの小さな揺れ
+      world.style.transform = "translate3d(0," + bob.toFixed(2) + "px," + cam.toFixed(2) + "px)";
+      tiles.forEach(function (t) { shade(t.els, t.z, t.keep ? undefined : t.z - T / 2); });
+      frames.forEach(function (f) { shade(f.els, f.z); });
+      // いちばん近くで、まだ前にある絵の番号
+      var near = 0;
+      for (var i = 0; i < frames.length; i++) { if (P - (frames[i].z + cam) > 150) { near = i; break; } near = i; }
+      $("count").textContent = (near + 1) + " / " + frames.length;
+      var t = Math.max(0, 1 - cam / 500);
+      $("ttl").style.opacity = t; $("hint").style.opacity = Math.max(0, 1 - cam / 260);
+    }
+
+    /* ===== うごき ===== */
+    var vel = 0, hold = 0, last = 0;
+    function clamp() { target = Math.max(0, Math.min(maxCam, target)); }
+    function loop(now) {
+      var dt = last ? Math.min(.05, (now - last) / 1000) : 1 / 60; last = now;
+      if (hold) { target += hold * 900 * dt; clamp(); }
+      var prev = cam;
+      cam += (target - cam) * (1 - Math.pow(.0015, dt));   // なめらかに追いつく
+      vel = (cam - prev) / Math.max(dt, .001) / 60;
+      update(false);
+      requestAnimationFrame(loop);
+    }
+
+    var scene = $("scene");
+    scene.addEventListener("wheel", function (e) { e.preventDefault(); target += e.deltaY * 1.1; clamp(); }, { passive: false });
+    var drag = null, moved = false;
+    scene.addEventListener("pointerdown", function (e) { drag = { y: e.clientY, t: target }; moved = false; });
+    window.addEventListener("pointermove", function (e) {
+      if (!drag) return;
+      var dy = drag.y - e.clientY;
+      if (Math.abs(dy) > 6) moved = true;
+      target = drag.t + dy * 2.4; clamp();
+    });
+    window.addEventListener("pointerup", function () { drag = null; setTimeout(function () { moved = false; }, 0); });
+    window.addEventListener("keydown", function (e) {
+      if (!$("view").hidden) { if (e.key === "Escape") close(); return; }
+      if (e.key === "ArrowUp" || e.key === "w") { target += SP / 2; clamp(); e.preventDefault(); }
+      if (e.key === "ArrowDown" || e.key === "s") { target -= SP / 2; clamp(); e.preventDefault(); }
+    });
+    function holdBtn(el, dir) {
+      el.addEventListener("pointerdown", function (e) { e.preventDefault(); e.stopPropagation(); hold = dir; });
+      ["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, function () { hold = 0; }); });
+    }
+    holdBtn($("fwd"), 1); holdBtn($("back"), -1);
+    window.addEventListener("resize", function () { build(); });
+
+    /* ===== 大きく見る ===== */
+    function open(i) {
+      var it = items[i];
+      $("vimg").src = it.image || it.thumb; $("vimg").alt = it.title || "";
+      $("vt").textContent = it.title || "";
+      $("vn").textContent = [it.note, it.date].filter(Boolean).join("　/　");
+      $("view").hidden = false;
+    }
+    function close() { $("view").hidden = true; }
+    $("vx").addEventListener("click", close);
+    $("view").addEventListener("click", function (e) { if (e.target.id === "view" || e.target.id === "vimg") close(); });
+
+    /* ===== 絵を読み込む ===== */
+    fetch("data/art.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (cfg) {
+        items = cfg.items || [];
+        // 絵の縦横比を先に調べてから並べる
+        return Promise.all(items.map(function (it) {
+          return new Promise(function (res) {
+            var im = new Image();
+            im.onload = function () { it.w = im.naturalWidth; it.h = im.naturalHeight; res(); };
+            im.onerror = function () { res(); };
+            im.src = it.thumb || it.image;
+          });
+        }));
+      })
+      .then(function () { build(); requestAnimationFrame(loop); })
+      .catch(function () { $("hint").textContent = "絵を読み込めませんでした。"; });
+    if (window.Kinoko && Kinoko.hit) Kinoko.hit();
+  })();
+  </script>
+  <script src="notouch.js?v=20261026-0900"></script>
+  <script src="i18n.js?v=20261124-1500"></script>
+</body>
+</html>
