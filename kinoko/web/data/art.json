@@ -3,6 +3,78 @@
   "intro": "キノコの姿から思い浮かべた絵を、少しずつ並べています。",
   "items": [
     {
+      "id": "a010",
+      "title": "ひっくり返った一本",
+      "note": "まわりは上を向いているのに、一本だけ傘を返して、ひだを見せています。",
+      "date": "2026-11-24",
+      "image": "data/art/art-010.jpg",
+      "thumb": "data/art/art-010-s.jpg"
+    },
+    {
+      "id": "a009",
+      "title": "親子",
+      "note": "どっしりした一本と、その足もとの小さな一本。苔の上に並んでいます。",
+      "date": "2026-11-24",
+      "image": "data/art/art-009.jpg",
+      "thumb": "data/art/art-009-s.jpg"
+    },
+    {
+      "id": "a008",
+      "title": "すらりと四本",
+      "note": "細長い柄の四本が、高さを変えて並んでいます。傘の裏のひだまで細かく。",
+      "date": "2026-11-24",
+      "image": "data/art/art-008.jpg",
+      "thumb": "data/art/art-008-s.jpg"
+    },
+    {
+      "id": "a007",
+      "title": "からまる株",
+      "note": "ひと株から何本も伸びて、傘がぶつかり合うように広がる。一本は横に倒れています。",
+      "date": "2026-11-24",
+      "image": "data/art/art-007.jpg",
+      "thumb": "data/art/art-007-s.jpg"
+    },
+    {
+      "id": "a006",
+      "title": "重なり合う橙",
+      "note": "波打つ橙色の傘が、上下二段に重なって。朽ちた木から生えています。",
+      "date": "2026-11-24",
+      "image": "data/art/art-006.jpg",
+      "thumb": "data/art/art-006-s.jpg"
+    },
+    {
+      "id": "a005",
+      "title": "背比べ",
+      "note": "寄りそって立つ二本。どちらの傘も、まん中が少しくぼんでいます。",
+      "date": "2026-11-24",
+      "image": "data/art/art-005.jpg",
+      "thumb": "data/art/art-005-s.jpg"
+    },
+    {
+      "id": "a004",
+      "title": "扇のかさね",
+      "note": "根元から扇のように開いて、何枚も重なる傘。足もとにも一枚、ちいさな扇が落ちています。",
+      "date": "2026-11-24",
+      "image": "data/art/art-004.jpg",
+      "thumb": "data/art/art-004-s.jpg"
+    },
+    {
+      "id": "a003",
+      "title": "土のふくらみ",
+      "note": "盛り上がった土から、丸い傘がふたつ顔を出したところ。根の筋が地中まで続いています。",
+      "date": "2026-11-24",
+      "image": "data/art/art-003.jpg",
+      "thumb": "data/art/art-003-s.jpg"
+    },
+    {
+      "id": "a002",
+      "title": "ひとり立ち",
+      "note": "すっと伸びた柄に、少し傾いた傘を一枚。傘のまん中に小さなへそがあります。",
+      "date": "2026-11-24",
+      "image": "data/art/art-002.jpg",
+      "thumb": "data/art/art-002-s.jpg"
+    },
+    {
       "id": "a001",
       "title": "ふたつ並んで",
       "note": "傘を寄せ合う二本。地中に広がる菌糸まで描いてみました。地上に出ているのは、ほんの先っぽです。",
