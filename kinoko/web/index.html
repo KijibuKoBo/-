@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20261111-0900" />
+  <link rel="stylesheet" href="style.css?v=20261124-0900" />
   <script src="kinoko-api.js?v=20260920-0650"></script>
 </head>
 <body class="home">
@@ -113,6 +113,29 @@
       </div>
     </section>
 
+    <!-- ===== テーマソング ===== -->
+    <section class="song-sec" id="song" hidden>
+      <div class="section-head">
+        <span class="section-head__en">THEME SONG</span>
+        <h2 class="section-head__ja">テーマソング</h2>
+      </div>
+      <div class="song">
+        <img class="song__cover" id="songCover" alt="" />
+        <div class="song__body">
+          <p class="song__t" id="songTitle"></p>
+          <p class="song__c" id="songCredit"></p>
+          <div class="song__ctl">
+            <button class="song__play" id="songPlay" type="button" aria-label="再生">▶</button>
+            <div class="song__bar" id="songBar"><i id="songFill"></i></div>
+            <span class="song__time" id="songTime">0:00</span>
+          </div>
+          <button class="song__lyr" id="songLyrBtn" type="button" hidden>歌詞を見る</button>
+          <pre class="song__lyrics" id="songLyrics" hidden></pre>
+        </div>
+        <audio id="songAudio" preload="none"></audio>
+      </div>
+    </section>
+
     <!-- ===== 今日の1問 ===== -->
     <section class="daily-sec" id="daily" hidden>
       <div class="section-head">
@@ -194,7 +217,8 @@
     </article>
   </div>
 
+  <script src="song.js?v=20261124-0900"></script>
   <script src="app.js?v=20260920-0246"></script>
-  <script src="i18n.js?v=20261111-0900"></script>
+  <script src="i18n.js?v=20261124-0900"></script>
 </body>
 </html>
