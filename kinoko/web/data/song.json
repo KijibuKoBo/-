@@ -1,8 +1,9 @@
 {
-  "_説明": "テーマソング。tracks に曲を並べるとトップに視聴欄が出ます。2曲以上なら曲の一覧も出ます。",
+  "_説明": "テーマソングのページ（song.html）。tracks に曲を並べます。background に画像のパスを入れると背景になります（空なら森色）。",
   "heading": "イワオトキノコのうた",
   "credit": "テーマソング",
   "cover": "data/art/art-001-s.jpg",
+  "background": "",
   "tracks": [
     { "title": "その1", "src": "data/song/theme-1.mp3", "lyrics": "" },
     { "title": "その2", "src": "data/song/theme-2.mp3", "lyrics": "" }

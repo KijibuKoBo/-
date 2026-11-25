@@ -312,7 +312,7 @@
     "画面を上へなぞると、奥へすすみます": "Swipe up to walk deeper into the gallery",
     "キノコの美術館 ｜ イワオトキノコ": "Mushroom museum ｜ IWAO to KINOKO",
     "テーマソング": "Theme song", "その1": "Take 1", "その2": "Take 2", "イワオトキノコのうた": "The Iwao to Kinoko song",
-    "歌詞を見る": "Show lyrics", "歌詞をとじる": "Hide lyrics",
+    "歌詞を見る": "Show lyrics", "まだ曲がありません。": "No songs yet.", "歌詞をとじる": "Hide lyrics",
     /* キノコの絵（アート） */
     "キノコの絵": "Mushroom art", "絵": "Art",
     "アート ｜ イワオトキノコ": "Art ｜ IWAO to KINOKO",

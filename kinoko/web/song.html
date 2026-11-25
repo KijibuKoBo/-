@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>テーマソング ｜ イワオトキノコ</title>
+  <meta name="description" content="イワオトキノコのテーマソングを聴けるページです。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --ink:#f2efe4; --sub:#c4bead; --line:rgba(255,255,255,.16); --gold:#c9a86a;
+      --serif:"Shippori Mincho",serif; --sans:"Noto Sans JP",sans-serif; --latin:"Cormorant Garamond",serif;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{ margin:0; padding:0; min-height:100%; }
+    body{ background:#0e1410; color:var(--ink); font-family:var(--sans); line-height:1.8;
+          -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column; }
+    [hidden]{ display:none !important; }
+
+    /* 背景画像（data/song.json の background）。無いときは森色のグラデーション */
+    .bg{ position:fixed; inset:0; z-index:-2;
+         background:radial-gradient(ellipse at 50% 30%, #2c3a2c, #0e1410 70%);
+         background-size:cover; background-position:center; }
+    .bg::after{ content:""; position:absolute; inset:0;
+                background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.55) 60%, rgba(0,0,0,.8)); }
+
+    .topbar{ position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between;
+             padding:12px 18px; background:rgba(8,10,8,.55); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+    .topbar a{ color:var(--gold); text-decoration:none; font-size:.86rem; }
+    .brandlogo{ display:block; width:auto; height:26px; }
+    @media (max-width:620px){ .brandlogo{ height:21px; } }
+
+    .wrap{ flex:1; width:100%; max-width:620px; margin:0 auto; padding:48px 16px 60px; }
+    .head{ text-align:center; margin:0 0 30px; }
+    .head__en{ font-family:var(--latin); letter-spacing:.34em; font-size:.82rem; color:var(--gold); }
+    .head__ja{ font-family:var(--serif); font-size:clamp(1.6rem,6vw,2.3rem); margin:8px 0 0; letter-spacing:.08em;
+               text-shadow:0 2px 14px rgba(0,0,0,.6); }
+
+    .player{ background:rgba(10,12,10,.62); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+             border:1px solid var(--line); border-radius:18px; padding:26px 22px; text-align:center;
+             box-shadow:0 20px 50px rgba(0,0,0,.45); }
+    .song__cover{ width:min(240px,62vw); aspect-ratio:1; object-fit:cover; border-radius:14px; display:block;
+                  margin:0 auto 20px; background:#000; box-shadow:0 12px 30px rgba(0,0,0,.5); }
+    .song__t{ font-family:var(--serif); font-size:1.3rem; margin:0 0 2px; letter-spacing:.06em; }
+    .song__c{ font-size:.82rem; color:var(--sub); margin:0 0 18px; }
+    .song__ctl{ display:flex; align-items:center; gap:12px; }
+    .song__play{ width:58px; height:58px; border-radius:50%; border:0; background:var(--gold); color:#1c241d;
+                 font-size:1.1rem; cursor:pointer; flex:none; }
+    .song__bar{ flex:1; height:8px; border-radius:99px; background:rgba(255,255,255,.18); cursor:pointer; position:relative; overflow:hidden; }
+    .song__bar i{ position:absolute; left:0; top:0; bottom:0; width:0; background:var(--gold); border-radius:99px; }
+    .song__time{ font-size:.78rem; color:var(--sub); min-width:82px; text-align:right; font-variant-numeric:tabular-nums; }
+    .song__list{ list-style:none; padding:0; margin:20px 0 0; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .song__list button{ background:none; border:1px solid rgba(255,255,255,.3); color:#e6e1d4; border-radius:99px;
+                        padding:6px 16px; font-size:.84rem; cursor:pointer; font-family:inherit; }
+    .song__list li.is-on button{ background:var(--gold); border-color:var(--gold); color:#1c241d; font-weight:700; }
+    .song__lyr{ margin-top:18px; background:none; border:1px solid rgba(255,255,255,.3); color:var(--ink);
+                border-radius:99px; padding:5px 16px; font-size:.8rem; cursor:pointer; font-family:inherit; }
+    .song__lyrics{ white-space:pre-wrap; font-family:var(--serif); font-size:.95rem; line-height:2.1; color:#ebe6d8;
+                   margin:16px 0 0; text-align:center; }
+    .empty{ text-align:center; color:var(--sub); padding:40px 0; }
+
+    .footer{ padding:24px 18px 40px; text-align:center; }
+    .footer__nav{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
+    .footer__nav a{ color:var(--sub); text-decoration:none; font-family:var(--latin); font-size:.84rem; letter-spacing:.06em; }
+  </style>
+  <script src="kinoko-api.js?v=20261111-0900"></script>
+</head>
+<body>
+  <div class="bg" id="songBg"></div>
+
+  <header class="topbar">
+    <a href="index.html"><img class="brandlogo" src="data/logo-w.png" alt="イワオトキノコ" data-notr width="720" height="218" /></a>
+    <a href="index.html">← ホームへ</a>
+  </header>
+
+  <main class="wrap">
+    <div class="head">
+      <div class="head__en">THEME SONG</div>
+      <h1 class="head__ja" id="songHead">イワオトキノコのうた</h1>
+    </div>
+
+    <section class="player" id="song" hidden>
+      <img class="song__cover" id="songCover" alt="" />
+      <p class="song__t" id="songTitle"></p>
+      <p class="song__c" id="songCredit"></p>
+      <div class="song__ctl">
+        <button class="song__play" id="songPlay" type="button" aria-label="再生">▶</button>
+        <div class="song__bar" id="songBar"><i id="songFill"></i></div>
+        <span class="song__time" id="songTime">0:00</span>
+      </div>
+      <ol class="song__list" id="songList" hidden></ol>
+      <button class="song__lyr" id="songLyrBtn" type="button" hidden>歌詞を見る</button>
+      <pre class="song__lyrics" id="songLyrics" hidden></pre>
+      <audio id="songAudio" preload="none"></audio>
+    </section>
+    <p class="empty" id="songEmpty" hidden>まだ曲がありません。</p>
+  </main>
+
+  <footer class="footer">
+    <nav class="footer__nav">
+      <a href="index.html" data-en="HOME">ホーム</a>
+      <a href="zukan.html" data-en="ZUKAN">図鑑</a>
+      <a href="art.html" data-en="ART">キノコの絵</a>
+      <a href="game.html" data-en="GAME">あそぶ</a>
+      <a href="goods.html" data-en="GOODS">グッズ</a>
+    </nav>
+  </footer>
+
+  <script src="song.js?v=20261125-1"></script>
+  <script>if (window.Kinoko && Kinoko.hit) Kinoko.hit();</script>
+  <script src="i18n.js?v=20261125-1"></script>
+</body>
+</html>

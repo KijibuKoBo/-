@@ -1,4 +1,4 @@
-/* テーマソングの視聴欄（data/song.json に曲が無ければ出さない） */
+/* テーマソングのページ（song.html）。data/song.json の曲を並べる */
 (function () {
   "use strict";
   var $ = function (s) { return document.getElementById(s); };
@@ -10,11 +10,13 @@
   fetch("data/song.json?t=" + Date.now(), { cache: "no-store" })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (s) {
-      if (!s) return;
+      if (!s) { showEmpty(); return; }
       cfg = s;
+      if (s.heading && $("songHead")) $("songHead").textContent = s.heading;
+      if (s.background && $("songBg")) $("songBg").style.backgroundImage = 'url("' + s.background + '")';
       tracks = (s.tracks || (s.src ? [{ title: s.title, src: s.src, lyrics: s.lyrics }] : []))
                  .filter(function (t) { return t && t.src; });
-      if (!tracks.length) return;
+      if (!tracks.length) { showEmpty(); return; }
       $("songCredit").textContent = s.credit || "";
       if (s.cover) { $("songCover").src = s.cover; $("songCover").alt = s.heading || s.title || ""; }
       else $("songCover").hidden = true;
@@ -31,7 +33,9 @@
       }
       pick(0, false);
       sec.hidden = false;
-    }).catch(function () {});
+    }).catch(showEmpty);
+
+  function showEmpty() { if ($("songEmpty")) $("songEmpty").hidden = false; }
 
   function pick(i, play) {
     cur = i;
