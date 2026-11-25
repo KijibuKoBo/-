@@ -17,31 +17,33 @@
       tracks = (s.tracks || (s.src ? [{ title: s.title, src: s.src, lyrics: s.lyrics }] : []))
                  .filter(function (t) { return t && t.src; });
       if (!tracks.length) { showEmpty(); return; }
-      $("songCredit").textContent = s.credit || "";
       if (s.cover) { $("songCover").src = s.cover; $("songCover").alt = s.heading || s.title || ""; }
       else $("songCover").hidden = true;
-      if (tracks.length > 1) {
-        var ol = $("songList");
-        tracks.forEach(function (t, i) {
-          var li = document.createElement("li");
-          var b = document.createElement("button");
-          b.type = "button"; b.textContent = t.title || ("その" + (i + 1));
-          b.addEventListener("click", function () { pick(i, true); });
-          li.appendChild(b); ol.appendChild(li);
-        });
-        ol.hidden = false;
-      }
+      var ol = $("songList");
+      tracks.forEach(function (t, i) {
+        var li = document.createElement("li");
+        var b = document.createElement("button");
+        b.type = "button";
+        var n = document.createElement("span"); n.className = "song__no"; n.textContent = trackNo(i);
+        var nm = document.createElement("span"); nm.className = "song__nm"; nm.textContent = t.title || "";
+        b.appendChild(n); b.appendChild(nm);
+        b.addEventListener("click", function () { pick(i, true); });
+        li.appendChild(b); ol.appendChild(li);
+      });
+      ol.hidden = tracks.length < 2;
       pick(0, false);
       sec.hidden = false;
     }).catch(showEmpty);
+
+  function trackNo(i) { return "track" + String(i + 1).padStart(2, "0"); }
 
   function showEmpty() { if ($("songEmpty")) $("songEmpty").hidden = false; }
 
   function pick(i, play) {
     cur = i;
     var t = tracks[i];
-    var head = (cfg && (cfg.heading || cfg.title)) || "テーマソング";
-    $("songTitle").textContent = tracks.length > 1 ? head + "　" + (t.title || "") : (t.title || head);
+    $("songTitle").textContent = t.title || ((cfg && cfg.heading) || "テーマソング");
+    $("songCredit").textContent = trackNo(i);
     au.src = t.src;
     $("songFill").style.width = "0"; $("songTime").textContent = "0:00";
     var l = $("songLyrics"), lb = $("songLyrBtn");

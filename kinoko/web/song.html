@@ -46,17 +46,24 @@
     .song__cover{ width:min(240px,62vw); aspect-ratio:1; object-fit:cover; border-radius:14px; display:block;
                   margin:0 auto 20px; background:#000; box-shadow:0 12px 30px rgba(0,0,0,.5); }
     .song__t{ font-family:var(--serif); font-size:1.3rem; margin:0 0 2px; letter-spacing:.06em; }
-    .song__c{ font-size:.82rem; color:var(--sub); margin:0 0 18px; }
+    .song__c{ font-family:var(--latin); font-variant-numeric:lining-nums; font-size:.9rem; letter-spacing:.12em; color:var(--sub); margin:0 0 18px; }
     .song__ctl{ display:flex; align-items:center; gap:12px; }
     .song__play{ width:58px; height:58px; border-radius:50%; border:0; background:var(--gold); color:#1c241d;
                  font-size:1.1rem; cursor:pointer; flex:none; }
     .song__bar{ flex:1; height:8px; border-radius:99px; background:rgba(255,255,255,.18); cursor:pointer; position:relative; overflow:hidden; }
     .song__bar i{ position:absolute; left:0; top:0; bottom:0; width:0; background:var(--gold); border-radius:99px; }
     .song__time{ font-size:.78rem; color:var(--sub); min-width:82px; text-align:right; font-variant-numeric:tabular-nums; }
-    .song__list{ list-style:none; padding:0; margin:20px 0 0; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-    .song__list button{ background:none; border:1px solid rgba(255,255,255,.3); color:#e6e1d4; border-radius:99px;
-                        padding:6px 16px; font-size:.84rem; cursor:pointer; font-family:inherit; }
-    .song__list li.is-on button{ background:var(--gold); border-color:var(--gold); color:#1c241d; font-weight:700; }
+    .song__list{ list-style:none; padding:0; margin:22px 0 0; text-align:left; border-top:1px solid var(--line);
+                 max-height:50vh; overflow-y:auto; }
+    .song__list li{ border-bottom:1px solid var(--line); }
+    .song__list button{ display:flex; align-items:baseline; gap:14px; width:100%; background:none; border:0; color:#e6e1d4;
+                        padding:12px 8px; font-size:.95rem; cursor:pointer; font-family:var(--serif); text-align:left; }
+    .song__list button:hover{ background:rgba(255,255,255,.05); }
+    .song__no{ font-family:var(--latin); font-variant-numeric:lining-nums tabular-nums; font-size:.85rem; letter-spacing:.08em; color:var(--sub); flex:none; }
+    .song__nm{ flex:1; min-width:0; }
+    .song__list li.is-on button{ color:var(--gold); }
+    .song__list li.is-on .song__no{ color:var(--gold); }
+    .song__list li.is-on .song__nm::after{ content:" ♪"; }
     .song__lyr{ margin-top:18px; background:none; border:1px solid rgba(255,255,255,.3); color:var(--ink);
                 border-radius:99px; padding:5px 16px; font-size:.8rem; cursor:pointer; font-family:inherit; }
     .song__lyrics{ white-space:pre-wrap; font-family:var(--serif); font-size:.95rem; line-height:2.1; color:#ebe6d8;
@@ -110,7 +117,7 @@
     </nav>
   </footer>
 
-  <script src="song.js?v=20261125-1"></script>
+  <script src="song.js?v=20261125-2"></script>
   <script>if (window.Kinoko && Kinoko.hit) Kinoko.hit();</script>
   <script src="i18n.js?v=20261125-1"></script>
 </body>
