@@ -3,7 +3,7 @@
   "heading": "イワオトキノコのうた",
   "credit": "テーマソング",
   "cover": "data/art/art-001-s.jpg",
-  "background": "",
+  "background": "data/song/bg.jpg",
   "tracks": [
     { "title": "その1", "src": "data/song/theme-1.mp3", "lyrics": "" },
     { "title": "その2", "src": "data/song/theme-2.mp3", "lyrics": "" }

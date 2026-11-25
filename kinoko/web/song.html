@@ -22,9 +22,9 @@
     /* 背景画像（data/song.json の background）。無いときは森色のグラデーション */
     .bg{ position:fixed; inset:0; z-index:-2;
          background:radial-gradient(ellipse at 50% 30%, #2c3a2c, #0e1410 70%);
-         background-size:cover; background-position:center; }
+         background-size:cover; background-position:42% center; }
     .bg::after{ content:""; position:absolute; inset:0;
-                background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.55) 60%, rgba(0,0,0,.8)); }
+                background:linear-gradient(to bottom, rgba(0,0,0,.42), rgba(0,0,0,.25) 40%, rgba(0,0,0,.45) 75%, rgba(0,0,0,.75)); }
 
     .topbar{ position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between;
              padding:12px 18px; background:rgba(8,10,8,.55); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
@@ -34,9 +34,11 @@
 
     .wrap{ flex:1; width:100%; max-width:620px; margin:0 auto; padding:48px 16px 60px; }
     .head{ text-align:center; margin:0 0 30px; }
-    .head__en{ font-family:var(--latin); letter-spacing:.34em; font-size:.82rem; color:var(--gold); }
+    .head__en{ display:inline-block; font-family:var(--latin); letter-spacing:.34em; font-size:.86rem; color:#f0d9a6; font-weight:600;
+               padding:3px 10px 3px 14px; border-radius:99px; background:rgba(0,0,0,.45);
+               text-shadow:0 1px 3px rgba(0,0,0,.9), 0 0 12px rgba(0,0,0,.7); }
     .head__ja{ font-family:var(--serif); font-size:clamp(1.6rem,6vw,2.3rem); margin:8px 0 0; letter-spacing:.08em;
-               text-shadow:0 2px 14px rgba(0,0,0,.6); }
+               text-shadow:0 1px 3px rgba(0,0,0,.8), 0 2px 18px rgba(0,0,0,.7); }
 
     .player{ background:rgba(10,12,10,.62); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
              border:1px solid var(--line); border-radius:18px; padding:26px 22px; text-align:center;
@@ -63,7 +65,7 @@
 
     .footer{ padding:24px 18px 40px; text-align:center; }
     .footer__nav{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
-    .footer__nav a{ color:var(--sub); text-decoration:none; font-family:var(--latin); font-size:.84rem; letter-spacing:.06em; }
+    .footer__nav a{ color:#e6e1d4; text-shadow:0 1px 3px rgba(0,0,0,.9); text-decoration:none; font-family:var(--latin); font-size:.84rem; letter-spacing:.06em; }
   </style>
   <script src="kinoko-api.js?v=20261111-0900"></script>
 </head>
