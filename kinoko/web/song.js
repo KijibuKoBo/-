@@ -25,7 +25,7 @@
         var b = document.createElement("button");
         b.type = "button";
         var n = document.createElement("span"); n.className = "song__no"; n.textContent = trackNo(i);
-        var nm = document.createElement("span"); nm.className = "song__nm"; nm.textContent = t.title || "";
+        var nm = document.createElement("span"); nm.className = "song__nm"; nm.textContent = t.title || "（曲名じゅんび中）";
         b.appendChild(n); b.appendChild(nm);
         b.addEventListener("click", function () { pick(i, true); });
         li.appendChild(b); ol.appendChild(li);
@@ -42,7 +42,7 @@
   function pick(i, play) {
     cur = i;
     var t = tracks[i];
-    $("songTitle").textContent = t.title || ((cfg && cfg.heading) || "テーマソング");
+    $("songTitle").textContent = t.title || trackNo(i);
     $("songCredit").textContent = trackNo(i);
     au.src = t.src;
     $("songFill").style.width = "0"; $("songTime").textContent = "0:00";
